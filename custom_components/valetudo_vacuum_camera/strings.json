@@ -1,98 +1,35 @@
 {
-  "start": {
-    "description": "Starts the specified robot vacuum cleaner.",
-    "fields": {
-      "entity_id": {
-        "description": "Entity ID of the robot vacuum cleaner to start.",
-        "example": "vacuum.xiaomi_vacuum_cleaner",
-        "selector": {
-          "entity": {
-            "domain": "vacuum"
-          }
+  "domain": "camera",
+  "name": "Valetudo Vacuum Camera",
+  "documentation": "https://github.com/sca075/valetudo_vacuum_camera",
+  "dependencies": [
+    "mqtt"
+  ],
+  "entities": [
+    {
+      "entity_namespace": "valetudo_vacuum_camera",
+      "entity_name": "{device_name} Map",
+      "camera_stream": true,
+      "input_boolean": true,
+      "services": [
+        {
+          "service": "start",
+          "name": "Start Cleaning",
+          "description": "Start cleaning the house",
+          "fields": []
+        },
+        {
+          "service": "stop",
+          "name": "Stop Cleaning",
+          "description": "Stop the cleaning operation",
+          "fields": []
         }
-      }
-    },
-    "target": {
-      "component": "vacuum",
-      "service": "start",
-      "entity_id": "{{ entity_id }}"
+      ],
+      "icon": "mdi:robot-vacuum"
     }
-  },
-  "stop": {
-    "description": "Stops the specified robot vacuum cleaner.",
-    "fields": {
-      "entity_id": {
-        "description": "Entity ID of the robot vacuum cleaner to stop.",
-        "example": "vacuum.xiaomi_vacuum_cleaner",
-        "selector": {
-          "entity": {
-            "domain": "vacuum"
-          }
-        }
-      }
-    },
-    "target": {
-      "component": "vacuum",
-      "service": "stop",
-      "entity_id": "{{ entity_id }}"
-    }
-  },
-  "pause": {
-    "description": "Pauses the specified robot vacuum cleaner.",
-    "fields": {
-      "entity_id": {
-        "description": "Entity ID of the robot vacuum cleaner to pause.",
-        "example": "vacuum.xiaomi_vacuum_cleaner",
-        "selector": {
-          "entity": {
-            "domain": "vacuum"
-          }
-        }
-      }
-    },
-    "target": {
-      "component": "vacuum",
-      "service": "pause",
-      "entity_id": "{{ entity_id }}"
-    }
-  },
-  "return_to_base": {
-    "description": "Tells the specified robot vacuum cleaner to return to its dock.",
-    "fields": {
-      "entity_id": {
-        "description": "Entity ID of the robot vacuum cleaner to return to its dock.",
-        "example": "vacuum.xiaomi_vacuum_cleaner",
-        "selector": {
-          "entity": {
-            "domain": "vacuum"
-          }
-        }
-      }
-    },
-    "target": {
-      "component": "vacuum",
-      "service": "return_to_base",
-      "entity_id": "{{ entity_id }}"
-    }
-  },
-  "cleaning": {
-    "description": "Starts a cleaning cycle for the specified robot vacuum cleaner.",
-    "fields": {
-      "entity_id": {
-        "description": "Entity ID of the robot vacuum cleaner to start cleaning.",
-        "example": "vacuum.xiaomi_vacuum_cleaner",
-        "selector": {
-          "entity": {
-            "domain": "vacuum"
-          }
-        }
-      }
-    },
-    "target": {
-      "component": "custom",
-      "type": "valetudo-camera",
-      "service": "cleaning",
-      "entity_id": "{{ entity_id }}"
-    }
-  }
+  ],
+  "config_flow": true,
+  "quality_scale": "20",
+  "max_fps": "15"
 }
+
