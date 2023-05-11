@@ -1,35 +1,26 @@
 {
-  "domain": "valetudo_vacuum_camera",
-  "name": "Valetudo Vacuum Camera",
-  "documentation": "https://github.com/sca075/valetudo_vacuum_camera",
-  "dependencies": [
-    "mqtt"
-  ],
-  "entities": [
-    {
-      "entity_namespace": "valetudo_vacuum_camera",
-      "entity_name": "{device_name} Map",
-      "camera_stream": true,
-      "input_boolean": true,
-      "services": [
-        {
-          "service": "start",
-          "name": "Start Cleaning",
-          "description": "Start cleaning the house",
-          "fields": []
-        },
-        {
-          "service": "stop",
-          "name": "Stop Cleaning",
-          "description": "Stop the cleaning operation",
-          "fields": []
-        }
-      ],
-      "icon": "mdi:robot-vacuum"
+  "title": "Valetudo Camera",
+  "step_user_info": {
+    "description": "Please enter the IP address and port of your Valetudo Vacuum.",
+    "data": {
+      "entity_id": {
+        "label": "Entity ID"
+      },
+      "mqtt_topic": {
+        "label": "MQTT PNG Topic"
+      }
     }
-  ],
-  "config_flow": true,
-  "quality_scale": "20",
-  "max_fps": "15"
+  },
+  "step_connect": {
+    "description": "Attempting to connect to the Valetudo Vacuum at {{ entity_id }}:{{ mqtt_topic }}...",
+    "success": "Successfully connected to the Valetudo Vacuum at {{ ip_address }}:{{ mqtt_topic }}.",
+    "failure": "Unable to connect to the Valetudo Vacuum at {{ entity_id }}:{{ mqtt_topic }}. Please check the IP address and port and try again."
+  },
+  "step_finish": {
+    "description": "The Valetudo Camera integration has been successfully set up.",
+    "manual_configuration": {
+      "description": "Please add the following to your configuration.yaml file:",
+      "code_snippet": "valetudo_vacuum_camera:\n  name: {{ name }}\n  host: {{ host }}\n  port: {{ port }}\n  token: {{ token }}"
+    }
+  }
 }
-
