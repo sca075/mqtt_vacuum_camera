@@ -1,5 +1,5 @@
 {
-  "domain": "camera",
+  "domain": "valetudo_vacuum_camera",
   "name": "Valetudo Vacuum Camera",
   "documentation": "https://github.com/sca075/valetudo_vacuum_camera",
   "dependencies": [
