@@ -1,0 +1,16 @@
+{
+    "domain": "valetudo_vacuum_camera",
+    "name": "Valetudo Vacuum Camera",
+    "dependencies": [],
+    "codeowners": [
+      "@sca075"
+    ],
+    "requirements": [
+      "pillow",
+      "numpy",
+      "opencv-python-headless==4.7.0.72",
+      "paho-mqtt"
+    ],
+    "version": "v1.0.5",
+    "iot_class": "local_polling"
+  }
