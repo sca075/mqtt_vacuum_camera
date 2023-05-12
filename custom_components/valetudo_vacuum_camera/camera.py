@@ -9,6 +9,7 @@ import requests
 import voluptuous as vol
 from datetime import timedelta
 from typing import Optional
+#from .connector import MQTTConnector
 
 from homeassistant.components.camera import (Camera, PLATFORM_SCHEMA)
 from homeassistant.const import (
@@ -17,15 +18,14 @@ from homeassistant.const import (
 from homeassistant.helpers import config_validation as cv
 from homeassistant.util import Throttle
 
-from .connector import MQTTConnector
-
 #_LOGGER: logging.Logger = logging.getLogger(__name__)
 _LOGGER = logging.getLogger(__name__)
 
-CONF_VACUUM_CONNECTION_STRING = "vacuum_map"
-CONF_VACUUM_ENTITY_ID = "vacuum_entity"
+#CONF_VACUUM_CONNECTION_STRING = "vacuum_map"
+#CONF_VACUUM_ENTITY_ID = "vacuum_entity"
 
-DEFAULT_NAME = "valetudo vacuum map"
+#DEFAULT_NAME = "valetudo vacuum"
+from .const import CONF_VACUUM_CONNECTION_STRING, CONF_VACUUM_ENTITY_ID, DEFAULT_NAME
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
@@ -103,7 +103,6 @@ class ValetudoCamera(Camera):
             "vacuum_entiy": self._vacuum_entity,
             "vacuum_status": self._vacuum_state,
             "vacuum_json_data": self._vac_json_id,
-            "vacuum_reported_centre": self._vac_data_centre,
             "Image Centre": self._center,
             "robot_position": self._current,
             "charger_position": self._base,
@@ -254,7 +253,8 @@ class ValetudoCamera(Camera):
             return arr
 
         try:
-
+            #test purpose only we retrive the json directly from the vacuum rest api
+            #the vacuum is connected via MQTT to a different ha instance
             url = 'http://valetudo-silenttepidstinkbug.local/api/v2/robot/state/map'
             headers = {'accept': 'application/json'}
             self._vac_json_data = "Success"

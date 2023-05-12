@@ -1,26 +1,22 @@
 {
   "title": "Valetudo Camera",
-  "step_user_info": {
-    "description": "Please enter the IP address and port of your Valetudo Vacuum.",
-    "data": {
-      "entity_id": {
-        "label": "Entity ID"
-      },
-      "mqtt_topic": {
-        "label": "MQTT PNG Topic"
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "name": "Camera Name",
+          "vacuum_map": "Vacuum Map Entity ID",
+          "vacuum_entity": "Vacuum Entity ID"
+        }
       }
-    }
-  },
-  "step_connect": {
-    "description": "Attempting to connect to the Valetudo Vacuum at {{ entity_id }}:{{ mqtt_topic }}...",
-    "success": "Successfully connected to the Valetudo Vacuum at {{ ip_address }}:{{ mqtt_topic }}.",
-    "failure": "Unable to connect to the Valetudo Vacuum at {{ entity_id }}:{{ mqtt_topic }}. Please check the IP address and port and try again."
-  },
-  "step_finish": {
-    "description": "The Valetudo Camera integration has been successfully set up.",
-    "manual_configuration": {
-      "description": "Please add the following to your configuration.yaml file:",
-      "code_snippet": "valetudo_vacuum_camera:\n  name: {{ name }}\n  host: {{ host }}\n  port: {{ port }}\n  token: {{ token }}"
+    },
+    "error": {
+      "cannot_connect": "Could not connect to vacuum. Please check the connection and try again.",
+      "invalid_auth": "Invalid authentication credentials. Please check and try again.",
+      "unknown": "Unknown error occurred while connecting to vacuum. Please check the connection and try again."
+    },
+    "abort": {
+      "already_configured": "This device has already been configured."
     }
   }
 }
