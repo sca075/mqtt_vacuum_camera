@@ -10,13 +10,9 @@
         }
       }
     },
-    "error": {
-      "cannot_connect": "Could not connect to vacuum. Please check the connection and try again.",
-      "invalid_auth": "Invalid authentication credentials. Please check and try again.",
-      "unknown": "Unknown error occurred while connecting to vacuum. Please check the connection and try again."
-    },
     "abort": {
       "already_configured": "This device has already been configured."
     }
   }
 }
+
