@@ -1,1 +1,0 @@
-"""valetudo vacuum map"""
