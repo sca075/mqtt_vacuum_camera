@@ -1,13 +1,15 @@
 """Constants for the valetudo_vacuum_camera integration."""
 
-DOMAIN = "valetudo_vacuum_camera"
-DEFAULT_NAME = "Valetudo Vacuum"
 PLATFORMS = ["camera"]
+DOMAIN = "valetudo_vacuum_camera"
+
+DEFAULT_NAME = "Valetudo Vacuum Camera"
+CONF_VACUUM_CONNECTION_STRING = "vacuum_map"
+CONF_VACUUM_ENTITY_ID = "vacuum_entity"
 
 ICON = "mdi:camera"
 
-CONF_VACUUM_CONNECTION_STRING = "vacuum_map"
-CONF_VACUUM_ENTITY_ID = "vacuum_entity"
+
 
 
 #DEFAULT_SCAN_INTERVAL = 60

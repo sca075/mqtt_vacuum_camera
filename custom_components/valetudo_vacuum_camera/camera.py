@@ -4,12 +4,13 @@ import logging
 import json
 import numpy as np
 import math
-import cv2
+from io import BytesIO
+from PIL import Image, ImageDraw
+#import cv2
 import requests
 import voluptuous as vol
 from datetime import timedelta
 from typing import Optional
-#from .connector import MQTTConnector
 
 from homeassistant.components.camera import (Camera, PLATFORM_SCHEMA)
 from homeassistant.const import (
@@ -18,14 +19,21 @@ from homeassistant.const import (
 from homeassistant.helpers import config_validation as cv
 from homeassistant.util import Throttle
 
+#from .connector import MQTTConnector
+
 #_LOGGER: logging.Logger = logging.getLogger(__name__)
 _LOGGER = logging.getLogger(__name__)
 
-#CONF_VACUUM_CONNECTION_STRING = "vacuum_map"
-#CONF_VACUUM_ENTITY_ID = "vacuum_entity"
+CONF_VACUUM_CONNECTION_STRING = "vacuum_map"
+CONF_VACUUM_ENTITY_ID = "vacuum_entity"
 
-#DEFAULT_NAME = "valetudo vacuum"
-from .const import CONF_VACUUM_CONNECTION_STRING, CONF_VACUUM_ENTITY_ID, DEFAULT_NAME
+DEFAULT_NAME = "valetudo vacuum map"
+
+#from .const import (
+#    CONF_VACUUM_CONNECTION_STRING
+#    CONF_VACUUM_ENTITY_ID
+#    DEFAULT_NAME
+#)
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
@@ -34,7 +42,6 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
         vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
     }
 )
-
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     async_add_entities([ValetudoCamera(hass, config)])
@@ -58,6 +65,7 @@ class ValetudoCamera(Camera):
         self._vac_flour_pixels = None
         self._vac_json_data = None
         self._vac_json_id = None
+        self._image_scale = None
         self._base = None
         self._center = None
         self._current = None
@@ -114,7 +122,7 @@ class ValetudoCamera(Camera):
         return self._should_poll
 
     def update(self):
-
+        _LOGGER.info("camera image update start")
         def sublist(lst, n):
             sub = []
             result = []
@@ -170,15 +178,30 @@ class ValetudoCamera(Camera):
             # Convert the image array to a PIL image
             return image_array
 
-        def draw_robot(layers, x, y, angle, robot_color):
-            radius = 5
-            thickness = 30
-            cv2.circle(layers, (x, y), radius, robot_color, thickness)
+        def crop_array(image_array, crop_percentage, scale_factor):
+            """Crops a numpy array and returns the cropped image and scale factor."""
+            center_x = image_array.shape[1] // 2
+            center_y = image_array.shape[0] // 2
+            crop_size = int(min(center_x, center_y) * crop_percentage / 100)
+            cropbox = (center_x - crop_size, center_y - crop_size, center_x + crop_size, center_y + crop_size)
+            cropped = image_array[cropbox[1]:cropbox[3], cropbox[0]:cropbox[2]]
+            scale_factor = np.array([cropbox[0], cropbox[1]])
+            return cropped
 
-            lidar_angle = math.radians(angle - 90)
-            lidar_x = int(x + 9 * math.cos(lidar_angle))
-            lidar_y = int(y + 9 * math.sin(lidar_angle))
-            cv2.circle(layers, (lidar_x, lidar_y), 1, (255, 204, 153, 255), thickness=5)
+
+        def draw_robot(layers, x, y, angle, robot_color):
+            radius = 25
+            thickness = 30
+            tmpimg = Image.fromarray(np.zeros_like(layers))
+            draw = ImageDraw.Draw(tmpimg)
+            draw.ellipse((x - radius, y - radius, x + radius, y + radius), fill=robot_color, outline=robot_color)
+            lidar_angle = np.deg2rad(angle - 90)  # Convert angle to radians and adjust for LIDAR orientation
+            lidar_x = int(x + 9 * np.cos(lidar_angle))  # Calculate LIDAR endpoint x-coordinate
+            lidar_y = int(y + 9 * np.sin(lidar_angle))  # Calculate LIDAR endpoint y-coordinate
+            draw.line((x, y, lidar_x, lidar_y), fill=color_grey, width=5)
+
+            # Convert the PIL image back to a Numpy array
+            return np.array(tmpimg)
 
         def draw_battery_charger(layers, x, y, color):
             charger_width = 10
@@ -206,13 +229,23 @@ class ValetudoCamera(Camera):
             x2 = center[0] + flag_size // 2
             y2 = center[1] + flag_size // 2
 
+            # Create an Image object from the layer array
+            img = Image.fromarray(layer)
+
             # Draw flag on layer
-            cv2.rectangle(layer, (x1, y1), (x2, y2), flag_color, -1)
+            draw = ImageDraw.Draw(img)
+            draw.rectangle((x1, y1, x2, y2), fill=flag_color)
 
             # Draw flag pole
             pole_width = 5
             pole_color = (0, 0, 255, 255)  # RGB color (blue)
-            cv2.rectangle(layer, (center[0] - pole_width // 2, y1), (center[0] + pole_width // 2, y2), pole_color, -1)
+            draw.rectangle((center[0] - pole_width // 2, y1, center[0] + pole_width // 2, y2), fill=pole_color)
+
+            # Convert the Image object back to the numpy array
+            layer = np.array(img)
+
+            return layer
+
 
             return layer
 
@@ -323,14 +356,13 @@ class ValetudoCamera(Camera):
             img_np_array = draw_battery_charger(img_np_array, charger_pos[0], charger_pos[1], charger_color)
             if go_to:
                 draw_go_to_flag((go_to[0]["points"][0], go_to[0]["points"][1]), img_np_array)
-            draw_robot(img_np_array, robot_position[0], robot_position[1], robot_position_angle, color_robot)
+            img_np_array = img_np_array + draw_robot(img_np_array, robot_position[0], robot_position[1], robot_position_angle, color_robot)
+            img_np_array = crop_array(img_np_array, 25, self._image_scale)
 
-            # Preparing the camera image with openCV from Numpy array
-            img = cv2.cvtColor(img_np_array, cv2.COLOR_RGBA2BGRA)
-            # Encode the image as a JPEG
-            _, data = cv2.imencode(".png", img)
-            # Get the bytes object
-            bytes_data = data.tobytes()
+            # Assuming img_np_array is your Numpy array representing the image
+            pil_img = Image.fromarray(img_np_array)
+            buffered = BytesIO()
+            pil_img.save(buffered, format="PNG")
+            bytes_data = buffered.getvalue()
             self._image = bytes_data
-
             return bytes_data
