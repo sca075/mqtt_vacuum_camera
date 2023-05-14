@@ -1,33 +1,36 @@
-from __future__ import annotations
-
+import asyncio
 import logging
-import voluptuous as vol
+from typing import Optional
 
-from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.typing import ConfigType
+from homeassistant.components import camera
+from homeassistant.components.camera import Image
+from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 
-from .custom_componets import (
-
-)
 
 _LOGGER = logging.getLogger(__name__)
 
-async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
-    """Set up the MQTT connector component."""
-    topic = config[DOMAIN][CONF_TOPIC]
-    entity_id = 'camera.valetudo_vacuum_camera'
 
-    # Callback function to update the camera entity with received MQTT message
-    @callback
-    def message_received(topic: str, payload: str, qos: int) -> None:
-        """A new MQTT message has been received."""
-        hass.states.async_set(entity_id, {'image': payload})
+class ValetudoConnector:
+    def __init__(self, hass: HomeAssistant, map_data_entity_id: str):
+        self.two_factor_auth_url = None
+        self._hass = hass
+        self._map_data_entity_id = map_data_entity_id
+        self._raw_map_data = None
+        self._vacuum_name = None
+        self._name = "Valetudo Map Data Extractor"
 
-    # Subscribe to the MQTT topic and register the callback function
-    await hass.components.mqtt.async_subscribe(topic, message_received)
+    def login(self):
+        return True
 
-    # Set the initial state of the camera entity
-    hass.states.async_set(entity_id, {'image': None})
+    def get_mqtt_data(self) -> Optional[bytes]:
+        image: Image
+        try:
+            image = asyncio.run_coroutine_threadsafe(camera.async_get_image(self._hass, self._map_data_entity_id),
+                                                     self._hass.loop).result()
 
-    # Return boolean to indicate that initialization was successful
-    return True
+        except HomeAssistantError as err:
+            _LOGGER.error("Error getting image from valetudo camera entity: %s", err)
+            return None
+
+        return image.content
