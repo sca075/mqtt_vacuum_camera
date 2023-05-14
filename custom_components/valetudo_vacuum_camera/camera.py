@@ -16,6 +16,7 @@ from homeassistant.const import (
 )
 from homeassistant.helpers import config_validation as cv
 from homeassistant.util import Throttle
+from custom_components.valetudo_vacuum_camera.valetudo.connector import ValetudoConnector
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 #_LOGGER = logging.getLogger(__name__)
@@ -48,6 +49,7 @@ class ValetudoCamera(Camera):
         self._vacuum_entity = device_info.get(CONF_VACUUM_ENTITY_ID)
         self._attr_unique_id = str(device_info.get(CONF_VACUUM_ENTITY_ID) + "_camera")
         self._mqtt_lissen_topic = str(device_info.get(CONF_VACUUM_CONNECTION_STRING))
+        self._mqtt_data = ValetudoConnector(hass, self._mqtt_lissen_topic).get_mqtt_data()
         self._session = requests.session()
         self._vacuum_state = None
         self._frame_interval = 1
@@ -102,12 +104,12 @@ class ValetudoCamera(Camera):
             "vacuum_entiy": self._vacuum_entity,
             "vacuum_status": self._vacuum_state,
             "vacuum_json_data": self._vac_json_id,
-            "Image Centre": self._center,
             "robot_position": self._current,
             "charger_position": self._base,
             "json_data": self._vac_json_data,
             "unique_id": self._attr_unique_id,
-            "lissen_to": self._mqtt_lissen_topic
+            "listen_to": self._mqtt_lissen_topic,
+            "mqtt_data": self._mqtt_data
         }
 
     @property
@@ -204,26 +206,24 @@ class ValetudoCamera(Camera):
             end_col = start_col + charger_width
             # Fill in the charger rectangle with the specified color
             layers[start_row:end_row, start_col:end_col] = color
+
             return layers
 
         def draw_go_to_flag(center, layer):
             # Define flag color
             flag_color = (0, 255, 0)  # RGB color (green)
-
             # Define flag size and position
             flag_size = 40
             x1 = center[0] - flag_size // 2
             y1 = center[1] - flag_size // 2
             x2 = center[0] + flag_size // 2
             y2 = center[1] + flag_size // 2
-
             # Create an Image object from the layer array
             img = Image.fromarray(layer)
 
             # Draw flag on layer
             draw = ImageDraw.Draw(img)
             draw.rectangle((x1, y1, x2, y2), fill=flag_color)
-
             # Draw flag pole
             pole_width = 5
             pole_color = (0, 0, 255, 255)  # RGB color (blue)
@@ -294,12 +294,10 @@ class ValetudoCamera(Camera):
             flour_pixels = parsed_json["layers"][0]["compressedPixels"]
             walls_pixels = parsed_json["layers"][1]["compressedPixels"]
             path_pixels = parsed_json["entities"][0]["points"]
-
             #update the charger position
             x = charger_pos[0]
             y = charger_pos[1]
             self._base = {"x": x, "y": y}
-
             #update the robot position
             robot_position = robot_pos[0]["points"]
             robot_position_angle = robot_pos[0]["metaData"]["angle"]
@@ -343,10 +341,9 @@ class ValetudoCamera(Camera):
             if go_to:
                 img_np_array = draw_go_to_flag((go_to[0]["points"][0], go_to[0]["points"][1]), img_np_array)
             img_np_array = img_np_array + draw_robot(img_np_array, robot_position[0], robot_position[1], robot_position_angle, color_robot)
-            # using OpenCV to output the image we can save up to 2 sec cycle time for the full image.
-            # this is why we crop the the image of 75% of the normal size.
             img_np_array = crop_array(img_np_array, 25, self._image_scale)
-            # img_np_array Numpy array representing the image is output as binary
+
+            # Assuming img_np_array is your Numpy array representing the image
             pil_img = Image.fromarray(img_np_array)
             buffered = BytesIO()
             pil_img.save(buffered, format="PNG")
