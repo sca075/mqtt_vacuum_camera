@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 import json
 import numpy as np
-import math
 from io import BytesIO
 from PIL import Image, ImageDraw
 import requests
@@ -18,26 +17,21 @@ from homeassistant.const import (
 from homeassistant.helpers import config_validation as cv
 from homeassistant.util import Throttle
 
-#from .connector import MQTTConnector
+_LOGGER: logging.Logger = logging.getLogger(__name__)
+#_LOGGER = logging.getLogger(__name__)
 
-#_LOGGER: logging.Logger = logging.getLogger(__name__)
-_LOGGER = logging.getLogger(__name__)
-
-CONF_VACUUM_CONNECTION_STRING = "vacuum_map"
-CONF_VACUUM_ENTITY_ID = "vacuum_entity"
-
-DEFAULT_NAME = "valetudo vacuum map"
-
-#from .const import (
-#    CONF_VACUUM_CONNECTION_STRING
-#    CONF_VACUUM_ENTITY_ID
-#    DEFAULT_NAME
-#)
+from .const import (
+    CONF_VACUUM_CONNECTION_STRING,
+    CONF_VACUUM_ENTITY_ID,
+    DEFAULT_NAME,
+    ICON
+)
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
         vol.Required(CONF_VACUUM_CONNECTION_STRING): cv.string,
         vol.Required(CONF_VACUUM_ENTITY_ID): cv.string,
+        vol.Optional(ICON): cv.icon,
         vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
     }
 )
@@ -52,6 +46,8 @@ class ValetudoCamera(Camera):
         self.hass = hass
         self._name = device_info.get(CONF_NAME)
         self._vacuum_entity = device_info.get(CONF_VACUUM_ENTITY_ID)
+        self._attr_unique_id = str(device_info.get(CONF_VACUUM_ENTITY_ID) + "_camera")
+        self._mqtt_lissen_topic = str(device_info.get(CONF_VACUUM_CONNECTION_STRING))
         self._session = requests.session()
         self._vacuum_state = None
         self._frame_interval = 1
@@ -100,10 +96,6 @@ class ValetudoCamera(Camera):
     def turn_off(self):
         self._should_poll = False
 
-    """ #@property
-    #def supported_features(self) -> int:
-    #    return SUPPORT_ON_OFF """
-
     @property
     def extra_state_attributes(self):
         return {
@@ -114,6 +106,8 @@ class ValetudoCamera(Camera):
             "robot_position": self._current,
             "charger_position": self._base,
             "json_data": self._vac_json_data,
+            "unique_id": self._attr_unique_id,
+            "lissen_to": self._mqtt_lissen_topic
         }
 
     @property
@@ -190,7 +184,6 @@ class ValetudoCamera(Camera):
 
         def draw_robot(layers, x, y, angle, robot_color):
             radius = 25
-            thickness = 30
             tmpimg = Image.fromarray(np.zeros_like(layers))
             draw = ImageDraw.Draw(tmpimg)
             draw.ellipse((x - radius, y - radius, x + radius, y + radius), fill=robot_color, outline=robot_color)
@@ -198,23 +191,19 @@ class ValetudoCamera(Camera):
             lidar_x = int(x + 9 * np.cos(lidar_angle))  # Calculate LIDAR endpoint x-coordinate
             lidar_y = int(y + 9 * np.sin(lidar_angle))  # Calculate LIDAR endpoint y-coordinate
             draw.line((x, y, lidar_x, lidar_y), fill=color_grey, width=5)
-
             # Convert the PIL image back to a Numpy array
             return np.array(tmpimg)
 
         def draw_battery_charger(layers, x, y, color):
             charger_width = 10
             charger_height = 20
-
             # Get the starting and ending indices of the charger rectangle
             start_row = y - charger_height // 2
             end_row = start_row + charger_height
             start_col = x - charger_width // 2
             end_col = start_col + charger_width
-
             # Fill in the charger rectangle with the specified color
             layers[start_row:end_row, start_col:end_col] = color
-
             return layers
 
         def draw_go_to_flag(center, layer):
@@ -242,9 +231,6 @@ class ValetudoCamera(Camera):
 
             # Convert the Image object back to the numpy array
             layer = np.array(img)
-
-            return layer
-
 
             return layer
 
@@ -298,23 +284,23 @@ class ValetudoCamera(Camera):
         else:
             resp_data = response.content
             parsed_json = json.loads(resp_data.decode('utf-8'))
-            # Extract from the Valetudo json the points data.
+            # Extract from the Valetudo Jason the relevant data.
             entity_dict = find_points_entities(parsed_json)
             robot_pos = entity_dict.get("robot_position")
             charger_pos = entity_dict.get("charger_location")
             charger_pos = charger_pos[0]["points"]
             go_to = entity_dict.get("go_to_target")
-            # Extract from the Valetudo json the nonce data.
             self._vac_json_id = parsed_json["metaData"]["nonce"]
-            # Extract from the Valetudo json the Layers data.
             flour_pixels = parsed_json["layers"][0]["compressedPixels"]
             walls_pixels = parsed_json["layers"][1]["compressedPixels"]
             path_pixels = parsed_json["entities"][0]["points"]
-            # update the charger position
+
+            #update the charger position
             x = charger_pos[0]
             y = charger_pos[1]
             self._base = {"x": x, "y": y}
-            # update the robot position
+
+            #update the robot position
             robot_position = robot_pos[0]["points"]
             robot_position_angle = robot_pos[0]["metaData"]["angle"]
             self._current = {"x": robot_position[0], "y": robot_position[1], "a": robot_position_angle}
@@ -355,11 +341,12 @@ class ValetudoCamera(Camera):
             img_np_array = draw_lines(img_np_array, path_pixel2, 5, color_move)
             img_np_array = draw_battery_charger(img_np_array, charger_pos[0], charger_pos[1], charger_color)
             if go_to:
-                draw_go_to_flag((go_to[0]["points"][0], go_to[0]["points"][1]), img_np_array)
+                img_np_array = draw_go_to_flag((go_to[0]["points"][0], go_to[0]["points"][1]), img_np_array)
             img_np_array = img_np_array + draw_robot(img_np_array, robot_position[0], robot_position[1], robot_position_angle, color_robot)
+            # using OpenCV to output the image we can save up to 2 sec cycle time for the full image.
+            # this is why we crop the the image of 75% of the normal size.
             img_np_array = crop_array(img_np_array, 25, self._image_scale)
-
-            # Assuming img_np_array is your Numpy array representing the image
+            # img_np_array Numpy array representing the image is output as binary
             pil_img = Image.fromarray(img_np_array)
             buffered = BytesIO()
             pil_img.save(buffered, format="PNG")

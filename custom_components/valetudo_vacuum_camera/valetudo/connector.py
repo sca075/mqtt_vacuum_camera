@@ -1,56 +1,33 @@
-import json
-import logging
+from __future__ import annotations
 
-import homeassistant.helpers.entity as ha_entity
-import homeassistant.components.mqtt as mqtt
+import logging
+import voluptuous as vol
+
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.typing import ConfigType
+
+from .custom_componets import (
+
+)
 
 _LOGGER = logging.getLogger(__name__)
 
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Set up the MQTT connector component."""
+    topic = config[DOMAIN][CONF_TOPIC]
+    entity_id = 'camera.valetudo_vacuum_camera'
 
-class MQTTConnector(ha_entity.Entity):
-    def __init__(self, hass, config):
-        self._hass = hass
-        self._config = config
-        self._mqtt_payload = None
-        self._mqtt_topic = None
+    # Callback function to update the camera entity with received MQTT message
+    @callback
+    def message_received(topic: str, payload: str, qos: int) -> None:
+        """A new MQTT message has been received."""
+        hass.states.async_set(entity_id, {'image': payload})
 
-    async def async_added_to_hass(self):
-        self._mqtt_topic = self._config.get('topic')
-        self._mqtt_client = mqtt.async_get_client(self._hass)
+    # Subscribe to the MQTT topic and register the callback function
+    await hass.components.mqtt.async_subscribe(topic, message_received)
 
-        async def message_received(topic, payload, qos):
-            try:
-                payload = json.loads(payload)
-                self._mqtt_payload = payload
-            except ValueError:
-                _LOGGER.error("Unable to parse JSON payload: %s", payload)
+    # Set the initial state of the camera entity
+    hass.states.async_set(entity_id, {'image': None})
 
-        await self._hass.async_create_task(
-            self._mqtt_client.async_subscribe(self._mqtt_topic, message_received)
-        )
-
-    async def async_will_remove_from_hass(self) -> None:
-        await self._mqtt_client.async_unsubscribe(self._mqtt_topic)
-
-    async def async_publish(self, topic, payload, qos=0, retain=False):
-        await self._mqtt_client.async_publish(topic, payload, qos, retain)
-
-    @property
-    def state(self):
-        return self._mqtt_payload
-
-    @property
-    def name(self):
-        return 'mqtt_connector'
-
-    @property
-    def unique_id(self):
-        return 'mqtt_connector'
-
-    @property
-    def icon(self):
-        return 'mdi:cloud'
-
-    @property
-    def device_state_attributes(self):
-        return self._mqtt_payload
+    # Return boolean to indicate that initialization was successful
+    return True
