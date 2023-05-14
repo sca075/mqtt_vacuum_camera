@@ -6,7 +6,6 @@ import numpy as np
 import math
 from io import BytesIO
 from PIL import Image, ImageDraw
-#import cv2
 import requests
 import voluptuous as vol
 from datetime import timedelta
@@ -299,22 +298,23 @@ class ValetudoCamera(Camera):
         else:
             resp_data = response.content
             parsed_json = json.loads(resp_data.decode('utf-8'))
-            # Extract from the Valetudo Jason the relevant data.
+            # Extract from the Valetudo json the points data.
             entity_dict = find_points_entities(parsed_json)
             robot_pos = entity_dict.get("robot_position")
+            charger_pos = entity_dict.get("charger_location")
+            charger_pos = charger_pos[0]["points"]
             go_to = entity_dict.get("go_to_target")
+            # Extract from the Valetudo json the nonce data.
             self._vac_json_id = parsed_json["metaData"]["nonce"]
+            # Extract from the Valetudo json the Layers data.
             flour_pixels = parsed_json["layers"][0]["compressedPixels"]
             walls_pixels = parsed_json["layers"][1]["compressedPixels"]
             path_pixels = parsed_json["entities"][0]["points"]
-            # path_array = np.array(path_pixels)
-            charger_pos = parsed_json["entities"][1]["points"]
-            if self._vacuum_state == "docked":
-                x = charger_pos[0]
-                y = charger_pos[1]
-                a = parsed_json["entities"][2]["metaData"]["angle"]
-                self._base = {"x": x, "y": y, "a": a}
-
+            # update the charger position
+            x = charger_pos[0]
+            y = charger_pos[1]
+            self._base = {"x": x, "y": y}
+            # update the robot position
             robot_position = robot_pos[0]["points"]
             robot_position_angle = robot_pos[0]["metaData"]["angle"]
             self._current = {"x": robot_position[0], "y": robot_position[1], "a": robot_position_angle}
