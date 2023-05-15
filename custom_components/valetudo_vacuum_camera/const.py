@@ -1,21 +1,31 @@
 """Constants for the valetudo_vacuum_camera integration."""
 
+"""Required in Config_Flow"""
 PLATFORMS = ["camera"]
 DOMAIN = "valetudo_vacuum_camera"
-
-DEFAULT_NAME = "Valetudo Vacuum Camera"
+DEFAULT_NAME = "valetudo vacuum camera"
 CONF_VACUUM_CONNECTION_STRING = "vacuum_map"
 CONF_VACUUM_ENTITY_ID = "vacuum_entity"
-
 ICON = "mdi:camera"
 
+"""App Constants"""
+IDLE_SCAN_INTERVAL = 120
+CLEANING_SCAN_INTERVAL = 3
+
+"""Colors"""
+color_charger = (0, 128, 0, 255)
+color_move = (238, 247, 255, 255)
+color_robot = (255, 255, 204, 255)
+color_wall = (255, 255, 0, 255)
+color_white = (255, 255, 255, 255)
+color_grey = (125, 125, 125, 255)
+color_black = (0, 0, 0, 255)
+color_ext_background = (125, 125, 125, 255)
+color_home_background = (0, 255, 255, 255)
+color_transparent = (0, 0, 0, 0)
 
 
-
-#DEFAULT_SCAN_INTERVAL = 60
-#IDLE_SCAN_INTERVAL = 120
-#CLEANING_SCAN_INTERVAL = 5
-
+#TODO Clean up when not required.
 #SERVICE_CLEAN = "clean"
 #SERVICE_GO_TO = "go_to"
 #SERVICE_START_CLEANING = "start"
@@ -43,10 +53,3 @@ EVENT_CAMERA_IMAGE_CAPTURED = "valetudo_camera_image_captured"
 #    CAMERA_IMAGE_TYPE_LIVE,
 #]
 
-
-STARTUP_MESSAGE = """
--------------------------------------------------------------------
-Valetudo Camera has been installed.
-Please restart Home Assistant to activate the integration.
--------------------------------------------------------------------
-"""

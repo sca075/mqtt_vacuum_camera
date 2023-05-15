@@ -1,10 +1,9 @@
-import asyncio
 import logging
 from typing import Optional
 
 from homeassistant.components import camera
 from homeassistant.components.camera import Image
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback, Config
 from homeassistant.exceptions import HomeAssistantError
 
 
@@ -12,7 +11,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class ValetudoConnector:
-    def __init__(self, hass: HomeAssistant, map_data_entity_id: str):
+    def __init__(self, hass, map_data_entity_id):
         self.two_factor_auth_url = None
         self._hass = hass
         self._map_data_entity_id = map_data_entity_id
@@ -26,11 +25,11 @@ class ValetudoConnector:
     def get_mqtt_data(self) -> Optional[bytes]:
         image: Image
         try:
-            image = asyncio.run_coroutine_threadsafe(camera.async_get_image(self._hass, self._map_data_entity_id),
-                                                     self._hass.loop).result()
+
+            image = camera.async_get_image(self._hass, self._map_data_entity_id, 30).cr_await
 
         except HomeAssistantError as err:
-            _LOGGER.error("Error getting image from valetudo camera entity: %s", err)
+            _LOGGER.warning("Error getting image from valetudo camera entity: %s", err)
             return None
 
         return image.content
