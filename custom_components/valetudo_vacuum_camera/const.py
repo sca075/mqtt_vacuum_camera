@@ -12,7 +12,7 @@ ICON = "mdi:camera"
 IDLE_SCAN_INTERVAL = 120
 CLEANING_SCAN_INTERVAL = 3
 
-"""Colors"""
+"""Colors RGBA"""
 color_charger = (0, 128, 0, 255)
 color_move = (238, 247, 255, 255)
 color_robot = (255, 255, 204, 255)
