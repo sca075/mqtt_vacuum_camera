@@ -3,7 +3,7 @@ Integration for Valetudo Vacuums to Home Assistant
 
 Acutal Status is: Development (not released)
 
-backround idea:
+background idea:
 Possibility to connect the Vacuum Cleaners with Valetudo Firmware to Home Assistant via MQTT that have righit now limited options. 
 This Custom Component will allow to integrate the Vacuum functionality and show the Vacuum Position and controls of the Vacuum. 
 The integration in the end will provide all sensors and maps data so that is possible to custom select the area to be cleaned, 
