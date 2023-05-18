@@ -40,8 +40,8 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="user",
             data_schema=vol.Schema(
                 {
-                    vol.Required(CONF_VACUUM_ENTITY_ID, default=self.vacuum_entity or "vacuum"): str,
-                    vol.Required(CONF_VACUUM_CONNECTION_STRING, default=self.vacuum_map or "map"): str,
+                    vol.Optional(CONF_VACUUM_ENTITY_ID, default=self.vacuum_entity or "vacuum"): str,
+                    vol.Optional(CONF_VACUUM_CONNECTION_STRING, default=self.vacuum_map or "map"): str,
                 }
             ),
         )

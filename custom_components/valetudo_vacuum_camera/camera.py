@@ -25,7 +25,7 @@ from .const import (
     CONF_VACUUM_CONNECTION_STRING,
     CONF_VACUUM_ENTITY_ID,
     DEFAULT_NAME,
-    ICON
+    ICON,
 )
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
@@ -48,8 +48,8 @@ class ValetudoCamera(Camera):
         self._name = device_info.get(CONF_NAME)
         self._vacuum_entity = device_info.get(CONF_VACUUM_ENTITY_ID)
         self._attr_unique_id = str(device_info.get(CONF_VACUUM_ENTITY_ID) + "_camera")
-        self._mqtt_lissen_topic = str(device_info.get(CONF_VACUUM_CONNECTION_STRING))
-        self._mqtt_data = ValetudoConnector(hass, self._mqtt_lissen_topic).get_mqtt_data()
+        self._mqtt_listen_topic = str(device_info.get(CONF_VACUUM_CONNECTION_STRING))
+        self._mqtt_data = ValetudoConnector(hass, self._mqtt_listen_topic)
         self._session = requests.session()
         self._vacuum_state = None
         self._frame_interval = 1
@@ -108,7 +108,7 @@ class ValetudoCamera(Camera):
             "charger_position": self._base,
             "json_data": self._vac_json_data,
             "unique_id": self._attr_unique_id,
-            "listen_to": self._mqtt_lissen_topic,
+            "listen_to": self._mqtt_listen_topic,
             "mqtt_data": self._mqtt_data
         }
 
