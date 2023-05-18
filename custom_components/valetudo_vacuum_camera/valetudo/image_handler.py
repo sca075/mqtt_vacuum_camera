@@ -173,6 +173,10 @@ class ImageHandler(Image):
 
     def get_image_from_json(self, m_json):
 
+        entity_dict = self.find_points_entities(m_json)
+        self.robot_pos = entity_dict.get("robot_position")
+        charger_pos = entity_dict.get("charger_location")
+        self.charger_pos = charger_pos[0]["points"]
         self.flour_pixels = m_json["layers"][0]["compressedPixels"]
         self.walls_pixels = m_json["layers"][1]["compressedPixels"]
         self.path_pixels = m_json["entities"][0]["points"]
@@ -201,4 +205,6 @@ class ImageHandler(Image):
 
         img_np_array = self.crop_array(img_np_array, 25)
 
-        return img_np_array
+        pil_img = Image.fromarray(img_np_array)
+
+        return pil_img
