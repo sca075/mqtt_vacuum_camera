@@ -1,8 +1,8 @@
 <application>
   <component name="FindSettings">
-    <option name="customScope" value="File '…/valetudo_vacuum_mapper/custom_components/valetudo_vacuum_camera/valetudo/image_handler.py'" />
-    <option name="defaultScopeName" value="File '…/valetudo_vacuum_mapper/custom_components/valetudo_vacuum_camera/valetudo/image_handler.py'" />
-    <option name="SEARCH_SCOPE" value="File '…/valetudo_vacuum_mapper/custom_components/valetudo_vacuum_camera/valetudo/image_handler.py'" />
+    <option name="customScope" value="All Places" />
+    <option name="defaultScopeName" value="All Places" />
+    <option name="SEARCH_SCOPE" value="All Places" />
     <mask>*.css</mask>
     <mask>*.html</mask>
     <mask>*.xml</mask>
