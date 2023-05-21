@@ -9,3 +9,6 @@ class Vacuum:
         self.charger_x = None
         self.charger_y = None
 
+        async def get_mqtt_data(self) -> Optional[bytes]:
+            return None
+

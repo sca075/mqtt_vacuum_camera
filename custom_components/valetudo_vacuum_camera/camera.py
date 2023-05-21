@@ -18,6 +18,7 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.util import Throttle
 from custom_components.valetudo_vacuum_camera.valetudo.connector import ValetudoConnector
 
+
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 #_LOGGER = logging.getLogger(__name__)
 
@@ -49,7 +50,6 @@ class ValetudoCamera(Camera):
         self._vacuum_entity = device_info.get(CONF_VACUUM_ENTITY_ID)
         self._attr_unique_id = str(device_info.get(CONF_VACUUM_ENTITY_ID) + "_camera")
         self._mqtt_listen_topic = str(device_info.get(CONF_VACUUM_CONNECTION_STRING))
-        self._mqtt_data = ValetudoConnector(hass, self._mqtt_listen_topic)
         self._session = requests.session()
         self._vacuum_state = None
         self._frame_interval = 1
@@ -108,8 +108,7 @@ class ValetudoCamera(Camera):
             "charger_position": self._base,
             "json_data": self._vac_json_data,
             "unique_id": self._attr_unique_id,
-            "listen_to": self._mqtt_listen_topic,
-            "mqtt_data": self._mqtt_data
+            "listen_to": self._mqtt_listen_topic
         }
 
     @property
@@ -118,6 +117,10 @@ class ValetudoCamera(Camera):
 
     def update(self):
         _LOGGER.info("camera image update start")
+
+        ValetudoConnector()
+        _LOGGER.debug("wait for data")
+
         def sublist(lst, n):
             sub = []
             result = []
