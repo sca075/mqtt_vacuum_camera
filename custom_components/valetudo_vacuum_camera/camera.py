@@ -18,7 +18,6 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.util import Throttle
 from custom_components.valetudo_vacuum_camera.valetudo.connector import ValetudoConnector
 
-
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 #_LOGGER = logging.getLogger(__name__)
 
@@ -26,7 +25,7 @@ from .const import (
     CONF_VACUUM_CONNECTION_STRING,
     CONF_VACUUM_ENTITY_ID,
     DEFAULT_NAME,
-    ICON,
+    ICON
 )
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
@@ -49,7 +48,10 @@ class ValetudoCamera(Camera):
         self._name = device_info.get(CONF_NAME)
         self._vacuum_entity = device_info.get(CONF_VACUUM_ENTITY_ID)
         self._attr_unique_id = str(device_info.get(CONF_VACUUM_ENTITY_ID) + "_camera")
-        self._mqtt_listen_topic = str(device_info.get(CONF_VACUUM_CONNECTION_STRING))
+        self._mqtt_lissen_topic = str(device_info.get(CONF_VACUUM_CONNECTION_STRING))
+
+        self._mqtt = ValetudoConnector()
+
         self._session = requests.session()
         self._vacuum_state = None
         self._frame_interval = 1
@@ -108,18 +110,19 @@ class ValetudoCamera(Camera):
             "charger_position": self._base,
             "json_data": self._vac_json_data,
             "unique_id": self._attr_unique_id,
-            "listen_to": self._mqtt_listen_topic
+            "listen_to": self._mqtt_lissen_topic
         }
 
     @property
     def should_poll(self) -> bool:
         return self._should_poll
 
+
     def update(self):
         _LOGGER.info("camera image update start")
 
-        ValetudoConnector()
-        _LOGGER.debug("wait for data")
+        test = self._mqtt.update_data()
+        _LOGGER.debug("result: %s", str(test))
 
         def sublist(lst, n):
             sub = []
