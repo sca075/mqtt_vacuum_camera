@@ -30,5 +30,3 @@ class ValetudoConnector:
     def on_connect(self, client, userdata, flags, rc):
         _LOGGER.debug("Connected to MQTT broker.")
         self._mqtt.subscribe(self._mqtt_topic)
-
-#image = await camera.async_get_image(self._hass, self._map_data_entity_id).cr_await
