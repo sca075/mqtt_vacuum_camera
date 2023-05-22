@@ -12,7 +12,7 @@ class ValetudoConnector:
         self._mqtt = mqtt.Client("valetudo_connector")
         self._mqtt.on_connect = self.on_connect
         self._mqtt.on_message = self.on_message
-        self._mqtt.username_pw_set(username="MQTT_User", password="MQTT_Connect")
+        self._mqtt.username_pw_set(username="username", password="password")
         self._mqtt.connect_async(host=self._broker)
         self._mqtt.enable_bridge_mode()
         self._mqtt.loop_start()
