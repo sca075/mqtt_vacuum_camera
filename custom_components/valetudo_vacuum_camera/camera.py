@@ -50,7 +50,7 @@ class ValetudoCamera(Camera):
         self._attr_unique_id = str(device_info.get(CONF_VACUUM_ENTITY_ID) + "_camera")
         self._mqtt_lissen_topic = str(device_info.get(CONF_VACUUM_CONNECTION_STRING))
 
-        self._mqtt = ValetudoConnector()
+        self._mqtt = ValetudoConnector(self._mqtt_lissen_topic)
 
         self._session = requests.session()
         self._vacuum_state = None
@@ -121,7 +121,7 @@ class ValetudoCamera(Camera):
     def update(self):
         _LOGGER.info("camera image update start")
 
-        test = self._mqtt.update_data()
+        test = self._mqtt.update_data(self._mqtt_lissen_topic)
         _LOGGER.debug("result: %s", str(test))
 
         def sublist(lst, n):
