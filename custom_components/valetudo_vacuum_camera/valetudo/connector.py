@@ -5,7 +5,8 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class ValetudoConnector:
-    def __init__(self):
+    def __init__(self, mqtt_topic):
+        self._mqtt_topic = mqtt_topic
         self._broker = "127.0.0.1"
         self._payload = None
         self._mqtt = mqtt.Client("valetudo_connector")
@@ -28,6 +29,6 @@ class ValetudoConnector:
 
     def on_connect(self, client, userdata, flags, rc):
         _LOGGER.debug("Connected to MQTT broker.")
-        self._mqtt.subscribe("valetudo/SilentTepidStinkbug/MapData/map-data-hass")
+        self._mqtt.subscribe(self._mqtt_topic)
 
 #image = await camera.async_get_image(self._hass, self._map_data_entity_id).cr_await
