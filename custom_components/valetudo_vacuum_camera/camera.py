@@ -16,6 +16,7 @@ from homeassistant.const import (
 )
 from homeassistant.helpers import config_validation as cv
 from homeassistant.util import Throttle
+
 from custom_components.valetudo_vacuum_camera.valetudo.connector import ValetudoConnector
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -25,6 +26,8 @@ from .const import (
     CONF_VACUUM_CONNECTION_STRING,
     CONF_VACUUM_ENTITY_ID,
     DEFAULT_NAME,
+    CONF_MQTT_USER,
+    CONF_MQTT_PASS,
     ICON
 )
 
@@ -32,6 +35,8 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
         vol.Required(CONF_VACUUM_CONNECTION_STRING): cv.string,
         vol.Required(CONF_VACUUM_ENTITY_ID): cv.string,
+        vol.Optional(CONF_MQTT_USER): cv.string,
+        vol.Optional(CONF_MQTT_PASS): cv.string,
         vol.Optional(ICON): cv.icon,
         vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
     }
@@ -48,9 +53,9 @@ class ValetudoCamera(Camera):
         self._name = device_info.get(CONF_NAME)
         self._vacuum_entity = device_info.get(CONF_VACUUM_ENTITY_ID)
         self._attr_unique_id = str(device_info.get(CONF_VACUUM_ENTITY_ID) + "_camera")
-        self._mqtt_lissen_topic = str(device_info.get(CONF_VACUUM_CONNECTION_STRING))
+        self._mqtt_listen_topic = str(device_info.get(CONF_VACUUM_CONNECTION_STRING))
 
-        self._mqtt = ValetudoConnector(self._mqtt_lissen_topic)
+        self._mqtt = ValetudoConnector(self._mqtt_listen_topic)
 
         self._session = requests.session()
         self._vacuum_state = None
@@ -110,7 +115,7 @@ class ValetudoCamera(Camera):
             "charger_position": self._base,
             "json_data": self._vac_json_data,
             "unique_id": self._attr_unique_id,
-            "listen_to": self._mqtt_lissen_topic
+            "listen_to": self._mqtt_listen_topic
         }
 
     @property
@@ -121,7 +126,7 @@ class ValetudoCamera(Camera):
     def update(self):
         _LOGGER.info("camera image update start")
 
-        test = self._mqtt.update_data(self._mqtt_lissen_topic)
+        test = self._mqtt.update_data(self._mqtt_listen_topic)
         _LOGGER.debug("result: %s", str(test))
 
         def sublist(lst, n):
