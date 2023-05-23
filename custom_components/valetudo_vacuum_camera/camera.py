@@ -25,8 +25,6 @@ from .const import (
     CONF_VACUUM_CONNECTION_STRING,
     CONF_VACUUM_ENTITY_ID,
     DEFAULT_NAME,
-    CONF_MQTT_USER,
-    CONF_MQTT_PASS,
     ICON
 )
 
@@ -34,8 +32,6 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
         vol.Required(CONF_VACUUM_CONNECTION_STRING): cv.string,
         vol.Required(CONF_VACUUM_ENTITY_ID): cv.string,
-        vol.Optional(CONF_MQTT_USER): cv.string,
-        vol.Optional(CONF_MQTT_PASS): cv.string,
         vol.Optional(ICON): cv.icon,
         vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
     }
@@ -119,7 +115,7 @@ class ValetudoCamera(Camera):
         _LOGGER.info("camera image update start")
 
         test = self._mqtt.update_data(self._mqtt_listen_topic)
-        _LOGGER.debug("result: %s", str(test))
+        #_LOGGER.debug("result: %s", str(test))
 
         try:
             #test purpose only we retrive the json directly from the vacuum rest api
