@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw
 _LOGGER = logging.getLogger(__name__)
 
 
-from custom_components.valetudo_vacuum_camera.const import (
+from custom_components.valetudo_vacuum_camera.utils.colors import (
     color_charger,
     color_move,
     color_wall,
