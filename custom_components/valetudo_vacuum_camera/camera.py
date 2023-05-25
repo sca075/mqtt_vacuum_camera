@@ -50,7 +50,7 @@ class ValetudoCamera(Camera):
         self._attr_unique_id = str(device_info.get(CONF_VACUUM_ENTITY_ID) + "_camera")
         self._mqtt_listen_topic = str(device_info.get(CONF_VACUUM_CONNECTION_STRING))
 
-        self._mqtt = ValetudoConnector(self._mqtt_listen_topic)
+        self._mqtt = ValetudoConnector(self._mqtt_listen_topic, hass)
         self._map_handler = MapImageHandler()
 
         self._session = requests.session()
@@ -114,7 +114,7 @@ class ValetudoCamera(Camera):
     def update(self):
         _LOGGER.info("camera image update start")
 
-        test = self._mqtt.update_data(self._mqtt_listen_topic)
+        test = self._mqtt.update_data()
         #_LOGGER.debug("result: %s", str(test))
 
         try:
