@@ -1,18 +1,18 @@
 {
-    "domain": "valetudo_vacuum_camera",
-    "name": "Valetudo Vacuum Camera",
-    "documentation": "https://github.com/sca075/valetudo_vacuum_camera",
-    "issue_tracker": "https://github.com/sca075/valetudo_vacuum_camera/issues",
-    "dependencies": ["mqtt"],
-    "codeowners": [
-      "@sca075"
-    ],
-    "requirements": [
-      "pillow",
-      "numpy",
-      "paho-mqtt"
-    ],
-    "version": "v1.0.6",
-    "iot_class": "local_polling",
-    "config_flow": true
-  }
+  "domain": "valetudo_vacuum_camera",
+  "name": "Valetudo Vacuum Camera",
+  "documentation": "https://github.com/sca075/valetudo_vacuum_mapper",
+  "issue_tracker": "https://github.com/sca075/valetudo_vacuum_mapper/issues",
+  "dependencies": ["mqtt"],
+  "codeowners": [
+    "@sca075"
+  ],
+  "requirements": [
+    "pillow",
+    "numpy",
+    "paho-mqtt"
+  ],
+  "version": "v1.0.6",
+  "iot_class": "local_polling",
+  "config_flow": true
+}

@@ -4,14 +4,16 @@
     "step": {
       "user": {
         "data": {
-          "name": "Camera Name",
+          "name": "(optional) Camera Name",
           "vacuum_map": "Vacuum Map Entity ID",
-          "vacuum_entity": "Vacuum Entity ID"
+          "vacuum_entity": "Vacuum Entity ID",
+          "mqtt_user": "MQTT User Name",
+          "mqtt_password": "MQTT User Password"
         }
       }
     },
     "abort": {
-      "already_configured": "This device has already been configured."
+      "already_configured": "This add on has already been configured."
     }
   }
 }
