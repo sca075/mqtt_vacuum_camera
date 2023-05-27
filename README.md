@@ -1,12 +1,8 @@
 # valetudo_vacuum_mapper
 ## Integration for Valetudo Vacuums to Home Assistant
 
-### Acutal Status is:
-```
-git status
-git add
-git commit
-```
+### Acutal Status is: Tested Camera image retrival
+
 
 **background idea**:
 At today there is the possibility to connect the Vacuum Cleaners with Valetudo Firmware to Home Assistant via MQTT with have limited options. 
