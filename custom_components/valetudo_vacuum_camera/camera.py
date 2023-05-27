@@ -24,6 +24,8 @@ _LOGGER: logging.Logger = logging.getLogger(__name__)
 from .const import (
     CONF_VACUUM_CONNECTION_STRING,
     CONF_VACUUM_ENTITY_ID,
+    CONF_MQTT_USER,
+    CONF_MQTT_PASS,
     DEFAULT_NAME,
     ICON
 )
@@ -32,6 +34,8 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
         vol.Required(CONF_VACUUM_CONNECTION_STRING): cv.string,
         vol.Required(CONF_VACUUM_ENTITY_ID): cv.string,
+        vol.Optional(CONF_MQTT_USER): cv.string,
+        vol.Optional(CONF_MQTT_PASS): cv.string,
         vol.Optional(ICON): cv.icon,
         vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
     }
@@ -49,11 +53,13 @@ class ValetudoCamera(Camera):
         self._vacuum_entity = device_info.get(CONF_VACUUM_ENTITY_ID)
         self._attr_unique_id = str(device_info.get(CONF_VACUUM_ENTITY_ID) + "_camera")
         self._mqtt_listen_topic = str(device_info.get(CONF_VACUUM_CONNECTION_STRING))
+        self._mqtt_user = str(device_info.get(CONF_MQTT_USER))
+        self._mqtt_pass = str(device_info.get(CONF_MQTT_PASS))
 
-        self._mqtt = ValetudoConnector(self._mqtt_listen_topic, hass)
+        self._mqtt = ValetudoConnector(self._mqtt_user, self._mqtt_pass, self._mqtt_listen_topic, hass)
         self._map_handler = MapImageHandler()
 
-        self._session = requests.session()
+        #self._session = requests.session()
         self._vacuum_state = None
         self._frame_interval = 1
         self._vac_img_data = None
@@ -114,33 +120,27 @@ class ValetudoCamera(Camera):
     def update(self):
         _LOGGER.info("camera image update start")
 
-        test = self._mqtt.update_data()
-        #_LOGGER.debug("result: %s", str(test))
-
         try:
-            #test purpose only we retrive the json directly from the vacuum rest api
-            #the vacuum is connected via MQTT to a different ha instance
-            url = 'http://valetudo-silenttepidstinkbug.local/api/v2/robot/state/map'
-            headers = {'accept': 'application/json'}
+
+            parsed_json = self._mqtt.update_data()
             self._vac_json_data = "Success"
-            response = self._session.get(url, headers=headers, timeout=10)
 
         except Exception:
             self._vac_json_data = "Error"
             pass
         else:
-            resp_data = response.content
-            parsed_json = json.loads(resp_data.decode('utf-8'))
+            #resp_data = response.content
+            #parsed_json = json.loads(resp_data.decode('utf-8'))
+            if parsed_json is not None:
+                pil_img = self._map_handler.get_image_from_json(parsed_json)
+                self._vac_json_id = self._map_handler.get_json_id()
+                self._base = self._map_handler.get_charger_position()
+                self._current = self._map_handler.get_robot_position()
+                self._vac_img_data = self._map_handler.get_img_size()
 
-            pil_img = self._map_handler.get_image_from_json(parsed_json)
-            self._vac_json_id = self._map_handler.get_json_id()
-            self._base = self._map_handler.get_charger_position()
-            self._current = self._map_handler.get_robot_position()
-            self._vac_img_data = self._map_handler.get_img_size()
-
-            # Converting to bites the image got gtom json.
-            buffered = BytesIO()
-            pil_img.save(buffered, format="PNG")
-            bytes_data = buffered.getvalue()
-            self._image = bytes_data
-            return bytes_data
+                # Converting to bites the image got gtom json.
+                buffered = BytesIO()
+                pil_img.save(buffered, format="PNG")
+                bytes_data = buffered.getvalue()
+                self._image = bytes_data
+                return bytes_data
