@@ -14,7 +14,7 @@ class ValetudoConnector:
         self._mqtt = mqtt.Client("valetudo_connector")
         self._mqtt.on_connect = self.on_connect
         self._mqtt.on_message = self.on_message
-        self._mqtt.username_pw_set(username="username", password="password")
+        self._mqtt.username_pw_set(username="user", password="password")
         self._mqtt.connect_async(host=self._broker)
         self._mqtt.enable_bridge_mode()
         self._mqtt.loop_start()
@@ -22,14 +22,15 @@ class ValetudoConnector:
 
     def update_data(self):
         if self._payload:
-            self._payload = self._img_decoder.camera_message_received(self._payload)
-            return self._payload
+            _LOGGER.debug("Processing data from MQTT")
+            result = self._img_decoder.camera_message_received(self._payload)
+            return result
         else:
             return None
 
     def on_message(self, client, userdata, msg):
         self._payload = msg.payload
-        _LOGGER.debug("Received data from MQTT: %s", self._payload)
+        #_LOGGER.debug("Received data from MQTT: %s", self._payload)
 
 
     def on_connect(self, client, userdata, flags, rc):
