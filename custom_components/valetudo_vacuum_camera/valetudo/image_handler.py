@@ -16,7 +16,7 @@ from custom_components.valetudo_vacuum_camera.utils.colors import (
     color_grey,
 )
 
-class MapImageHandler(Image):
+class MapImageHandler(object):
     def __init__(self):
         self.img_size = None
         self.img_base_layer = None
@@ -145,7 +145,7 @@ class MapImageHandler(Image):
             x0, y0 = coord[0]
             try:
                 x1, y1 = coord[1]
-            except UnboundLocalError:
+            except IndexError:
                 x1 = x0
                 y1 = y0
             dx = abs(x1 - x0)
