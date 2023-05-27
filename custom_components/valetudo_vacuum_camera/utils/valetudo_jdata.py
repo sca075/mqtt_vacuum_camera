@@ -86,13 +86,13 @@ class RawToJson:
                     i += 2
 
                     self._jdata = chunkData[i:length].tobytes()
+                    _LOGGER.debug("data grabbed")
                     return self._jdata
-                    # noinspection PyUnreachableCode
-                    self.hass.loop.create_task(camera_message_received(payload))
 
 
     def camera_message_received(self, payload):
         # Process the camera data here
+        _LOGGER.debug("Decoding PNG to JSON")
         if payload is not None:
             try:
                 extract_data = self.extract_png_chunks(payload)
@@ -101,6 +101,7 @@ class RawToJson:
                 return None
             else:
                 if self._jdata or extract_data is not None:
+                    _LOGGER.debug("Extracting JSON")
                     dec_data = zlib.decompress(self._jdata).decode("utf-8")
                     json_data = dec_data
                     response = json.loads(json_data)
