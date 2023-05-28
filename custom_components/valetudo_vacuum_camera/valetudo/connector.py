@@ -11,6 +11,7 @@ class ValetudoConnector:
         self._mqtt_topic = mqtt_topic
         self._broker = "127.0.0.1"
         self._payload = None
+        self._data_in = False
         self._mqtt = mqtt.Client("valetudo_connector")
         self._mqtt.on_connect = self.on_connect
         self._mqtt.on_message = self.on_message
@@ -24,13 +25,19 @@ class ValetudoConnector:
         if self._payload:
             _LOGGER.debug("Processing data from MQTT")
             result = self._img_decoder.camera_message_received(self._payload)
+            self._data_in = False
             return result
         else:
+            self._data_in = False
             return None
+
+    def is_data_available(self):
+        return self._data_in
 
     def on_message(self, client, userdata, msg):
         self._payload = msg.payload
-        #_LOGGER.debug("Received data from MQTT: %s", self._payload)
+        self._data_in = True
+        _LOGGER.debug("Received data from MQTT")
 
 
     def on_connect(self, client, userdata, flags, rc):

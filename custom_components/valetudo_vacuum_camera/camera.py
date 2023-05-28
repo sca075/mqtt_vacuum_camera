@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 import logging
-import json
 from io import BytesIO
-import requests
 import voluptuous as vol
 from datetime import timedelta
 from typing import Optional
@@ -17,6 +15,7 @@ from homeassistant.util import Throttle
 
 from custom_components.valetudo_vacuum_camera.valetudo.connector import ValetudoConnector
 from custom_components.valetudo_vacuum_camera.valetudo.image_handler import MapImageHandler
+from custom_components.valetudo_vacuum_camera.valetudo.vacuum import Vacuum
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 #_LOGGER = logging.getLogger(__name__)
@@ -58,8 +57,8 @@ class ValetudoCamera(Camera):
 
         self._mqtt = ValetudoConnector(self._mqtt_user, self._mqtt_pass, self._mqtt_listen_topic, hass)
         self._map_handler = MapImageHandler()
+        self._vacuum_shared = Vacuum()
 
-        #self._session = requests.session()
         self._vacuum_state = None
         self._frame_interval = 1
         self._vac_img_data = None
@@ -118,29 +117,33 @@ class ValetudoCamera(Camera):
 
 
     def update(self):
-        _LOGGER.info("camera image update start")
 
-        try:
-
-            parsed_json = self._mqtt.update_data()
-            self._vac_json_data = "Success"
-
-        except Exception:
-            self._vac_json_data = "Error"
-            pass
+        #if we have data form MQTT we process the image
+        proces_data = self._mqtt.is_data_available()
+        _LOGGER.info("camera image update process: %s", proces_data)
+        if proces_data:
+            try:
+                parsed_json = self._mqtt.update_data()
+                self._vac_json_data = "Success"
+            except ValueError:
+                self._vac_json_data = "Error"
+                pass
+            else:
+                #just in case let's check that the data are available
+                if parsed_json is not None:
+                    pil_img = self._map_handler.get_image_from_json(parsed_json)
+                    self._vac_json_id = self._map_handler.get_json_id()
+                    self._base = self._map_handler.get_charger_position()
+                    self._current = self._map_handler.get_robot_position()
+                    self._vac_img_data = self._map_handler.get_img_size()
+                    # Converting to bites the image got gtom json.
+                    buffered = BytesIO()
+                    pil_img.save(buffered, format="PNG")
+                    bytes_data = buffered.getvalue()
+                    self._image = bytes_data
+                    self._vacuum_shared.set_last_image(bytes_data)
+                    return bytes_data
         else:
-            #resp_data = response.content
-            #parsed_json = json.loads(resp_data.decode('utf-8'))
-            if parsed_json is not None:
-                pil_img = self._map_handler.get_image_from_json(parsed_json)
-                self._vac_json_id = self._map_handler.get_json_id()
-                self._base = self._map_handler.get_charger_position()
-                self._current = self._map_handler.get_robot_position()
-                self._vac_img_data = self._map_handler.get_img_size()
-
-                # Converting to bites the image got gtom json.
-                buffered = BytesIO()
-                pil_img.save(buffered, format="PNG")
-                bytes_data = buffered.getvalue()
-                self._image = bytes_data
-                return bytes_data
+            #we don´t have data from MQTT, buffered image is return instead.
+            self._image = self._vacuum_shared.last_image_binary()
+            return self._image
