@@ -115,9 +115,7 @@ class ValetudoCamera(Camera):
     def should_poll(self) -> bool:
         return self._should_poll
 
-
     def update(self):
-
         #if we have data form MQTT we process the image
         proces_data = self._mqtt.is_data_available()
         _LOGGER.info("camera image update process: %s", proces_data)
