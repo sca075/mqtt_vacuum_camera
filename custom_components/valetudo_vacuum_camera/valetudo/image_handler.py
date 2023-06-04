@@ -243,7 +243,7 @@ class MapImageHandler(object):
             # The image is cropped 75% so that the last layer is smaller to be sent.
             img_np_array = self.crop_array(img_np_array, 25)
             # Conversion of NP array to PIL image
-            pil_img = Image.fromarray(img_np_array)
+            pil_img = Image.fromarray(img_np_array, mode="RGBA")
             return pil_img
         else:
             return None
