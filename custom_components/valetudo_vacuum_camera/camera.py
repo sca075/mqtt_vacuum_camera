@@ -116,10 +116,10 @@ class ValetudoCamera(Camera):
         return self._should_poll
 
     def update(self):
-        #if we have data form MQTT we process the image
+        # if we have data from MQTT we process the image
         proces_data = self._mqtt.is_data_available()
-        _LOGGER.info("camera image update process: %s", proces_data)
         if proces_data:
+            _LOGGER.info("camera image update process: %s", proces_data)
             try:
                 parsed_json = self._mqtt.update_data()
                 self._vac_json_data = "Success"
@@ -127,21 +127,20 @@ class ValetudoCamera(Camera):
                 self._vac_json_data = "Error"
                 pass
             else:
-                #just in case let's check that the data are available
+                # just in case let's check that the data are available
                 if parsed_json is not None:
                     pil_img = self._map_handler.get_image_from_json(parsed_json)
                     self._vac_json_id = self._map_handler.get_json_id()
                     self._base = self._map_handler.get_charger_position()
                     self._current = self._map_handler.get_robot_position()
                     self._vac_img_data = self._map_handler.get_img_size()
-                    # Converting to bites the image got gtom json.
-                    buffered = BytesIO()
-                    pil_img.save(buffered, format="PNG")
-                    bytes_data = buffered.getvalue()
-                    self._image = bytes_data
-                    self._vacuum_shared.set_last_image(bytes_data)
-                    return bytes_data
+                    # Converting to bytes the image got from json.
+                    self._image = pil_img.tobytes()
+                    self._vacuum_shared.set_last_image(self._image)
+                    _LOGGER.info("camera image update complete")
+                    return self._image
         else:
-            #we don´t have data from MQTT, buffered image is return instead.
+            # we don't have data from MQTT, buffered image is returned instead.
             self._image = self._vacuum_shared.last_image_binary()
+            _LOGGER.info("camera image from buffer")
             return self._image
