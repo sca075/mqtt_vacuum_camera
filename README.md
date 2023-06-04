@@ -20,15 +20,17 @@ camera:
         MQTT_User: "broker_user_name"
         MQTT_Password: "broker_password"
         scan_interval:
-            seconds: 5
+            seconds: 15
 ```
 
 To test this custom component we are using a PI4 with Home Assistant OS.
+It works in when setting the camera with, additionally it is possible with this card to operate the vacuum: 
+https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card/tree/master
  
 **The current tasks list is:**
 - [ ] Get from the json data predicted_path and selected_area. 
 - [ ] Grab the available consumable data form MQTT.
-- [ ] Fix config_flow in order to meet HA requirements.
-- [ ] Create the Services to go_to and area_clean (auto format MQTT message to publish).
+- [ ] Create the counters Reset functions for consumables.
+- [ ] Fix config_flow in order to meet HA requirements (including UniqueID).
 - [ ] Work out the card to manage the camera image, select area and go to function.
 
