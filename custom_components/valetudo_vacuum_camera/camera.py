@@ -6,11 +6,15 @@ import voluptuous as vol
 from datetime import timedelta
 from typing import Optional
 
-from homeassistant.components.camera import (Camera, PLATFORM_SCHEMA)
+from homeassistant.components.camera import (Camera,
+                                             ENTITY_ID_FORMAT,
+                                             PLATFORM_SCHEMA,
+                                             SUPPORT_ON_OFF)
 from homeassistant.const import (
     CONF_NAME,
 )
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers.reload import async_setup_reload_service
 from homeassistant.util import Throttle
 
 from custom_components.valetudo_vacuum_camera.valetudo.connector import ValetudoConnector
@@ -26,6 +30,8 @@ from .const import (
     CONF_MQTT_USER,
     CONF_MQTT_PASS,
     DEFAULT_NAME,
+    DOMAIN,
+    PLATFORMS,
     ICON
 )
 
@@ -42,6 +48,9 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     async_add_entities([ValetudoCamera(hass, config)])
+    # TODO manage the reload sequence (stop mqtt and restart the camera)
+    await async_setup_reload_service(hass, DOMAIN, PLATFORMS)
+    # TODO add the unique ID
 
 
 class ValetudoCamera(Camera):
@@ -51,7 +60,7 @@ class ValetudoCamera(Camera):
         self._name = device_info.get(CONF_NAME)
         self._vacuum_entity = device_info.get(CONF_VACUUM_ENTITY_ID)
         self._attr_unique_id = str(device_info.get(CONF_VACUUM_ENTITY_ID) + "_camera")
-        self._mqtt_listen_topic = str(device_info.get(CONF_VACUUM_CONNECTION_STRING))
+        self._mqtt_listen_topic = str(device_info.get(CONF_VACUUM_CONNECTION_STRING) + "/MapData/map-data-hass")
         self._mqtt_user = str(device_info.get(CONF_MQTT_USER))
         self._mqtt_pass = str(device_info.get(CONF_MQTT_PASS))
 
@@ -64,7 +73,7 @@ class ValetudoCamera(Camera):
         self._vac_img_data = None
         self._vac_json_data = None
         self._vac_json_id = None
-        self._image_scale = None
+        self._calibration_points = None
         self._base = None
         self._current = None
         self._temp_dir = "config/tmp"
@@ -99,15 +108,18 @@ class ValetudoCamera(Camera):
         self._should_poll = False
 
     @property
+    def supported_features(self) -> int:
+        return SUPPORT_ON_OFF
+
+    @property
     def extra_state_attributes(self):
         return {
             "vacuum_entity": self._vacuum_entity,
             "vacuum_status": self._vacuum_state,
-            "vacuum_json_data": self._vac_json_id,
+            "vacuum_json_id": self._vac_json_id,
             "robot_position": self._current,
-            "charger_position": self._base,
+            "calibration_points": self._calibration_points,
             "json_data": self._vac_json_data,
-            "unique_id": self._attr_unique_id,
             "listen_to": self._mqtt_listen_topic
         }
 
@@ -134,8 +146,12 @@ class ValetudoCamera(Camera):
                     self._base = self._map_handler.get_charger_position()
                     self._current = self._map_handler.get_robot_position()
                     self._vac_img_data = self._map_handler.get_img_size()
+                    self._calibration_points = self._map_handler.get_calibration_data()
                     # Converting to bytes the image got from json.
-                    self._image = pil_img.tobytes()
+                    buffered = BytesIO()
+                    pil_img.save(buffered, format="PNG")
+                    bytes_data = buffered.getvalue()
+                    self._image = bytes_data
                     self._vacuum_shared.set_last_image(self._image)
                     _LOGGER.info("camera image update complete")
                     return self._image
