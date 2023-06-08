@@ -19,6 +19,8 @@ from custom_components.valetudo_vacuum_camera.utils.colors import (
 class MapImageHandler(object):
     def __init__(self):
         self.img_size = None
+        self.crop_area = None
+        self.crop_img_size = None
         self.img_base_layer = None
         self.prev_base_layer = None
         self.path_pixels = None
@@ -76,14 +78,17 @@ class MapImageHandler(object):
         # Convert the image array to a PIL image
         return image_array
 
-    @staticmethod
-    def crop_array(image_array, crop_percentage):
+    def crop_array(self, image_array, crop_percentage):
         """Crops a numpy array and returns the cropped image and scale factor."""
         center_x = image_array.shape[1] // 2
         center_y = image_array.shape[0] // 2
         crop_size = int(min(center_x, center_y) * crop_percentage / 100)
         cropbox = (center_x - crop_size, center_y - crop_size, center_x + crop_size, center_y + crop_size)
+        self.crop_area =cropbox
+        _LOGGER.debug("Crop Box data: %s", self.crop_area)
         cropped = image_array[cropbox[1]:cropbox[3], cropbox[0]:cropbox[2]]
+        self.crop_img_size = (cropped.shape[1], cropped.shape[0])
+        _LOGGER.debug("Crop image size: %s", self.crop_img_size)
         return cropped
 
     @staticmethod
@@ -259,3 +264,32 @@ class MapImageHandler(object):
 
     def get_json_id(self):
         return self.json_id
+
+    def get_calibration_data(self):
+        calibration_data = []
+
+        # Calculate the calibration points in the vacuum coordinate system
+        vacuum_points = [
+            {"x": self.crop_area[0], "y": self.crop_area[1]},  # Top-left corner
+            {"x": self.crop_area[2], "y": self.crop_area[1]},  # Top-right corner
+            {"x": self.crop_area[2], "y": self.crop_area[3]},  # Bottom-right corner
+            {"x": self.crop_area[0], "y": self.crop_area[3]}   # Bottom-left corner (optional)
+        ]
+
+        # Calculate the corresponding map coordinates based on the crop image size
+        map_points = [
+            {"x": 0, "y": 0},                              # Top-left corner
+            {"x": self.crop_img_size[0], "y": 0},           # Top-right corner
+            {"x": self.crop_img_size[0], "y": self.crop_img_size[1]},  # Bottom-right corner
+            {"x": 0, "y": self.crop_img_size[1]}            # Bottom-left corner (optional)
+        ]
+
+        # Create the calibration data for each point
+        for vacuum_point, map_point in zip(vacuum_points, map_points):
+            calibration_point = {
+                "vacuum": vacuum_point,
+                "map": map_point
+            }
+            calibration_data.append(calibration_point)
+
+        return calibration_data
