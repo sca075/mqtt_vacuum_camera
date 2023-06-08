@@ -24,7 +24,7 @@ camera:
 ```
 
 To test this custom component we are using a PI4 with Home Assistant OS.
-It works in when setting the camera with, additionally it is possible with this card to operate the vacuum: 
+It works in when setting the camera with this card to operate the vacuum: 
 https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card/tree/master
  
 **The current tasks list is:**
