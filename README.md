@@ -1,8 +1,11 @@
 # valetudo_vacuum_mapper
 ## Integration for Valetudo Vacuums to Home Assistant
 <div align="center">
-<img src="img_1.png">
+    <a href="https://valetudo.cloud/pages/general/newcomer-guide.html">
+    <img src="img_1.png">
+    </a>
 </div>
+
 ### Acutal Status is: Tested Camera image retrival
 
 
@@ -30,12 +33,12 @@ To know the MQTT topic your_vacuum use you might use the vacuum web GUI.
   <img src="img.png" alt="Valetudo Connections Setting Menu">
 </div>
 
-To test this custom component we are using a PI4 with Home Assistant OS fully updated to the last version, this allow
+To test this custom component we are using a PI4 with Home Assistant OS fully updated [to the last version](https://www.home-assistant.io/faq/release/), this allow
 us to confirm that the component is working properly with Home Assistant.
 It works when setting the camera with the below card, then it is possible to operate the vacuum and the integration is 
 already providing the required calibration data therefore please use
-the below link and follow the detailed instruction on how to [setup Piotr Machowski card:]( 
-https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card/tree/master)
+the below link and follow the detailed instruction on how to [setup Piotr Machowski card]( 
+https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card/tree/master).
 
 
 in the card configuration you might configure as following the 
@@ -57,8 +60,8 @@ tiles:
 
 ```
  
-After that, you can easily generate the service calls to integrate via automations
-your Vacuum. 
+After that, you can easily generate the service calls to integrate or control
+your Vacuum via Home Assistant. 
 
 **The current tasks list is:**
 - [ ] Get from the json data predicted_path and selected_area. 
