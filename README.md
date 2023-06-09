@@ -2,7 +2,7 @@
 ## Integration for Valetudo Vacuums to Home Assistant
 <div align="center">
     <a href="https://valetudo.cloud/pages/general/newcomer-guide.html">
-    <img src="img_1.png">
+    <img src="images/img_1.png">
     </a>
 </div>
 
@@ -10,12 +10,12 @@
 
 
 **background idea**:
-At today there is the possibility to connect the Vacuum Cleaners with Valetudo Firmware to Home Assistant via MQTT with have limited options. 
+There is the possibility to connect the Vacuum Cleaners with Valetudo Firmware to Home Assistant via MQTT with have limited options. 
 This Custom Component allow to integrate the Vacuum functionalities and encode the Vacuum map. 
 The integration in the end will provide all sensors and maps data so that is possible to custom select the area to be cleaned, 
 go to a specific location, check and reset the consumables counters for maintenance purpose. 
 
-At current only the map can be display simply adding to configuration.yaml:
+At current the map can be display simply adding to configuration.yaml:
 
 ```
 camera:
@@ -29,8 +29,11 @@ camera:
 ```
 
 To know the MQTT topic your_vacuum use you might use the vacuum web GUI.
+copy the Topic Prefix/Identifier **only** please and past it as a sting in the
+vacuum_map required field.
+
 <div align="center">
-  <img src="img.png" alt="Valetudo Connections Setting Menu">
+  <img src="images/img.png" alt="Valetudo Connections Setting Menu">
 </div>
 
 To test this custom component we are using a PI4 with Home Assistant OS fully updated [to the last version](https://www.home-assistant.io/faq/release/), this allow
