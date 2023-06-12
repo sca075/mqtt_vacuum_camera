@@ -52,7 +52,6 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     await async_setup_reload_service(hass, DOMAIN, PLATFORMS)
     # TODO add the unique ID
 
-
 class ValetudoCamera(Camera):
     def __init__(self, hass, device_info):
         super().__init__()
@@ -102,9 +101,11 @@ class ValetudoCamera(Camera):
         return self._name
 
     def turn_on(self):
+        self._mqtt.connect()
         self._should_poll = True
 
     def turn_off(self):
+        self._mqtt.disconnect()
         self._should_poll = False
 
     @property
