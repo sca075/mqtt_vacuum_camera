@@ -1,4 +1,4 @@
-# valetudo_vacuum_mapper
+# Valetudo Vacuum Camera
 ## Integration for Valetudo Vacuums to Home Assistant
 <div align="center">
     <a href="https://valetudo.cloud/pages/general/newcomer-guide.html">
@@ -6,16 +6,15 @@
     </a>
 </div>
 
-### Acutal Status is: Tested Camera image retrival
+**Description:**:
+Extract the maps for rooted Vacuum Cleaners with Valetudo Firmware to Home Assistant via MQTT.
+This Custom Component allow to integrate the Vacuum functionalities and encode the Vacuum Map embedded on the image the vacuum send to mqtt.
+This Integration can retrive the vacuum map and render it to Home Assistant, when you want aslo to control your vacuum you will need to also install the lovelace-xiaomi-vacuum-map-card (reccomended) from HACS as well.
 
+### Current Release: v1.1.0
 
-**background idea**:
-There is the possibility to connect the Vacuum Cleaners with Valetudo Firmware to Home Assistant via MQTT with have limited options. 
-This Custom Component allow to integrate the Vacuum functionalities and encode the Vacuum map. 
-The integration in the end will provide all sensors and maps data so that is possible to custom select the area to be cleaned, 
-go to a specific location, check and reset the consumables counters for maintenance purpose. 
-
-At current the map can be display simply adding to configuration.yaml:
+### How to install:
+Using [HACS](https://hacs.xyz/) add integration, and copy the repository link in new reporsitory section. It is the most easy wy to setup the integration. Once installed the integration add to the configuration.yaml the following configuration lines:
 
 ```
 camera:
@@ -36,16 +35,16 @@ vacuum_map required field.
   <img src="images/img.png" alt="Valetudo Connections Setting Menu">
 </div>
 
-To test this custom component we are using a PI4 with Home Assistant OS fully updated [to the last version](https://www.home-assistant.io/faq/release/), this allow
+This custom component is developed and tested using a PI4 with Home Assistant OS fully updated [to the last version](https://www.home-assistant.io/faq/release/), this allow
 us to confirm that the component is working properly with Home Assistant.
-It works when setting the camera with the below card, then it is possible to operate the vacuum and the integration is 
-already providing the required calibration data therefore please use
-the below link and follow the detailed instruction on how to [setup Piotr Machowski card]( 
+It was developed to work in together with below card, that gives the possible to operate the vacuum and the integration is
+already providing the required calibration data. Please click on
+the link and follow the detailed instruction on how to [setup the lovelace-xiaomi-vacuum-map-card](
 https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card/tree/master).
 
 
-in the card configuration you might configure as following the 
-calibration_source and internal_variables:
+in the card configuration you might configure as following the
+calibration_source and internal_variables as following:
 ```
 
 type: custom:xiaomi-vacuum-map-card
@@ -62,12 +61,12 @@ tiles:
     .....
 
 ```
- 
+
 After that, you can easily generate the service calls to integrate or control
-your Vacuum via Home Assistant. 
+your Vacuum via Home Assistant.
 
 **The current tasks list is:**
-- [ ] Get from the json data predicted_path and selected_area. 
+- [ ] Get from the json data predicted_path and selected_area.
 - [ ] Grab the available consumable data form MQTT.
 - [ ] Confirm Reset functions for consumables.
 - [ ] Fix config_flow in order to meet HA requirements (including UniqueID).
