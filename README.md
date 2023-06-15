@@ -14,7 +14,9 @@ This Integration can decode the vacuum map and render it to Home Assistant, when
 ### Current Release: v1.1.0
 
 ### How to install:
-Using [HACS](https://hacs.xyz/) add integration, and copy the repository link in new reporsitory section. It is the most easy wy to setup the integration. Once installed the integration add to the configuration.yaml the following configuration lines:
+Using [HACS](https://hacs.xyz/) add integration, and copy the repository link in ***new repository*** section.
+Once installed the integration add to the configuration.yaml the following configuration lines:
+
 
 ```
 camera:
