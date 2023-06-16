@@ -14,6 +14,7 @@ This Integration can decode the vacuum map and render it to Home Assistant, when
 ### Changes on Release: v1.1.2
 - Integration Config Flow setup is now possible via Home Assistant UI.
 - The camera entity unique ID is provided to home assistant.
+- Fixed MQTT connection strings.
 
 
 ### How to install:
