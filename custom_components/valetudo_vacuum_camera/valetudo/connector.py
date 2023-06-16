@@ -45,10 +45,12 @@ class ValetudoConnector:
         self._mqtt.subscribe(self._mqtt_topic)
 
 
-    async def disconnect(self, rc=None):
+    async def disconnect_from_broker(self, rc=None):
         _LOGGER.debug("Disconnect from MQTT broker.")
         self._mqtt.disconnect(rc)
+        self._mqtt.loop_stop(True)
 
-    async def connect(self):
+    async def connect_broker(self):
         _LOGGER.debug("Connect MQTT broker.")
         self._mqtt.connect_async(host=self._broker)
+        self._mqtt.loop_start()
