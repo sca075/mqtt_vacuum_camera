@@ -11,11 +11,15 @@ Extract the maps for rooted Vacuum Cleaners with Valetudo Firmware to Home Assis
 This Custom Component allow to integrate the Vacuum functionalities and encode the Vacuum Map embedded on the image the vacuum send to mqtt.
 This Integration can decode the vacuum map and render it to Home Assistant, when you want also to control your vacuum you will need to also install the lovelace-xiaomi-vacuum-map-card (reccomended) from HACS as well.
 
-### Current Release: v1.1.0
+### Changes on Release: v1.1.2
+- Integration Config Flow setup is now possible via Home Assistant UI.
+- The camera entity unique ID is provided to home assistant.
+
 
 ### How to install:
 Using [HACS](https://hacs.xyz/) add integration, and copy the repository link in ***new repository*** section.
-Once installed the integration add to the configuration.yaml the following configuration lines:
+Once installed the integration can be configured via integration / add integration and search Valetudo Camera.
+If you prefer to add the integration via the configuration.yaml please use the following configuration lines:
 
 
 ```
@@ -23,8 +27,8 @@ camera:
     - platform: valetudo_vacuum_camera
         vacuum_entity: "vacuum.your_vacuum"
         vacuum_map: "valetudo/your_vacuum_topic"
-        MQTT_User: "broker_user_name"
-        MQTT_Password: "broker_password"
+        borker_User: "broker_user_name"
+        broker_Password: "broker_password"
         scan_interval:
             seconds: 15
 ```
@@ -71,6 +75,6 @@ your Vacuum via Home Assistant.
 - [ ] Get from the json data predicted_path and selected_area.
 - [ ] Grab the available consumable data form MQTT.
 - [ ] Confirm Reset functions for consumables.
-- [ ] Fix config_flow in order to meet HA requirements (including UniqueID).
-- [ ] Work out the card to manage the camera image, select area and go to function.
+- [x] Fix config_flow in order to meet HA requirements (including UniqueID).
+
 
