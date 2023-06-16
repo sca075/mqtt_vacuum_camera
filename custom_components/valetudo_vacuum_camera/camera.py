@@ -7,14 +7,20 @@ from datetime import timedelta
 from typing import Optional
 
 from homeassistant.components.camera import (Camera,
-                                             ENTITY_ID_FORMAT,
                                              PLATFORM_SCHEMA,
                                              SUPPORT_ON_OFF)
 from homeassistant.const import (
     CONF_NAME,
 )
 from homeassistant.helpers import config_validation as cv
+from homeassistant import core, config_entries
+from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.reload import async_setup_reload_service
+from homeassistant.helpers.typing import (
+    ConfigType,
+    DiscoveryInfoType,
+    HomeAssistantType,
+)
 from homeassistant.util import Throttle
 
 from custom_components.valetudo_vacuum_camera.valetudo.connector import ValetudoConnector
@@ -22,7 +28,6 @@ from custom_components.valetudo_vacuum_camera.valetudo.image_handler import MapI
 from custom_components.valetudo_vacuum_camera.valetudo.vacuum import Vacuum
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
-#_LOGGER = logging.getLogger(__name__)
 
 from .const import (
     CONF_VACUUM_CONNECTION_STRING,
@@ -31,28 +36,39 @@ from .const import (
     CONF_MQTT_PASS,
     DEFAULT_NAME,
     DOMAIN,
-    PLATFORMS,
-    ICON
+    PLATFORMS
 )
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
         vol.Required(CONF_VACUUM_CONNECTION_STRING): cv.string,
         vol.Required(CONF_VACUUM_ENTITY_ID): cv.string,
-        vol.Optional(CONF_MQTT_USER): cv.string,
-        vol.Optional(CONF_MQTT_PASS): cv.string,
-        vol.Optional(ICON): cv.icon,
+        vol.Required(CONF_MQTT_USER): cv.string,
+        vol.Required(CONF_MQTT_PASS): cv.string,
         vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
     }
 )
 
-async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
+async def async_setup_entry(
+        hass: core.HomeAssistant,
+        config_entry: config_entries.ConfigEntry,
+        async_add_entities,
+) -> None:
+    """Setup sensors from a config entry created in the integrations UI."""
+    config = hass.data[DOMAIN][config_entry.entry_id]
+    # Update our config to and eventually add or remove option.
+    if config_entry.options:
+        config.update(config_entry.options)
+    camera = [ValetudoCamera(Camera, config)]
+    async_add_entities(camera, update_before_add=True)
+
+async def async_setup_platform(hass: HomeAssistantType, config: ConfigType, async_add_entities,
+                               discovery_info: DiscoveryInfoType | None = None):
     async_add_entities([ValetudoCamera(hass, config)])
     # TODO manage the reload sequence (stop mqtt and restart the camera)
     await async_setup_reload_service(hass, DOMAIN, PLATFORMS)
-    # TODO add the unique ID
 
-class ValetudoCamera(Camera):
+class ValetudoCamera(Camera, Entity):
     def __init__(self, hass, device_info):
         super().__init__()
         self.hass = hass
@@ -101,11 +117,11 @@ class ValetudoCamera(Camera):
         return self._name
 
     def turn_on(self):
-        self._mqtt.connect()
+        self._mqtt.connect_broker()
         self._should_poll = True
 
     def turn_off(self):
-        self._mqtt.disconnect()
+        self._mqtt.disconnect_from_broker()
         self._should_poll = False
 
     @property
