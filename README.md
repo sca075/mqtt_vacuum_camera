@@ -9,12 +9,11 @@
 **Description:**
 Extract the maps for rooted Vacuum Cleaners with Valetudo Firmware to Home Assistant via MQTT.
 This Custom Component allow to integrate the Vacuum functionalities and encode the Vacuum Map embedded on the image the vacuum send to mqtt.
-This Integration can decode the vacuum map and render it to Home Assistant, when you want also to control your vacuum you will need to also install the lovelace-xiaomi-vacuum-map-card (reccomended) from HACS as well.
+This Integration can decode the vacuum map and render it to Home Assistant, when you want also to control your vacuum you will need to also install the lovelace-xiaomi-vacuum-map-card (recommended) from HACS as well.
 
-### Changes on Release: v1.1.2
-- Integration Config Flow setup is now possible via Home Assistant UI.
-- The camera entity unique ID is provided to home assistant.
-- Fixed MQTT connection strings.
+### Changes on Release: v1.1.3
+- Added the predicted path, it will be display while vacuum go_to command is executed.
+- Added selected cleaning zone to be display.
 
 
 ### How to install:
@@ -35,18 +34,18 @@ camera:
 ```
 
 To know the MQTT topic your_vacuum use you might use the vacuum web GUI.
-copy the Topic Prefix/Identifier **only** please and past it as a sting in the
+copy the Topic Prefix/Identifier **only**. Please and past it as a sting in the
 vacuum_map required field.
 
 <div align="center">
   <img src="images/img.png" alt="Valetudo Connections Setting Menu">
 </div>
 
-This custom component is developed and tested using a PI4 with Home Assistant OS fully updated [to the last version](https://www.home-assistant.io/faq/release/), this allow
+This custom component is developed and tested using a PI4 with Home Assistant OS fully updated [to the last version](https://www.home-assistant.io/faq/release/), this allows
 us to confirm that the component is working properly with Home Assistant.
 It was developed to work in together with below card, that gives the possible to operate the vacuum and the integration is
 already providing the required calibration data. Please click on
-the link and follow the detailed instruction on how to [setup the lovelace-xiaomi-vacuum-map-card](
+the link and follow the detailed instruction on how to [set up the lovelace-xiaomi-vacuum-map-card](
 https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card/tree/master).
 
 
@@ -73,7 +72,7 @@ After that, you can easily generate the service calls to integrate or control
 your Vacuum via Home Assistant.
 
 **The current tasks list is:**
-- [ ] Get from the json data predicted_path and selected_area.
+- [x] Get from the json data predicted_path and selected_area.
 - [ ] Grab the available consumable data form MQTT.
 - [ ] Confirm Reset functions for consumables.
 - [x] Fix config_flow in order to meet HA requirements (including UniqueID).

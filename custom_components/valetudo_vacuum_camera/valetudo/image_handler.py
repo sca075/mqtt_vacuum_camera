@@ -2,6 +2,7 @@
 import logging
 
 import numpy as np
+import math
 from PIL import Image, ImageDraw
 
 _LOGGER = logging.getLogger(__name__)
@@ -128,15 +129,34 @@ class MapImageHandler(object):
         return cropped
 
     @staticmethod
-    def draw_robot(layers, x, y, angle, robot_color):
-        radius = 25
+    def draw_robot(layers, x, y, angle, fill):
         tmpimg = Image.fromarray(np.zeros_like(layers))
         draw = ImageDraw.Draw(tmpimg)
-        draw.ellipse((x - radius, y - radius, x + radius, y + radius), fill=robot_color, outline=robot_color)
-        lidar_angle = np.deg2rad(angle - 90)  # Convert angle to radians and adjust for LIDAR orientation
-        lidar_x = int(x + 9 * np.cos(lidar_angle))  # Calculate LIDAR endpoint x-coordinate
-        lidar_y = int(y + 9 * np.sin(lidar_angle))  # Calculate LIDAR endpoint y-coordinate
-        draw.line((x, y, lidar_x, lidar_y), fill=color_grey, width=5)
+        outline = (
+            (fill[0]) // 2,
+            (fill[1]) // 2,
+            (fill[2]) // 2
+        )
+        radius = 25
+        r_scaled = radius // 11
+        #draw the robot outline
+        draw.ellipse((x - radius, y - radius, x + radius, y + radius), fill=fill, outline=outline)
+        #draw bin cover
+        r_cover = r_scaled * 12
+        angle = angle - 80
+        lidar_angle = np.deg2rad(angle+170)  # Convert angle to radians and adjust for LIDAR orientation
+        a1 = (((angle+80) - 104) / 180 * math.pi)
+        a2 = (((angle+80) + 104) / 180 * math.pi)
+        x1 = int(x - r_cover * math.sin(a1))
+        y1 = int(y + r_cover * math.cos(a1))
+        x2 = int(x - r_cover * math.sin(a2))
+        y2 = int(y + r_cover * math.cos(a2))
+        draw.line((x1, y1, x2, y2), fill=outline, width=1)
+        #Draw Lidar
+        lidar_x = int(x + 15 * np.cos(lidar_angle))  # Calculate LIDAR endpoint x-coordinate
+        lidar_y = int(y + 15 * np.sin(lidar_angle))  # Calculate LIDAR endpoint y-coordinate
+        r_lidar = r_scaled * 3
+        draw.ellipse((lidar_x - r_lidar, lidar_y - r_lidar, lidar_x + r_lidar, lidar_y + r_lidar), fill=outline, width=5)
         # Convert the PIL image back to a Numpy array
         return np.array(tmpimg)
 
@@ -256,10 +276,6 @@ class MapImageHandler(object):
 
             #Zone cleaning area if any
             zone_clean = self.find_zone_entities(m_json, None)
-            if zone_clean:
-                zone_clean = zone_clean.get("active_zone")
-                zone_clean = zone_clean[0]["points"]
-                zone_clean = self.sublist(zone_clean, 2)
 
             #Saerching the "points" robot, charger and go_to
             entity_dict = self.find_points_entities(m_json, None)
@@ -298,7 +314,12 @@ class MapImageHandler(object):
             # Numpy array pixels positions and colours computation
             img_np_array = self.from_json_to_image(flour_pixels, pixel_size, color_home_background)
             if zone_clean:
-                img_np_array = self.draw_rectangle(zone_clean, img_np_array, (0, 255, 0, 16))
+                zones_clean = zone_clean.get("active_zone")
+                tot_zones = len(zones_clean)-1
+                while tot_zones >= 0:
+                    tot_zones = tot_zones -1
+                    img_np_array = self.draw_rectangle((zones_clean[tot_zones]["points"]),
+                                                       img_np_array, (0, 255, 0, 16))
             img_np_array = img_np_array + self.from_json_to_image(walls_pixels, pixel_size, color_wall)
             if charger_pos:
                 img_np_array = self.draw_battery_charger(img_np_array,
