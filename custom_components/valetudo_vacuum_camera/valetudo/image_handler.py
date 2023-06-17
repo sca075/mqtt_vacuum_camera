@@ -65,6 +65,42 @@ class MapImageHandler(object):
         return entity_dict
 
     @staticmethod
+    def find_paths_entities(json_obj, entity_dict=None):
+        if entity_dict is None:
+            entity_dict = {}
+        if isinstance(json_obj, dict):
+            if '__class' in json_obj and json_obj['__class'] == 'PathMapEntity':
+                entity_type = json_obj.get('type')
+                if entity_type:
+                    if entity_type not in entity_dict:
+                        entity_dict[entity_type] = []
+                    entity_dict[entity_type].append(json_obj)
+            for key, value in json_obj.items():
+                MapImageHandler.find_paths_entities(value, entity_dict)
+        elif isinstance(json_obj, list):
+            for item in json_obj:
+                MapImageHandler.find_paths_entities(item, entity_dict)
+        return entity_dict
+
+    @staticmethod
+    def find_zone_entities(json_obj, entity_dict=None):
+        if entity_dict is None:
+            entity_dict = {}
+        if isinstance(json_obj, dict):
+            if '__class' in json_obj and json_obj['__class'] == 'PolygonMapEntity':
+                entity_type = json_obj.get('type')
+                if entity_type:
+                    if entity_type not in entity_dict:
+                        entity_dict[entity_type] = []
+                    entity_dict[entity_type].append(json_obj)
+            for key, value in json_obj.items():
+                MapImageHandler.find_zone_entities(value, entity_dict)
+        elif isinstance(json_obj, list):
+            for item in json_obj:
+                MapImageHandler.find_zone_entities(item, entity_dict)
+        return entity_dict
+
+    @staticmethod
     def from_json_to_image( data, pixel_size, color):
         # Create an array of zeros for the image
         image_array = np.zeros((5120, 5120, 4), dtype=np.uint8)
@@ -142,6 +178,21 @@ class MapImageHandler(object):
         layer = np.array(tmp_img)
         return layer
 
+    #Draw cleaning selected area
+    @staticmethod
+    def draw_rectangle(coordinates, layer, color):
+        # Create an Image object from the numpy array
+        tmp_img = Image.fromarray(layer)
+
+        # Draw rectangle on the image
+        draw = ImageDraw.Draw(tmp_img)
+        draw.polygon(coordinates, fill=color, outline=color_grey, width=1)
+
+        # Convert the Image object back to the numpy array
+        out_layer = np.array(tmp_img)
+
+        return out_layer
+
     # Draw line within given coordinates x,y and add it to the array in input
     @staticmethod
     def draw_lines(arr, coords, width, color):
@@ -193,6 +244,23 @@ class MapImageHandler(object):
             }
 
             self.json_id = m_json["metaData"]["nonce"]
+
+            #Predicted path if any
+            predicted_pat2 = None
+            predicted_path = self.find_paths_entities(m_json, None)
+            predicted_path = predicted_path.get("predicted_path")
+            if predicted_path:
+                predicted_path = predicted_path[0]["points"]
+                predicted_path = self.sublist(predicted_path, 2)
+                predicted_pat2 = self.sublist_join(predicted_path, 2)
+
+            #Zone cleaning area if any
+            zone_clean = self.find_zone_entities(m_json, None)
+            if zone_clean:
+                zone_clean = zone_clean.get("active_zone")
+                zone_clean = zone_clean[0]["points"]
+                zone_clean = self.sublist(zone_clean, 2)
+
             #Saerching the "points" robot, charger and go_to
             entity_dict = self.find_points_entities(m_json, None)
             robot_pos = entity_dict.get("robot_position")
@@ -204,11 +272,12 @@ class MapImageHandler(object):
                 "angle": robot_position_angle
             }
             charger_pos = entity_dict.get("charger_location")
-            charger_pos = charger_pos[0]["points"]
-            self.charger_pos = {
-                "x": charger_pos[0],
-                "y": charger_pos[1],
-            }
+            if charger_pos:
+                charger_pos = charger_pos[0]["points"]
+                self.charger_pos = {
+                    "x": charger_pos[0],
+                    "y": charger_pos[1],
+                }
             go_to = entity_dict.get("go_to_target")
 
             """Calibration data of the result image
@@ -228,17 +297,22 @@ class MapImageHandler(object):
 
             # Numpy array pixels positions and colours computation
             img_np_array = self.from_json_to_image(flour_pixels, pixel_size, color_home_background)
+            if zone_clean:
+                img_np_array = self.draw_rectangle(zone_clean, img_np_array, (0, 255, 0, 16))
             img_np_array = img_np_array + self.from_json_to_image(walls_pixels, pixel_size, color_wall)
-            img_np_array = self.draw_battery_charger(img_np_array,
-                                                     charger_pos[0],
-                                                     charger_pos[1],
-                                                     color_charger)
-            self.img_base_layer = img_np_array # Store flour, walls and charger combined NP array.
+            if charger_pos:
+                img_np_array = self.draw_battery_charger(img_np_array,
+                                                         charger_pos[0],
+                                                         charger_pos[1],
+                                                         color_charger)
+            #self.img_base_layer = img_np_array # Store flour, walls and charger combined NP array.
             if go_to: # if we have a goto position draw the flag end point.
                 img_np_array = self.draw_go_to_flag((go_to[0]["points"][0],
                                                      go_to[0]["points"][1]),
                                                     img_np_array)
-            # finally let´s add the robot layer.
+            # finally let´s add the robot layer
+            if predicted_pat2:
+                img_np_array = self.draw_lines(img_np_array, predicted_pat2, 2, color_grey)
             img_np_array = self.draw_lines(img_np_array, path_pixel2, 5, color_move)
             img_np_array = img_np_array + self.draw_robot(img_np_array,
                                                           robot_position[0],
