@@ -1,12 +1,14 @@
+# Image Handler Module
+# Collection of routines to extract data from the received json.
+# It returns values and images relative to the Map Data extrapolated from the vacuum json.
 
 import logging
+import math
 
 import numpy as np
-import math
 from PIL import Image, ImageDraw
 
 _LOGGER = logging.getLogger(__name__)
-
 
 from custom_components.valetudo_vacuum_camera.utils.colors import (
     color_charger,
@@ -34,6 +36,10 @@ class MapImageHandler(object):
     def sublist(lst, n):
         return [lst[i:i+n] for i in range(0, len(lst), n)]
 
+    #@staticmethod
+    #def sublist_join(lst, n):
+    #    return [[lst[i+j] for j in range(n)] for i in range(0, len(lst)-n+1, n)]
+    #old working version replaced above
     @staticmethod
     def sublist_join(lst, n):
         result = []
@@ -102,10 +108,9 @@ class MapImageHandler(object):
         return entity_dict
 
     @staticmethod
-    def from_json_to_image( data, pixel_size, color):
+    def from_json_to_image(data, pixel_size, color):
         # Create an array of zeros for the image
         image_array = np.zeros((5120, 5120, 4), dtype=np.uint8)
-
         # Draw rectangles for each point in data
         for x, y, z in data:
             for i in range(z):
@@ -132,31 +137,37 @@ class MapImageHandler(object):
     def draw_robot(layers, x, y, angle, fill):
         tmpimg = Image.fromarray(np.zeros_like(layers))
         draw = ImageDraw.Draw(tmpimg)
+        # Outline colour from fill colour
         outline = (
             (fill[0]) // 2,
             (fill[1]) // 2,
             (fill[2]) // 2
         )
-        radius = 25
-        r_scaled = radius // 11
-        #draw the robot outline
+        radius = 25 # Radius of the vacuum constant
+        r_scaled = radius // 11 # Offset scale for placement of the objects.
+        # Draw the robot outline
         draw.ellipse((x - radius, y - radius, x + radius, y + radius), fill=fill, outline=outline)
-        #draw bin cover
+        # Draw bin cover
         r_cover = r_scaled * 12
         angle = angle - 80
-        lidar_angle = np.deg2rad(angle+170)  # Convert angle to radians and adjust for LIDAR orientation
-        a1 = (((angle+80) - 104) / 180 * math.pi)
-        a2 = (((angle+80) + 104) / 180 * math.pi)
+        a1 = (((angle+80) - 80) / 180 * math.pi)
+        a2 = (((angle+80) + 80) / 180 * math.pi)
         x1 = int(x - r_cover * math.sin(a1))
         y1 = int(y + r_cover * math.cos(a1))
         x2 = int(x - r_cover * math.sin(a2))
         y2 = int(y + r_cover * math.cos(a2))
         draw.line((x1, y1, x2, y2), fill=outline, width=1)
-        #Draw Lidar
-        lidar_x = int(x + 15 * np.cos(lidar_angle))  # Calculate LIDAR endpoint x-coordinate
-        lidar_y = int(y + 15 * np.sin(lidar_angle))  # Calculate LIDAR endpoint y-coordinate
-        r_lidar = r_scaled * 3
+        # draw Lidar
+        lidar_angle = np.deg2rad(angle+170)  # Convert angle to radians and adjust for LIDAR orientation
+        lidar_x = int(x + 15 * np.cos(lidar_angle))  # Calculate LIDAR x-coordinate
+        lidar_y = int(y + 15 * np.sin(lidar_angle))  # Calculate LIDAR y-coordinate
+        r_lidar = r_scaled * 3 # Scale factor for the lidar
         draw.ellipse((lidar_x - r_lidar, lidar_y - r_lidar, lidar_x + r_lidar, lidar_y + r_lidar), fill=outline, width=5)
+        # Draw Button
+        r_button = r_scaled * 1 # scale factor of the button
+        butt_x = int(x - 20 * np.cos(lidar_angle)) # Calculate the button x-coordinate
+        butt_y = int(y - 20 * np.sin(lidar_angle)) # Calculate the button y-coordinate
+        draw.ellipse((butt_x - r_button, butt_y - r_button, butt_x + r_button, butt_y + r_button), fill=outline, width=1)
         # Convert the PIL image back to a Numpy array
         return np.array(tmpimg)
 
@@ -171,46 +182,53 @@ class MapImageHandler(object):
         end_col = start_col + charger_width
         # Fill in the charger rectangle with the specified color
         layers[start_row:end_row, start_col:end_col] = color
-
         return layers
 
     @staticmethod
-    def draw_go_to_flag(center, layer):
+    def draw_go_to_flag(layer, center):
         # Define flag color
-        flag_color = (0, 255, 0)  # RGB color (green)
+        flag_color = (0, 255, 0, 127)  # RGBA color (green)
         # Define flag size and position
         flag_size = 40
-        x1 = center[0] - flag_size // 2
         y1 = center[1] - flag_size // 2
         x2 = center[0] + flag_size // 2
-        y2 = center[1] + flag_size // 2
+        y2 = y1+(flag_size//4)
+        # Define pole end position
+        y3 = center[1] + flag_size // 2
         # Create an Image object from the layer array
         tmp_img = Image.fromarray(layer)
-
         # Draw flag on layer
         draw = ImageDraw.Draw(tmp_img)
-        draw.rectangle((x1, y1, x2, y2), fill=flag_color)
+        draw.polygon([center[0],center[1],x2,y2,center[0],y1], fill=flag_color)
         # Draw flag pole
-        pole_width = 5
-        pole_color = (0, 0, 255, 255)  # RGB color (blue)
-        draw.rectangle((center[0] - pole_width // 2, y1, center[0] + pole_width // 2, y2), fill=pole_color)
+        pole_width = 3
+        pole_color = (0, 0, 255, 255)  # RGBA color (blue)
+        draw.rectangle((center[0] - pole_width // 2, y1, center[0] + pole_width // 2, y3), fill=pole_color)
         # Convert the Image object back to the numpy array
         layer = np.array(tmp_img)
         return layer
 
     #Draw cleaning selected area
     @staticmethod
-    def draw_rectangle(coordinates, layer, color):
+    def draw_zone_clean(coordinates, layers, color):
         # Create an Image object from the numpy array
-        tmp_img = Image.fromarray(layer)
-
+        tmp_img = Image.fromarray(np.zeros_like(layers))
+        outline = (
+            (color[0]) // 2,
+            (color[1]) // 2,
+            (color[2]) // 2
+        )
         # Draw rectangle on the image
         draw = ImageDraw.Draw(tmp_img)
-        draw.polygon(coordinates, fill=color, outline=color_grey, width=1)
-
+        tot_zones = len(coordinates)-1
+        while tot_zones >= 0:
+            tot_zones = tot_zones -1
+            draw.polygon((coordinates[tot_zones]["points"]), fill=color, outline=outline, width=1)
         # Convert the Image object back to the numpy array
+        tmp_img = layers + tmp_img
         out_layer = np.array(tmp_img)
-
+        #free memory
+        del tmp_img, tot_zones, draw, outline
         return out_layer
 
     # Draw line within given coordinates x,y and add it to the array in input
@@ -315,11 +333,8 @@ class MapImageHandler(object):
             img_np_array = self.from_json_to_image(flour_pixels, pixel_size, color_home_background)
             if zone_clean:
                 zones_clean = zone_clean.get("active_zone")
-                tot_zones = len(zones_clean)-1
-                while tot_zones >= 0:
-                    tot_zones = tot_zones -1
-                    img_np_array = self.draw_rectangle((zones_clean[tot_zones]["points"]),
-                                                       img_np_array, (0, 255, 0, 16))
+                img_np_array = self.draw_zone_clean(zones_clean,
+                                                    img_np_array, (0, 0, 255, 64))
             img_np_array = img_np_array + self.from_json_to_image(walls_pixels, pixel_size, color_wall)
             if charger_pos:
                 img_np_array = self.draw_battery_charger(img_np_array,
@@ -328,9 +343,9 @@ class MapImageHandler(object):
                                                          color_charger)
             #self.img_base_layer = img_np_array # Store flour, walls and charger combined NP array.
             if go_to: # if we have a goto position draw the flag end point.
-                img_np_array = self.draw_go_to_flag((go_to[0]["points"][0],
-                                                     go_to[0]["points"][1]),
-                                                    img_np_array)
+                img_np_array = self.draw_go_to_flag(img_np_array,
+                                                    (go_to[0]["points"][0],
+                                                     go_to[0]["points"][1]))
             # finally let´s add the robot layer
             if predicted_pat2:
                 img_np_array = self.draw_lines(img_np_array, predicted_pat2, 2, color_grey)
