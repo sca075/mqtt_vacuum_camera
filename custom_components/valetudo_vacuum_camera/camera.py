@@ -29,7 +29,7 @@ from custom_components.valetudo_vacuum_camera.valetudo.vacuum import Vacuum
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
-SCAN_INTERVAL = timedelta(seconds=10)
+SCAN_INTERVAL = timedelta(seconds=5)
 
 from .const import (
     CONF_VACUUM_CONNECTION_STRING,

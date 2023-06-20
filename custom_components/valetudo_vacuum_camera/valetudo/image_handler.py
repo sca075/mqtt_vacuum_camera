@@ -36,21 +36,11 @@ class MapImageHandler(object):
     def sublist(lst, n):
         return [lst[i:i+n] for i in range(0, len(lst), n)]
 
-    #@staticmethod
-    #def sublist_join(lst, n):
-    #    return [[lst[i+j] for j in range(n)] for i in range(0, len(lst)-n+1, n)]
-    #old working version replaced above
     @staticmethod
     def sublist_join(lst, n):
-        result = []
-        sub = [lst[0]]
-        for i in range(1, len(lst)):
-            sub.append(lst[i])
-            if len(sub) == n:
-                result.append(sub)
-                sub = [lst[i]]
-        if sub:
-            result.append(sub)
+        arr = np.array(lst)
+        num_windows = len(lst) - n + 1
+        result = [arr[i:i+n].tolist() for i in range(num_windows)]
         return result
 
     @staticmethod
@@ -58,13 +48,11 @@ class MapImageHandler(object):
         if entity_dict is None:
             entity_dict = {}
         if isinstance(json_obj, dict):
-            if '__class' in json_obj and json_obj['__class'] == 'PointMapEntity':
+            if json_obj.get('__class') == 'PointMapEntity':
                 entity_type = json_obj.get('type')
                 if entity_type:
-                    if entity_type not in entity_dict:
-                        entity_dict[entity_type] = []
-                    entity_dict[entity_type].append(json_obj)
-            for key, value in json_obj.items():
+                    entity_dict.setdefault(entity_type, []).append(json_obj)
+            for value in json_obj.values():
                 MapImageHandler.find_points_entities(value, entity_dict)
         elif isinstance(json_obj, list):
             for item in json_obj:
@@ -76,13 +64,11 @@ class MapImageHandler(object):
         if entity_dict is None:
             entity_dict = {}
         if isinstance(json_obj, dict):
-            if '__class' in json_obj and json_obj['__class'] == 'PathMapEntity':
+            if json_obj.get('__class') == 'PathMapEntity':
                 entity_type = json_obj.get('type')
                 if entity_type:
-                    if entity_type not in entity_dict:
-                        entity_dict[entity_type] = []
-                    entity_dict[entity_type].append(json_obj)
-            for key, value in json_obj.items():
+                    entity_dict.setdefault(entity_type, []).append(json_obj)
+            for value in json_obj.values():
                 MapImageHandler.find_paths_entities(value, entity_dict)
         elif isinstance(json_obj, list):
             for item in json_obj:
@@ -94,13 +80,11 @@ class MapImageHandler(object):
         if entity_dict is None:
             entity_dict = {}
         if isinstance(json_obj, dict):
-            if '__class' in json_obj and json_obj['__class'] == 'PolygonMapEntity':
+            if json_obj.get('__class') == 'PolygonMapEntity':
                 entity_type = json_obj.get('type')
                 if entity_type:
-                    if entity_type not in entity_dict:
-                        entity_dict[entity_type] = []
-                    entity_dict[entity_type].append(json_obj)
-            for key, value in json_obj.items():
+                    entity_dict.setdefault(entity_type, []).append(json_obj)
+            for value in json_obj.values():
                 MapImageHandler.find_zone_entities(value, entity_dict)
         elif isinstance(json_obj, list):
             for item in json_obj:
@@ -208,7 +192,6 @@ class MapImageHandler(object):
         layer = np.array(tmp_img)
         return layer
 
-    #Draw cleaning selected area
     @staticmethod
     def draw_zone_clean(coordinates, layers, color):
         # Create an Image object from the numpy array
@@ -231,7 +214,6 @@ class MapImageHandler(object):
         del tmp_img, tot_zones, draw, outline
         return out_layer
 
-    # Draw line within given coordinates x,y and add it to the array in input
     @staticmethod
     def draw_lines(arr, coords, width, color):
         for coord in coords:
