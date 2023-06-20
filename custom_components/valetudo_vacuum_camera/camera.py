@@ -76,7 +76,6 @@ class ValetudoCamera(Camera, Entity):
         self.hass = hass
         self._name = device_info.get(CONF_NAME)
         self._vacuum_entity = device_info.get(CONF_VACUUM_ENTITY_ID)
-        self._attr_unique_id = str(device_info.get(CONF_VACUUM_ENTITY_ID) + "_camera")
         self._mqtt_listen_topic = str(device_info.get(CONF_VACUUM_CONNECTION_STRING) + "/MapData/map-data-hass")
         self._mqtt_user = str(device_info.get(CONF_MQTT_USER))
         self._mqtt_pass = str(device_info.get(CONF_MQTT_PASS))

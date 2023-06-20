@@ -3,7 +3,6 @@
   "name": "Valetudo Vacuum Camera",
   "documentation": "https://github.com/sca075/valetudo_vacuum_mapper",
   "issue_tracker": "https://github.com/sca075/valetudo_vacuum_mapper/issues",
-  "dependencies": ["mqtt"],
   "codeowners": [
     "@sca075"
   ],
