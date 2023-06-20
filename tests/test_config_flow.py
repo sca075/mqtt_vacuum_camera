@@ -2,8 +2,7 @@
 from unittest import mock
 from unittest.mock import AsyncMock, patch
 
-#from gidgethub import BadRequest
-from homeassistant.const import CONF_ACCESS_TOKEN, CONF_NAME, CONF_PATH
+from homeassistant.const import CONF_NAME, CONF_PATH
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -15,7 +14,7 @@ from custom_components.valetudo_vacuum_camera.const import DOMAIN, CONF_VACUUM_E
 
 @pytest.mark.asyncio
 async def test_flow_user_init(hass):
-    """Test the initialization of the form in the first step of the config flow."""
+    """Test the initialization of the form for step of the config flow."""
     result = await hass.config_entries.flow.async_init(
         config_flow.DOMAIN, context={"source": "user"}
     )
@@ -53,11 +52,11 @@ async def test_flow_user_init_form(hass):
 
 @pytest.mark.asyncio
 @patch("custom_components.valetudo_vacuum_camera.config_flow.GitHubAPI")
-async def test_flow_user_creates_config_entry(m_github, hass):
+async def test_flow_user_creates_config_entry(user_input, hass):
     """Test the config entry is successfully created."""
     m_instance = AsyncMock()
     m_instance.getitem = AsyncMock()
-    m_github.return_value = m_instance
+    user_input.return_value = m_instance
     config_flow.ValetudoCameraFlowHandler.data = {
         "name": user_input.get(CONF_NAME),
         "vacuum_entity": user_input.get(CONF_VACUUM_ENTITY_ID),
@@ -76,7 +75,7 @@ async def test_flow_user_creates_config_entry(m_github, hass):
         user_input={CONF_PATH: "home-assistant/core"},
     )
     expected = {
-        "context": {"source": "repo"},
+        "context": {"source": "user"},
         "version": 1,
         "type": "create_entry",
         "flow_id": mock.ANY,
