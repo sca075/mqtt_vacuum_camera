@@ -9,7 +9,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from custom_components.valetudo_vacuum_camera import config_flow
 from custom_components.valetudo_vacuum_camera.const import DOMAIN, CONF_VACUUM_ENTITY_ID, \
     CONF_MQTT_USER, \
-    CONF_MQTT_PASS, CONF_VACUUM_CONNECTION_STRING
+    CONF_MQTT_PASS, CONF_VACUUM_CONNECTION_STRING, DEFAULT_NAME
 
 
 @pytest.mark.asyncio
@@ -42,8 +42,8 @@ async def test_flow_user_init_form(hass):
         "description_placeholders": None,
         "errors": {},
         "flow_id": mock.ANY,
-        "handler": "github_custom",
-        "step_id": "repo",
+        "handler": "valetudo_vacuum_camera",
+        "step_id": "user",
         "last_step": None,
         "type": "form",
     }
@@ -51,7 +51,7 @@ async def test_flow_user_init_form(hass):
 
 
 @pytest.mark.asyncio
-@patch("custom_components.valetudo_vacuum_camera.config_flow.GitHubAPI")
+@patch("custom_components.valetudo_vacuum_camera.config_flow")
 async def test_flow_user_creates_config_entry(user_input, hass):
     """Test the config entry is successfully created."""
     m_instance = AsyncMock()
@@ -79,13 +79,13 @@ async def test_flow_user_creates_config_entry(user_input, hass):
         "version": 1,
         "type": "create_entry",
         "flow_id": mock.ANY,
-        "handler": "github_custom",
-        "title": "GitHub Custom",
+        "handler": "valetudo_vacuum_camera",
+        "title": "Valetudo Camera Setup",
         "data": {
-            "access_token": "token",
-            "repositories": [
-                {"path": "home-assistant/core", "name": "home-assistant/core"}
-            ],
+            "vacuum_entity": "Vacuum Entity ID",
+            "broker_user": "MQTT User Name",
+            "broker_password": "MQTT User Password",
+            "vacuum_map": "Vacuum Topic Prefix/Identifier"
         },
         "description": None,
         "description_placeholders": None,
