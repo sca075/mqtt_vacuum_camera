@@ -8,6 +8,7 @@ CONF_VACUUM_CONNECTION_STRING = "vacuum_map"
 CONF_VACUUM_ENTITY_ID = "vacuum_entity"
 CONF_MQTT_USER = "broker_user"
 CONF_MQTT_PASS = "broker_password"
+NAME = "Valetudo Vacuum Camera"
 ICON = "mdi:camera"
 
 """App Constants"""

@@ -14,7 +14,7 @@ from .const import (
     CONF_VACUUM_CONNECTION_STRING,
     CONF_MQTT_USER,
     CONF_MQTT_PASS,
-    DEFAULT_NAME
+    DEFAULT_NAME,
 )
 
 AUTH_SCHEMA = vol.Schema(
@@ -26,7 +26,7 @@ AUTH_SCHEMA = vol.Schema(
     }
 )
 
-OPTIONS_SCHEMA = vol.Schema({vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string})
+OPTIONS_SCHEMA = vol.Schema({vol.Optional(CONF_NAME, default="valetudo_vacuum_camera"): cv.string})
 
 class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
@@ -38,7 +38,6 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
             self.data.update(
                 {
-                    "name": user_input.get(CONF_NAME),
                     "vacuum_entity": user_input.get(CONF_VACUUM_ENTITY_ID),
                     "broker_user": user_input.get(CONF_MQTT_USER),
                     "broker_password": user_input.get(CONF_MQTT_PASS),
@@ -46,7 +45,7 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 }
             )
             return self.async_create_entry(
-                title=DEFAULT_NAME, data=user_input
+                title=DEFAULT_NAME, data=user_input,
             )
 
         return self.async_show_form(
