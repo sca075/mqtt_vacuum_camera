@@ -6,7 +6,7 @@ import voluptuous as vol
 from datetime import timedelta
 from typing import Optional
 
-from homeassistant.components.camera import (Camera,
+from homeassistant.components.camera import (Camera, ENTITY_ID_FORMAT,
                                              PLATFORM_SCHEMA,
                                              SUPPORT_ON_OFF)
 from homeassistant.const import (
@@ -56,7 +56,7 @@ async def async_setup_entry(
         config_entry: config_entries.ConfigEntry,
         async_add_entities,
 ) -> None:
-    """Setup sensors from a config entry created in the integrations UI."""
+    """Setup camera from a config entry created in the integrations UI."""
     config = hass.data[DOMAIN][config_entry.entry_id]
     # Update our config to and eventually add or remove option.
     if config_entry.options:
@@ -67,7 +67,6 @@ async def async_setup_entry(
 async def async_setup_platform(hass: HomeAssistantType, config: ConfigType, async_add_entities,
                                discovery_info: DiscoveryInfoType | None = None):
     async_add_entities([ValetudoCamera(hass, config)])
-    # TODO manage the reload sequence (stop mqtt and restart the camera)
     await async_setup_reload_service(hass, DOMAIN, PLATFORMS)
 
 class ValetudoCamera(Camera, Entity):
@@ -75,10 +74,13 @@ class ValetudoCamera(Camera, Entity):
         super().__init__()
         self.hass = hass
         self._name = device_info.get(CONF_NAME)
+        self._attr_unique_id = "_"
         self._vacuum_entity = device_info.get(CONF_VACUUM_ENTITY_ID)
-        self._mqtt_listen_topic = str(device_info.get(CONF_VACUUM_CONNECTION_STRING) + "/MapData/map-data-hass")
-        self._mqtt_user = str(device_info.get(CONF_MQTT_USER))
-        self._mqtt_pass = str(device_info.get(CONF_MQTT_PASS))
+        self._mqtt_listen_topic = device_info.get(CONF_VACUUM_CONNECTION_STRING)
+        if self._mqtt_listen_topic:
+            self._mqtt_listen_topic = str(self._mqtt_listen_topic) + "/MapData/map-data-hass"
+        self._mqtt_user = device_info.get(CONF_MQTT_USER)
+        self._mqtt_pass = device_info.get(CONF_MQTT_PASS)
 
         self._mqtt = ValetudoConnector(self._mqtt_user, self._mqtt_pass, self._mqtt_listen_topic, hass)
         self._map_handler = MapImageHandler()
@@ -97,7 +99,6 @@ class ValetudoCamera(Camera, Entity):
         self._last_image = None
         self.throttled_camera_image = Throttle(timedelta(seconds=5))(self.camera_image)
         self._should_poll = True
-        self.async_camera_image(True)
 
     async def async_added_to_hass(self) -> None:
         self.async_schedule_update_ha_state(True)
@@ -107,11 +108,7 @@ class ValetudoCamera(Camera, Entity):
         return 1
 
     def camera_image(self, width: Optional[int] = None, height: Optional[int] = None) -> Optional[bytes]:
-        if self._image is not None:
-            self._last_image = self._image
-            return self._image
-        else:
-            return self._last_image
+        return self._image
 
     @property
     def name(self) -> str:
