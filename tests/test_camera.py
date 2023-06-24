@@ -1,15 +1,12 @@
 """Tests for the sensor module."""
 import socket
 from unittest.mock import AsyncMock, MagicMock
-from unittest import mock
-
-
 import pytest
 
 from custom_components.valetudo_vacuum_camera.camera import ValetudoCamera
 from homeassistant.components.camera import (Camera)
 
-@pytest.mark.asyncio
+@pytest.mark.enable_socket
 async def test_async_update_success(hass, aioclient_mock):
     """Tests a fully successful async_update."""
 
