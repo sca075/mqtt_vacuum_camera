@@ -1,5 +1,4 @@
 """Tests for the sensor module."""
-import socket
 from unittest.mock import AsyncMock, MagicMock
 import pytest
 
@@ -45,7 +44,7 @@ async def test_async_update_failed():
 
     camera = ValetudoCamera(Camera, {"path": "homeassistant/core"})
 
-    await camera.async_update()
+    await camera.update()
 
     assert camera.available is False
     assert {"path": "homeassistant/core"} == camera._attr_state
