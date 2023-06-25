@@ -19,6 +19,7 @@ from custom_components.valetudo_vacuum_camera.utils.colors import (
     color_grey,
 )
 
+
 class MapImageHandler(object):
     def __init__(self):
         self.img_size = None
@@ -34,13 +35,13 @@ class MapImageHandler(object):
 
     @staticmethod
     def sublist(lst, n):
-        return [lst[i:i+n] for i in range(0, len(lst), n)]
+        return [lst[i : i + n] for i in range(0, len(lst), n)]
 
     @staticmethod
     def sublist_join(lst, n):
         arr = np.array(lst)
         num_windows = len(lst) - n + 1
-        result = [arr[i:i+n].tolist() for i in range(num_windows)]
+        result = [arr[i : i + n].tolist() for i in range(num_windows)]
         return result
 
     @staticmethod
@@ -48,8 +49,8 @@ class MapImageHandler(object):
         if entity_dict is None:
             entity_dict = {}
         if isinstance(json_obj, dict):
-            if json_obj.get('__class') == 'PointMapEntity':
-                entity_type = json_obj.get('type')
+            if json_obj.get("__class") == "PointMapEntity":
+                entity_type = json_obj.get("type")
                 if entity_type:
                     entity_dict.setdefault(entity_type, []).append(json_obj)
             for value in json_obj.values():
@@ -64,8 +65,8 @@ class MapImageHandler(object):
         if entity_dict is None:
             entity_dict = {}
         if isinstance(json_obj, dict):
-            if json_obj.get('__class') == 'PathMapEntity':
-                entity_type = json_obj.get('type')
+            if json_obj.get("__class") == "PathMapEntity":
+                entity_type = json_obj.get("type")
                 if entity_type:
                     entity_dict.setdefault(entity_type, []).append(json_obj)
             for value in json_obj.values():
@@ -80,8 +81,8 @@ class MapImageHandler(object):
         if entity_dict is None:
             entity_dict = {}
         if isinstance(json_obj, dict):
-            if json_obj.get('__class') == 'PolygonMapEntity':
-                entity_type = json_obj.get('type')
+            if json_obj.get("__class") == "PolygonMapEntity":
+                entity_type = json_obj.get("type")
                 if entity_type:
                     entity_dict.setdefault(entity_type, []).append(json_obj)
             for value in json_obj.values():
@@ -100,7 +101,7 @@ class MapImageHandler(object):
             for i in range(z):
                 col = (x + i) * pixel_size
                 row = y * pixel_size
-                image_array[row:row + pixel_size, col:col + pixel_size] = color
+                image_array[row : row + pixel_size, col : col + pixel_size] = color
         # Convert the image array to a PIL image
         return image_array
 
@@ -109,10 +110,15 @@ class MapImageHandler(object):
         center_x = image_array.shape[1] // 2
         center_y = image_array.shape[0] // 2
         crop_size = int(min(center_x, center_y) * crop_percentage / 100)
-        cropbox = (center_x - crop_size, center_y - crop_size, center_x + crop_size, center_y + crop_size)
-        self.crop_area =cropbox
+        cropbox = (
+            center_x - crop_size,
+            center_y - crop_size,
+            center_x + crop_size,
+            center_y + crop_size,
+        )
+        self.crop_area = cropbox
         _LOGGER.debug("Crop Box data: %s", self.crop_area)
-        cropped = image_array[cropbox[1]:cropbox[3], cropbox[0]:cropbox[2]]
+        cropped = image_array[cropbox[1] : cropbox[3], cropbox[0] : cropbox[2]]
         self.crop_img_size = (cropped.shape[1], cropped.shape[0])
         _LOGGER.debug("Crop image size: %s", self.crop_img_size)
         return cropped
@@ -122,36 +128,54 @@ class MapImageHandler(object):
         tmpimg = Image.fromarray(np.zeros_like(layers))
         draw = ImageDraw.Draw(tmpimg)
         # Outline colour from fill colour
-        outline = (
-            (fill[0]) // 2,
-            (fill[1]) // 2,
-            (fill[2]) // 2
-        )
-        radius = 25 # Radius of the vacuum constant
-        r_scaled = radius // 11 # Offset scale for placement of the objects.
+        outline = ((fill[0]) // 2, (fill[1]) // 2, (fill[2]) // 2)
+        radius = 25  # Radius of the vacuum constant
+        r_scaled = radius // 11  # Offset scale for placement of the objects.
         # Draw the robot outline
-        draw.ellipse((x - radius, y - radius, x + radius, y + radius), fill=fill, outline=outline)
+        draw.ellipse(
+            (x - radius, y - radius, x + radius, y + radius), fill=fill, outline=outline
+        )
         # Draw bin cover
         r_cover = r_scaled * 12
         angle = angle - 80
-        a1 = (((angle+80) - 80) / 180 * math.pi)
-        a2 = (((angle+80) + 80) / 180 * math.pi)
+        a1 = ((angle + 80) - 80) / 180 * math.pi
+        a2 = ((angle + 80) + 80) / 180 * math.pi
         x1 = int(x - r_cover * math.sin(a1))
         y1 = int(y + r_cover * math.cos(a1))
         x2 = int(x - r_cover * math.sin(a2))
         y2 = int(y + r_cover * math.cos(a2))
         draw.line((x1, y1, x2, y2), fill=outline, width=1)
         # draw Lidar
-        lidar_angle = np.deg2rad(angle+170)  # Convert angle to radians and adjust for LIDAR orientation
+        lidar_angle = np.deg2rad(
+            angle + 170
+        )  # Convert angle to radians and adjust for LIDAR orientation
         lidar_x = int(x + 15 * np.cos(lidar_angle))  # Calculate LIDAR x-coordinate
         lidar_y = int(y + 15 * np.sin(lidar_angle))  # Calculate LIDAR y-coordinate
-        r_lidar = r_scaled * 3 # Scale factor for the lidar
-        draw.ellipse((lidar_x - r_lidar, lidar_y - r_lidar, lidar_x + r_lidar, lidar_y + r_lidar), fill=outline, width=5)
+        r_lidar = r_scaled * 3  # Scale factor for the lidar
+        draw.ellipse(
+            (
+                lidar_x - r_lidar,
+                lidar_y - r_lidar,
+                lidar_x + r_lidar,
+                lidar_y + r_lidar,
+            ),
+            fill=outline,
+            width=5,
+        )
         # Draw Button
-        r_button = r_scaled * 1 # scale factor of the button
-        butt_x = int(x - 20 * np.cos(lidar_angle)) # Calculate the button x-coordinate
-        butt_y = int(y - 20 * np.sin(lidar_angle)) # Calculate the button y-coordinate
-        draw.ellipse((butt_x - r_button, butt_y - r_button, butt_x + r_button, butt_y + r_button), fill=outline, width=1)
+        r_button = r_scaled * 1  # scale factor of the button
+        butt_x = int(x - 20 * np.cos(lidar_angle))  # Calculate the button x-coordinate
+        butt_y = int(y - 20 * np.sin(lidar_angle))  # Calculate the button y-coordinate
+        draw.ellipse(
+            (
+                butt_x - r_button,
+                butt_y - r_button,
+                butt_x + r_button,
+                butt_y + r_button,
+            ),
+            fill=outline,
+            width=1,
+        )
         # Convert the PIL image back to a Numpy array
         return np.array(tmpimg)
 
@@ -176,18 +200,21 @@ class MapImageHandler(object):
         flag_size = 40
         y1 = center[1] - flag_size // 2
         x2 = center[0] + flag_size // 2
-        y2 = y1+(flag_size//4)
+        y2 = y1 + (flag_size // 4)
         # Define pole end position
         y3 = center[1] + flag_size // 2
         # Create an Image object from the layer array
         tmp_img = Image.fromarray(layer)
         # Draw flag on layer
         draw = ImageDraw.Draw(tmp_img)
-        draw.polygon([center[0],center[1],x2,y2,center[0],y1], fill=flag_color)
+        draw.polygon([center[0], center[1], x2, y2, center[0], y1], fill=flag_color)
         # Draw flag pole
         pole_width = 3
         pole_color = (0, 0, 255, 255)  # RGBA color (blue)
-        draw.rectangle((center[0] - pole_width // 2, y1, center[0] + pole_width // 2, y3), fill=pole_color)
+        draw.rectangle(
+            (center[0] - pole_width // 2, y1, center[0] + pole_width // 2, y3),
+            fill=pole_color,
+        )
         # Convert the Image object back to the numpy array
         layer = np.array(tmp_img)
         return layer
@@ -196,21 +223,19 @@ class MapImageHandler(object):
     def draw_zone_clean(coordinates, layers, color):
         # Create an Image object from the numpy array
         tmp_img = Image.fromarray(np.zeros_like(layers))
-        outline = (
-            (color[0]) // 2,
-            (color[1]) // 2,
-            (color[2]) // 2
-        )
+        outline = ((color[0]) // 2, (color[1]) // 2, (color[2]) // 2)
         # Draw rectangle on the image
         draw = ImageDraw.Draw(tmp_img)
-        tot_zones = len(coordinates)-1
+        tot_zones = len(coordinates) - 1
         while tot_zones >= 0:
-            tot_zones = tot_zones -1
-            draw.polygon((coordinates[tot_zones]["points"]), fill=color, outline=outline, width=1)
+            tot_zones = tot_zones - 1
+            draw.polygon(
+                (coordinates[tot_zones]["points"]), fill=color, outline=outline, width=1
+            )
         # Convert the Image object back to the numpy array
         tmp_img = layers + tmp_img
         out_layer = np.array(tmp_img)
-        #free memory
+        # free memory
         del tmp_img, tot_zones, draw, outline
         return out_layer
 
@@ -252,7 +277,6 @@ class MapImageHandler(object):
         return arr
 
     def get_image_from_json(self, m_json):
-
         if m_json is not None:
             # Reading and splitting the Json form Valetudo
             size_x = int(m_json["size"]["x"])
@@ -260,12 +284,12 @@ class MapImageHandler(object):
             self.img_size = {
                 "x": size_x,
                 "y": size_y,
-                "centre": [(size_x // 2), (size_y // 2)]
+                "centre": [(size_x // 2), (size_y // 2)],
             }
 
             self.json_id = m_json["metaData"]["nonce"]
 
-            #Predicted path if any
+            # Predicted path if any
             predicted_pat2 = None
             predicted_path = self.find_paths_entities(m_json, None)
             predicted_path = predicted_path.get("predicted_path")
@@ -274,10 +298,10 @@ class MapImageHandler(object):
                 predicted_path = self.sublist(predicted_path, 2)
                 predicted_pat2 = self.sublist_join(predicted_path, 2)
 
-            #Zone cleaning area if any
+            # Zone cleaning area if any
             zone_clean = self.find_zone_entities(m_json, None)
 
-            #Saerching the "points" robot, charger and go_to
+            # Saerching the "points" robot, charger and go_to
             entity_dict = self.find_points_entities(m_json, None)
             robot_pos = entity_dict.get("robot_position")
             robot_position = robot_pos[0]["points"]
@@ -285,7 +309,7 @@ class MapImageHandler(object):
             self.robot_pos = {
                 "x": robot_position[0],
                 "y": robot_position[1],
-                "angle": robot_position_angle
+                "angle": robot_position_angle,
             }
             charger_pos = entity_dict.get("charger_location")
             if charger_pos:
@@ -312,31 +336,39 @@ class MapImageHandler(object):
             path_pixel2 = self.sublist_join(path_pixels, 2)
 
             # Numpy array pixels positions and colours computation
-            img_np_array = self.from_json_to_image(flour_pixels, pixel_size, color_home_background)
+            img_np_array = self.from_json_to_image(
+                flour_pixels, pixel_size, color_home_background
+            )
             if zone_clean:
                 zones_clean = zone_clean.get("active_zone")
-                img_np_array = self.draw_zone_clean(zones_clean,
-                                                    img_np_array, (0, 0, 255, 64))
-            img_np_array = img_np_array + self.from_json_to_image(walls_pixels, pixel_size, color_wall)
+                img_np_array = self.draw_zone_clean(
+                    zones_clean, img_np_array, (0, 0, 255, 64)
+                )
+            img_np_array = img_np_array + self.from_json_to_image(
+                walls_pixels, pixel_size, color_wall
+            )
             if charger_pos:
-                img_np_array = self.draw_battery_charger(img_np_array,
-                                                         charger_pos[0],
-                                                         charger_pos[1],
-                                                         color_charger)
-            #self.img_base_layer = img_np_array # Store flour, walls and charger combined NP array.
-            if go_to: # if we have a goto position draw the flag end point.
-                img_np_array = self.draw_go_to_flag(img_np_array,
-                                                    (go_to[0]["points"][0],
-                                                     go_to[0]["points"][1]))
+                img_np_array = self.draw_battery_charger(
+                    img_np_array, charger_pos[0], charger_pos[1], color_charger
+                )
+            # self.img_base_layer = img_np_array # Store flour, walls and charger combined NP array.
+            if go_to:  # if we have a goto position draw the flag end point.
+                img_np_array = self.draw_go_to_flag(
+                    img_np_array, (go_to[0]["points"][0], go_to[0]["points"][1])
+                )
             # finally let´s add the robot layer
             if predicted_pat2:
-                img_np_array = self.draw_lines(img_np_array, predicted_pat2, 2, color_grey)
+                img_np_array = self.draw_lines(
+                    img_np_array, predicted_pat2, 2, color_grey
+                )
             img_np_array = self.draw_lines(img_np_array, path_pixel2, 5, color_move)
-            img_np_array = img_np_array + self.draw_robot(img_np_array,
-                                                          robot_position[0],
-                                                          robot_position[1],
-                                                          robot_position_angle,
-                                                          color_robot)
+            img_np_array = img_np_array + self.draw_robot(
+                img_np_array,
+                robot_position[0],
+                robot_position[1],
+                robot_position_angle,
+                color_robot,
+            )
             # The image is cropped 75% so that the last layer is smaller to be sent.
             img_np_array = self.crop_array(img_np_array, 25)
             # Conversion of NP array to PIL image
@@ -365,23 +397,26 @@ class MapImageHandler(object):
             {"x": self.crop_area[0], "y": self.crop_area[1]},  # Top-left corner
             {"x": self.crop_area[2], "y": self.crop_area[1]},  # Top-right corner
             {"x": self.crop_area[2], "y": self.crop_area[3]},  # Bottom-right corner
-            {"x": self.crop_area[0], "y": self.crop_area[3]}   # Bottom-left corner (optional)
+            {
+                "x": self.crop_area[0],
+                "y": self.crop_area[3],
+            },  # Bottom-left corner (optional)
         ]
 
         # Calculate the corresponding map coordinates based on the crop image size
         map_points = [
-            {"x": 0, "y": 0},                              # Top-left corner
-            {"x": self.crop_img_size[0], "y": 0},           # Top-right corner
-            {"x": self.crop_img_size[0], "y": self.crop_img_size[1]},  # Bottom-right corner
-            {"x": 0, "y": self.crop_img_size[1]}            # Bottom-left corner (optional)
+            {"x": 0, "y": 0},  # Top-left corner
+            {"x": self.crop_img_size[0], "y": 0},  # Top-right corner
+            {
+                "x": self.crop_img_size[0],
+                "y": self.crop_img_size[1],
+            },  # Bottom-right corner
+            {"x": 0, "y": self.crop_img_size[1]},  # Bottom-left corner (optional)
         ]
 
         # Create the calibration data for each point
         for vacuum_point, map_point in zip(vacuum_points, map_points):
-            calibration_point = {
-                "vacuum": vacuum_point,
-                "map": map_point
-            }
+            calibration_point = {"vacuum": vacuum_point, "map": map_point}
             calibration_data.append(calibration_point)
 
         return calibration_data

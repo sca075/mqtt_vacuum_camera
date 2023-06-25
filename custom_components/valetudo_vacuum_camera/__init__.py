@@ -11,6 +11,7 @@ _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = [Platform.CAMERA]
 
+
 async def async_setup_entry(
         hass: core.HomeAssistant, entry: config_entries.ConfigEntry
 ) -> bool:
@@ -29,11 +30,13 @@ async def async_setup_entry(
     )
     return True
 
+
 async def options_update_listener(
         hass: core.HomeAssistant, config_entry: config_entries.ConfigEntry
 ):
     """Handle options update."""
     await hass.config_entries.async_reload(config_entry.entry_id)
+
 
 async def async_unload_entry(
         hass: core.HomeAssistant, entry: config_entries.ConfigEntry
@@ -46,6 +49,7 @@ async def async_unload_entry(
         entry_data["unsub_options_update_listener"]()
 
     return unload_ok
+
 
 async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
     """Set up the Valetudo Camera Custom component from yaml configuration."""

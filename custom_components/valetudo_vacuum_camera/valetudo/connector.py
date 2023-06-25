@@ -8,10 +8,9 @@ _LOGGER = logging.getLogger(__name__)
 
 class ValetudoConnector:
     def __init__(self, mqttusr, mqttpass, mqtt_topic, hass):
+        # Initialize Paho MQTT
         self._mqtt_topic = mqtt_topic
         self._broker = "127.0.0.1"
-        self._payload = None
-        self._data_in = False
         self._mqtt = mqtt.Client("valetudo_connector")
         self._mqtt.on_connect = self.on_connect
         self._mqtt.on_message = self.on_message
@@ -19,6 +18,9 @@ class ValetudoConnector:
         self._mqtt.connect_async(host=self._broker)
         self._mqtt.enable_bridge_mode()
         self._mqtt.loop_start()
+        # Define variables
+        self._payload = None
+        self._data_in = False
         self._img_decoder = RawToJson(hass)
 
     def update_data(self):
@@ -39,11 +41,9 @@ class ValetudoConnector:
         self._data_in = True
         _LOGGER.debug("Received data from MQTT")
 
-
     def on_connect(self, client, userdata, flags, rc):
         _LOGGER.debug("Connected to MQTT broker.")
         self._mqtt.subscribe(self._mqtt_topic)
-
 
     async def disconnect_from_broker(self, rc=None):
         _LOGGER.debug("Disconnect from MQTT broker.")

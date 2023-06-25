@@ -6,9 +6,11 @@ import voluptuous as vol
 from datetime import timedelta
 from typing import Optional
 
-from homeassistant.components.camera import (Camera, ENTITY_ID_FORMAT,
-                                             PLATFORM_SCHEMA,
-                                             SUPPORT_ON_OFF)
+from homeassistant.components.camera import (
+    Camera,
+    PLATFORM_SCHEMA,
+    SUPPORT_ON_OFF,
+)
 from homeassistant.const import (
     CONF_NAME,
 )
@@ -23,8 +25,12 @@ from homeassistant.helpers.typing import (
 )
 from homeassistant.util import Throttle
 
-from custom_components.valetudo_vacuum_camera.valetudo.connector import ValetudoConnector
-from custom_components.valetudo_vacuum_camera.valetudo.image_handler import MapImageHandler
+from custom_components.valetudo_vacuum_camera.valetudo.connector import (
+    ValetudoConnector,
+)
+from custom_components.valetudo_vacuum_camera.valetudo.image_handler import (
+    MapImageHandler,
+)
 from custom_components.valetudo_vacuum_camera.valetudo.vacuum import Vacuum
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -38,7 +44,7 @@ from .const import (
     CONF_MQTT_PASS,
     DEFAULT_NAME,
     DOMAIN,
-    PLATFORMS
+    PLATFORMS,
 )
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
@@ -50,6 +56,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
         vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
     }
 )
+
 
 async def async_setup_entry(
         hass: core.HomeAssistant,
@@ -64,10 +71,16 @@ async def async_setup_entry(
     camera = [ValetudoCamera(Camera, config)]
     async_add_entities(camera, update_before_add=True)
 
-async def async_setup_platform(hass: HomeAssistantType, config: ConfigType, async_add_entities,
-                               discovery_info: DiscoveryInfoType | None = None):
+
+async def async_setup_platform(
+        hass: HomeAssistantType,
+        config: ConfigType,
+        async_add_entities,
+        discovery_info: DiscoveryInfoType | None = None,
+):
     async_add_entities([ValetudoCamera(hass, config)])
     await async_setup_reload_service(hass, DOMAIN, PLATFORMS)
+
 
 class ValetudoCamera(Camera, Entity):
     def __init__(self, hass, device_info):
@@ -78,11 +91,15 @@ class ValetudoCamera(Camera, Entity):
         self._vacuum_entity = device_info.get(CONF_VACUUM_ENTITY_ID)
         self._mqtt_listen_topic = device_info.get(CONF_VACUUM_CONNECTION_STRING)
         if self._mqtt_listen_topic:
-            self._mqtt_listen_topic = str(self._mqtt_listen_topic) + "/MapData/map-data-hass"
+            self._mqtt_listen_topic = (
+                    str(self._mqtt_listen_topic) + "/MapData/map-data-hass"
+            )
         self._mqtt_user = device_info.get(CONF_MQTT_USER)
         self._mqtt_pass = device_info.get(CONF_MQTT_PASS)
 
-        self._mqtt = ValetudoConnector(self._mqtt_user, self._mqtt_pass, self._mqtt_listen_topic, hass)
+        self._mqtt = ValetudoConnector(
+            self._mqtt_user, self._mqtt_pass, self._mqtt_listen_topic, hass
+        )
         self._map_handler = MapImageHandler()
         self._vacuum_shared = Vacuum()
 
@@ -107,7 +124,9 @@ class ValetudoCamera(Camera, Entity):
     def frame_interval(self) -> float:
         return 1
 
-    def camera_image(self, width: Optional[int] = None, height: Optional[int] = None) -> Optional[bytes]:
+    def camera_image(
+            self, width: Optional[int] = None, height: Optional[int] = None
+    ) -> Optional[bytes]:
         return self._image
 
     @property
@@ -135,7 +154,7 @@ class ValetudoCamera(Camera, Entity):
             "robot_position": self._current,
             "calibration_points": self._calibration_points,
             "json_data": self._vac_json_data,
-            "listen_to": self._mqtt_listen_topic
+            "listen_to": self._mqtt_listen_topic,
         }
 
     @property
