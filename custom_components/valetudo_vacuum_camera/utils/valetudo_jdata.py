@@ -7,6 +7,7 @@ from homeassistant.core import callback
 
 _LOGGER = logging.getLogger(__name__)
 
+
 class RawToJson:
     def __init__(self, hass):
         self.hass = hass
@@ -29,13 +30,19 @@ class RawToJson:
         elif data[3] != 0x47:
             raise Warning("Invalid .png file header")
         elif data[4] != 0x0D:
-            raise Warning("Invalid .png file header: possibly caused by DOS-Unix line ending conversion?")
+            raise Warning(
+                "Invalid .png file header: possibly caused by DOS-Unix line ending conversion?"
+            )
         elif data[5] != 0x0A:
-            raise Warning("Invalid .png file header: possibly caused by DOS-Unix line ending conversion?")
+            raise Warning(
+                "Invalid .png file header: possibly caused by DOS-Unix line ending conversion?"
+            )
         elif data[6] != 0x1A:
             raise Warning("Invalid .png file header")
         elif data[7] != 0x0A:
-            raise Warning("Invalid .png file header: possibly caused by DOS-Unix line ending conversion?")
+            raise Warning(
+                "Invalid .png file header: possibly caused by DOS-Unix line ending conversion?"
+            )
         else:
             ended = False
             idx = 8
@@ -44,7 +51,7 @@ class RawToJson:
                 # Read the length of the current chunk,
                 # which is stored as an Uint32.
 
-                uint8[0], uint8[1], uint8[2], uint8[3] = data[idx:idx+4]
+                uint8[0], uint8[1], uint8[2], uint8[3] = data[idx : idx + 4]
                 idx += 4
 
                 # Chunk includes name/type for CRC check (see below).
@@ -52,7 +59,7 @@ class RawToJson:
 
                 chunk = bytearray(length)
 
-                chunk[0:4] = data[idx:idx+4]
+                chunk[0:4] = data[idx : idx + 4]
                 idx += 4
 
                 # Get the name in ASCII for identification.
@@ -65,10 +72,10 @@ class RawToJson:
                     return ended
 
                 # Read the contents of the chunk out of the main buffer.
-                chunk[4:length] = data[idx:idx+length-4]
+                chunk[4:length] = data[idx : idx + length - 4]
                 idx += length - 4
 
-                #Skip the CRC32
+                # Skip the CRC32
                 idx += 4
 
                 # The chunk data is now copied to remove the 4 preceding
@@ -88,7 +95,6 @@ class RawToJson:
                     self._jdata = chunkData[i:length].tobytes()
                     _LOGGER.debug("data grabbed")
                     return self._jdata
-
 
     def camera_message_received(self, payload):
         # Process the camera data here
