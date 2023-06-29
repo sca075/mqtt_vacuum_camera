@@ -26,8 +26,8 @@ class ValetudoConnector:
     def update_data(self):
         self._mqtt.loop_start()
         timeout = 5
-        while timeout > 0
-            if self._payload is not None
+        while timeout > 0:
+            if self._payload is not None:
                 break
             timeout -= 0.25
             time.sleep(0.25)
