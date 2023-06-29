@@ -17,7 +17,7 @@ class ValetudoConnector:
         self._mqtt.username_pw_set(username=mqttusr, password=mqttpass)
         self._mqtt.connect_async(host=self._broker)
         self._mqtt.enable_bridge_mode()
-        self._mqtt.loop_start()
+        #self._mqtt.loop_start()
         # Define variables
         self._payload = None
         self._data_in = False
