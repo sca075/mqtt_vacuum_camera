@@ -1,6 +1,6 @@
 import logging
 import paho.mqtt.client as mqtt
-
+import time
 from custom_components.valetudo_vacuum_camera.utils.valetudo_jdata import RawToJson
 
 _LOGGER = logging.getLogger(__name__)
@@ -24,6 +24,15 @@ class ValetudoConnector:
         self._img_decoder = RawToJson(hass)
 
     def update_data(self):
+        self._mqtt.loop_start()
+        timeout = 5
+        while timeout > 0
+            if self._payload is not None
+                break
+            timeout -= 0.25
+            time.sleep(0.25)
+        self._mqtt.loop_stop()
+            
         if self._payload:
             _LOGGER.debug("Processing data from MQTT")
             result = self._img_decoder.camera_message_received(self._payload)
