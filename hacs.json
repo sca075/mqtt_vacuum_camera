@@ -1,5 +1,5 @@
 {
   "name": "Valetudo Vacuum Camera",
+  "iot_class": "local_polling"
   "render_readme": true,
-  "iot_class": "Local Polling"
 }
