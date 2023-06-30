@@ -7,13 +7,13 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.valetudo_vacuum_camera import config_flow
-from custom_components.valetudo_vacuum_camera.const import  (
+from custom_components.valetudo_vacuum_camera.const import (
     DOMAIN,
     CONF_VACUUM_ENTITY_ID,
     CONF_VACUUM_CONNECTION_STRING,
     CONF_MQTT_USER,
     CONF_MQTT_PASS,
-    DEFAULT_NAME
+    DEFAULT_NAME,
 )
 
 
@@ -23,7 +23,7 @@ async def test_flow_user_init(hass):
     result = await hass.config_entries.flow.async_init(
         config_flow.DOMAIN, context={"source": "user"}
     )
-    expected ={
+    expected = {
         "data_schema": config_flow.AUTH_SCHEMA,
         "description_placeholders": None,
         "errors": None,
@@ -66,9 +66,11 @@ async def test_flow_user_creates_config_entry(user_input, hass):
         "vacuum_entity": user_input.get(CONF_VACUUM_ENTITY_ID),
         "broker_user": user_input.get(CONF_MQTT_USER),
         "broker_password": user_input.get(CONF_MQTT_PASS),
-        "vacuum_map": user_input.get(CONF_VACUUM_CONNECTION_STRING)
+        "vacuum_map": user_input.get(CONF_VACUUM_CONNECTION_STRING),
     }
-    with patch("custom_components.valetudo_vacuum_camera.async_setup_entry", return_value=True):
+    with patch(
+        "custom_components.valetudo_vacuum_camera.async_setup_entry", return_value=True
+    ):
         _result = await hass.config_entries.flow.async_init(
             config_flow.DOMAIN, context={"source": "user"}
         )
@@ -77,10 +79,11 @@ async def test_flow_user_creates_config_entry(user_input, hass):
     result = await hass.config_entries.flow.async_configure(
         _result["flow_id"],
         user_input={
-        CONF_VACUUM_ENTITY_ID: "Vacuum Entity ID",
-        CONF_MQTT_USER: "MQTT User Name",
-        CONF_MQTT_PASS: "MQTT User Password",
-        CONF_VACUUM_CONNECTION_STRING: "Vacuum Topic Prefix/Identifier"},
+            CONF_VACUUM_ENTITY_ID: "Vacuum Entity ID",
+            CONF_MQTT_USER: "MQTT User Name",
+            CONF_MQTT_PASS: "MQTT User Password",
+            CONF_VACUUM_CONNECTION_STRING: "Vacuum Topic Prefix/Identifier",
+        },
     )
     expected = {
         "context": {"source": "user"},
@@ -93,7 +96,7 @@ async def test_flow_user_creates_config_entry(user_input, hass):
             "vacuum_entity": "Vacuum Entity ID",
             "broker_user": "MQTT User Name",
             "broker_password": "MQTT User Password",
-            "vacuum_map": "Vacuum Topic Prefix/Identifier"
+            "vacuum_map": "Vacuum Topic Prefix/Identifier",
         },
         "description": None,
         "description_placeholders": None,
@@ -101,5 +104,3 @@ async def test_flow_user_creates_config_entry(user_input, hass):
         "result": mock.ANY,
     }
     assert expected == result
-
-

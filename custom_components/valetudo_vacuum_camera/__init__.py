@@ -1,11 +1,14 @@
 """valetudo vacuum map"""
-
+import asyncio
+import threading
 import logging
 
 from homeassistant import config_entries, core
 from homeassistant.const import Platform
 
 from .const import DOMAIN
+
+import custom_components.valetudo_vacuum_camera.valetudo.connector as mqtt_to_stop
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -42,10 +45,13 @@ async def async_unload_entry(
     hass: core.HomeAssistant, entry: config_entries.ConfigEntry
 ) -> bool:
     """Unload a config entry."""
+
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
+        # Wait for the threads to terminate
+        # await mqtt_to_stop.ValetudoConnector.client_stop()
+
         # Remove config entry from domain.
         entry_data = hass.data[DOMAIN].pop(entry.entry_id)
-        # Remove options_update_listener.
         entry_data["unsub_options_update_listener"]()
 
     return unload_ok

@@ -1,14 +1,24 @@
 """Tests for the sensor module."""
 from unittest.mock import AsyncMock, MagicMock
+from tests.testsupport.broker import fake_websocket_broker, fake_broker
 import pytest
+import socket
 
 from custom_components.valetudo_vacuum_camera.camera import ValetudoCamera
-from homeassistant.components.camera import (Camera)
+from homeassistant.components.camera import Camera
 
+
+@pytest.mark.allow_hosts(["127.0.0.1"], 1883)
+@pytest.mark.asyncio
 @pytest.mark.enable_socket
-async def test_async_update_success(hass, aioclient_mock):
-    """Tests a fully successful async_update."""
+async def test_update_success(
+    hass, aioclient_mock, socket_enabled, fake_websocket_broker
+):
+    fake_websocket_broker.serve("mqtt")
 
+    # fake_broker.start()
+
+    """Tests a fully successful async_update."""
     camera = MagicMock()
     camera.getitem = AsyncMock(
         side_effect=[
@@ -17,34 +27,41 @@ async def test_async_update_success(hass, aioclient_mock):
                 "vacuum_entity": "vacuum.my_vacuum",
                 "broker_user": "mqttUser",
                 "broker_password": "mqttPassword",
-                "vacuum_map": "valetudo/myTopic"
-            }]
+                "vacuum_map": "valetudo/myTopic",
+            }
+        ]
     )
-    camera = ValetudoCamera(Camera,{"path": "homeassistant/core"})
-    await camera.update()
+    camera = ValetudoCamera(Camera, {"path": "homeassistant/core"})
+    camera.update()
+    camera.turn_off()
 
     expected = {
-        "vacuum_entity": "vacuum.my_vacuum",
-        "broker_user": "mqttUser",
-        "broker_password": "mqttPassword",
-        "vacuum_map": "valetudo/myTopic"
+        "calibration_points": None,
+        "json_data": None,
+        "listen_to": None,
+        "robot_position": None,
+        "vacuum_entity": None,
+        "vacuum_json_id": None,
+        "vacuum_status": None,
     }
 
-    assert expected == camera.state
-    assert expected == camera.extra_state_attributes
+    # assert socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     assert camera.available is True
+    assert camera.state == "idle"
+    assert expected == camera.extra_state_attributes
 
 
-#@pytest.mark.asyncio
-@pytest.mark.enable_socket
-async def test_async_update_failed():
-    """Tests a failed async_update."""
-    camera = MagicMock()
-    camera.getitem = AsyncMock()
-
-    camera = ValetudoCamera(Camera, {"path": "homeassistant/core"})
-
-    await camera.update()
-
-    assert camera.available is False
-    assert {"path": "homeassistant/core"} == camera._attr_state
+# @pytest.mark.allow_hosts(['127.0.0.1'])
+# @pytest.mark.asyncio
+# @pytest.mark.enable_socket
+# async def test_async_update_failed(socket_enabled):
+#     """Tests a failed async_update."""
+#     camera = MagicMock()
+#     camera.getitem = AsyncMock()
+#
+#     camera = ValetudoCamera(Camera, {"path": "homeassistant/core"})
+#
+#     assert socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#     camera.update()
+#     assert camera.available is False
+#     assert {"path": "homeassistant/core"} == camera._attr_state

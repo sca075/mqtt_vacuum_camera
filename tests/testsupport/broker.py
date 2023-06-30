@@ -14,14 +14,14 @@ class FakeBroker:
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.settimeout(30)
         sock.bind(("localhost", 1888))
-        sock.listen(1)
+        sock.listen(2)
 
         self._sock = sock
         self._conn = None
 
     def start(self):
         if self._sock is None:
-            raise ValueError('Socket is not open')
+            raise ValueError("Socket is not open")
 
         (conn, address) = self._sock.accept()
         conn.settimeout(10)
@@ -38,14 +38,14 @@ class FakeBroker:
 
     def receive_packet(self, num_bytes):
         if self._conn is None:
-            raise ValueError('Connection is not open')
+            raise ValueError("Connection is not open")
 
         packet_in = self._conn.recv(num_bytes)
         return packet_in
 
     def send_packet(self, packet_out):
         if self._conn is None:
-            raise ValueError('Connection is not open')
+            raise ValueError("Connection is not open")
 
         count = self._conn.send(packet_out)
         return count
@@ -92,12 +92,15 @@ class FakeWebsocketBroker(threading.Thread):
                 self._server.shutdown()
                 self._server.server_close()
 
+    def stop(self):
+        self._running = False  # Set the flag to False to stop the server
+
     def run(self):
         self._running = True
-        self._server.serve_forever()
+        # self._server.for_ever()
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def fake_websocket_broker():
     socketserver.TCPServer.allow_reuse_address = True
 

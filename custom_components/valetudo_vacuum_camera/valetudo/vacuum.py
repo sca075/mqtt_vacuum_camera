@@ -1,7 +1,11 @@
+""" Class Vacuum to keep and middle connection between
+modules:
+- camera.py (it keep the last image)
+Not fully implemented yet in consideration"""
+
+
 import logging
 
-# import numpy as np
-# from custom_components.valetudo_vacuum_camera.utils.colors import color_home_background
 
 _LOGGER = logging.getLogger(__name__)
 

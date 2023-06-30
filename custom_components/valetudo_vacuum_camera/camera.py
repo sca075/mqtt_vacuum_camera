@@ -102,7 +102,6 @@ class ValetudoCamera(Camera, Entity):
         )
         self._map_handler = MapImageHandler()
         self._vacuum_shared = Vacuum()
-
         self._vacuum_state = None
         self._frame_interval = 1
         self._vac_img_data = None
@@ -120,6 +119,10 @@ class ValetudoCamera(Camera, Entity):
     async def async_added_to_hass(self) -> None:
         self.async_schedule_update_ha_state(True)
 
+    # @classmethod
+    # def teardown_method(self, method):
+    #    need to explore this solution.
+
     @property
     def frame_interval(self) -> float:
         return 1
@@ -134,11 +137,11 @@ class ValetudoCamera(Camera, Entity):
         return self._name
 
     def turn_on(self):
-        self._mqtt.connect_broker()
+        self._mqtt.client_start()
         self._should_poll = True
 
     def turn_off(self):
-        self._mqtt.disconnect_from_broker()
+        self._mqtt.client_stop()
         self._should_poll = False
 
     @property
