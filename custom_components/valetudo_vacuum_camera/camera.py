@@ -119,9 +119,12 @@ class ValetudoCamera(Camera, Entity):
     async def async_added_to_hass(self) -> None:
         self.async_schedule_update_ha_state(True)
 
-    # @classmethod
-    # def teardown_method(self, method):
-    #    need to explore this solution.
+    async def async_will_remove_from_hass(self) -> None:
+        """Handle entity removal from Home Assistant."""
+        await super().async_will_remove_from_hass()
+
+        # Stop the camera and perform any necessary cleanup tasks here
+        self.turn_off()
 
     @property
     def frame_interval(self) -> float:
