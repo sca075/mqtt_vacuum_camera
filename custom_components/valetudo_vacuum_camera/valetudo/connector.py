@@ -10,6 +10,12 @@ class ValetudoConnector(client.Client):
     def __init__(self, mqttusr, mqttpass, mqtt_topic, hass):
         super().__init__("valetudo_connector")
         self._mqtt_topic = mqtt_topic
+        if mqtt_topic:
+            self._mqtt_subscribe = ([
+                (str(mqtt_topic + "/MapData/map-data-hass"), 0),
+                (str(mqtt_topic + "/StatusStateAttribute/status"), 0),
+                (str(mqtt_topic + "/StatusStateAttribute/error_description"), 0)
+            ])
         self._broker = "127.0.0.1"
         self.username_pw_set(username=mqttusr, password=mqttpass)
         self.on_connect = self.on_connect_callback
@@ -17,31 +23,50 @@ class ValetudoConnector(client.Client):
         self.connect_async(host=self._broker, port=1883)
         self.enable_bridge_mode()
         self.loop_start()
+        self._mqtt_run = False
+        self._rcv_topic = None
         self._payload = None
+        self._mqtt_vac_stat = None
+        self._mqtt_vac_err = None
         self._data_in = False
         self._img_decoder = RawToJson(hass)
 
     def update_data(self):
-        if self._payload:
+        if self._payload and self._mqtt_vac_stat is not "docked":
             _LOGGER.debug("Processing data from MQTT")
             result = self._img_decoder.camera_message_received(self._payload)
+            self._mqtt_run = True
             self._data_in = False
             return result
         else:
-            _LOGGER.debug("No data from MQTT")
+            _LOGGER.debug("No data from MQTT or vacuum docked")
             self._data_in = False
             return None
+
+    def get_vacuum_status(self):
+        return self._mqtt_vac_stat
+
+    def get_vacuum_error(self):
+        return self._mqtt_vac_err
 
     def is_data_available(self):
         return self._data_in
 
     def on_message_callback(self, client, userdata, msg):
-        self._payload = msg.payload
-        self._data_in = True
-        _LOGGER.debug("Received data from MQTT")
+        self._rcv_topic = msg.topic
+        if self._rcv_topic == (self._mqtt_topic + "/MapData/map-data-hass"):
+            _LOGGER.debug("Received data from MQTT")
+            self._payload = msg.payload
+            self._data_in = True
+        elif self._rcv_topic == (self._mqtt_topic + "/StatusStateAttribute/status"):
+            self._mqtt_vac_stat = bytes.decode(msg.payload, "utf-8")
+        elif self._rcv_topic == (
+            self._mqtt_topic + "/StatusStateAttribute/error_description"
+        ):
+            self._mqtt_vac_err = bytes.decode(msg.payload, "utf-8")
 
     def on_connect_callback(self, client, userdata, flags, rc):
-        self.subscribe(self._mqtt_topic)
+        self.subscribe(self._mqtt_subscribe)
         _LOGGER.debug("Connected to MQTT broker.")
 
     def stop_and_disconnect(self):
@@ -61,4 +86,5 @@ class ValetudoConnector(client.Client):
 
     def client_stop(self):
         self.loop_stop()
+        self._mqtt_run = False
         _LOGGER.debug("Stopped MQTT loop")

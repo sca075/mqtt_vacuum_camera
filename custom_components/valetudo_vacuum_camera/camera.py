@@ -2,20 +2,15 @@ from __future__ import annotations
 
 import logging
 from io import BytesIO
-import voluptuous as vol
 from datetime import timedelta
 from typing import Optional
 
-from homeassistant.components.camera import (
-    Camera,
-    PLATFORM_SCHEMA,
-    SUPPORT_ON_OFF,
-)
-from homeassistant.const import (
-    CONF_NAME,
-)
-from homeassistant.helpers import config_validation as cv
+import voluptuous as vol
+
+from homeassistant.components.camera import Camera, PLATFORM_SCHEMA, SUPPORT_ON_OFF
+from homeassistant.const import CONF_NAME
 from homeassistant import core, config_entries
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.reload import async_setup_reload_service
 from homeassistant.helpers.typing import (
@@ -25,12 +20,8 @@ from homeassistant.helpers.typing import (
 )
 from homeassistant.util import Throttle
 
-from custom_components.valetudo_vacuum_camera.valetudo.connector import (
-    ValetudoConnector,
-)
-from custom_components.valetudo_vacuum_camera.valetudo.image_handler import (
-    MapImageHandler,
-)
+from custom_components.valetudo_vacuum_camera.valetudo.connector import ValetudoConnector
+from custom_components.valetudo_vacuum_camera.valetudo.image_handler import MapImageHandler
 from custom_components.valetudo_vacuum_camera.valetudo.vacuum import Vacuum
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -59,9 +50,9 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
 
 
 async def async_setup_entry(
-    hass: core.HomeAssistant,
-    config_entry: config_entries.ConfigEntry,
-    async_add_entities,
+        hass: core.HomeAssistant,
+        config_entry: config_entries.ConfigEntry,
+        async_add_entities,
 ) -> None:
     """Setup camera from a config entry created in the integrations UI."""
     config = hass.data[DOMAIN][config_entry.entry_id]
@@ -73,10 +64,10 @@ async def async_setup_entry(
 
 
 async def async_setup_platform(
-    hass: HomeAssistantType,
-    config: ConfigType,
-    async_add_entities,
-    discovery_info: DiscoveryInfoType | None = None,
+        hass: HomeAssistantType,
+        config: ConfigType,
+        async_add_entities,
+        discovery_info: DiscoveryInfoType | None = None,
 ):
     async_add_entities([ValetudoCamera(hass, config)])
     await async_setup_reload_service(hass, DOMAIN, PLATFORMS)
@@ -91,9 +82,7 @@ class ValetudoCamera(Camera, Entity):
         self._vacuum_entity = device_info.get(CONF_VACUUM_ENTITY_ID)
         self._mqtt_listen_topic = device_info.get(CONF_VACUUM_CONNECTION_STRING)
         if self._mqtt_listen_topic:
-            self._mqtt_listen_topic = (
-                str(self._mqtt_listen_topic) + "/MapData/map-data-hass"
-            )
+            self._mqtt_listen_topic = str(self._mqtt_listen_topic)
         self._mqtt_user = device_info.get(CONF_MQTT_USER)
         self._mqtt_pass = device_info.get(CONF_MQTT_PASS)
 
@@ -131,7 +120,7 @@ class ValetudoCamera(Camera, Entity):
         return 1
 
     def camera_image(
-        self, width: Optional[int] = None, height: Optional[int] = None
+            self, width: Optional[int] = None, height: Optional[int] = None
     ) -> Optional[bytes]:
         return self._image
 
@@ -168,10 +157,10 @@ class ValetudoCamera(Camera, Entity):
         return self._should_poll
 
     def update(self):
-        # if we have data from MQTT we process the image
-        proces_data = self._mqtt.is_data_available()
-        if proces_data:
-            _LOGGER.info("camera image update process: %s", proces_data)
+        # If we have data from MQTT, we process the image
+        process_data = self._mqtt.is_data_available()
+        if process_data:
+            _LOGGER.info("Camera image update process: %s", process_data)
             try:
                 parsed_json = self._mqtt.update_data()
                 self._vac_json_data = "Success"
@@ -179,24 +168,19 @@ class ValetudoCamera(Camera, Entity):
                 self._vac_json_data = "Error"
                 pass
             else:
-                # just in case let's check that the data are available
+                # Just in case, let's check that the data is available
                 if parsed_json is not None:
                     pil_img = self._map_handler.get_image_from_json(parsed_json)
+                    self._vacuum_state = self._mqtt.get_vacuum_status()
                     self._vac_json_id = self._map_handler.get_json_id()
                     self._base = self._map_handler.get_charger_position()
                     self._current = self._map_handler.get_robot_position()
                     self._vac_img_data = self._map_handler.get_img_size()
                     self._calibration_points = self._map_handler.get_calibration_data()
-                    # Converting to bytes the image got from json.
+                    # Converting the image obtained from JSON to bytes
                     buffered = BytesIO()
                     pil_img.save(buffered, format="PNG")
                     bytes_data = buffered.getvalue()
                     self._image = bytes_data
-                    self._vacuum_shared.set_last_image(self._image)
-                    _LOGGER.info("camera image update complete")
+                    _LOGGER.info("Camera image update complete")
                     return self._image
-        else:
-            # we don't have data from MQTT, buffered image is returned instead.
-            self._image = self._vacuum_shared.last_image_binary()
-            _LOGGER.info("camera image from buffer")
-            return self._image
