@@ -35,7 +35,6 @@ class ValetudoConnector(client.Client):
         if self._payload and self._mqtt_vac_stat is not "docked":
             _LOGGER.debug("Processing data from MQTT")
             result = self._img_decoder.camera_message_received(self._payload)
-            self._mqtt_run = True
             self._data_in = False
             return result
         else:
