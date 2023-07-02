@@ -32,7 +32,7 @@ class ValetudoConnector(client.Client):
         self._img_decoder = RawToJson(hass)
 
     def update_data(self):
-        if self._payload and self._mqtt_vac_stat is not "docked":
+        if self._payload and self._mqtt_vac_stat != "docked":
             _LOGGER.debug("Processing data from MQTT")
             result = self._img_decoder.camera_message_received(self._payload)
             self._data_in = False

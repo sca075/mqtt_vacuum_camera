@@ -20,8 +20,12 @@ from homeassistant.helpers.typing import (
 )
 from homeassistant.util import Throttle
 
-from custom_components.valetudo_vacuum_camera.valetudo.connector import ValetudoConnector
-from custom_components.valetudo_vacuum_camera.valetudo.image_handler import MapImageHandler
+from custom_components.valetudo_vacuum_camera.valetudo.connector import (
+    ValetudoConnector,
+)
+from custom_components.valetudo_vacuum_camera.valetudo.image_handler import (
+    MapImageHandler,
+)
 from custom_components.valetudo_vacuum_camera.valetudo.vacuum import Vacuum
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -50,9 +54,9 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
 
 
 async def async_setup_entry(
-        hass: core.HomeAssistant,
-        config_entry: config_entries.ConfigEntry,
-        async_add_entities,
+    hass: core.HomeAssistant,
+    config_entry: config_entries.ConfigEntry,
+    async_add_entities,
 ) -> None:
     """Setup camera from a config entry created in the integrations UI."""
     config = hass.data[DOMAIN][config_entry.entry_id]
@@ -64,10 +68,10 @@ async def async_setup_entry(
 
 
 async def async_setup_platform(
-        hass: HomeAssistantType,
-        config: ConfigType,
-        async_add_entities,
-        discovery_info: DiscoveryInfoType | None = None,
+    hass: HomeAssistantType,
+    config: ConfigType,
+    async_add_entities,
+    discovery_info: DiscoveryInfoType | None = None,
 ):
     async_add_entities([ValetudoCamera(hass, config)])
     await async_setup_reload_service(hass, DOMAIN, PLATFORMS)
@@ -78,14 +82,13 @@ class ValetudoCamera(Camera, Entity):
         super().__init__()
         self.hass = hass
         self._name = device_info.get(CONF_NAME)
-        self._attr_unique_id = "_" #uses the config name for unique id
+        self._attr_unique_id = "_"  # uses the config name for unique id
         self._vacuum_entity = device_info.get(CONF_VACUUM_ENTITY_ID)
         self._mqtt_listen_topic = device_info.get(CONF_VACUUM_CONNECTION_STRING)
         if self._mqtt_listen_topic:
             self._mqtt_listen_topic = str(self._mqtt_listen_topic)
         self._mqtt_user = device_info.get(CONF_MQTT_USER)
         self._mqtt_pass = device_info.get(CONF_MQTT_PASS)
-
         self._mqtt = ValetudoConnector(
             self._mqtt_user, self._mqtt_pass, self._mqtt_listen_topic, hass
         )
@@ -100,7 +103,7 @@ class ValetudoCamera(Camera, Entity):
         self._base = None
         self._current = None
         self._temp_dir = "config/tmp"
-        self._image_rotate = 360
+        self._image_rotate = 180
         self._image = self.update()
         self._last_image = None
         self.throttled_camera_image = Throttle(timedelta(seconds=5))(self.camera_image)
@@ -121,7 +124,7 @@ class ValetudoCamera(Camera, Entity):
         return 1
 
     def camera_image(
-            self, width: Optional[int] = None, height: Optional[int] = None
+        self, width: Optional[int] = None, height: Optional[int] = None
     ) -> Optional[bytes]:
         return self._image
 
@@ -179,7 +182,9 @@ class ValetudoCamera(Camera, Entity):
                     self._current = self._map_handler.get_robot_position()
                     self._vac_img_data = self._map_handler.get_img_size()
                     _LOGGER.debug(self._image_rotate)
-                    self._calibration_points = self._map_handler.get_calibration_data(self._image_rotate)
+                    self._calibration_points = self._map_handler.get_calibration_data(
+                        self._image_rotate
+                    )
                     # Converting the image obtained from JSON to bytes
 
                     buffered = BytesIO()

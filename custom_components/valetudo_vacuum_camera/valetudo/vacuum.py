@@ -1,6 +1,5 @@
 """ Class Vacuum to keep and middle connection between
 modules:
-- camera.py (it keep the last image)
 Not fully implemented yet in consideration"""
 
 
