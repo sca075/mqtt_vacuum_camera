@@ -78,7 +78,7 @@ class ValetudoCamera(Camera, Entity):
         super().__init__()
         self.hass = hass
         self._name = device_info.get(CONF_NAME)
-        self._attr_unique_id = "_"
+        self._attr_unique_id = "_" #uses the config name for unique id
         self._vacuum_entity = device_info.get(CONF_VACUUM_ENTITY_ID)
         self._mqtt_listen_topic = device_info.get(CONF_VACUUM_CONNECTION_STRING)
         if self._mqtt_listen_topic:
@@ -100,6 +100,7 @@ class ValetudoCamera(Camera, Entity):
         self._base = None
         self._current = None
         self._temp_dir = "config/tmp"
+        self._image_rotate = 360
         self._image = self.update()
         self._last_image = None
         self.throttled_camera_image = Throttle(timedelta(seconds=5))(self.camera_image)
@@ -171,13 +172,16 @@ class ValetudoCamera(Camera, Entity):
                 # Just in case, let's check that the data is available
                 if parsed_json is not None:
                     pil_img = self._map_handler.get_image_from_json(parsed_json)
+                    pil_img = pil_img.rotate(self._image_rotate)
                     self._vacuum_state = self._mqtt.get_vacuum_status()
                     self._vac_json_id = self._map_handler.get_json_id()
                     self._base = self._map_handler.get_charger_position()
                     self._current = self._map_handler.get_robot_position()
                     self._vac_img_data = self._map_handler.get_img_size()
-                    self._calibration_points = self._map_handler.get_calibration_data()
+                    _LOGGER.debug(self._image_rotate)
+                    self._calibration_points = self._map_handler.get_calibration_data(self._image_rotate)
                     # Converting the image obtained from JSON to bytes
+
                     buffered = BytesIO()
                     pil_img.save(buffered, format="PNG")
                     bytes_data = buffered.getvalue()
