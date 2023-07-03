@@ -93,6 +93,7 @@ class RawToJson:
                     i += 2
 
                     self._jdata = chunkData[i:length].tobytes()
+                    del data
                     _LOGGER.debug("data grabbed")
                     return self._jdata
 
@@ -111,6 +112,7 @@ class RawToJson:
                     dec_data = zlib.decompress(self._jdata).decode("utf-8")
                     json_data = dec_data
                     response = json.loads(json_data)
+                    del json_data
                     return response
         else:
             _LOGGER.debug("No data to process")

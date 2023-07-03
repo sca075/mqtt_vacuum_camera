@@ -33,6 +33,7 @@ class MapImageHandler(object):
         self.charger_pos = None
         self.json_id = None
         self.go_to = None
+        self.img_rotate = 0
 
     @staticmethod
     def sublist(lst, n):
@@ -190,7 +191,9 @@ class MapImageHandler(object):
             width=1,
         )
         # Convert the PIL image back to a Numpy array
-        return np.array(tmpimg)
+        layers = np.array(tmpimg)
+        del tmpimg
+        return layers
 
     @staticmethod
     def draw_battery_charger(layers, x, y, color):
@@ -206,30 +209,80 @@ class MapImageHandler(object):
         return layers
 
     @staticmethod
-    def draw_go_to_flag(layer, center):
+    def draw_go_to_flag(layer, center, rotation_angle):
         # Define flag color
         flag_color = (0, 255, 0, 127)  # RGBA color (green)
+        pole_color = (0, 0, 255, 255)  # RGBA color (blue)
         # Define flag size and position
         flag_size = 40
-        y1 = center[1] - flag_size // 2
-        x2 = center[0] + flag_size // 2
-        y2 = y1 + (flag_size // 4)
-        # Define pole end position
-        y3 = center[1] + flag_size // 2
+        pole_width = 3
+        # Adjust flag coordinates based on rotation angle
+        if rotation_angle == 90:
+            x1 = center[0] - flag_size
+            y1 = center[1] + (pole_width // 2)
+            x2 = x1 + (flag_size // 4)
+            y2 = y1 - (flag_size // 2)
+            x3 = center[0] - (flag_size // 2)
+            y3 = center[1] + (pole_width // 2)
+            # Define pole end position
+            xp1 = center[0] -  flag_size
+            yp1 = center[1] - (pole_width // 2)
+            xp2 = center[0]
+            yp2 = center[1] + (pole_width // 2)
+        elif rotation_angle == 180:
+            x1 = center[0]
+            y1 = center[1] - (flag_size // 2)
+            x2 = center[0] - (flag_size // 2)
+            y2 = y1 + (flag_size // 4)
+            x3 = center[0]
+            y3 = center[1]
+            # Define pole end position
+            xp1 = center[0] - (pole_width // 2)
+            yp1 = center[1] - flag_size
+            xp2 = center[0] + (pole_width // 2)
+            yp2 = y3
+        elif rotation_angle == 270:
+            x1 = center[0] + flag_size
+            y1 = center[1] - (pole_width // 2)
+            x2 = x1 - (flag_size // 4)
+            y2 = y1 + (flag_size // 2)
+            x3 = center[0] + (flag_size // 2)
+            y3 = center[1] - (pole_width // 2)
+            # Define pole end position
+            xp1 = center[0]
+            yp1 = center[1] - (pole_width // 2)
+            xp2 = center[0] +  flag_size
+            yp2 = center[1] + (pole_width // 2)
+        else:
+            # rotation_angle == 0 (no rotation)
+            x1 = center[0]
+            y1 = center[1]
+            x2 = center[0] + (flag_size // 2)
+            y2 = y1 + (flag_size // 4)
+            x3 = center[0]
+            y3 = center[1] + flag_size // 2
+            # Define pole end position
+            xp1 = center[0] - (pole_width // 2)
+            yp1 = y1
+            xp2 = center[0] + (pole_width // 2)
+            yp2 = center[1] + flag_size
+
         # Create an Image object from the layer array
         tmp_img = Image.fromarray(layer)
-        # Draw flag on layer
+        # Create a draw object
         draw = ImageDraw.Draw(tmp_img)
-        draw.polygon([center[0], center[1], x2, y2, center[0], y1], fill=flag_color)
+        # Draw flag on layer
+        draw.polygon([x1, y1, x2, y2,x3, y3], fill=flag_color)
         # Draw flag pole
-        pole_width = 3
-        pole_color = (0, 0, 255, 255)  # RGBA color (blue)
         draw.rectangle(
-            (center[0] - pole_width // 2, y1, center[0] + pole_width // 2, y3),
+            (xp1 , yp1, xp2, yp2),
             fill=pole_color,
         )
+
         # Convert the Image object back to the numpy array
         layer = np.array(tmp_img)
+        # Clean up
+        del draw, tmp_img
         return layer
 
     @staticmethod
@@ -380,7 +433,7 @@ class MapImageHandler(object):
                     self.frame_number = 0
             if go_to:  # if we have a goto position draw the flag end point.
                 img_np_array = self.draw_go_to_flag(
-                    img_np_array, (go_to[0]["points"][0], go_to[0]["points"][1])
+                    img_np_array, (go_to[0]["points"][0], go_to[0]["points"][1]), self.img_rotate
                 )
             # finally let´s add the robot layer adding predicted path if available
             if predicted_pat2:
@@ -417,6 +470,7 @@ class MapImageHandler(object):
 
     def get_calibration_data(self, rotation_angle):
         calibration_data = []
+        self.img_rotate = rotation_angle
 
         # Calculate the calibration points in the vacuum coordinate system
         vacuum_points = [

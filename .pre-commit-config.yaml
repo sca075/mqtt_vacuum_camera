@@ -1,4 +1,4 @@
-epos:
+repos:
   - repo: https://github.com/asottile/pyupgrade
     rev: v2.7.4
     hooks:
@@ -17,7 +17,7 @@ epos:
     hooks:
       - id: codespell
         args:
-          - --ignore-words-list=hass,alot,datas,dof,dur,farenheit,hist,iff,ines,ist,lightsensor,mut,nd,pres,referer,ser,serie,te,technik,ue,uint,visability,wan,wanna,withing
+          - --ignore-words-list=hass,alot,datas,mqttusr,mqttpass,valetudo,hist,iff,ines,ist,Valetudo,mut,nd,pres,referer,ser,serie,te,technik,ue,uint,visability,wan,wanna,withing
           - --skip="./.*,*.csv,*.json"
           - --quiet-level=2
         exclude_types: [csv, json]
