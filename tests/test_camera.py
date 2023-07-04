@@ -4,7 +4,7 @@ from tests.testsupport.broker import fake_websocket_broker, fake_broker
 import pytest
 import socket
 
-from valetudo_vacuum_camera.camera import ValetudoCamera
+from custom_components.valetudo_vacuum_camera.camera import ValetudoCamera
 from homeassistant.components.camera import Camera
 
 
