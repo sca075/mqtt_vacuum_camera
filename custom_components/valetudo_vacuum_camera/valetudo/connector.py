@@ -14,7 +14,7 @@ class ValetudoConnector(client.Client):
             self._mqtt_subscribe = ([
                 (str(mqtt_topic + "/MapData/map-data-hass"), 0),
                 (str(mqtt_topic + "/StatusStateAttribute/status"), 0),
-                (str(mqtt_topic + "/StatusStateAttribute/error_description"), 0)
+                (str(mqtt_topic + "/StatusStateAttribute/error_description"), 0),
             ])
         self._broker = "127.0.0.1"
         self.username_pw_set(username=mqttusr, password=mqttpass)
@@ -32,7 +32,7 @@ class ValetudoConnector(client.Client):
         self._img_decoder = RawToJson(hass)
 
     def update_data(self):
-        if self._payload and self._mqtt_vac_stat != "docked":
+        if self._payload:
             _LOGGER.debug("Processing data from MQTT")
             result = self._img_decoder.camera_message_received(self._payload)
             self._data_in = False
@@ -58,7 +58,8 @@ class ValetudoConnector(client.Client):
             self._payload = msg.payload
             self._data_in = True
         elif self._rcv_topic == (self._mqtt_topic + "/StatusStateAttribute/status"):
-            self._mqtt_vac_stat = bytes.decode(msg.payload, "utf-8")
+            if self._payload:
+                self._mqtt_vac_stat = bytes.decode(msg.payload, "utf-8")
         elif self._rcv_topic == (
             self._mqtt_topic + "/StatusStateAttribute/error_description"
         ):

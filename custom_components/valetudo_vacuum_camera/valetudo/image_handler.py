@@ -102,7 +102,9 @@ class MapImageHandler(object):
         image_array[:, :, 0] = background_color[0]  # Set red channel
         image_array[:, :, 1] = background_color[1]  # Set green channel
         image_array[:, :, 2] = background_color[2]  # Set blue channel
-        image_array[:, :, 3] = background_color[3]   # Set alpha channel to 255 (fully opaque)
+        image_array[:, :, 3] = background_color[
+            3
+        ]  # Set alpha channel to 255 (fully opaque)
 
         return image_array
 
@@ -225,7 +227,7 @@ class MapImageHandler(object):
             x3 = center[0] - (flag_size // 2)
             y3 = center[1] + (pole_width // 2)
             # Define pole end position
-            xp1 = center[0] -  flag_size
+            xp1 = center[0] - flag_size
             yp1 = center[1] - (pole_width // 2)
             xp2 = center[0]
             yp2 = center[1] + (pole_width // 2)
@@ -251,7 +253,7 @@ class MapImageHandler(object):
             # Define pole end position
             xp1 = center[0]
             yp1 = center[1] - (pole_width // 2)
-            xp2 = center[0] +  flag_size
+            xp2 = center[0] + flag_size
             yp2 = center[1] + (pole_width // 2)
         else:
             # rotation_angle == 0 (no rotation)
@@ -272,10 +274,10 @@ class MapImageHandler(object):
         # Create a draw object
         draw = ImageDraw.Draw(tmp_img)
         # Draw flag on layer
-        draw.polygon([x1, y1, x2, y2,x3, y3], fill=flag_color)
+        draw.polygon([x1, y1, x2, y2, x3, y3], fill=flag_color)
         # Draw flag pole
         draw.rectangle(
-            (xp1 , yp1, xp2, yp2),
+            (xp1, yp1, xp2, yp2),
             fill=pole_color,
         )
 
@@ -403,7 +405,9 @@ class MapImageHandler(object):
             if self.frame_number == 0:
                 _LOGGER.debug("Drawing image background")
                 # Create the base Numpy array
-                img_np_array = self.create_empty_image(size_x,size_y,color_ext_background)
+                img_np_array = self.create_empty_image(
+                    size_x, size_y, color_ext_background
+                )
                 # Numpy array pixels positions and colours computation
                 img_np_array = self.from_json_to_image(
                     img_np_array, flour_pixels, pixel_size, color_home_background
@@ -423,7 +427,9 @@ class MapImageHandler(object):
                     img_np_array = self.draw_battery_charger(
                         img_np_array, charger_pos[0], charger_pos[1], color_charger
                     )
-                self.img_base_layer = img_np_array # Store flour, walls and charger combined NP array.
+                self.img_base_layer = (
+                    img_np_array  # Store flour, walls and charger combined NP array.
+                )
                 self.frame_number += 1
             else:
                 img_np_array = self.img_base_layer
@@ -433,7 +439,9 @@ class MapImageHandler(object):
                     self.frame_number = 0
             if go_to:  # if we have a goto position draw the flag end point.
                 img_np_array = self.draw_go_to_flag(
-                    img_np_array, (go_to[0]["points"][0], go_to[0]["points"][1]), self.img_rotate
+                    img_np_array,
+                    (go_to[0]["points"][0], go_to[0]["points"][1]),
+                    self.img_rotate,
                 )
             # finally let´s add the robot layer adding predicted path if available
             if predicted_pat2:
@@ -477,7 +485,10 @@ class MapImageHandler(object):
             {"x": self.crop_area[0], "y": self.crop_area[1]},  # Top-left corner 0
             {"x": self.crop_area[2], "y": self.crop_area[1]},  # Top-right corner 1
             {"x": self.crop_area[2], "y": self.crop_area[3]},  # Bottom-right corner 2
-            {"x": self.crop_area[0], "y": self.crop_area[3]},  # Bottom-left corner (optional)3
+            {
+                "x": self.crop_area[0],
+                "y": self.crop_area[3],
+            },  # Bottom-left corner (optional)3
         ]
 
         # Define the map points (fixed)
@@ -493,11 +504,26 @@ class MapImageHandler(object):
 
         # Rotate the vacuum points based on the rotation angle
         if rotation_angle == 90:
-            vacuum_points = [vacuum_points[1], vacuum_points[2], vacuum_points[3], vacuum_points[0]]
+            vacuum_points = [
+                vacuum_points[1],
+                vacuum_points[2],
+                vacuum_points[3],
+                vacuum_points[0],
+            ]
         elif rotation_angle == 180:
-            vacuum_points = [vacuum_points[2], vacuum_points[3], vacuum_points[0], vacuum_points[1]]
+            vacuum_points = [
+                vacuum_points[2],
+                vacuum_points[3],
+                vacuum_points[0],
+                vacuum_points[1],
+            ]
         elif rotation_angle == 270:
-            vacuum_points = [vacuum_points[3], vacuum_points[0], vacuum_points[1], vacuum_points[2]]
+            vacuum_points = [
+                vacuum_points[3],
+                vacuum_points[0],
+                vacuum_points[1],
+                vacuum_points[2],
+            ]
 
         # Create the calibration data for each point
         for vacuum_point, map_point in zip(vacuum_points, map_points):
