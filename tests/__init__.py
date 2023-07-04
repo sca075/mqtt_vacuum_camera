@@ -1,1 +1,1 @@
-"""Tests for the valetudo-vacuum-camera custom component."""
+"""Tests for the valetudo-vacuum-camera custom component"""
