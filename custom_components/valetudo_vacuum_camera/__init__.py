@@ -1,4 +1,4 @@
-"""valetudo vacuum map"""
+"""valetudo vacuum camera"""
 import asyncio
 import threading
 import logging
