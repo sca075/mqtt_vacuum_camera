@@ -8,8 +8,6 @@ from homeassistant.const import Platform
 
 from .const import DOMAIN
 
-import custom_components.valetudo_vacuum_camera.valetudo.connector as mqtt_to_stop
-
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = [Platform.CAMERA]

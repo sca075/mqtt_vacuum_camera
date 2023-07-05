@@ -1,4 +1,3 @@
-"""Tests for the sensor module."""
 from unittest.mock import AsyncMock, MagicMock
 
 # from tests.testsupport.broker import fake_websocket_broker, fake_broker
