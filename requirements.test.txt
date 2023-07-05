@@ -21,7 +21,7 @@ pytest-timeout==2.1.0
 #pytest-respx==0.20.1
 #pytest-pytest_freezer==0.4.6
 pytest-socket==0.5.1
-pytest-anyio==3.*
+anyio==3.*
 pytest-forked==1.*
 pytest-test-groups==1.*
 pytest-cov==3.0.0
