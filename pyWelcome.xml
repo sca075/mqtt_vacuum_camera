@@ -1,0 +1,5 @@
+<application>
+  <component name="PyWelcomeSettings">
+    <option name="CREATE_WELCOME_SCRIPT_FOR_EMPTY_PROJECT" value="false" />
+  </component>
+</application>
