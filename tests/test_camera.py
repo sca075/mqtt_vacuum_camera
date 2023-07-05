@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 import socket
 
-from custom_components.valetudo_vacuum_camera.camera import ValetudoCamera
+from valetudo_vacuum_camera.camera import ValetudoCamera
 from homeassistant.components.camera import Camera
 
 
