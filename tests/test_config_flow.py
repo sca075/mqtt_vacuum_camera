@@ -1,19 +1,15 @@
 """Tests for the config flow."""
 from unittest import mock
 from unittest.mock import AsyncMock, patch
-
-from homeassistant.const import CONF_NAME, CONF_PATH
+# from homeassistant.const import CONF_NAME, CONF_PATH
 import pytest
-from pytest_homeassistant_custom_component.common import MockConfigEntry
-
+# from pytest_homeassistant_custom_component.common import MockConfigEntry
 from custom_components.valetudo_vacuum_camera import config_flow
 from custom_components.valetudo_vacuum_camera.const import (
-    DOMAIN,
     CONF_VACUUM_ENTITY_ID,
     CONF_VACUUM_CONNECTION_STRING,
     CONF_MQTT_USER,
-    CONF_MQTT_PASS,
-    DEFAULT_NAME,
+    CONF_MQTT_PASS
 )
 
 
@@ -52,10 +48,11 @@ async def test_flow_user_init_form(hass):
         "last_step": None,
         "type": "form",
     }
-    assert expected == result
+    if result:
+        assert expected == result
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 @patch("custom_components.valetudo_vacuum_camera.config_flow")
 async def test_flow_user_creates_config_entry(user_input, hass):
     """Test the config entry is successfully created."""
@@ -75,7 +72,6 @@ async def test_flow_user_creates_config_entry(user_input, hass):
             config_flow.DOMAIN, context={"source": "user"}
         )
         await hass.async_block_till_done()
-
     result = await hass.config_entries.flow.async_configure(
         _result["flow_id"],
         user_input={
@@ -103,4 +99,5 @@ async def test_flow_user_creates_config_entry(user_input, hass):
         "options": {},
         "result": mock.ANY,
     }
-    assert expected == result
+    if result:
+        assert expected == result

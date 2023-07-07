@@ -7,9 +7,6 @@ import math
 
 import numpy as np
 from PIL import Image, ImageDraw
-
-_LOGGER = logging.getLogger(__name__)
-
 from custom_components.valetudo_vacuum_camera.utils.colors import (
     color_charger,
     color_move,
@@ -19,6 +16,8 @@ from custom_components.valetudo_vacuum_camera.utils.colors import (
     color_ext_background,
     color_grey,
 )
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class MapImageHandler(object):
@@ -37,13 +36,13 @@ class MapImageHandler(object):
 
     @staticmethod
     def sublist(lst, n):
-        return [lst[i : i + n] for i in range(0, len(lst), n)]
+        return [lst[i: i + n] for i in range(0, len(lst), n)]
 
     @staticmethod
     def sublist_join(lst, n):
         arr = np.array(lst)
         num_windows = len(lst) - n + 1
-        result = [arr[i : i + n].tolist() for i in range(num_windows)]
+        result = [arr[i: i + n].tolist() for i in range(num_windows)]
         return result
 
     @staticmethod
@@ -117,7 +116,7 @@ class MapImageHandler(object):
             for i in range(z):
                 col = (x + i) * pixel_size
                 row = y * pixel_size
-                image_array[row : row + pixel_size, col : col + pixel_size] = color
+                image_array[row: row + pixel_size, col: col + pixel_size] = color
         # Convert the image array to a PIL image
         return image_array
 
@@ -134,7 +133,7 @@ class MapImageHandler(object):
         )
         self.crop_area = cropbox
         _LOGGER.debug("Crop Box data: %s", self.crop_area)
-        cropped = image_array[cropbox[1] : cropbox[3], cropbox[0] : cropbox[2]]
+        cropped = image_array[cropbox[1]: cropbox[3], cropbox[0]: cropbox[2]]
         self.crop_img_size = (cropped.shape[1], cropped.shape[0])
         _LOGGER.debug("Crop image size: %s", self.crop_img_size)
         return cropped

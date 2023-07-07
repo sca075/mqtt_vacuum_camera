@@ -6,8 +6,6 @@ from homeassistant import config_entries
 from homeassistant.const import CONF_NAME
 import homeassistant.helpers.config_validation as cv
 
-_LOGGER = logging.getLogger(__name__)
-
 from .const import (
     DOMAIN,
     CONF_VACUUM_ENTITY_ID,
@@ -16,6 +14,8 @@ from .const import (
     CONF_MQTT_PASS,
     DEFAULT_NAME,
 )
+
+_LOGGER = logging.getLogger(__name__)
 
 AUTH_SCHEMA = vol.Schema(
     {
@@ -32,10 +32,13 @@ OPTIONS_SCHEMA = vol.Schema(
 
 
 class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
+    def __init__(self):
+        self.data = None
+
     async def async_step_user(self, user_input: Optional[Dict[str, Any]] = None):
+
         if user_input is not None:
             self.data = user_input
-
             self.data.update(
                 {
                     "vacuum_entity": user_input.get(CONF_VACUUM_ENTITY_ID),

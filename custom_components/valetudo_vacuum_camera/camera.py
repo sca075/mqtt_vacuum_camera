@@ -1,12 +1,9 @@
 from __future__ import annotations
-
 import logging
 from io import BytesIO
 from datetime import timedelta
 from typing import Optional
-
 import voluptuous as vol
-
 from homeassistant.components.camera import Camera, PLATFORM_SCHEMA, SUPPORT_ON_OFF
 from homeassistant.const import CONF_NAME
 from homeassistant import core, config_entries
@@ -27,11 +24,6 @@ from custom_components.valetudo_vacuum_camera.valetudo.image_handler import (
     MapImageHandler,
 )
 from custom_components.valetudo_vacuum_camera.valetudo.vacuum import Vacuum
-
-_LOGGER: logging.Logger = logging.getLogger(__name__)
-
-SCAN_INTERVAL = timedelta(seconds=5)
-
 from .const import (
     CONF_VACUUM_CONNECTION_STRING,
     CONF_VACUUM_ENTITY_ID,
@@ -51,6 +43,8 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
         vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
     }
 )
+SCAN_INTERVAL = timedelta(seconds=5)
+_LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 async def async_setup_entry(

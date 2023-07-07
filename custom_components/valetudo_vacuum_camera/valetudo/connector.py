@@ -1,4 +1,6 @@
 import logging
+import time
+
 import paho.mqtt.client as client
 
 from custom_components.valetudo_vacuum_camera.utils.valetudo_jdata import RawToJson
@@ -30,6 +32,7 @@ class ValetudoConnector(client.Client):
         self._mqtt_vac_err = None
         self._data_in = False
         self._img_decoder = RawToJson(hass)
+        self.client_test_mode(mqtt_topic)
 
     def update_data(self):
         if self._payload:
@@ -88,3 +91,15 @@ class ValetudoConnector(client.Client):
         self.loop_stop()
         self._mqtt_run = False
         _LOGGER.debug("Stopped MQTT loop")
+
+    def client_test_mode(self, check_topic):
+        if check_topic == None or "valetudo/myTopic":
+            _LOGGER.warning("Valetudo Connector test mode ON %s", {check_topic})
+            with open('tests/mqtt_data.raw', 'rb') as file:
+                binary_data = file.read()
+            self._payload = binary_data
+            self._data_in = True
+            self.update_data()
+            time.sleep(1.5)
+            self.loop_stop()
+

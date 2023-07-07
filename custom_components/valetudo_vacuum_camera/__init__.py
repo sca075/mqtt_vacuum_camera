@@ -1,6 +1,4 @@
 """valetudo vacuum camera"""
-import asyncio
-import threading
 import logging
 
 from homeassistant import config_entries, core
