@@ -6,13 +6,17 @@
           "vacuum_entity": "Vacuum Entity ID",
           "broker_user": "MQTT User Name",
           "broker_password": "MQTT User Password",
-          "vacuum_map": "Vacuum Topic Prefix/Identifier"
+          "vacuum_map": "Vacuum Topic Prefix/Identifier",
+          "rotate_image": ["0", "90", "180", "270"],
+          "crop_image": "0"
         },
         "data_description": {
           "vacuum_entity": "Vacuum Entity ID",
           "broker_user": "MQTT User Name",
           "broker_password": "MQTT User Password",
-          "vacuum_map": "Vacuum Topic Prefix/Identifier"
+          "vacuum_map": "Vacuum Topic Prefix/Identifier",
+          "rotate_image": "Degree 0, 90, 180, 270",
+          "crop_image": "Crop the image in %"
         },
         "description": "Camera Setup.",
         "title": "Valetudo Camera Setup"

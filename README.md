@@ -10,11 +10,32 @@
 Extract the maps for rooted Vacuum Cleaners with Valetudo Firmware to Home Assistant via MQTT.
 This Custom Component allow to integrate the Vacuum functionalities and encode the Vacuum Map embedded on the image the vacuum send to mqtt.
 This Integration can decode the vacuum map and render it to Home Assistant, when you want also to control your vacuum you will need to also install the lovelace-xiaomi-vacuum-map-card (recommended) from HACS as well.
+Configuration of the card once the camera is selected requires:
+calibration source to be set to camera: true
+```
+type: custom:xiaomi-vacuum-map-card
+entity: vacuum.valetudo_silenttepidstinkbug
+vacuum_platform: Hypfer/Valetudo
+map_source:
+  camera: camera.valetudo_vacuum_camera 
+calibration_source: 
+  camera: true 
+internal_variables: 
+  topic: valetudo/your_topic  
+  ```
 
-### Current Release: v1.1.4
-- Fixing intrgration ***issue #2***.
-- Code improvements.
 
+### Current Release: v1.1.5
+1) Adding cropping and rotation options the users can now customize the image output.
+2) Enhancing the image_handler module to handle empty data and avoid unnecessary computations during image creation (reported on issues 4). This ensures that only relevant data is processed, improving efficiency and reducing potential errors.
+3) Buffering the background image and redrawing it every 5 frames.
+4) Making changes to the routine that draws the robot and flag for Go to Function.
+5) Introducing a function to bypass MQTT in a test scenario, still a work in progress but do not affect the data collection.
+6) Implementing data collection to expand the range of supported vacuums.
+   1) New folder "snapshots" in the integration base folder since v1.1.5
+   2) in snapshot will be automatically stored a png in case the vacuum is docked, idle or error.
+   3) additionally formatted json data and when available the mqtt raw payload will be saved.
+   NOTE: It is in plan to use the camera snapshot functions so that in case the battery of the vacuum is dead will be more easy to locate it. It will be possible to send the last position of the vacuum setting up the notification in HA.
 
 ### How to install:
 Using [HACS](https://hacs.xyz/) add integration, and copy the repository link in ***new repository*** section.
@@ -29,6 +50,8 @@ camera:
         vacuum_map: "valetudo/your_vacuum_topic"
         borker_User: "broker_user_name"
         broker_Password: "broker_password"
+        rotate_image: integer value image clock wise rotation values 0, 90, 180, or 270.
+        crop_image: 0 integer value = 100% of the image is redered. 25 is reducing the image of 75%.
         scan_interval:
             seconds: 5
 ```
@@ -71,10 +94,12 @@ tiles:
 After that, you can easily generate the service calls to integrate or control
 your Vacuum via Home Assistant.
 
-**The current tasks list is:**
-- [x] Get from the json data predicted_path and selected_area.
-- [ ] Grab the available consumable data form MQTT.
-- [ ] Confirm Reset functions for consumables.
-- [x] Fix config_flow in order to meet HA requirements (including UniqueID).
+**Checked before release:**
+- [x] Configuration via GUI. (user interface will be improved on V1.1.6)
+- [x] No errors after installation (at first init the image will be gray)
+- [x] Reporting the calibration data will take a while, please wait until the init is complete.
+- [x] Go to and ara cleaning tested.
+- [x] Camera reload okay.
+- [x] Camera entry delete okay.
 
 

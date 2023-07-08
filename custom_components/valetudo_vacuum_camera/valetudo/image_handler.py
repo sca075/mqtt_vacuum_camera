@@ -1,3 +1,4 @@
+"""Version 1.1.5"""
 # Image Handler Module
 # Collection of routines to extract data from the received json.
 # It returns values and images relative to the Map Data extrapolated from the vacuum json.
@@ -36,13 +37,13 @@ class MapImageHandler(object):
 
     @staticmethod
     def sublist(lst, n):
-        return [lst[i: i + n] for i in range(0, len(lst), n)]
+        return [lst[i : i + n] for i in range(0, len(lst), n)]
 
     @staticmethod
     def sublist_join(lst, n):
         arr = np.array(lst)
         num_windows = len(lst) - n + 1
-        result = [arr[i: i + n].tolist() for i in range(num_windows)]
+        result = [arr[i : i + n].tolist() for i in range(num_windows)]
         return result
 
     @staticmethod
@@ -116,7 +117,7 @@ class MapImageHandler(object):
             for i in range(z):
                 col = (x + i) * pixel_size
                 row = y * pixel_size
-                image_array[row: row + pixel_size, col: col + pixel_size] = color
+                image_array[row : row + pixel_size, col : col + pixel_size] = color
         # Convert the image array to a PIL image
         return image_array
 
@@ -133,7 +134,7 @@ class MapImageHandler(object):
         )
         self.crop_area = cropbox
         _LOGGER.debug("Crop Box data: %s", self.crop_area)
-        cropped = image_array[cropbox[1]: cropbox[3], cropbox[0]: cropbox[2]]
+        cropped = image_array[cropbox[1] : cropbox[3], cropbox[0] : cropbox[2]]
         self.crop_img_size = (cropped.shape[1], cropped.shape[0])
         _LOGGER.debug("Crop image size: %s", self.crop_img_size)
         return cropped
@@ -343,124 +344,160 @@ class MapImageHandler(object):
                             arr[y + i, x + j] = color
         return arr
 
-    def get_image_from_json(self, m_json):
-        if m_json is not None:
-            # Reading and splitting the Json form Valetudo
-            size_x = int(m_json["size"]["x"])
-            size_y = int(m_json["size"]["y"])
-            self.img_size = {
-                "x": size_x,
-                "y": size_y,
-                "centre": [(size_x // 2), (size_y // 2)],
-            }
-
-            self.json_id = m_json["metaData"]["nonce"]
-
-            # Predicted path if any
-            predicted_pat2 = None
-            predicted_path = self.find_paths_entities(m_json, None)
-            predicted_path = predicted_path.get("predicted_path")
-            if predicted_path:
-                predicted_path = predicted_path[0]["points"]
-                predicted_path = self.sublist(predicted_path, 2)
-                predicted_pat2 = self.sublist_join(predicted_path, 2)
-
-            # Zone cleaning area if any
-            zone_clean = self.find_zone_entities(m_json, None)
-
-            # Saerching the "points" robot, charger and go_to
-            entity_dict = self.find_points_entities(m_json, None)
-            robot_pos = entity_dict.get("robot_position")
-            robot_position = robot_pos[0]["points"]
-            robot_position_angle = robot_pos[0]["metaData"]["angle"]
-            self.robot_pos = {
-                "x": robot_position[0],
-                "y": robot_position[1],
-                "angle": robot_position_angle,
-            }
-            charger_pos = entity_dict.get("charger_location")
-            if charger_pos:
-                charger_pos = charger_pos[0]["points"]
-                self.charger_pos = {
-                    "x": charger_pos[0],
-                    "y": charger_pos[1],
+    def get_image_from_json(self, m_json, crop: int = 0):
+        try:
+            if m_json is not None:
+                # Reading and splitting the Json form Valetudo
+                _LOGGER.debug("Reading the json data we got from the MQTT")
+                size_x = int(m_json["size"]["x"])
+                size_y = int(m_json["size"]["y"])
+                self.img_size = {
+                    "x": size_x,
+                    "y": size_y,
+                    "centre": [(size_x // 2), (size_y // 2)],
                 }
-            go_to = entity_dict.get("go_to_target")
+                _LOGGER.debug("Image Size in X and Y: %s", {size_x})
+                self.json_id = m_json["metaData"]["nonce"]
+                _LOGGER.debug("Vacuum JSon ID: %s", {self.json_id})
+                # Predicted path if any
+                predicted_pat2 = None
+                try:
+                    predicted_path = self.find_paths_entities(m_json, None)
+                    predicted_path = predicted_path.get("predicted_path")
+                except (ValueError, KeyError) as e:
+                    _LOGGER.error("Error finding predicted path: %s", str(e))
+                    predicted_path = None
+                if predicted_path:
+                    predicted_path = predicted_path[0]["points"]
+                    predicted_path = self.sublist(predicted_path, 2)
+                    predicted_pat2 = self.sublist_join(predicted_path, 2)
 
-            """Calibration data of the result image
-            Size X and Y give the result as calculated in the robot.
-            Pixel size is defined for lidar resolution and image points location. """
+                # Zone cleaning area if any
+                try:
+                    zone_clean = self.find_zone_entities(m_json, None)
+                except (ValueError, KeyError) as e:
+                    _LOGGER.error("Error finding zone clean: %s", str(e))
+                    zone_clean = None
+                else:
+                    _LOGGER.debug("Got zone clean: %s", zone_clean)
 
-            pixel_size = int(m_json["pixelSize"])
-            flour_pixels = m_json["layers"][0]["compressedPixels"]
-            walls_pixels = m_json["layers"][1]["compressedPixels"]
-            path_pixels = m_json["entities"][0]["points"]
+                # Searching the "points" robot, charger, and go_to
+                try:
+                    entity_dict = self.find_points_entities(m_json, None)
+                except (ValueError, KeyError) as e:
+                    _LOGGER.error("Error finding points: %s", str(e))
+                    entity_dict = None
+                else:
+                    _LOGGER.debug("Got the points in the json: %s", entity_dict)
+                try:
+                    robot_pos = entity_dict.get("robot_position")
+                    robot_position = robot_pos[0]["points"]
+                    robot_position_angle = robot_pos[0]["metaData"]["angle"]
+                    self.robot_pos = {
+                        "x": robot_position[0],
+                        "y": robot_position[1],
+                        "angle": robot_position_angle,
+                    }
+                except (ValueError, KeyError, TypeError) as e:
+                    _LOGGER.error("Error getting robot position: %s", str(e))
+                    robot_position_angle = None
+                    robot_position = None
+                    self.robot_pos = None
+                else:
+                    _LOGGER.debug("Got robot position: %s", robot_pos)
+                try:
+                    charger_pos = entity_dict.get("charger_location")
+                    if charger_pos:
+                        charger_pos = charger_pos[0]["points"]
+                        self.charger_pos = {
+                            "x": charger_pos[0],
+                            "y": charger_pos[1],
+                        }
+                except (ValueError, KeyError, TypeError) as e:
+                    _LOGGER.error("Error getting charger position: %s", str(e))
+                    charger_pos = None
+                    self.charger_pos = None
+                else:
+                    _LOGGER.debug("Got charger position: %s", charger_pos)
 
-            # Formatting the data arrays for Numpy
-            flour_pixels = self.sublist(flour_pixels, 3)
-            walls_pixels = self.sublist(walls_pixels, 3)
-            path_pixels = self.sublist(path_pixels, 2)
-            path_pixel2 = self.sublist_join(path_pixels, 2)
-            if self.frame_number == 0:
-                _LOGGER.debug("Drawing image background")
-                # Create the base Numpy array
-                img_np_array = self.create_empty_image(
-                    size_x, size_y, color_ext_background
-                )
-                # Numpy array pixels positions and colours computation
-                img_np_array = self.from_json_to_image(
-                    img_np_array, flour_pixels, pixel_size, color_home_background
-                )
-                # If there is a zone clean we draw it now.
-                if zone_clean:
-                    zones_clean = zone_clean.get("active_zone")
-                    img_np_array = self.draw_zone_clean(
-                        zones_clean, img_np_array, (0, 0, 255, 64)
+                go_to = entity_dict.get("go_to_target")
+
+                # Calibration data of the result image
+                # Size X and Y give the result as calculated in the robot.
+                # Pixel size is defined for lidar resolution and image points location.
+                pixel_size = int(m_json["pixelSize"])
+                flour_pixels = m_json["layers"][0]["compressedPixels"]
+                walls_pixels = m_json["layers"][1]["compressedPixels"]
+                path_pixels = m_json["entities"][0]["points"]
+
+                # Formatting the data arrays for Numpy
+                flour_pixels = self.sublist(flour_pixels, 3)
+                walls_pixels = self.sublist(walls_pixels, 3)
+                path_pixels = self.sublist(path_pixels, 2)
+                path_pixel2 = self.sublist_join(path_pixels, 2)
+                if self.frame_number == 0:
+                    _LOGGER.debug("Drawing image background")
+                    # Create the base Numpy array
+                    img_np_array = self.create_empty_image(
+                        size_x, size_y, color_ext_background
                     )
-                # Drawing walls
-                img_np_array = img_np_array + self.from_json_to_image(
-                    img_np_array, walls_pixels, pixel_size, color_wall
-                )
-                # Drawing base / Battery Charger
-                if charger_pos:
-                    img_np_array = self.draw_battery_charger(
-                        img_np_array, charger_pos[0], charger_pos[1], color_charger
+                    # Numpy array pixels positions and colours computation
+                    img_np_array = self.from_json_to_image(
+                        img_np_array, flour_pixels, pixel_size, color_home_background
                     )
-                self.img_base_layer = (
-                    img_np_array  # Store flour, walls and charger combined NP array.
-                )
-                self.frame_number += 1
-            else:
-                img_np_array = self.img_base_layer
-                _LOGGER.debug("Frame nuber %s", self.frame_number)
-                self.frame_number += 1
-                if self.frame_number > 5:
-                    self.frame_number = 0
-            if go_to:  # if we have a goto position draw the flag end point.
-                img_np_array = self.draw_go_to_flag(
-                    img_np_array,
-                    (go_to[0]["points"][0], go_to[0]["points"][1]),
-                    self.img_rotate,
-                )
-            # finally let´s add the robot layer adding predicted path if available
-            if predicted_pat2:
-                img_np_array = self.draw_lines(
-                    img_np_array, predicted_pat2, 2, color_grey
-                )
-            img_np_array = self.draw_lines(img_np_array, path_pixel2, 5, color_move)
-            img_np_array = img_np_array + self.draw_robot(
-                img_np_array,
-                robot_position[0],
-                robot_position[1],
-                robot_position_angle,
-                color_robot,
-            )
-            # The image is cropped 75% so that the last layer is smaller to be sent.
-            img_np_array = self.crop_array(img_np_array, 25)
-            # Conversion of NP array to PIL image
-            pil_img = Image.fromarray(img_np_array, mode="RGBA")
-            return pil_img
-        else:
+                    # If there is a zone clean we draw it now.
+                    if zone_clean:
+                        _LOGGER.debug("Drawing Zone Clean")
+                        zones_clean = zone_clean.get("active_zone")
+                        img_np_array = self.draw_zone_clean(
+                            zones_clean, img_np_array, (0, 0, 255, 64)
+                        )
+
+                    # Drawing walls
+                    img_np_array = img_np_array + self.from_json_to_image(
+                        img_np_array, walls_pixels, pixel_size, color_wall
+                    )
+                    # Drawing base / Battery Charger
+                    if charger_pos:
+                        img_np_array = self.draw_battery_charger(
+                            img_np_array, charger_pos[0], charger_pos[1], color_charger
+                        )
+                    self.img_base_layer = img_np_array  # Store flour, walls, and charger combined NP array.
+                    self.frame_number += 1
+                else:
+                    img_np_array = self.img_base_layer
+                    _LOGGER.debug("Frame number %s", self.frame_number)
+                    self.frame_number += 1
+                    if self.frame_number > 5:
+                        self.frame_number = 0
+                    if go_to:  # If we have a goto position, draw the flag endpoint.
+                        img_np_array = self.draw_go_to_flag(
+                            img_np_array,
+                            (go_to[0]["points"][0], go_to[0]["points"][1]),
+                            self.img_rotate,
+                        )
+                        # Finally, let's add the robot layer, adding the predicted path if available
+                    if predicted_pat2:
+                        img_np_array = self.draw_lines(
+                            img_np_array, predicted_pat2, 2, color_grey
+                        )
+                    img_np_array = self.draw_lines(
+                        img_np_array, path_pixel2, 5, color_move
+                    )
+                    img_np_array = img_np_array + self.draw_robot(
+                        img_np_array,
+                        robot_position[0],
+                        robot_position[1],
+                        robot_position_angle,
+                        color_robot,
+                    )
+                    # The image is cropped 25 = 75% so that the last layer is smaller to be sent.
+                    img_np_array = self.crop_array(img_np_array, crop)
+                    # Conversion of NP array to PIL image
+                    pil_img = Image.fromarray(img_np_array, mode="RGBA")
+                    return pil_img
+        except Exception as e:
+            _LOGGER.error("Error in get_image_from_json: %s", str(e))
             return None
 
     def get_robot_position(self):

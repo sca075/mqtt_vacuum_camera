@@ -41,11 +41,7 @@ async def async_unload_entry(
     hass: core.HomeAssistant, entry: config_entries.ConfigEntry
 ) -> bool:
     """Unload a config entry."""
-
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
-        # Wait for the threads to terminate
-        # await mqtt_to_stop.ValetudoConnector.client_stop()
-
         # Remove config entry from domain.
         entry_data = hass.data[DOMAIN].pop(entry.entry_id)
         entry_data["unsub_options_update_listener"]()
