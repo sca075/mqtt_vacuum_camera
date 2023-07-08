@@ -1,3 +1,4 @@
+"""Config Flow Version 1.1.5"""
 import voluptuous as vol
 import logging
 from typing import Any, Dict, Optional
@@ -13,6 +14,8 @@ from .const import (
     CONF_MQTT_USER,
     CONF_MQTT_PASS,
     DEFAULT_NAME,
+    ATT_ROTATE,
+    ATT_CROP,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -23,11 +26,13 @@ AUTH_SCHEMA = vol.Schema(
         vol.Required(CONF_MQTT_USER): cv.string,
         vol.Required(CONF_MQTT_PASS): cv.string,
         vol.Required(CONF_VACUUM_CONNECTION_STRING): cv.string,
+        vol.Required(ATT_ROTATE, default="0"): cv.string,
+        vol.Required(ATT_CROP, default="0"): cv.string,
     }
 )
 
 OPTIONS_SCHEMA = vol.Schema(
-    {vol.Optional(CONF_NAME, default="valetudo_vacuum_camera"): cv.string}
+    {vol.Optional(CONF_NAME, default="valetudo_vacuum_camera"): cv.entity_id}
 )
 
 
@@ -36,7 +41,6 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         self.data = None
 
     async def async_step_user(self, user_input: Optional[Dict[str, Any]] = None):
-
         if user_input is not None:
             self.data = user_input
             self.data.update(
@@ -45,6 +49,8 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     "broker_user": user_input.get(CONF_MQTT_USER),
                     "broker_password": user_input.get(CONF_MQTT_PASS),
                     "vacuum_map": user_input.get(CONF_VACUUM_CONNECTION_STRING),
+                    "rotate_image": user_input.get(ATT_ROTATE),
+                    "crop_image": user_input.get(ATT_CROP),
                 }
             )
             return self.async_create_entry(

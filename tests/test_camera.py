@@ -1,8 +1,10 @@
+# import time
 from unittest.mock import AsyncMock, MagicMock
 import socket
 import pytest
 from custom_components.valetudo_vacuum_camera.camera import ValetudoCamera
 from homeassistant.components.camera import Camera
+
 
 @pytest.mark.allow_hosts(["127.0.0.1"], 1883)
 @pytest.mark.asyncio
@@ -18,15 +20,16 @@ async def test_update_success(hass, aioclient_mock, socket_enabled):
                 "broker_user": "mqttUser",
                 "broker_password": "mqttPassword",
                 "vacuum_map": "valetudo/myTopic",
+                "rotate_image": "0",
+                "crop_image": "0",
             }
         ]
     )
     camera = ValetudoCamera(Camera, {"path": "homeassistant/core"})
     camera.throttled_camera_image()
     camera.update()
-    #camera.turn_off()
-
-
+    # time.sleep(0.5)
+    camera.turn_off()
     expected = {
         "calibration_points": None,
         "json_data": None,
@@ -41,4 +44,4 @@ async def test_update_success(hass, aioclient_mock, socket_enabled):
     assert camera.available is True
     assert camera.state == "idle"
     assert expected == camera.extra_state_attributes
-    #assert camera.camera_image() is not None
+    # assert camera.camera_image() is not None

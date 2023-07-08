@@ -1,3 +1,4 @@
+"""Version 1.1.5"""
 import logging
 import struct
 import zlib
@@ -51,7 +52,7 @@ class RawToJson:
                 # Read the length of the current chunk,
                 # which is stored as an Uint32.
 
-                uint8[0], uint8[1], uint8[2], uint8[3] = data[idx: idx + 4]
+                uint8[0], uint8[1], uint8[2], uint8[3] = data[idx : idx + 4]
                 idx += 4
 
                 # Chunk includes name/type for CRC check (see below).
@@ -59,7 +60,7 @@ class RawToJson:
 
                 chunk = bytearray(length)
 
-                chunk[0:4] = data[idx: idx + 4]
+                chunk[0:4] = data[idx : idx + 4]
                 idx += 4
 
                 # Get the name in ASCII for identification.
@@ -73,7 +74,7 @@ class RawToJson:
                     return ended
 
                 # Read the contents of the chunk out of the main buffer.
-                chunk[4:length] = data[idx: idx + length - 4]
+                chunk[4:length] = data[idx : idx + length - 4]
                 idx += length - 4
 
                 # Skip the CRC32
@@ -108,7 +109,7 @@ class RawToJson:
                 _LOGGER.warning("MQTT message format error:", {warning})
                 return None
             else:
-                if (self._jdata != None) or (extract_data != None):
+                if self._jdata or extract_data is not None:
                     _LOGGER.debug("Extracting JSON")
                     dec_data = zlib.decompress(self._jdata).decode("utf-8")
                     json_data = dec_data

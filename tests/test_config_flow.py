@@ -1,15 +1,19 @@
 """Tests for the config flow."""
 from unittest import mock
 from unittest.mock import AsyncMock, patch
+
 # from homeassistant.const import CONF_NAME, CONF_PATH
 import pytest
+
 # from pytest_homeassistant_custom_component.common import MockConfigEntry
 from custom_components.valetudo_vacuum_camera import config_flow
 from custom_components.valetudo_vacuum_camera.const import (
     CONF_VACUUM_ENTITY_ID,
     CONF_VACUUM_CONNECTION_STRING,
     CONF_MQTT_USER,
-    CONF_MQTT_PASS
+    CONF_MQTT_PASS,
+    ATT_ROTATE,
+    ATT_CROP,
 )
 
 
@@ -64,6 +68,8 @@ async def test_flow_user_creates_config_entry(user_input, hass):
         "broker_user": user_input.get(CONF_MQTT_USER),
         "broker_password": user_input.get(CONF_MQTT_PASS),
         "vacuum_map": user_input.get(CONF_VACUUM_CONNECTION_STRING),
+        "rotate_image": user_input.get(ATT_ROTATE),
+        "crop_image": user_input.get(ATT_CROP),
     }
     with patch(
         "custom_components.valetudo_vacuum_camera.async_setup_entry", return_value=True
@@ -79,6 +85,8 @@ async def test_flow_user_creates_config_entry(user_input, hass):
             CONF_MQTT_USER: "MQTT User Name",
             CONF_MQTT_PASS: "MQTT User Password",
             CONF_VACUUM_CONNECTION_STRING: "Vacuum Topic Prefix/Identifier",
+            ATT_ROTATE: "Image Rotation",
+            ATT_CROP: "Crop Image",
         },
     )
     expected = {
@@ -93,6 +101,8 @@ async def test_flow_user_creates_config_entry(user_input, hass):
             "broker_user": "MQTT User Name",
             "broker_password": "MQTT User Password",
             "vacuum_map": "Vacuum Topic Prefix/Identifier",
+            "rotate_image": "Image Rotation",
+            "crop_image": "Crop Image",
         },
         "description": None,
         "description_placeholders": None,

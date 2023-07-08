@@ -1,8 +1,7 @@
+"""Version 1.1.5"""
 import logging
 import time
-
 import paho.mqtt.client as client
-
 from custom_components.valetudo_vacuum_camera.utils.valetudo_jdata import RawToJson
 
 _LOGGER = logging.getLogger(__name__)
@@ -32,7 +31,7 @@ class ValetudoConnector(client.Client):
         self._mqtt_vac_err = None
         self._data_in = False
         self._img_decoder = RawToJson(hass)
-        self.client_test_mode(mqtt_topic)
+        self.is_client_check_mode(mqtt_topic)
 
     def update_data(self):
         if self._payload:
@@ -53,6 +52,13 @@ class ValetudoConnector(client.Client):
 
     def is_data_available(self):
         return self._data_in
+
+    def save_payload(self):
+        if self._payload and (self._data_in is True):
+            with open(
+                "custom_components/valetudo_vacuum_camera/snapshots/mqtt_data.raw", "wb"
+            ) as file:
+                file.write(self._payload)
 
     def on_message_callback(self, client, userdata, msg):
         self._rcv_topic = msg.topic
@@ -92,14 +98,19 @@ class ValetudoConnector(client.Client):
         self._mqtt_run = False
         _LOGGER.debug("Stopped MQTT loop")
 
-    def client_test_mode(self, check_topic):
-        if check_topic == None or "valetudo/myTopic":
-            _LOGGER.warning("Valetudo Connector test mode ON %s", {check_topic})
-            with open('tests/mqtt_data.raw', 'rb') as file:
-                binary_data = file.read()
-            self._payload = binary_data
-            self._data_in = True
-            self.update_data()
+    def is_client_check_mode(self, check_topic):
+        test_topic = "valetudo/myTopic"
+        if check_topic is test_topic:
+            _LOGGER.warning("Valetudo Connector test Topic ON %s", {check_topic})
+            try:
+                with open("tests/mqtt_data.raw", "rb") as file:
+                    binary_data = file.read()
+                self._payload = binary_data
+                self._data_in = True
+                self.update_data()
+            except FileExistsError:
+                _LOGGER.warning(
+                    "Valetudo Connector undefined Topic, please check your configuration."
+                )
             time.sleep(1.5)
             self.loop_stop()
-
