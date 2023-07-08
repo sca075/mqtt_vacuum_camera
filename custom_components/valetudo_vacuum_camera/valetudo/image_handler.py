@@ -365,7 +365,7 @@ class MapImageHandler(object):
                     predicted_path = self.find_paths_entities(m_json, None)
                     predicted_path = predicted_path.get("predicted_path")
                 except (ValueError, KeyError) as e:
-                    _LOGGER.error("Error finding predicted path: %s", str(e))
+                    _LOGGER.info("No predicted path: %s", str(e))
                     predicted_path = None
                 if predicted_path:
                     predicted_path = predicted_path[0]["points"]
@@ -376,7 +376,7 @@ class MapImageHandler(object):
                 try:
                     zone_clean = self.find_zone_entities(m_json, None)
                 except (ValueError, KeyError) as e:
-                    _LOGGER.error("Error finding zone clean: %s", str(e))
+                    _LOGGER.info("No zone clean: %s", str(e))
                     zone_clean = None
                 else:
                     _LOGGER.debug("Got zone clean: %s", zone_clean)
@@ -385,7 +385,7 @@ class MapImageHandler(object):
                 try:
                     entity_dict = self.find_points_entities(m_json, None)
                 except (ValueError, KeyError) as e:
-                    _LOGGER.error("Error finding points: %s", str(e))
+                    _LOGGER.warning("No points in json data: %s", str(e))
                     entity_dict = None
                 else:
                     _LOGGER.debug("Got the points in the json: %s", entity_dict)
@@ -414,7 +414,7 @@ class MapImageHandler(object):
                             "y": charger_pos[1],
                         }
                 except (ValueError, KeyError, TypeError) as e:
-                    _LOGGER.error("Error getting charger position: %s", str(e))
+                    _LOGGER.warning("Error getting charger position: %s", str(e))
                     charger_pos = None
                     self.charger_pos = None
                 else:
