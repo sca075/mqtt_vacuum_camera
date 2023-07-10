@@ -7,8 +7,8 @@
           "broker_user": "MQTT User Name",
           "broker_password": "MQTT User Password",
           "vacuum_map": "Vacuum Topic Prefix/Identifier",
-          "rotate_image": ["0", "90", "180", "270"],
-          "crop_image": "0"
+          "rotate_image": "0",
+          "crop_image": "50"
         },
         "data_description": {
           "vacuum_entity": "Vacuum Entity ID",
