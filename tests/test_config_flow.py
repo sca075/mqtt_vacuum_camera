@@ -68,7 +68,7 @@ async def test_flow_user_creates_config_entry(user_input, hass):
         "broker_user": user_input.get(CONF_MQTT_USER),
         "broker_password": user_input.get(CONF_MQTT_PASS),
         "vacuum_map": user_input.get(CONF_VACUUM_CONNECTION_STRING),
-        "rotate_image": user_input.get(ATT_ROTATE),
+        "rotate_image": user_input.values().mapping.get(ATT_ROTATE),
         "crop_image": user_input.get(ATT_CROP),
     }
     with patch(
@@ -101,8 +101,8 @@ async def test_flow_user_creates_config_entry(user_input, hass):
             "broker_user": "MQTT User Name",
             "broker_password": "MQTT User Password",
             "vacuum_map": "Vacuum Topic Prefix/Identifier",
-            "rotate_image": "Image Rotation",
-            "crop_image": "Crop Image",
+            "rotate_image": 'Image Rotation',
+            "crop_image": 'Crop Image',
         },
         "description": None,
         "description_placeholders": None,

@@ -1,4 +1,3 @@
-# import time
 from unittest.mock import AsyncMock, MagicMock
 import socket
 import pytest
@@ -21,15 +20,15 @@ async def test_update_success(hass, aioclient_mock, socket_enabled):
                 "broker_password": "mqttPassword",
                 "vacuum_map": "valetudo/myTopic",
                 "rotate_image": "0",
-                "crop_image": "0",
+                "crop_image": "50",
             }
         ]
     )
     camera = ValetudoCamera(Camera, {"path": "homeassistant/core"})
     camera.throttled_camera_image()
     camera.update()
-    # time.sleep(0.5)
     camera.turn_off()
+
     expected = {
         "calibration_points": None,
         "json_data": None,

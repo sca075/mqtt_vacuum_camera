@@ -25,24 +25,28 @@ color_room_7 = (180, 205, 205, 255)
 color_room_8 = (122, 139, 139, 255)
 color_room_9 = (175, 238, 238, 255)
 
-rooms_color = [color_room_0,
-               color_room_1,
-               color_room_2,
-               color_room_3,
-               color_room_4,
-               color_room_5,
-               color_room_6,
-               color_room_7,
-               color_room_8,
-               color_room_9]
-color_array = [color_wall,
-               color_no_go,
-               color_go_to,
-               color_black,
-               color_robot,
-               color_charger,
-               color_white,
-               color_move,
-               color_background,
-               color_transparent,
-               rooms_color]
+rooms_color = [
+    color_room_0,
+    color_room_1,
+    color_room_2,
+    color_room_3,
+    color_room_4,
+    color_room_5,
+    color_room_6,
+    color_room_7,
+    color_room_8,
+    color_room_9,
+]
+color_array = [
+    color_wall,
+    color_no_go,
+    color_go_to,
+    color_black,
+    color_robot,
+    color_charger,
+    color_white,
+    color_move,
+    color_background,
+    color_transparent,
+    rooms_color,
+]

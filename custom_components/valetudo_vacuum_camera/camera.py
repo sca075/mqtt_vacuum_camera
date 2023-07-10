@@ -47,7 +47,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
         vol.Required(CONF_MQTT_USER): cv.string,
         vol.Required(CONF_MQTT_PASS): cv.string,
         vol.Required(ATT_ROTATE, default="0"): cv.string,
-        vol.Required(ATT_CROP, default="0"): cv.string,
+        vol.Required(ATT_CROP, default="50"): cv.string,
         vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.entity_id,
     }
 )

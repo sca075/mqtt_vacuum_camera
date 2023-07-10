@@ -15,7 +15,7 @@ from custom_components.valetudo_vacuum_camera.utils.colors import (
     color_robot,
     color_ext_background,
     color_grey,
-    rooms_color
+    rooms_color,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -37,25 +37,25 @@ class MapImageHandler(object):
 
     @staticmethod
     def sublist(lst, n):
-        return [lst[i: i + n] for i in range(0, len(lst), n)]
+        return [lst[i : i + n] for i in range(0, len(lst), n)]
 
     @staticmethod
     def sublist_join(lst, n):
         arr = np.array(lst)
         num_windows = len(lst) - n + 1
-        result = [arr[i: i + n].tolist() for i in range(num_windows)]
+        result = [arr[i : i + n].tolist() for i in range(num_windows)]
         return result
 
     def find_layers(self, json_obj, layer_dict=None):
         if layer_dict is None:
             layer_dict = {}
         if isinstance(json_obj, dict):
-            if '__class' in json_obj and json_obj['__class'] == 'MapLayer':
-                layer_type = json_obj.get('type')
+            if "__class" in json_obj and json_obj["__class"] == "MapLayer":
+                layer_type = json_obj.get("type")
                 if layer_type:
                     if layer_type not in layer_dict:
                         layer_dict[layer_type] = []
-                    layer_dict[layer_type].append(json_obj.get('compressedPixels', []))
+                    layer_dict[layer_type].append(json_obj.get("compressedPixels", []))
             for key, value in json_obj.items():
                 self.find_layers(value, layer_dict)
         elif isinstance(json_obj, list):
@@ -134,7 +134,7 @@ class MapImageHandler(object):
             for i in range(z):
                 col = (x + i) * pixel_size
                 row = y * pixel_size
-                image_array[row: row + pixel_size, col: col + pixel_size] = color
+                image_array[row : row + pixel_size, col : col + pixel_size] = color
         # Convert the image array to a PIL image
         return image_array
 
@@ -151,7 +151,7 @@ class MapImageHandler(object):
         )
         self.crop_area = cropbox
         _LOGGER.debug("Crop Box data: %s", self.crop_area)
-        cropped = image_array[cropbox[1]: cropbox[3], cropbox[0]: cropbox[2]]
+        cropped = image_array[cropbox[1] : cropbox[3], cropbox[0] : cropbox[2]]
         self.crop_img_size = (cropped.shape[1], cropped.shape[0])
         _LOGGER.debug("Crop image size: %s", self.crop_img_size)
         return cropped
@@ -159,19 +159,21 @@ class MapImageHandler(object):
     @staticmethod
     def get_color(color_arr, color_name):
         color_index = {
-            'walls': 0,
-            'no_go': 1,
-            'go_to': 2,
-            'predicted_path': 3,
-            'robot': 4,
-            'charger': 5,
-            'path': 6,
-            'move': 7,
-            'background': 8,
-            'transparent': 9
-        }.get(color_name, 9)  # Default to transparent if color name is not found
+            "walls": 0,
+            "no_go": 1,
+            "go_to": 2,
+            "predicted_path": 3,
+            "robot": 4,
+            "charger": 5,
+            "path": 6,
+            "move": 7,
+            "background": 8,
+            "transparent": 9,
+        }.get(
+            color_name, 9
+        )  # Default to transparent if color name is not found
 
-        if color_name == 'rooms':
+        if color_name == "rooms":
             return color_arr[10]  # Return the sublist of room colors
         else:
             return color_arr[color_index]  # Return the color at the specified index
@@ -451,28 +453,34 @@ class MapImageHandler(object):
                 path_pixels = self.sublist(path_pixels, 2)
                 path_pixel2 = self.sublist_join(path_pixels, 2)
 
-                layers = self.find_layers(m_json['layers'])
+                layers = self.find_layers(m_json["layers"])
 
-                img_np_array = self.create_empty_image(size_x, size_y, color_ext_background)
+                img_np_array = self.create_empty_image(
+                    size_x, size_y, color_ext_background
+                )
                 for layer_type, compressed_pixels_list in layers.items():
                     room_id = 0
                     for compressed_pixels in compressed_pixels_list:
                         pixels = self.sublist(compressed_pixels, 3)
                         if layer_type == "segment" or layer_type == "floor":
                             room_color = rooms_color[room_id]
-                            img_np_array = self.from_json_to_image(img_np_array, pixels, pixel_size, room_color)
+                            img_np_array = self.from_json_to_image(
+                                img_np_array, pixels, pixel_size, room_color
+                            )
                             if room_id < 9:
                                 room_id += 1
                             else:
                                 room_id = 0
                         elif layer_type == "wall":
-                            img_np_array = self.from_json_to_image(img_np_array, pixels, pixel_size, color_wall)
+                            img_np_array = self.from_json_to_image(
+                                img_np_array, pixels, pixel_size, color_wall
+                            )
 
                 if self.frame_number == 0:
                     _LOGGER.debug("Drawing image background")
-                    img_np_array = self.draw_battery_charger(img_np_array, charger_pos[0],
-                                                             charger_pos[1],
-                                                             color_charger)
+                    img_np_array = self.draw_battery_charger(
+                        img_np_array, charger_pos[0], charger_pos[1], color_charger
+                    )
                     self.img_base_layer = img_np_array
                     self.frame_number += 1
                 else:
@@ -489,18 +497,25 @@ class MapImageHandler(object):
                     if self.frame_number > 5:
                         self.frame_number = 0
                     if go_to:
-                        img_np_array = self.draw_go_to_flag(img_np_array,
-                                                            (go_to[0]["points"][0],
-                                                             go_to[0]["points"][1]),
-                                                            self.img_rotate)
+                        img_np_array = self.draw_go_to_flag(
+                            img_np_array,
+                            (go_to[0]["points"][0], go_to[0]["points"][1]),
+                            self.img_rotate,
+                        )
                     if predicted_pat2:
-                        img_np_array = self.draw_lines(img_np_array, predicted_pat2, 2, color_grey)
-                    img_np_array = self.draw_lines(img_np_array, path_pixel2, 5, color_move)
-                    img_np_array = img_np_array + self.draw_robot(img_np_array,
-                                                                  robot_position[0],
-                                                                  robot_position[1],
-                                                                  robot_position_angle,
-                                                                  color_robot)
+                        img_np_array = self.draw_lines(
+                            img_np_array, predicted_pat2, 2, color_grey
+                        )
+                    img_np_array = self.draw_lines(
+                        img_np_array, path_pixel2, 5, color_move
+                    )
+                    img_np_array = img_np_array + self.draw_robot(
+                        img_np_array,
+                        robot_position[0],
+                        robot_position[1],
+                        robot_position_angle,
+                        color_robot,
+                    )
                     img_np_array = self.crop_array(img_np_array, crop)
                     pil_img = Image.fromarray(img_np_array, mode="RGBA")
                     return pil_img

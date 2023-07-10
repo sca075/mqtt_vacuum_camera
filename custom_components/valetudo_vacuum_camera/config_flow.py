@@ -27,7 +27,7 @@ AUTH_SCHEMA = vol.Schema(
         vol.Required(CONF_MQTT_PASS): cv.string,
         vol.Required(CONF_VACUUM_CONNECTION_STRING): cv.string,
         vol.Required(ATT_ROTATE, default="0"): cv.string,
-        vol.Required(ATT_CROP, default="0"): cv.string,
+        vol.Required(ATT_CROP, default="50"): cv.string,
     }
 )
 
