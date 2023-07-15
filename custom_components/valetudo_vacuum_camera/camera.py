@@ -203,7 +203,7 @@ class ValetudoCamera(Camera, Entity):
                 # Just in case, let's check that the data is available
                 if parsed_json is not None:
                     pil_img = self._map_handler.get_image_from_json(
-                        parsed_json, self._image_crop
+                        parsed_json, self._vacuum_state, self._image_crop
                     )
                     if pil_img is not None:
                         pil_img = pil_img.rotate(self._image_rotate)
@@ -223,7 +223,7 @@ class ValetudoCamera(Camera, Entity):
                                     self._mqtt.save_payload()
                                 # Write the JSON data to the file
                                 with open(
-                                    "custom_components/valetudo_vacuum_camera/snapshots/valetudo_json",
+                                    "custom_components/valetudo_vacuum_camera/snapshots/valetudo_json.json",
                                     "w",
                                 ) as file:
                                     json_data = json.dumps(parsed_json, indent=4)

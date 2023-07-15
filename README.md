@@ -6,12 +6,23 @@
     </a>
 </div>
 
+
 **Description:**
 Extract the maps for rooted Vacuum Cleaners with Valetudo Firmware to Home Assistant via MQTT.
 This Custom Component allow to integrate the Vacuum functionalities and encode the Vacuum Map embedded on the image the vacuum send to mqtt.
-This Integration can decode the vacuum map and render it to Home Assistant, when you want also to control your vacuum you will need to also install the lovelace-xiaomi-vacuum-map-card (recommended) from HACS as well.
+
+**Supported Vacuums:**
+- RoborockV1
+- Dreame D9
+
+If you encounter issues integrating a not listed vacuum please open a discussion.
+
+This Integration decode the vacuum map and render it to Home Assistant, when you want also to control your vacuum you will need to also install the:
+[lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card) from HACS as well.
 Configuration of the card once the camera is selected requires:
 calibration source to be set to camera: true
+This will pass automatically the data to the card.
+
 ```
 type: custom:xiaomi-vacuum-map-card
 entity: vacuum.valetudo_silenttepidstinkbug
@@ -25,17 +36,16 @@ internal_variables:
   ```
 
 
-### Current Release: v1.1.5
-1) Adding cropping and rotation options the users can now customize the image output.
-2) Enhancing the image_handler module to handle empty data and avoid unnecessary computations during image creation (reported on issues 4). This ensures that only relevant data is processed, improving efficiency and reducing potential errors.
-3) Buffering the background image and redrawing it every 5 frames.
-4) Making changes to the routine that draws the robot and flag for Go to Function.
-5) Introducing a function to bypass MQTT in a test scenario, still a work in progress but do not affect the data collection.
-6) Implementing data collection to expand the range of supported vacuums.
-   1) New folder "snapshots" in the integration base folder since v1.1.5
-   2) in snapshot will be automatically stored a png in case the vacuum is docked, idle or error.
-   3) additionally formatted json data and when available the mqtt raw payload will be saved.
-   NOTE: It is in plan to use the camera snapshot functions so that in case the battery of the vacuum is dead will be more easy to locate it. It will be possible to send the last position of the vacuum setting up the notification in HA.
+### Current Release: v1.1.6
+1) Dreame D9 Map Drawing, rooms, no go areas and paths are now correctly draw. 
+2) Resolves #6 issue in the Image Handler the image now load as it should.
+3) We did separate the MQTT payload to have one payload dedicated only for the image processing.
+4) Crop default is 50%. This would avoid HA instance to be over load with huge amount of data. Please use a crop factor <50 (example values between 20 and 40) when you want the image to be smaller (zoomed)
+### In plan:
+1) User interface could not be improved on V1.1.6 as per we did mainly work on the integration of the new vacuum. We set now as target v1.2.0.  
+2) Use the camera snapshot functions so that in case the battery of the vacuum is dead will be easy to locate it. It will be possible to send the last position of the vacuum setting up the notification in HA.
+3) Improve the frames rate.
+4) Adding to the configuration the colour setup for each element.
 
 ### How to install:
 Using [HACS](https://hacs.xyz/) add integration, and copy the repository link in ***new repository*** section.
@@ -66,36 +76,11 @@ vacuum_map required field.
 
 This custom component is developed and tested using a PI4 with Home Assistant OS fully updated [to the last version](https://www.home-assistant.io/faq/release/), this allows
 us to confirm that the component is working properly with Home Assistant.
-It was developed to work in together with below card, that gives the possible to operate the vacuum and the integration is
-already providing the required calibration data. Please click on
-the link and follow the detailed instruction on how to [set up the lovelace-xiaomi-vacuum-map-card](
-https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card/tree/master).
 
-
-in the card configuration you might configure as following the
-calibration_source and internal_variables as following:
-```
-
-type: custom:xiaomi-vacuum-map-card
-entity: vacuum.valetudo_silenttepidstinkbug
-vacuum_platform: Hypfer/Valetudo
-map_source:
-  camera: camera.valetudo_vacuum_camera
-calibration_source:
-  camera: true
-internal_variables:
-  topic: valetudo/your_topic
-tiles:
-  - tile_id: battery_level
-    .....
-
-```
-
-After that, you can easily generate the service calls to integrate or control
-your Vacuum via Home Assistant.
+Note: The test in Github is not fully setup this is why there is an X instead of a V
 
 **Checked before release:**
-- [x] Configuration via GUI. (user interface will be improved on V1.1.6)
+- [x] Configuration via GUI. 
 - [x] No errors after installation (at first init the image will be gray)
 - [x] Reporting the calibration data will take a while, please wait until the init is complete.
 - [x] Go to and ara cleaning tested.

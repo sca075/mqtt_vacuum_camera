@@ -1,4 +1,4 @@
-"""Version 1.1.5"""
+"""Version 1.1.6beta"""
 import logging
 import time
 import paho.mqtt.client as client
@@ -27,22 +27,24 @@ class ValetudoConnector(client.Client):
         self._mqtt_run = False
         self._rcv_topic = None
         self._payload = None
+        self._img_payload = None
         self._mqtt_vac_stat = None
         self._mqtt_vac_err = None
         self._data_in = False
         self._img_decoder = RawToJson(hass)
         self.is_client_check_mode(mqtt_topic)
 
-    def update_data(self):
-        if self._payload:
-            _LOGGER.debug("Processing data from MQTT")
-            result = self._img_decoder.camera_message_received(self._payload)
-            self._data_in = False
-            return result
-        else:
-            _LOGGER.debug("No data from MQTT or vacuum docked")
-            self._data_in = False
-            return None
+    def update_data(self, process: bool = True):
+        if self._img_payload:
+            if process:
+                _LOGGER.debug("Processing data from MQTT")
+                result = self._img_decoder.camera_message_received(self._img_payload)
+                self._data_in = False
+                return result
+            else:
+                _LOGGER.debug("No data from MQTT or vacuum docked")
+                self._data_in = False
+                return None
 
     def get_vacuum_status(self):
         return self._mqtt_vac_stat
@@ -54,24 +56,26 @@ class ValetudoConnector(client.Client):
         return self._data_in
 
     def save_payload(self):
-        if self._payload and (self._data_in is True):
+        if self._img_payload and (self._data_in is True):
             with open(
                 "custom_components/valetudo_vacuum_camera/snapshots/mqtt_data.raw", "wb"
             ) as file:
-                file.write(self._payload)
+                file.write(self._img_payload)
 
     def on_message_callback(self, client, userdata, msg):
         self._rcv_topic = msg.topic
         if self._rcv_topic == (self._mqtt_topic + "/MapData/map-data-hass"):
             _LOGGER.debug("Received data from MQTT")
-            self._payload = msg.payload
+            self._img_payload = msg.payload
             self._data_in = True
         elif self._rcv_topic == (self._mqtt_topic + "/StatusStateAttribute/status"):
+            self._payload = msg.payload
             if self._payload:
                 self._mqtt_vac_stat = bytes.decode(msg.payload, "utf-8")
         elif self._rcv_topic == (
             self._mqtt_topic + "/StatusStateAttribute/error_description"
         ):
+            self._payload = msg.payload
             self._mqtt_vac_err = bytes.decode(msg.payload, "utf-8")
 
     def on_connect_callback(self, client, userdata, flags, rc):
@@ -105,7 +109,7 @@ class ValetudoConnector(client.Client):
             try:
                 with open("tests/mqtt_data.raw", "rb") as file:
                     binary_data = file.read()
-                self._payload = binary_data
+                self._img_payload = binary_data
                 self._data_in = True
                 self.update_data()
             except FileExistsError:
