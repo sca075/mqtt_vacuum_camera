@@ -1,9 +1,10 @@
-"""Camera Version 1.1.5"""
+"""Camera Version 1.1.7"""
 from __future__ import annotations
 import logging
 import os
 import json
 from io import BytesIO
+from datetime import datetime
 from PIL import Image
 from datetime import timedelta
 from typing import Optional
@@ -56,9 +57,9 @@ _LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
-    hass: core.HomeAssistant,
-    config_entry: config_entries.ConfigEntry,
-    async_add_entities,
+        hass: core.HomeAssistant,
+        config_entry: config_entries.ConfigEntry,
+        async_add_entities,
 ) -> None:
     """Setup camera from a config entry created in the integrations UI."""
     config = hass.data[DOMAIN][config_entry.entry_id]
@@ -70,10 +71,10 @@ async def async_setup_entry(
 
 
 async def async_setup_platform(
-    hass: HomeAssistantType,
-    config: ConfigType,
-    async_add_entities,
-    discovery_info: DiscoveryInfoType | None = None,
+        hass: HomeAssistantType,
+        config: ConfigType,
+        async_add_entities,
+        discovery_info: DiscoveryInfoType | None = None,
 ):
     async_add_entities([ValetudoCamera(hass, config)])
     await async_setup_reload_service(hass, DOMAIN, PLATFORMS)
@@ -118,6 +119,8 @@ class ValetudoCamera(Camera, Entity):
         self._image = self.update()
         self._snapshot_taken = False
         self._last_image = None
+        self._image_grab = True
+        self._frame_nuber = 0
         self.throttled_camera_image = Throttle(timedelta(seconds=5))(self.camera_image)
         self._should_poll = True
 
@@ -136,7 +139,7 @@ class ValetudoCamera(Camera, Entity):
         return 1
 
     def camera_image(
-        self, width: Optional[int] = None, height: Optional[int] = None
+            self, width: Optional[int] = None, height: Optional[int] = None
     ) -> Optional[bytes]:
         return self._image
 
@@ -188,13 +191,57 @@ class ValetudoCamera(Camera, Entity):
             _LOGGER.info("Staring up ...")
             return empty_img
 
+    def take_snapshot(self, json_data, image_data):
+        try:
+            self._snapshot_taken = True
+            _LOGGER.info("Saving datas and Image Snapshot")
+            # if still available save MQTT payload.
+            if self._mqtt is not None:
+                self._mqtt.save_payload()
+            # Write the JSON data to the file
+            with open(
+                    "custom_components/valetudo_vacuum_camera/snapshots/valetudo_json.json",
+                    "w",
+            ) as file:
+                json_data = json.dumps(json_data, indent=4)
+                file.write(json_data)
+            image_data.save(
+                "custom_components/valetudo_vacuum_camera/snapshots/valetudo_snapshot.png"
+            )
+        except IOError:
+            self._snapshot_taken = None
+            _LOGGER.warning(
+                "Error Saving Image Snapshot, no snapshot available till restart."
+            )
+        else:
+            _LOGGER.debug(
+                "valetudo_snapshot.png acquired during %s",
+                {self._vacuum_state},
+                " Vacuum State.",
+            )
+
     def update(self):
+        # check and update the vacuum reported state
+        if self._mqtt:
+            self._vacuum_state = self._mqtt.get_vacuum_status()
         # If we have data from MQTT, we process the image
         process_data = self._mqtt.is_data_available()
         if process_data:
-            _LOGGER.info("Camera image update process: %s", process_data)
+            # if the vacuum is working, or it is the first image.
+            if (self._vacuum_state == "cleaning"
+                    or self._vacuum_state == "moving"
+                    or self._vacuum_state == "returning"):
+                # grab the image
+                self._image_grab = True
+                self._frame_nuber = self._map_handler.get_frame_number()
+                # when the vacuum goes / is in idle, error or docked
+                # take the snapshot.
+                self._snapshot_taken = False
+            # Starting the image processing.
+            _LOGGER.info("Camera image data update available: %s", process_data)
+            start_time = datetime.now()
             try:
-                parsed_json = self._mqtt.update_data()
+                parsed_json = self._mqtt.update_data(self._image_grab)
                 self._vac_json_data = "Success"
             except ValueError:
                 self._vac_json_data = "Error"
@@ -211,37 +258,16 @@ class ValetudoCamera(Camera, Entity):
                             "Applied image rotation: %s", {self._image_rotate}
                         )
                         if not self._snapshot_taken and (
-                            self._vacuum_state == "idle"
-                            or self._vacuum_state == "docked"
-                            or self._vacuum_state == "error"
+                                self._vacuum_state == "idle"
+                                or self._vacuum_state == "docked"
+                                or self._vacuum_state == "error"
                         ):
-                            try:
-                                self._snapshot_taken = True
-                                _LOGGER.info("Saving datas and Image Snapshot")
-                                # if still available save MQTT payload.
-                                if self._mqtt is not None:
-                                    self._mqtt.save_payload()
-                                # Write the JSON data to the file
-                                with open(
-                                    "custom_components/valetudo_vacuum_camera/snapshots/valetudo_json.json",
-                                    "w",
-                                ) as file:
-                                    json_data = json.dumps(parsed_json, indent=4)
-                                    file.write(json_data)
-                                pil_img.save(
-                                    "custom_components/valetudo_vacuum_camera/snapshots/valetudo_snapshot.png"
-                                )
-                            except IOError:
-                                self._snapshot_taken = None
-                                _LOGGER.warning(
-                                    "Error Saving Image Snapshot, no snapshot available till restart."
-                                )
-                            else:
-                                _LOGGER.debug(
-                                    "valetudo_snapshot.png acquired during %s",
-                                    {self._vacuum_state},
-                                    " Vacuum State.",
-                                )
+                            # suspend image processing if we are at the next frame.
+                            if self._frame_nuber is not self._map_handler.get_frame_number():
+                                self._image_grab = False
+                                _LOGGER.info("Suspended the camera data processing.")
+                                # take a snapshot
+                                self.take_snapshot(parsed_json, pil_img)
                         self._vac_json_id = self._map_handler.get_json_id()
                         self._base = self._map_handler.get_charger_position()
                         self._current = self._map_handler.get_robot_position()
@@ -250,17 +276,24 @@ class ValetudoCamera(Camera, Entity):
                             self._map_handler.get_calibration_data(self._image_rotate)
                         )
                     else:
+                        # if no image was processed empty or last snapshot/frame
                         pil_img = self.empty_if_no_data()
                     # Converting the image obtained to bytes
+                    # Using openCV would reduce the CPU and memory usage.
+                    # On Py4 HA OS is not possible to install the openCV library.
                     buffered = BytesIO()
+                    # backup the image
                     self._last_image = pil_img
                     pil_img.save(buffered, format="PNG")
                     bytes_data = buffered.getvalue()
                     self._image = bytes_data
                     # clean up
                     del buffered, pil_img, bytes_data
-                    self._vacuum_state = self._mqtt.get_vacuum_status()
                     _LOGGER.info("Camera image update complete")
+                    processing_time = (datetime.now() - start_time).total_seconds()
+                    self._frame_interval = max(0.1, processing_time)
+                    _LOGGER.debug("Adjusted frame interval: %s", self._frame_interval)
                 else:
-                    _LOGGER.info("Camera image not updated")
+                    _LOGGER.info("Camera image not processed. Returning not updated image.")
+                    self._frame_interval = 0.1
                 return self._image

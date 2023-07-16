@@ -1,4 +1,4 @@
-"""Version 1.1.6beta"""
+"""Version 1.1.7"""
 import logging
 import time
 import paho.mqtt.client as client
@@ -61,20 +61,23 @@ class ValetudoConnector(client.Client):
                 "custom_components/valetudo_vacuum_camera/snapshots/mqtt_data.raw", "wb"
             ) as file:
                 file.write(self._img_payload)
+            _LOGGER.info("Saved image data from MQTT in mqtt_data.raw!")
 
     def on_message_callback(self, client, userdata, msg):
         self._rcv_topic = msg.topic
         if self._rcv_topic == (self._mqtt_topic + "/MapData/map-data-hass"):
-            _LOGGER.debug("Received data from MQTT")
+            _LOGGER.debug("Received image data from MQTT")
             self._img_payload = msg.payload
             self._data_in = True
         elif self._rcv_topic == (self._mqtt_topic + "/StatusStateAttribute/status"):
+            _LOGGER.debug("Received vacuum status data from MQTT")
             self._payload = msg.payload
             if self._payload:
                 self._mqtt_vac_stat = bytes.decode(msg.payload, "utf-8")
         elif self._rcv_topic == (
             self._mqtt_topic + "/StatusStateAttribute/error_description"
         ):
+            _LOGGER.debug("Received vacuum error data from MQTT")
             self._payload = msg.payload
             self._mqtt_vac_err = bytes.decode(msg.payload, "utf-8")
 

@@ -1,4 +1,4 @@
-"""Version 1.1.6"""
+"""Version 1.1.7"""
 # Image Handler Module
 # Collection of routines to extract data from the received json.
 # It returns values and images relative to the Map Data extrapolated from the vacuum json.
@@ -575,6 +575,9 @@ class MapImageHandler(object):
         except Exception as e:
             _LOGGER.error("Error in get_image_from_json: %s", str(e))
             return None
+
+    def get_frame_number(self):
+        return self.frame_number
 
     def get_robot_position(self):
         return self.robot_pos
