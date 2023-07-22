@@ -13,15 +13,21 @@ async def test_update_success(hass, aioclient_mock, socket_enabled):
     camera = MagicMock()
     camera.getitem = AsyncMock(
         side_effect=[
-            # user response
+            # step vacuum id response
             {
                 "vacuum_entity": "vacuum.my_vacuum",
+            },
+            # step mqtt response
+            {
                 "broker_user": "mqttUser",
                 "broker_password": "mqttPassword",
                 "vacuum_map": "valetudo/myTopic",
+            },
+            # step image options response
+            {
                 "rotate_image": "0",
                 "crop_image": "50",
-            }
+            },
         ]
     )
     camera = ValetudoCamera(Camera, {"path": "homeassistant/core"})

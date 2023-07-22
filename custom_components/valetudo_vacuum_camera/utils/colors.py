@@ -1,9 +1,24 @@
 """Colors RGBA"""
-"""Version 1.1.6beta"""
+"""Version 1.1.7"""
+
+from custom_components.valetudo_vacuum_camera.const import (
+    COLOR_ROBOT,
+    COLOR_BACKGROUND,
+    COLOR_WALL,
+    COLOR_MOVE,
+    COLOR_CHARGER,
+    COLOR_NO_GO,
+    COLOR_GO_TO,
+    COLOR_ZONE_CLEAN
+)
+
+import logging
+
+_LOGGER = logging.getLogger(__name__)
 
 color_transparent = (0, 0, 0, 0)
 color_charger = (0, 128, 0, 255)
-color_move = (238, 247, 255, 255)  # (192, 192, 192, 255)
+color_move = (238, 247, 255, 255)
 color_robot = (255, 255, 204, 255)
 color_no_go = (255, 0, 0, 255)
 color_go_to = (0, 255, 0, 255)
@@ -30,7 +45,6 @@ color_room_13 = (82, 190, 128, 255)
 color_room_14 = (72, 201, 176, 255)
 color_room_15 = (165, 105, 18, 255)
 
-
 rooms_color = [
     color_room_0,
     color_room_1,
@@ -49,6 +63,7 @@ rooms_color = [
     color_room_14,
     color_room_15,
 ]
+
 color_array = [
     color_wall,
     color_no_go,
@@ -63,3 +78,20 @@ color_array = [
     color_transparent,
     rooms_color,
 ]
+
+user_color_array = [
+    COLOR_WALL,
+    COLOR_NO_GO,
+    COLOR_GO_TO,
+    color_black,
+    COLOR_ROBOT,
+    COLOR_CHARGER,
+    color_white,
+    COLOR_MOVE,
+    COLOR_BACKGROUND,
+    COLOR_ZONE_CLEAN,
+    color_transparent,
+    rooms_color,
+]
+
+_LOGGER.info("Colors in user_color_array: %s", user_color_array)

@@ -36,16 +36,20 @@ internal_variables:
   ```
 
 
-### Current Release: v1.1.6
-1) Dreame D9 Map Drawing, rooms, no go areas and paths are now correctly draw. 
-2) Resolves #6 issue in the Image Handler the image now load as it should.
-3) We did separate the MQTT payload to have one payload dedicated only for the image processing.
-4) Crop default is 50%. This would avoid HA instance to be over load with huge amount of data. Please use a crop factor <50 (example values between 20 and 40) when you want the image to be smaller (zoomed)
+### Current Release: v1.1.7
+1. Camera improvements:
+    - Automatic Standby: No image data will be process if the vacuum isn't working or moving. This free automatically resources to HA.
+    - If the vacuum is in Idle, Docked or Error the snapshot image (path to: "custom_components/valetudo_vacuum_camera/snapshots/valetudo_snapshot.png") is updated and ready to be used for the notification services of HA.
+    - The Frame Interval of the camera is now updated at each frame, this is helping to keep the image refresh more smooth and avoid over processing during the image updates.
+2. Improved the logging, adding information's of what data have been received from MQTT.
+3. Added the image_handler get_frame_number function. This function is for development purpose only. No influence on the image.
+4. Improved user configuration via UI searching the vacuum entity id possible, as well the image rotation fixed values are minimizing inputs errors.
 ### In plan:
-1) User interface could not be improved on V1.1.6 as per we did mainly work on the integration of the new vacuum. We set now as target v1.2.0.  
-2) Use the camera snapshot functions so that in case the battery of the vacuum is dead will be easy to locate it. It will be possible to send the last position of the vacuum setting up the notification in HA.
-3) Improve the frames rate.
-4) Adding to the configuration the colour setup for each element.
+1) Some improved UI configuration steps on V1.1.7. We set now as target v1.2.0 to complete this.
+2) Adding to the configuration the colour setup for each element is a work in progress as it is possible to see already on the new config_flow.
+3) We will also add the capability to show segments names and active state on v1.2.0.
+
+Note: Release of v1.1.8 will be postponed as per we will take a break next week :)
 
 ### How to install:
 Using [HACS](https://hacs.xyz/) add integration, and copy the repository link in ***new repository*** section.
