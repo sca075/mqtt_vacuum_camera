@@ -26,3 +26,14 @@ COLOR_GO_TO = "color_go_to"
 COLOR_BACKGROUND = "color_background"
 COLOR_ZONE_CLEAN = "color_zone_clean"
 COLOR_WALL = "color_wall"
+
+CONF_COLORS = [
+    COLOR_WALL,
+    COLOR_ZONE_CLEAN,
+    COLOR_ROBOT,
+    COLOR_BACKGROUND,
+    COLOR_MOVE,
+    COLOR_CHARGER,
+    COLOR_NO_GO,
+    COLOR_GO_TO,
+]

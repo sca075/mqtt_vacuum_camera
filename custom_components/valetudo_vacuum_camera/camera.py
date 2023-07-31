@@ -1,4 +1,4 @@
-"""Camera Version 1.1.7"""
+"""Camera Version 1.1.8"""
 from __future__ import annotations
 import logging
 import os
@@ -21,13 +21,13 @@ from homeassistant.helpers.typing import (
     HomeAssistantType,
 )
 from homeassistant.util import Throttle
-
 from custom_components.valetudo_vacuum_camera.valetudo.connector import (
     ValetudoConnector,
 )
 from custom_components.valetudo_vacuum_camera.valetudo.image_handler import (
     MapImageHandler,
 )
+from custom_components.valetudo_vacuum_camera.utils.colors import base_colors_array, add_alpha_to_rgb
 from custom_components.valetudo_vacuum_camera.valetudo.vacuum import Vacuum
 from .const import (
     CONF_VACUUM_CONNECTION_STRING,
@@ -39,6 +39,7 @@ from .const import (
     PLATFORMS,
     ATT_ROTATE,
     ATT_CROP,
+    CONF_COLORS,
 )
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
@@ -123,6 +124,17 @@ class ValetudoCamera(Camera, Entity):
         self._frame_nuber = 0
         self.throttled_camera_image = Throttle(timedelta(seconds=5))(self.camera_image)
         self._should_poll = True
+        self.user_colors = [
+            device_info.get(CONF_COLORS[0]),
+            device_info.get(CONF_COLORS[1]),
+            device_info.get(CONF_COLORS[2]),
+            device_info.get(CONF_COLORS[3]),
+            device_info.get(CONF_COLORS[4]),
+            device_info.get(CONF_COLORS[5]),
+            device_info.get(CONF_COLORS[6]),
+            device_info.get(CONF_COLORS[7])
+        ]
+        self._vacuum_shared.update_user_colors(add_alpha_to_rgb(self.user_colors, base_colors_array))
 
     async def async_added_to_hass(self) -> None:
         self.async_schedule_update_ha_state(True)
@@ -250,7 +262,7 @@ class ValetudoCamera(Camera, Entity):
                 # Just in case, let's check that the data is available
                 if parsed_json is not None:
                     pil_img = self._map_handler.get_image_from_json(
-                        parsed_json, self._vacuum_state, self._image_crop
+                        parsed_json, self._vacuum_state, self._image_crop, self._vacuum_shared.get_user_colors()
                     )
                     if pil_img is not None:
                         pil_img = pil_img.rotate(self._image_rotate)

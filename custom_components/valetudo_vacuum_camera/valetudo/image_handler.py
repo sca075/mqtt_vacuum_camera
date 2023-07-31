@@ -1,4 +1,4 @@
-"""Version 1.1.7"""
+"""Version 1.1.8"""
 # Image Handler Module
 # Collection of routines to extract data from the received json.
 # It returns values and images relative to the Map Data extrapolated from the vacuum json.
@@ -9,21 +9,16 @@ import math
 import numpy as np
 from PIL import Image, ImageDraw
 from custom_components.valetudo_vacuum_camera.utils.colors import (
-    color_charger,
-    color_no_go,
-    color_go_to,
-    color_move,
-    color_wall,
-    color_robot,
-    color_background,
     color_grey,
-    color_zone_clean,
     rooms_color,
 )
+from custom_components.valetudo_vacuum_camera.valetudo.vacuum import Vacuum
+from custom_components.valetudo_vacuum_camera.types import Color, Colors
 
 _LOGGER = logging.getLogger(__name__)
 
 
+# noinspection PyTypeChecker
 class MapImageHandler(object):
     def __init__(self):
         self.img_size = None
@@ -37,6 +32,7 @@ class MapImageHandler(object):
         self.json_id = None
         self.go_to = None
         self.img_rotate = 0
+        self.vacuum = Vacuum()
 
     @staticmethod
     def sublist(lst, n):
@@ -403,7 +399,15 @@ class MapImageHandler(object):
                             arr[y + i, x + j] = color
         return arr
 
-    def get_image_from_json(self, m_json, robot_state, crop: int = 50):
+    def get_image_from_json(self, m_json, robot_state, crop: int = 50, user_colors: Colors = None):
+        color_wall: Color = user_colors[0]
+        color_no_go: Color = user_colors[6]
+        color_go_to: Color = user_colors[7]
+        color_robot: Color = user_colors[2]
+        color_charger: Color = user_colors[5]
+        color_move: Color = user_colors[4]
+        color_background: Color = user_colors[3]
+        color_zone_clean: Color = user_colors[1]
         try:
             if m_json is not None:
                 _LOGGER.info("Composing the image for the camera.")

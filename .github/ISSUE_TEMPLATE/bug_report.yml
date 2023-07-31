@@ -100,7 +100,7 @@ body:
       render: yaml
   - type: textarea
     attributes:
-      label: Logs or Errors shown in the HA logs (please enable the Debug Mode)
+      label: Logs or Errors shown in the HA snapshots (please enable the Debug Mode)
       render: shell
   - type: textarea
     attributes:

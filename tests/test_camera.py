@@ -6,7 +6,7 @@ from homeassistant.components.camera import Camera
 
 
 @pytest.mark.allow_hosts(["127.0.0.1"], 1883)
-@pytest.mark.asyncio
+# @pytest.mark.asyncio
 @pytest.mark.enable_socket
 async def test_update_success(hass, aioclient_mock, socket_enabled):
     """Tests a fully successful async_update."""
@@ -27,6 +27,17 @@ async def test_update_success(hass, aioclient_mock, socket_enabled):
             {
                 "rotate_image": "0",
                 "crop_image": "50",
+            },
+            # step image options response 2
+            {
+                "color_charger": "[255, 128, 0]",
+                "color_move": "[238, 247, 255]",
+                "color_wall": "[255, 255, 0]",
+                "color_robot": "[255, 255, 204]",
+                "color_go_to": "[0, 255, 0]",
+                "color_no_go": "[255, 0, 0]",
+                "color_zone_clean": "[255, 255, 255]",
+                "color_background": "[0, 125, 255]",
             },
         ]
     )

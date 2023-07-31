@@ -27,7 +27,8 @@ from .const import (
     COLOR_BACKGROUND,
     COLOR_GO_TO,
     COLOR_NO_GO,
-    COLOR_ZONE_CLEAN
+    COLOR_ZONE_CLEAN,
+    CONF_COLORS,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -112,6 +113,16 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     "color_background": user_input.get(COLOR_BACKGROUND),
                 }
             )
+
+            # Update the USER_COLORS array with the user-defined colors
+            CONF_COLORS[0] = self.data["color_wall"]
+            CONF_COLORS[1] = self.data["color_zone_clean"]
+            CONF_COLORS[2] = self.data["color_robot"]
+            CONF_COLORS[3] = self.data["color_background"]
+            CONF_COLORS[4] = self.data["color_move"]
+            CONF_COLORS[5] = self.data["color_charger"]
+            CONF_COLORS[6] = self.data["color_no_go"]
+            CONF_COLORS[7] = self.data["color_go_to"]
 
             return self.async_create_entry(
                 title=DEFAULT_NAME,

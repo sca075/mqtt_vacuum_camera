@@ -1,19 +1,6 @@
-"""Colors RGBA"""
-"""Version 1.1.7"""
-
-from custom_components.valetudo_vacuum_camera.const import (
-    COLOR_ROBOT,
-    COLOR_BACKGROUND,
-    COLOR_WALL,
-    COLOR_MOVE,
-    COLOR_CHARGER,
-    COLOR_NO_GO,
-    COLOR_GO_TO,
-    COLOR_ZONE_CLEAN
-)
+"""Colors RGBA Version 1.1.8"""
 
 import logging
-
 _LOGGER = logging.getLogger(__name__)
 
 color_transparent = (0, 0, 0, 0)
@@ -64,34 +51,51 @@ rooms_color = [
     color_room_15,
 ]
 
-color_array = [
+base_colors_array = [
     color_wall,
+    color_zone_clean,
+    color_robot,
+    color_background,
+    color_move,
+    color_charger,
     color_no_go,
     color_go_to,
+]
+
+color_array = [
+    base_colors_array[0],
+    base_colors_array[6],  # color_no_go
+    base_colors_array[7],  # color_go_to
     color_black,
-    color_robot,
-    color_charger,
+    base_colors_array[2],  # color_robot
+    base_colors_array[5],  # color_charger
     color_white,
-    color_move,
-    color_background,
-    color_zone_clean,
+    base_colors_array[4],  # color_move
+    base_colors_array[3],  # color_background
+    base_colors_array[1],  # color_zone_clean
     color_transparent,
     rooms_color,
 ]
 
-user_color_array = [
-    COLOR_WALL,
-    COLOR_NO_GO,
-    COLOR_GO_TO,
-    color_black,
-    COLOR_ROBOT,
-    COLOR_CHARGER,
-    color_white,
-    COLOR_MOVE,
-    COLOR_BACKGROUND,
-    COLOR_ZONE_CLEAN,
-    color_transparent,
-    rooms_color,
-]
+def add_alpha_to_rgb(rgb_colors, rgba_colors):
+    """
+    Add alpha channel to RGB colors using corresponding RGBA colors.
 
-_LOGGER.info("Colors in user_color_array: %s", user_color_array)
+    Args:
+        rgb_colors (List[Tuple[int, int, int]]): List of RGB colors.
+        rgba_colors (List[Tuple[int, int, int, int]]): List of RGBA colors.
+
+    Returns:
+        List[Tuple[int, int, int, int]]: List of RGBA colors with alpha channel added.
+    """
+    if len(rgb_colors) != len(rgba_colors):
+        raise ValueError("Input lists must have the same length.")
+
+    result = []
+    for rgb, rgba in zip(rgb_colors, rgba_colors):
+        if len(rgb) != 3 or len(rgba) != 4:
+            raise ValueError("RGB and RGBA colors must be tuples of length 3 and 4, respectively.")
+        result.append((*rgb, rgba[3]))  # Append RGB with the alpha channel from RGBA
+
+    return result
+
