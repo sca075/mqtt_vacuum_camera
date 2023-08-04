@@ -1,5 +1,5 @@
 """Constants for the valetudo_vacuum_camera integration."""
-"""Version 1.1.7"""
+"""Version 1.1.8"""
 
 """Required in Config_Flow"""
 PLATFORMS = ["camera"]
@@ -26,6 +26,22 @@ COLOR_GO_TO = "color_go_to"
 COLOR_BACKGROUND = "color_background"
 COLOR_ZONE_CLEAN = "color_zone_clean"
 COLOR_WALL = "color_wall"
+COLOR_ROOM_0 = "color_room_0"
+COLOR_ROOM_1 = "color_room_1"
+COLOR_ROOM_2 = "color_room_2"
+COLOR_ROOM_3 = "color_room_3"
+COLOR_ROOM_4 = "color_room_4"
+COLOR_ROOM_5 = "color_room_5"
+COLOR_ROOM_6 = "color_room_6"
+COLOR_ROOM_7 = "color_room_7"
+COLOR_ROOM_8 = "color_room_8"
+COLOR_ROOM_9 = "color_room_9"
+COLOR_ROOM_10 = "color_room_10"
+COLOR_ROOM_11 = "color_room_11"
+COLOR_ROOM_12 = "color_room_12"
+COLOR_ROOM_13 = "color_room_13"
+COLOR_ROOM_14 = "color_room_14"
+COLOR_ROOM_15 = "color_room_15"
 
 CONF_COLORS = [
     COLOR_WALL,

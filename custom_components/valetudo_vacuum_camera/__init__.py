@@ -11,6 +11,13 @@ _LOGGER = logging.getLogger(__name__)
 PLATFORMS = [Platform.CAMERA]
 
 
+async def options_update_listener(
+        hass: core.HomeAssistant, config_entry: config_entries.ConfigEntry
+):
+    """Handle options update."""
+    await hass.config_entries.async_reload(config_entry.entry_id)
+
+
 async def async_setup_entry(
     hass: core.HomeAssistant, entry: config_entries.ConfigEntry
 ) -> bool:
@@ -28,13 +35,6 @@ async def async_setup_entry(
         hass.config_entries.async_forward_entry_setup(entry, "camera")
     )
     return True
-
-
-async def options_update_listener(
-    hass: core.HomeAssistant, config_entry: config_entries.ConfigEntry
-):
-    """Handle options update."""
-    await hass.config_entries.async_reload(config_entry.entry_id)
 
 
 async def async_unload_entry(

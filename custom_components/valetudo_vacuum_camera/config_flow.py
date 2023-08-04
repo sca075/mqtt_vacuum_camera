@@ -1,10 +1,11 @@
-"""config_flow ver.1.7.0"""
+"""config_flow ver.1.8.0"""
 
 import voluptuous as vol
 import logging
 from typing import Any, Dict, Optional
 from homeassistant import config_entries
-from homeassistant.const import CONF_NAME
+# from homeassistant.const import CONF_NAME
+from homeassistant.core import callback
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.selector import (
     EntitySelector,
@@ -29,6 +30,22 @@ from .const import (
     COLOR_NO_GO,
     COLOR_ZONE_CLEAN,
     CONF_COLORS,
+    COLOR_ROOM_0,
+    COLOR_ROOM_1,
+    COLOR_ROOM_2,
+    COLOR_ROOM_3,
+    COLOR_ROOM_4,
+    COLOR_ROOM_5,
+    COLOR_ROOM_6,
+    COLOR_ROOM_7,
+    COLOR_ROOM_8,
+    COLOR_ROOM_9,
+    COLOR_ROOM_10,
+    COLOR_ROOM_11,
+    COLOR_ROOM_12,
+    COLOR_ROOM_13,
+    COLOR_ROOM_14,
+    COLOR_ROOM_15
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -67,9 +84,30 @@ GENERIC_COLOR_SCHEMA = vol.Schema(
     }
 )
 
+ROOMS_COLOR_SCHEMA = vol.Schema(
+    {
+        vol.Optional(COLOR_ROOM_0, default=[135, 206, 250]): ColorRGBSelector(),
+        vol.Optional(COLOR_ROOM_1, default=[176, 226, 255]): ColorRGBSelector(),
+        vol.Optional(COLOR_ROOM_2, default=[165, 105, 18]): ColorRGBSelector(),
+        vol.Optional(COLOR_ROOM_3, default=[164, 211, 238]): ColorRGBSelector(),
+        vol.Optional(COLOR_ROOM_4, default=[141, 182, 205]): ColorRGBSelector(),
+        vol.Optional(COLOR_ROOM_5, default=[96, 123, 139]): ColorRGBSelector(),
+        vol.Optional(COLOR_ROOM_6, default=[224, 255, 255]): ColorRGBSelector(),
+        vol.Optional(COLOR_ROOM_7, default=[209, 238, 238]): ColorRGBSelector(),
+        vol.Optional(COLOR_ROOM_8, default=[180, 205, 205]): ColorRGBSelector(),
+        vol.Optional(COLOR_ROOM_9, default=[122, 139, 139]): ColorRGBSelector(),
+        vol.Optional(COLOR_ROOM_10, default=[175, 238, 238]): ColorRGBSelector(),
+        vol.Optional(COLOR_ROOM_11, default=[84, 153, 199]): ColorRGBSelector(),
+        vol.Optional(COLOR_ROOM_12, default=[133, 193, 233]): ColorRGBSelector(),
+        vol.Optional(COLOR_ROOM_13, default=[245, 176, 65]): ColorRGBSelector(),
+        vol.Optional(COLOR_ROOM_14, default=[82, 190, 128]): ColorRGBSelector(),
+        vol.Optional(COLOR_ROOM_15, default=[72, 201, 176]): ColorRGBSelector(),
+    }
+)
+
 
 class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
-    VERSION = 1.1
+    VERSION = 1.2
 
     async def async_step_user(self, user_input: Optional[Dict[str, Any]] = None):
         if user_input is not None:
@@ -124,11 +162,134 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             CONF_COLORS[6] = self.data["color_no_go"]
             CONF_COLORS[7] = self.data["color_go_to"]
 
+            return await self.async_step_options_3()
+
+        return self.async_show_form(
+            step_id="options_2", data_schema=GENERIC_COLOR_SCHEMA, description_placeholders=self.data
+        )
+
+    async def async_step_options_3(self, user_input: Optional[Dict[str, Any]] = None):
+        if user_input is not None:
+            self.data.update(
+                {
+                    "color_room_0": user_input.get(COLOR_ROOM_0),
+                    "color_room_1": user_input.get(COLOR_ROOM_1),
+                    "color_room_2": user_input.get(COLOR_ROOM_2),
+                    "color_room_3": user_input.get(COLOR_ROOM_3),
+                    "color_room_4": user_input.get(COLOR_ROOM_4),
+                    "color_room_5": user_input.get(COLOR_ROOM_5),
+                    "color_room_6": user_input.get(COLOR_ROOM_6),
+                    "color_room_7": user_input.get(COLOR_ROOM_7),
+                    "color_room_8": user_input.get(COLOR_ROOM_8),
+                    "color_room_9": user_input.get(COLOR_ROOM_9),
+                    "color_room_10": user_input.get(COLOR_ROOM_10),
+                    "color_room_11": user_input.get(COLOR_ROOM_11),
+                    "color_room_12": user_input.get(COLOR_ROOM_12),
+                    "color_room_13": user_input.get(COLOR_ROOM_13),
+                    "color_room_14": user_input.get(COLOR_ROOM_14),
+                    "color_room_15": user_input.get(COLOR_ROOM_15),
+                }
+            )
+
             return self.async_create_entry(
                 title=DEFAULT_NAME,
                 data=self.data,
             )
 
         return self.async_show_form(
-            step_id="options_2", data_schema=GENERIC_COLOR_SCHEMA, description_placeholders=self.data
+            step_id="options_3", data_schema=ROOMS_COLOR_SCHEMA, description_placeholders=self.data
         )
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(
+            config_entry: config_entries.ConfigEntry,
+    ) -> config_entries.OptionsFlow:
+        """Create the options flow."""
+        return OptionsFlowHandler(config_entry)
+
+
+class OptionsFlowHandler(config_entries.OptionsFlow):
+    def __init__(self, config_entry: config_entries.ConfigEntry):
+        """Initialize options flow."""
+        self.config_entry = config_entry
+        self.data = None
+
+    async def async_step_init(self, user_input: Optional[Dict[str, Any]] = None):
+        self.data = user_input
+        if user_input is not None:
+            self.data.update(
+                {
+                    "rotate_image": user_input.get(ATT_ROTATE),
+                    "crop_image": user_input.get(ATT_CROP),
+                }
+            )
+            return await self.async_step_init_2()
+
+        return self.async_show_form(
+            step_id="init", data_schema=IMG_SCHEMA, description_placeholders=self.data
+        )
+
+    async def async_step_init_2(self, user_input: Optional[Dict[str, Any]] = None):
+        if user_input is not None:
+            self.data.update(
+                {
+                    "color_charger": user_input.get(COLOR_CHARGER),
+                    "color_move": user_input.get(COLOR_MOVE),
+                    "color_wall": user_input.get(COLOR_WALL),
+                    "color_robot": user_input.get(COLOR_ROBOT),
+                    "color_go_to": user_input.get(COLOR_GO_TO),
+                    "color_no_go": user_input.get(COLOR_NO_GO),
+                    "color_zone_clean": user_input.get(COLOR_ZONE_CLEAN),
+                    "color_background": user_input.get(COLOR_BACKGROUND),
+                }
+            )
+
+            # Update the USER_COLORS array with the user-defined colors
+            CONF_COLORS[0] = self.data["color_wall"]
+            CONF_COLORS[1] = self.data["color_zone_clean"]
+            CONF_COLORS[2] = self.data["color_robot"]
+            CONF_COLORS[3] = self.data["color_background"]
+            CONF_COLORS[4] = self.data["color_move"]
+            CONF_COLORS[5] = self.data["color_charger"]
+            CONF_COLORS[6] = self.data["color_no_go"]
+            CONF_COLORS[7] = self.data["color_go_to"]
+
+            return await self.async_step_init_3()
+
+        return self.async_show_form(
+            step_id="init_2", data_schema=GENERIC_COLOR_SCHEMA, description_placeholders=self.data
+        )
+
+    async def async_step_init_3(self, user_input: Optional[Dict[str, Any]] = None):
+        if user_input is not None:
+            self.data.update(
+                {
+                    "color_room_0": user_input.get(COLOR_ROOM_0),
+                    "color_room_1": user_input.get(COLOR_ROOM_1),
+                    "color_room_2": user_input.get(COLOR_ROOM_2),
+                    "color_room_3": user_input.get(COLOR_ROOM_3),
+                    "color_room_4": user_input.get(COLOR_ROOM_4),
+                    "color_room_5": user_input.get(COLOR_ROOM_5),
+                    "color_room_6": user_input.get(COLOR_ROOM_6),
+                    "color_room_7": user_input.get(COLOR_ROOM_7),
+                    "color_room_8": user_input.get(COLOR_ROOM_8),
+                    "color_room_9": user_input.get(COLOR_ROOM_9),
+                    "color_room_10": user_input.get(COLOR_ROOM_10),
+                    "color_room_11": user_input.get(COLOR_ROOM_11),
+                    "color_room_12": user_input.get(COLOR_ROOM_12),
+                    "color_room_13": user_input.get(COLOR_ROOM_13),
+                    "color_room_14": user_input.get(COLOR_ROOM_14),
+                    "color_room_15": user_input.get(COLOR_ROOM_15),
+                }
+            )
+
+            return self.async_create_entry(
+                title=DEFAULT_NAME,
+                data=self.data,
+            )
+
+        return self.async_show_form(
+            step_id="init_3", data_schema=ROOMS_COLOR_SCHEMA, description_placeholders=self.data
+        )
+

@@ -39,7 +39,14 @@ from .const import (
     PLATFORMS,
     ATT_ROTATE,
     ATT_CROP,
-    CONF_COLORS,
+    COLOR_WALL,
+    COLOR_ZONE_CLEAN,
+    COLOR_ROBOT,
+    COLOR_BACKGROUND,
+    COLOR_MOVE,
+    COLOR_CHARGER,
+    COLOR_NO_GO,
+    COLOR_GO_TO,
 )
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
@@ -124,17 +131,20 @@ class ValetudoCamera(Camera, Entity):
         self._frame_nuber = 0
         self.throttled_camera_image = Throttle(timedelta(seconds=5))(self.camera_image)
         self._should_poll = True
-        self.user_colors = [
-            device_info.get(CONF_COLORS[0]),
-            device_info.get(CONF_COLORS[1]),
-            device_info.get(CONF_COLORS[2]),
-            device_info.get(CONF_COLORS[3]),
-            device_info.get(CONF_COLORS[4]),
-            device_info.get(CONF_COLORS[5]),
-            device_info.get(CONF_COLORS[6]),
-            device_info.get(CONF_COLORS[7])
-        ]
-        self._vacuum_shared.update_user_colors(add_alpha_to_rgb(self.user_colors, base_colors_array))
+        try:
+            self.user_colors = [
+                device_info.get(COLOR_WALL),
+                device_info.get(COLOR_ZONE_CLEAN),
+                device_info.get(COLOR_ROBOT),
+                device_info.get(COLOR_BACKGROUND),
+                device_info.get(COLOR_MOVE),
+                device_info.get(COLOR_CHARGER),
+                device_info.get(COLOR_NO_GO),
+                device_info.get(COLOR_GO_TO)
+            ]
+            self._vacuum_shared.update_user_colors(add_alpha_to_rgb(self.user_colors, base_colors_array))
+        except (ValueError, IndexError, UnboundLocalError) as e:
+            _LOGGER.error("Error while populating user_colors: %s", e)
 
     async def async_added_to_hass(self) -> None:
         self.async_schedule_update_ha_state(True)
