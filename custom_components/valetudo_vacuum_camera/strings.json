@@ -101,6 +101,9 @@
         "description": "Camera Options. Part 3/3",
         "title": "Camera Options"
       }
+    },
+    "abort": {
+      "already_configured": "This add on has already been configured."
     }
   },
   "options": {
@@ -182,8 +185,5 @@
         "title": "Camera Options"
       }
     }
-  },
-  "abort": {
-    "already_configured": "This add on has already been configured."
   }
 }

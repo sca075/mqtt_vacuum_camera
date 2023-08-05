@@ -101,6 +101,9 @@
         "description": "Camera Options. Part 3/3",
         "title": "Camera Options"
       }
+    },
+    "abort": {
+      "already_configured": "This add on has already been configured."
     }
   },
   "options": {
@@ -145,7 +148,7 @@
         "data": {
           "color_room_0": "[135, 206, 250]",
           "color_room_1": "[176, 226, 255]",
-          "color_room_2": "[255, 255, 0]",
+          "color_room_2": "[165, 105, 18]",
           "color_room_3": "[164, 211, 238]",
           "color_room_4": "[141, 182, 205]",
           "color_room_5": "[96, 123, 139]",
@@ -182,8 +185,5 @@
         "title": "Camera Options"
       }
     }
-  },
-  "abort": {
-    "already_configured": "This add on has already been configured."
   }
 }

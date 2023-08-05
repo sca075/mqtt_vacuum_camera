@@ -292,4 +292,3 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="init_3", data_schema=ROOMS_COLOR_SCHEMA, description_placeholders=self.data
         )
-
