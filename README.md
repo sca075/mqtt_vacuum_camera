@@ -11,9 +11,6 @@
 Extract the maps for rooted Vacuum Cleaners with Valetudo Firmware to Home Assistant via MQTT.
 
 **What it is:**
-This Custom Component allow to integrate the Vacuum functionalities and encode the Vacuum Map embedded on the image the vacuum send to mqtt.
-If you encounter issues integrating a not listed vacuum please open a discussion.
-
 This Integration decode the vacuum map and render it to Home Assistant, when you want also to control your vacuum you will need to also install the:
 [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card) from HACS as well.
 Configuration of the card once the camera is selected requires:
