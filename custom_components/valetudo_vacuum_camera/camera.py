@@ -27,7 +27,11 @@ from custom_components.valetudo_vacuum_camera.valetudo.connector import (
 from custom_components.valetudo_vacuum_camera.valetudo.image_handler import (
     MapImageHandler,
 )
-from custom_components.valetudo_vacuum_camera.utils.colors import base_colors_array, add_alpha_to_rgb
+from custom_components.valetudo_vacuum_camera.utils.colors import (
+    base_colors_array,
+    rooms_color,
+    add_alpha_to_rgb,
+)
 from custom_components.valetudo_vacuum_camera.valetudo.vacuum import Vacuum
 from .const import (
     CONF_VACUUM_CONNECTION_STRING,
@@ -47,6 +51,22 @@ from .const import (
     COLOR_CHARGER,
     COLOR_NO_GO,
     COLOR_GO_TO,
+    COLOR_ROOM_0,
+    COLOR_ROOM_1,
+    COLOR_ROOM_2,
+    COLOR_ROOM_3,
+    COLOR_ROOM_4,
+    COLOR_ROOM_5,
+    COLOR_ROOM_6,
+    COLOR_ROOM_7,
+    COLOR_ROOM_8,
+    COLOR_ROOM_9,
+    COLOR_ROOM_10,
+    COLOR_ROOM_11,
+    COLOR_ROOM_12,
+    COLOR_ROOM_13,
+    COLOR_ROOM_14,
+    COLOR_ROOM_15,
 )
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
@@ -65,9 +85,9 @@ _LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
-        hass: core.HomeAssistant,
-        config_entry: config_entries.ConfigEntry,
-        async_add_entities,
+    hass: core.HomeAssistant,
+    config_entry: config_entries.ConfigEntry,
+    async_add_entities,
 ) -> None:
     """Setup camera from a config entry created in the integrations UI."""
     config = hass.data[DOMAIN][config_entry.entry_id]
@@ -79,10 +99,10 @@ async def async_setup_entry(
 
 
 async def async_setup_platform(
-        hass: HomeAssistantType,
-        config: ConfigType,
-        async_add_entities,
-        discovery_info: DiscoveryInfoType | None = None,
+    hass: HomeAssistantType,
+    config: ConfigType,
+    async_add_entities,
+    discovery_info: DiscoveryInfoType | None = None,
 ):
     async_add_entities([ValetudoCamera(hass, config)])
     await async_setup_reload_service(hass, DOMAIN, PLATFORMS)
@@ -140,11 +160,34 @@ class ValetudoCamera(Camera, Entity):
                 device_info.get(COLOR_MOVE),
                 device_info.get(COLOR_CHARGER),
                 device_info.get(COLOR_NO_GO),
-                device_info.get(COLOR_GO_TO)
+                device_info.get(COLOR_GO_TO),
             ]
-            self._vacuum_shared.update_user_colors(add_alpha_to_rgb(self.user_colors, base_colors_array))
+            self.rooms_colors = [
+                device_info.get(COLOR_ROOM_0),
+                device_info.get(COLOR_ROOM_1),
+                device_info.get(COLOR_ROOM_2),
+                device_info.get(COLOR_ROOM_3),
+                device_info.get(COLOR_ROOM_4),
+                device_info.get(COLOR_ROOM_5),
+                device_info.get(COLOR_ROOM_6),
+                device_info.get(COLOR_ROOM_7),
+                device_info.get(COLOR_ROOM_8),
+                device_info.get(COLOR_ROOM_9),
+                device_info.get(COLOR_ROOM_10),
+                device_info.get(COLOR_ROOM_11),
+                device_info.get(COLOR_ROOM_12),
+                device_info.get(COLOR_ROOM_13),
+                device_info.get(COLOR_ROOM_14),
+                device_info.get(COLOR_ROOM_15),
+            ]
+            self._vacuum_shared.update_user_colors(
+                add_alpha_to_rgb(self.user_colors, base_colors_array)
+            )
+            self._vacuum_shared.update_rooms_colors(
+                add_alpha_to_rgb(self.rooms_colors, rooms_color)
+            )
         except (ValueError, IndexError, UnboundLocalError) as e:
-            _LOGGER.error("Error while populating user_colors: %s", e)
+            _LOGGER.error("Error while populating colors: %s", e)
 
     async def async_added_to_hass(self) -> None:
         self.async_schedule_update_ha_state(True)
@@ -161,7 +204,7 @@ class ValetudoCamera(Camera, Entity):
         return 1
 
     def camera_image(
-            self, width: Optional[int] = None, height: Optional[int] = None
+        self, width: Optional[int] = None, height: Optional[int] = None
     ) -> Optional[bytes]:
         return self._image
 
@@ -222,8 +265,8 @@ class ValetudoCamera(Camera, Entity):
                 self._mqtt.save_payload()
             # Write the JSON data to the file
             with open(
-                    "custom_components/valetudo_vacuum_camera/snapshots/valetudo_json.json",
-                    "w",
+                "custom_components/valetudo_vacuum_camera/snapshots/valetudo_json.json",
+                "w",
             ) as file:
                 json_data = json.dumps(json_data, indent=4)
                 file.write(json_data)
@@ -250,9 +293,11 @@ class ValetudoCamera(Camera, Entity):
         process_data = self._mqtt.is_data_available()
         if process_data:
             # if the vacuum is working, or it is the first image.
-            if (self._vacuum_state == "cleaning"
-                    or self._vacuum_state == "moving"
-                    or self._vacuum_state == "returning"):
+            if (
+                self._vacuum_state == "cleaning"
+                or self._vacuum_state == "moving"
+                or self._vacuum_state == "returning"
+            ):
                 # grab the image
                 self._image_grab = True
                 self._frame_nuber = self._map_handler.get_frame_number()
@@ -272,7 +317,11 @@ class ValetudoCamera(Camera, Entity):
                 # Just in case, let's check that the data is available
                 if parsed_json is not None:
                     pil_img = self._map_handler.get_image_from_json(
-                        parsed_json, self._vacuum_state, self._image_crop, self._vacuum_shared.get_user_colors()
+                        parsed_json,
+                        self._vacuum_state,
+                        self._image_crop,
+                        self._vacuum_shared.get_user_colors(),
+                        self._vacuum_shared.get_rooms_colors(),
                     )
                     if pil_img is not None:
                         pil_img = pil_img.rotate(self._image_rotate)
@@ -280,12 +329,15 @@ class ValetudoCamera(Camera, Entity):
                             "Applied image rotation: %s", {self._image_rotate}
                         )
                         if not self._snapshot_taken and (
-                                self._vacuum_state == "idle"
-                                or self._vacuum_state == "docked"
-                                or self._vacuum_state == "error"
+                            self._vacuum_state == "idle"
+                            or self._vacuum_state == "docked"
+                            or self._vacuum_state == "error"
                         ):
                             # suspend image processing if we are at the next frame.
-                            if self._frame_nuber is not self._map_handler.get_frame_number():
+                            if (
+                                self._frame_nuber
+                                is not self._map_handler.get_frame_number()
+                            ):
                                 self._image_grab = False
                                 _LOGGER.info("Suspended the camera data processing.")
                                 # take a snapshot
@@ -316,6 +368,8 @@ class ValetudoCamera(Camera, Entity):
                     self._frame_interval = max(0.1, processing_time)
                     _LOGGER.debug("Adjusted frame interval: %s", self._frame_interval)
                 else:
-                    _LOGGER.info("Camera image not processed. Returning not updated image.")
+                    _LOGGER.info(
+                        "Camera image not processed. Returning not updated image."
+                    )
                     self._frame_interval = 0.1
                 return self._image

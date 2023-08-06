@@ -1,6 +1,7 @@
 """Colors RGBA Version 1.1.8"""
 
 import logging
+
 _LOGGER = logging.getLogger(__name__)
 
 color_transparent = (0, 0, 0, 0)
@@ -77,6 +78,7 @@ color_array = [
     rooms_color,
 ]
 
+
 def add_alpha_to_rgb(rgb_colors, rgba_colors):
     """
     Add alpha channel to RGB colors using corresponding RGBA colors.
@@ -94,8 +96,9 @@ def add_alpha_to_rgb(rgb_colors, rgba_colors):
     result = []
     for rgb, rgba in zip(rgb_colors, rgba_colors):
         if len(rgb) != 3 or len(rgba) != 4:
-            raise ValueError("RGB and RGBA colors must be tuples of length 3 and 4, respectively.")
+            raise ValueError(
+                "RGB and RGBA colors must be tuples of length 3 and 4, respectively."
+            )
         result.append((*rgb, rgba[3]))  # Append RGB with the alpha channel from RGBA
 
     return result
-

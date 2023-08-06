@@ -10,7 +10,6 @@ import numpy as np
 from PIL import Image, ImageDraw
 from custom_components.valetudo_vacuum_camera.utils.colors import (
     color_grey,
-    rooms_color,
 )
 from custom_components.valetudo_vacuum_camera.valetudo.vacuum import Vacuum
 from custom_components.valetudo_vacuum_camera.types import Color, Colors
@@ -399,7 +398,14 @@ class MapImageHandler(object):
                             arr[y + i, x + j] = color
         return arr
 
-    def get_image_from_json(self, m_json, robot_state, crop: int = 50, user_colors: Colors = None):
+    def get_image_from_json(
+            self,
+            m_json,
+            robot_state,
+            crop: int = 50,
+            user_colors: Colors = None,
+            rooms_colors: Color = None
+    ):
         color_wall: Color = user_colors[0]
         color_no_go: Color = user_colors[6]
         color_go_to: Color = user_colors[7]
@@ -499,7 +505,7 @@ class MapImageHandler(object):
                     for compressed_pixels in compressed_pixels_list:
                         pixels = self.sublist(compressed_pixels, 3)
                         if layer_type == "segment" or layer_type == "floor":
-                            room_color = rooms_color[room_id]
+                            room_color = rooms_colors[room_id]
                             img_np_array = self.from_json_to_image(
                                 img_np_array, pixels, pixel_size, room_color
                             )

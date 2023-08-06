@@ -4,7 +4,7 @@ Not fully implemented yet in consideration"""
 
 
 import logging
-from custom_components.valetudo_vacuum_camera.types import Color, Colors
+from custom_components.valetudo_vacuum_camera.types import Colors
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -17,12 +17,19 @@ class Vacuum(object):
         self._new_mqtt_message = False
         self._last_image = None
         self.user_colors = Colors
+        self.rooms_colors = Colors
 
     def update_user_colors(self, user_colors):
         self.user_colors = user_colors
 
     def get_user_colors(self):
         return self.user_colors
+
+    def update_rooms_colors(self, user_colors):
+        self.rooms_colors = user_colors
+
+    def get_rooms_colors(self):
+        return self.rooms_colors
 
     def is_data_available(self):
         value = self._new_mqtt_message

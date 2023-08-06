@@ -12,7 +12,7 @@ PLATFORMS = [Platform.CAMERA]
 
 
 async def options_update_listener(
-        hass: core.HomeAssistant, config_entry: config_entries.ConfigEntry
+    hass: core.HomeAssistant, config_entry: config_entries.ConfigEntry
 ):
     """Handle options update."""
     await hass.config_entries.async_reload(config_entry.entry_id)

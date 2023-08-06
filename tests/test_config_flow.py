@@ -4,11 +4,13 @@ from unittest.mock import patch
 from homeassistant.config_entries import ConfigEntry
 from custom_components.valetudo_vacuum_camera import config_flow
 
+
 @pytest.fixture
 def vacuum_user_input():
     return {
         config_flow.CONF_VACUUM_ENTITY_ID: "Vacuum Entity ID",
     }
+
 
 @pytest.fixture
 def mqtt_user_input():
@@ -18,13 +20,13 @@ def mqtt_user_input():
         config_flow.CONF_VACUUM_CONNECTION_STRING: "Vacuum Topic Prefix/Identifier",
     }
 
+
 @pytest.fixture
 def options_user_input():
     return {
         config_flow.ATT_ROTATE: "Image Rotation",
         config_flow.ATT_CROP: "Crop Image",
     }
-
 
 
 async def test_flow_user_init(hass):
@@ -43,7 +45,6 @@ async def test_flow_user_init(hass):
         "type": "form",
     }
     assert expected == result
-
 
 
 async def test_flow_mqtt(hass, vacuum_user_input):
@@ -82,13 +83,16 @@ async def test_flow_options(hass, mqtt_user_input):
     assert expected == result
 
 
-async def test_flow_user_creates_config_entry(hass, vacuum_user_input, mqtt_user_input, options_user_input):
+async def test_flow_user_creates_config_entry(
+    hass, vacuum_user_input, mqtt_user_input, options_user_input
+):
     """Test the config entry is successfully created."""
     result = await hass.config_entries.flow.async_init(
         config_flow.DOMAIN, context={"source": "user"}
     )
     await hass.config_entries.flow.async_configure(
-        result["flow_id"], user_input={**vacuum_user_input, **mqtt_user_input, **options_user_input}
+        result["flow_id"],
+        user_input={**vacuum_user_input, **mqtt_user_input, **options_user_input},
     )
     await hass.async_block_till_done()
 

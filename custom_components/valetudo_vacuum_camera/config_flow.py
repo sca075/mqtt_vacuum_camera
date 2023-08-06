@@ -4,14 +4,11 @@ import voluptuous as vol
 import logging
 from typing import Any, Dict, Optional
 from homeassistant import config_entries
+
 # from homeassistant.const import CONF_NAME
 from homeassistant.core import callback
 import homeassistant.helpers.config_validation as cv
-from homeassistant.helpers.selector import (
-    EntitySelector,
-    ColorRGBSelector
-)
-
+from homeassistant.helpers.selector import EntitySelector, ColorRGBSelector
 from .const import (
     DOMAIN,
     CONF_VACUUM_ENTITY_ID,
@@ -45,7 +42,7 @@ from .const import (
     COLOR_ROOM_12,
     COLOR_ROOM_13,
     COLOR_ROOM_14,
-    COLOR_ROOM_15
+    COLOR_ROOM_15,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -134,7 +131,9 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             return await self.async_step_options_2()
 
         return self.async_show_form(
-            step_id="options_1", data_schema=IMG_SCHEMA, description_placeholders=self.data
+            step_id="options_1",
+            data_schema=IMG_SCHEMA,
+            description_placeholders=self.data,
         )
 
     async def async_step_options_2(self, user_input: Optional[Dict[str, Any]] = None):
@@ -144,7 +143,7 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     "color_charger": user_input.get(COLOR_CHARGER),
                     "color_move": user_input.get(COLOR_MOVE),
                     "color_wall": user_input.get(COLOR_WALL),
-                    "color_robot": user_input.get(COLOR_ROBOT),
+                    "color_robot": user_input.get(COLOR_ROBOT, [255, 255, 255]),
                     "color_go_to": user_input.get(COLOR_GO_TO),
                     "color_no_go": user_input.get(COLOR_NO_GO),
                     "color_zone_clean": user_input.get(COLOR_ZONE_CLEAN),
@@ -165,7 +164,9 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             return await self.async_step_options_3()
 
         return self.async_show_form(
-            step_id="options_2", data_schema=GENERIC_COLOR_SCHEMA, description_placeholders=self.data
+            step_id="options_2",
+            data_schema=GENERIC_COLOR_SCHEMA,
+            description_placeholders=self.data,
         )
 
     async def async_step_options_3(self, user_input: Optional[Dict[str, Any]] = None):
@@ -197,13 +198,15 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             )
 
         return self.async_show_form(
-            step_id="options_3", data_schema=ROOMS_COLOR_SCHEMA, description_placeholders=self.data
+            step_id="options_3",
+            data_schema=ROOMS_COLOR_SCHEMA,
+            description_placeholders=self.data,
         )
 
     @staticmethod
     @callback
     def async_get_options_flow(
-            config_entry: config_entries.ConfigEntry,
+        config_entry: config_entries.ConfigEntry,
     ) -> config_entries.OptionsFlow:
         """Create the options flow."""
         return OptionsFlowHandler(config_entry)
@@ -213,6 +216,98 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self, config_entry: config_entries.ConfigEntry):
         """Initialize options flow."""
         self.config_entry = config_entry
+        self.IMG_SCHEMA = vol.Schema(
+            {
+                vol.Required(
+                    ATT_ROTATE, default=config_entry.options.get("rotate_image")
+                ): vol.In(["0", "90", "180", "270"]),
+                vol.Required(
+                    ATT_CROP, default=config_entry.options.get("crop_image")
+                ): cv.string,
+            }
+        )
+        self.COLOR_1_SCHEMA = vol.Schema(
+            {
+                vol.Optional(
+                    COLOR_BACKGROUND,
+                    default=config_entry.options.get("color_background"),
+                ): ColorRGBSelector(),
+                vol.Optional(
+                    COLOR_ZONE_CLEAN,
+                    default=config_entry.options.get("color_zone_clean"),
+                ): ColorRGBSelector(),
+                vol.Optional(
+                    COLOR_WALL, default=config_entry.options.get("color_wall")
+                ): ColorRGBSelector(),
+                vol.Optional(
+                    COLOR_ROBOT, default=config_entry.options.get("color_robot")
+                ): ColorRGBSelector(),
+                vol.Optional(
+                    COLOR_CHARGER, default=config_entry.options.get("color_charger")
+                ): ColorRGBSelector(),
+                vol.Optional(
+                    COLOR_MOVE, default=config_entry.options.get("color_move")
+                ): ColorRGBSelector(),
+                vol.Optional(
+                    COLOR_GO_TO, default=config_entry.options.get("color_go_to")
+                ): ColorRGBSelector(),
+                vol.Optional(
+                    COLOR_NO_GO, default=config_entry.options.get("color_no_go")
+                ): ColorRGBSelector(),
+            }
+        )
+        self.COLOR_2_SCHEMA = vol.Schema(
+            {
+                vol.Optional(
+                    COLOR_ROOM_0, default=config_entry.options.get("color_room_0")
+                ): ColorRGBSelector(),
+                vol.Optional(
+                    COLOR_ROOM_1, default=config_entry.options.get("color_room_1")
+                ): ColorRGBSelector(),
+                vol.Optional(
+                    COLOR_ROOM_2, default=config_entry.options.get("color_room_2")
+                ): ColorRGBSelector(),
+                vol.Optional(
+                    COLOR_ROOM_3, default=config_entry.options.get("color_room_3")
+                ): ColorRGBSelector(),
+                vol.Optional(
+                    COLOR_ROOM_4, default=config_entry.options.get("color_room_4")
+                ): ColorRGBSelector(),
+                vol.Optional(
+                    COLOR_ROOM_5, default=config_entry.options.get("color_room_5")
+                ): ColorRGBSelector(),
+                vol.Optional(
+                    COLOR_ROOM_6, default=config_entry.options.get("color_room_6")
+                ): ColorRGBSelector(),
+                vol.Optional(
+                    COLOR_ROOM_7, default=config_entry.options.get("color_room_7")
+                ): ColorRGBSelector(),
+                vol.Optional(
+                    COLOR_ROOM_8, default=config_entry.options.get("color_room_8")
+                ): ColorRGBSelector(),
+                vol.Optional(
+                    COLOR_ROOM_9, default=config_entry.options.get("color_room_9")
+                ): ColorRGBSelector(),
+                vol.Optional(
+                    COLOR_ROOM_10, default=config_entry.options.get("color_room_10")
+                ): ColorRGBSelector(),
+                vol.Optional(
+                    COLOR_ROOM_11, default=config_entry.options.get("color_room_11")
+                ): ColorRGBSelector(),
+                vol.Optional(
+                    COLOR_ROOM_12, default=config_entry.options.get("color_room_12")
+                ): ColorRGBSelector(),
+                vol.Optional(
+                    COLOR_ROOM_13, default=config_entry.options.get("color_room_13")
+                ): ColorRGBSelector(),
+                vol.Optional(
+                    COLOR_ROOM_14, default=config_entry.options.get("color_room_14")
+                ): ColorRGBSelector(),
+                vol.Optional(
+                    COLOR_ROOM_15, default=config_entry.options.get("color_room_15")
+                ): ColorRGBSelector(),
+            }
+        )
         self.data = None
 
     async def async_step_init(self, user_input: Optional[Dict[str, Any]] = None):
@@ -227,10 +322,17 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             return await self.async_step_init_2()
 
         return self.async_show_form(
-            step_id="init", data_schema=IMG_SCHEMA, description_placeholders=self.data
+            step_id="init",
+            data_schema=self.IMG_SCHEMA,
+            description_placeholders=self.data,
         )
 
     async def async_step_init_2(self, user_input: Optional[Dict[str, Any]] = None):
+        _LOGGER.debug("async_step_init_2 called")
+        _LOGGER.debug(
+            "color robot in the options: %s",
+            self.config_entry.options.get("color_robot"),
+        )
         if user_input is not None:
             self.data.update(
                 {
@@ -245,20 +347,12 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 }
             )
 
-            # Update the USER_COLORS array with the user-defined colors
-            CONF_COLORS[0] = self.data["color_wall"]
-            CONF_COLORS[1] = self.data["color_zone_clean"]
-            CONF_COLORS[2] = self.data["color_robot"]
-            CONF_COLORS[3] = self.data["color_background"]
-            CONF_COLORS[4] = self.data["color_move"]
-            CONF_COLORS[5] = self.data["color_charger"]
-            CONF_COLORS[6] = self.data["color_no_go"]
-            CONF_COLORS[7] = self.data["color_go_to"]
-
             return await self.async_step_init_3()
-
+        _LOGGER.debug("self.data before show form: %s", self.data)
         return self.async_show_form(
-            step_id="init_2", data_schema=GENERIC_COLOR_SCHEMA, description_placeholders=self.data
+            step_id="init_2",
+            data_schema=self.COLOR_1_SCHEMA,
+            description_placeholders=self.data,
         )
 
     async def async_step_init_3(self, user_input: Optional[Dict[str, Any]] = None):
@@ -290,5 +384,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             )
 
         return self.async_show_form(
-            step_id="init_3", data_schema=ROOMS_COLOR_SCHEMA, description_placeholders=self.data
+            step_id="init_3",
+            data_schema=self.COLOR_2_SCHEMA,
+            description_placeholders=self.data,
         )
