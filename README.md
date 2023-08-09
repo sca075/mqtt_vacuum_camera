@@ -7,16 +7,10 @@
 </div>
 
 
-**Description:**
+**About:**
 Extract the maps for rooted Vacuum Cleaners with Valetudo Firmware to Home Assistant via MQTT.
-This Custom Component allow to integrate the Vacuum functionalities and encode the Vacuum Map embedded on the image the vacuum send to mqtt.
 
-**Supported Vacuums:**
-- RoborockV1
-- Dreame D9
-
-If you encounter issues integrating a not listed vacuum please open a discussion.
-
+**What it is:**
 This Integration decode the vacuum map and render it to Home Assistant, when you want also to control your vacuum you will need to also install the:
 [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card) from HACS as well.
 Configuration of the card once the camera is selected requires:
@@ -25,7 +19,7 @@ This will pass automatically the data to the card.
 
 ```
 type: custom:xiaomi-vacuum-map-card
-entity: vacuum.valetudo_silenttepidstinkbug
+entity: vacuum.valetudo_yourvacuum
 vacuum_platform: Hypfer/Valetudo
 map_source:
   camera: camera.valetudo_vacuum_camera 
@@ -35,40 +29,40 @@ internal_variables:
   topic: valetudo/your_topic  
   ```
 
+**Supported Vacuums:**
+- RoborockV1
+- Dreame D9
 
-### Current Release: v1.1.7
-1. Camera improvements:
-    - Automatic Standby: No image data will be process if the vacuum isn't working or moving. This free automatically resources to HA.
-    - If the vacuum is in Idle, Docked or Error the snapshot image (path to: "custom_components/valetudo_vacuum_camera/snapshots/valetudo_snapshot.png") is updated and ready to be used for the notification services of HA.
-    - The Frame Interval of the camera is now updated at each frame, this is helping to keep the image refresh more smooth and avoid over processing during the image updates.
-2. Improved the logging, adding information's of what data have been received from MQTT.
-3. Added the image_handler get_frame_number function. This function is for development purpose only. No influence on the image.
-4. Improved user configuration via UI searching the vacuum entity id possible, as well the image rotation fixed values are minimizing inputs errors.
-### In plan:
-1) Some improved UI configuration steps on V1.1.7. We set now as target v1.2.0 to complete this.
-2) Adding to the configuration the colour setup for each element is a work in progress as it is possible to see already on the new config_flow.
-3) We will also add the capability to show segments names and active state on v1.2.0.
 
-Note: Release of v1.1.8 will be postponed as per we will take a break next week :)
+### Current Release: v1.1.9
+1. Snapshots function is available since version 1.1.5 but is updated on the 1.1.9 where image will be stored on www folder instead of the integration snapshot folder.
+   with this modification is possible to use the notification service of HA as following:
+```example automation
+alias: Vacuum Idle
+description: ""
+trigger:
+  - platform: state
+    entity_id:
+      - vacuum.valetudo_your_vacuum
+    from: idle
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 30
+condition: []
+action:
+  - service: notify.mobile_app_your_phone
+    data:
+      message: Vacuum idle
+      data:
+        image: /local/valetudo_snapshot.png
+mode: single
+```
+2. Names of the rooms to send directly to the card are currently display only as values on the camera attributes.
 
 ### How to install:
 Using [HACS](https://hacs.xyz/) add integration, and copy the repository link in ***new repository*** section.
 Once installed the integration can be configured via integration / add integration and search Valetudo Camera.
-If you prefer to add the integration via the configuration.yaml please use the following configuration lines:
-
-
-```
-camera:
-    - platform: valetudo_vacuum_camera
-        vacuum_entity: "vacuum.your_vacuum"
-        vacuum_map: "valetudo/your_vacuum_topic"
-        borker_User: "broker_user_name"
-        broker_Password: "broker_password"
-        rotate_image: integer value image clock wise rotation values 0, 90, 180, or 270.
-        crop_image: 0 integer value = 100% of the image is redered. 25 is reducing the image of 75%.
-        scan_interval:
-            seconds: 5
-```
 
 To know the MQTT topic your_vacuum use you might use the vacuum web GUI.
 copy the Topic Prefix/Identifier **only**. Please and past it as a sting in the
@@ -81,14 +75,46 @@ vacuum_map required field.
 This custom component is developed and tested using a PI4 with Home Assistant OS fully updated [to the last version](https://www.home-assistant.io/faq/release/), this allows
 us to confirm that the component is working properly with Home Assistant.
 
-Note: The test in Github is not fully setup this is why there is an X instead of a V
+Note: The test in Github is still not fully setup this is why there is an X instead of a V. We don't pass the 84% of test for this reason.
+
+## Futures:
+1) Generate the calibration points for the lovelace-xiaomi-vacuum-map-card to ensure full compatibility to this user friendly card.
+2) The camera take automaticly a snapshot (vacuum idle/ error / docked) and sore it in the www folder of HA. It is thefore possible to create an automation to send the screenshot to your mobile in different conditions as per below example:
+
+```
+alias: Vacuum Idle or Error
+description: ""
+trigger:
+  - platform: state
+    entity_id:
+      - vacuum.valetudo_silenttepidstinkbug
+    from: idle
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 30
+condition: []
+action:
+  - service: notify.mobile_app_your_phone
+    data:
+      message: Vacuum idle
+      data:
+        image: /local/valetudo_snapshot.png
+mode: single
+```
+
+3) Change the image options directly form the HA integratios UI with a click on configuration.
+
+### In plan:
+1) We will also add the capability to show segments names and active state for Dreame D9 vacuums on v1.1.9.
 
 **Checked before release:**
-- [x] Configuration via GUI. 
+- [x] Configuration via GUI.
 - [x] No errors after installation (at first init the image will be gray)
 - [x] Reporting the calibration data will take a while, please wait until the init is complete.
 - [x] Go to and ara cleaning tested.
 - [x] Camera reload okay.
 - [x] Camera entry delete okay.
+- [x] Camera reconfigure okay.
 
 

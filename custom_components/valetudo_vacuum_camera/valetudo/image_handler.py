@@ -1,4 +1,4 @@
-"""Version 1.1.8"""
+"""Version 1.1.9"""
 # Image Handler Module
 # Collection of routines to extract data from the received json.
 # It returns values and images relative to the Map Data extrapolated from the vacuum json.
@@ -31,6 +31,7 @@ class MapImageHandler(object):
         self.json_id = None
         self.go_to = None
         self.img_rotate = 0
+        self.room_propriety = None
         self.vacuum = Vacuum()
 
     @staticmethod
@@ -398,6 +399,35 @@ class MapImageHandler(object):
                             arr[y + i, x + j] = color
         return arr
 
+    @staticmethod
+    def extract_room_properties(json_data):
+        room_properties = {}
+        pixel_size = json_data.get('pixelSize', [])
+
+        for layer in json_data.get('layers', []):
+            if layer['__class'] == 'MapLayer':
+                meta_data = layer.get('metaData', {})
+                segment_id = meta_data.get('segmentId')
+                if segment_id is not None:
+                    active = meta_data.get('active')
+                    name = meta_data.get('name')
+                    # Calculate x and y min/max from compressed pixels
+                    x_min = min(layer['compressedPixels'][::3]) * pixel_size
+                    x_max = max(layer['compressedPixels'][::3]) * pixel_size
+                    y_min = min(layer['compressedPixels'][1::3]) * pixel_size
+                    y_max = max(layer['compressedPixels'][1::3]) * pixel_size
+
+                    room_name = "room_" + str(segment_id)
+                    room_properties[room_name] = {
+                        'id': segment_id,
+                        'active': active,
+                        'label': name,
+                        'outline': [[x_min, y_min],
+                                    [x_max, y_max]]
+                    }
+
+        return room_properties
+
     def get_image_from_json(
             self,
             m_json,
@@ -417,6 +447,7 @@ class MapImageHandler(object):
         try:
             if m_json is not None:
                 _LOGGER.info("Composing the image for the camera.")
+                self.room_propriety = self.extract_room_properties(m_json)
                 size_x = int(m_json["size"]["x"])
                 size_y = int(m_json["size"]["y"])
                 self.img_size = {
@@ -600,6 +631,9 @@ class MapImageHandler(object):
 
     def get_json_id(self):
         return self.json_id
+
+    def get_rooms_attributes(self):
+        return  self.room_propriety
 
     def get_calibration_data(self, rotation_angle):
         calibration_data = []

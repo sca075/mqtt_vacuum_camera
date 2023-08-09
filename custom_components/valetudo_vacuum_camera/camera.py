@@ -1,4 +1,4 @@
-"""Camera Version 1.1.8"""
+"""Camera Version 1.1.9"""
 from __future__ import annotations
 import logging
 import os
@@ -85,9 +85,9 @@ _LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
-    hass: core.HomeAssistant,
-    config_entry: config_entries.ConfigEntry,
-    async_add_entities,
+        hass: core.HomeAssistant,
+        config_entry: config_entries.ConfigEntry,
+        async_add_entities,
 ) -> None:
     """Setup camera from a config entry created in the integrations UI."""
     config = hass.data[DOMAIN][config_entry.entry_id]
@@ -99,10 +99,10 @@ async def async_setup_entry(
 
 
 async def async_setup_platform(
-    hass: HomeAssistantType,
-    config: ConfigType,
-    async_add_entities,
-    discovery_info: DiscoveryInfoType | None = None,
+        hass: HomeAssistantType,
+        config: ConfigType,
+        async_add_entities,
+        discovery_info: DiscoveryInfoType | None = None,
 ):
     async_add_entities([ValetudoCamera(hass, config)])
     await async_setup_reload_service(hass, DOMAIN, PLATFORMS)
@@ -124,6 +124,7 @@ class ValetudoCamera(Camera, Entity):
             self._mqtt_user, self._mqtt_pass, self._mqtt_listen_topic, hass
         )
         self._map_handler = MapImageHandler()
+        self._map_rooms = None
         self._vacuum_shared = Vacuum()
         self._vacuum_state = None
         self._frame_interval = 1
@@ -204,7 +205,7 @@ class ValetudoCamera(Camera, Entity):
         return 1
 
     def camera_image(
-        self, width: Optional[int] = None, height: Optional[int] = None
+            self, width: Optional[int] = None, height: Optional[int] = None
     ) -> Optional[bytes]:
         return self._image
 
@@ -229,11 +230,12 @@ class ValetudoCamera(Camera, Entity):
         return {
             "vacuum_entity": self._vacuum_entity,
             "vacuum_status": self._vacuum_state,
+            "listen_to": self._mqtt_listen_topic,
+            "json_data": self._vac_json_data,
             "vacuum_json_id": self._vac_json_id,
             "robot_position": self._current,
             "calibration_points": self._calibration_points,
-            "json_data": self._vac_json_data,
-            "listen_to": self._mqtt_listen_topic,
+            "rooms_test": self._map_rooms,
         }
 
     @property
@@ -241,7 +243,7 @@ class ValetudoCamera(Camera, Entity):
         return self._should_poll
 
     def empty_if_no_data(self):
-        snapshot_path = "/config/custom_components/valetudo_vacuum_camera/snapshots/valetudo_snapshot.png"
+        snapshot_path = "/config/www/valetudo_snapshot.png"
         # Check if the snapshot file exists
         if os.path.isfile(snapshot_path) and (self._last_image is None):
             # Load the snapshot image
@@ -265,13 +267,13 @@ class ValetudoCamera(Camera, Entity):
                 self._mqtt.save_payload()
             # Write the JSON data to the file
             with open(
-                "custom_components/valetudo_vacuum_camera/snapshots/valetudo_json.json",
-                "w",
+                    "custom_components/valetudo_vacuum_camera/snapshots/valetudo_json.json",
+                    "w",
             ) as file:
                 json_data = json.dumps(json_data, indent=4)
                 file.write(json_data)
             image_data.save(
-                "custom_components/valetudo_vacuum_camera/snapshots/valetudo_snapshot.png"
+                "/config/www/valetudo_snapshot.png"
             )
         except IOError:
             self._snapshot_taken = None
@@ -294,9 +296,9 @@ class ValetudoCamera(Camera, Entity):
         if process_data:
             # if the vacuum is working, or it is the first image.
             if (
-                self._vacuum_state == "cleaning"
-                or self._vacuum_state == "moving"
-                or self._vacuum_state == "returning"
+                    self._vacuum_state == "cleaning"
+                    or self._vacuum_state == "moving"
+                    or self._vacuum_state == "returning"
             ):
                 # grab the image
                 self._image_grab = True
@@ -316,6 +318,7 @@ class ValetudoCamera(Camera, Entity):
             else:
                 # Just in case, let's check that the data is available
                 if parsed_json is not None:
+                    self._map_rooms = self._map_handler.get_rooms_attributes()
                     pil_img = self._map_handler.get_image_from_json(
                         parsed_json,
                         self._vacuum_state,
@@ -329,14 +332,14 @@ class ValetudoCamera(Camera, Entity):
                             "Applied image rotation: %s", {self._image_rotate}
                         )
                         if not self._snapshot_taken and (
-                            self._vacuum_state == "idle"
-                            or self._vacuum_state == "docked"
-                            or self._vacuum_state == "error"
+                                self._vacuum_state == "idle"
+                                or self._vacuum_state == "docked"
+                                or self._vacuum_state == "error"
                         ):
                             # suspend image processing if we are at the next frame.
                             if (
-                                self._frame_nuber
-                                is not self._map_handler.get_frame_number()
+                                    self._frame_nuber
+                                    is not self._map_handler.get_frame_number()
                             ):
                                 self._image_grab = False
                                 _LOGGER.info("Suspended the camera data processing.")
