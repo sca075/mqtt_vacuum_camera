@@ -19,7 +19,7 @@ This will pass automatically the data to the card.
 
 ```
 type: custom:xiaomi-vacuum-map-card
-entity: vacuum.valetudo_silenttepidstinkbug
+entity: vacuum.valetudo_yourvacuum
 vacuum_platform: Hypfer/Valetudo
 map_source:
   camera: camera.valetudo_vacuum_camera 
@@ -34,15 +34,31 @@ internal_variables:
 - Dreame D9
 
 
-### Current Release: v1.1.8
-1. Completed the configuration of the Camera via Home Assistant UI, please add the camera via Settings / Devices & Services / Add Integraation.
-2. Search for the Valetudo Vacuum Camera integration, select install and please follow the setup instrutions.
-3. Once the camera is installerd, it is possible to customize rotation, cropping and colours of the image.
- 
-### In plan:
-1) We will also add the capability to show segments names and active state for Dreame D9 vacuums on v1.1.9.
-
-Note: Release 1.1.8 is a breaking release, the colours of the room can be display correctly only when the camera is integrated via UI.
+### Current Release: v1.1.9
+1. Snapshots function is available since version 1.1.5 but is updated on the 1.1.9 where image will be stored on www folder instead of the integration snapshot folder.
+   with this modification is possible to use the notification service of HA as following:
+```example automation
+alias: Vacuum Idle
+description: ""
+trigger:
+  - platform: state
+    entity_id:
+      - vacuum.valetudo_your_vacuum
+    from: idle
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 30
+condition: []
+action:
+  - service: notify.mobile_app_your_phone
+    data:
+      message: Vacuum idle
+      data:
+        image: /local/valetudo_snapshot.png
+mode: single
+```
+2. Names of the rooms to send directly to the card are currently display only as values on the camera attributes.
 
 ### How to install:
 Using [HACS](https://hacs.xyz/) add integration, and copy the repository link in ***new repository*** section.
@@ -61,8 +77,39 @@ us to confirm that the component is working properly with Home Assistant.
 
 Note: The test in Github is still not fully setup this is why there is an X instead of a V. We don't pass the 84% of test for this reason.
 
+## Futures:
+1) Generate the calibration points for the lovelace-xiaomi-vacuum-map-card to ensure full compatibility to this user friendly card.
+2) The camera take automaticly a snapshot (vacuum idle/ error / docked) and sore it in the www folder of HA. It is thefore possible to create an automation to send the screenshot to your mobile in different conditions as per below example:
+
+```
+alias: Vacuum Idle or Error
+description: ""
+trigger:
+  - platform: state
+    entity_id:
+      - vacuum.valetudo_silenttepidstinkbug
+    from: idle
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 30
+condition: []
+action:
+  - service: notify.mobile_app_your_phone
+    data:
+      message: Vacuum idle
+      data:
+        image: /local/valetudo_snapshot.png
+mode: single
+```
+
+3) Change the image options directly form the HA integratios UI with a click on configuration.
+
+### In plan:
+1) We will also add the capability to show segments names and active state for Dreame D9 vacuums on v1.1.9.
+
 **Checked before release:**
-- [x] Configuration via GUI. 
+- [x] Configuration via GUI.
 - [x] No errors after installation (at first init the image will be gray)
 - [x] Reporting the calibration data will take a while, please wait until the init is complete.
 - [x] Go to and ara cleaning tested.
