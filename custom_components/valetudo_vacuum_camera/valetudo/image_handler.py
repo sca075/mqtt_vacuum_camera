@@ -8,9 +8,7 @@ import math
 
 import numpy as np
 from PIL import Image, ImageDraw
-from custom_components.valetudo_vacuum_camera.utils.colors import (
-    color_grey,
-)
+from custom_components.valetudo_vacuum_camera.utils.colors import color_grey
 from custom_components.valetudo_vacuum_camera.valetudo.vacuum import Vacuum
 from custom_components.valetudo_vacuum_camera.types import Color, Colors
 
@@ -409,21 +407,21 @@ class MapImageHandler(object):
                 meta_data = layer.get('metaData', {})
                 segment_id = meta_data.get('segmentId')
                 if segment_id is not None:
-                    active = meta_data.get('active')
-                    name = meta_data.get('name')
+                    # active = meta_data.get('active') #todo variables implementation
+                    # name = meta_data.get('name') #todo label implementation
                     # Calculate x and y min/max from compressed pixels
                     x_min = min(layer['compressedPixels'][::3]) * pixel_size
                     x_max = max(layer['compressedPixels'][::3]) * pixel_size
                     y_min = min(layer['compressedPixels'][1::3]) * pixel_size
                     y_max = max(layer['compressedPixels'][1::3]) * pixel_size
-
-                    room_name = "room_" + str(segment_id)
+                    # 'label': name,
+                    # 'active': active
+                    room_name = str(segment_id)
                     room_properties[room_name] = {
-                        'id': segment_id,
-                        'active': active,
-                        'label': name,
-                        'outline': [[x_min, y_min],
-                                    [x_max, y_max]]
+                        'x0': x_min,
+                        'y0': y_min,
+                        'x1': x_max,
+                        'y1': y_max,
                     }
 
         return room_properties

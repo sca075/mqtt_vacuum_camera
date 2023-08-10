@@ -1,4 +1,4 @@
-"""config_flow ver.1.8.0"""
+"""config_flow ver.1.1.9"""
 
 import voluptuous as vol
 import logging
@@ -143,7 +143,7 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     "color_charger": user_input.get(COLOR_CHARGER),
                     "color_move": user_input.get(COLOR_MOVE),
                     "color_wall": user_input.get(COLOR_WALL),
-                    "color_robot": user_input.get(COLOR_ROBOT, [255, 255, 255]),
+                    "color_robot": user_input.get(COLOR_ROBOT),
                     "color_go_to": user_input.get(COLOR_GO_TO),
                     "color_no_go": user_input.get(COLOR_NO_GO),
                     "color_zone_clean": user_input.get(COLOR_ZONE_CLEAN),
@@ -216,102 +216,199 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self, config_entry: config_entries.ConfigEntry):
         """Initialize options flow."""
         self.config_entry = config_entry
-        self.IMG_SCHEMA = vol.Schema(
-            {
-                vol.Required(
-                    ATT_ROTATE, default=config_entry.options.get("rotate_image")
-                ): vol.In(["0", "90", "180", "270"]),
-                vol.Required(
-                    ATT_CROP, default=config_entry.options.get("crop_image")
-                ): cv.string,
-            }
-        )
-        self.COLOR_1_SCHEMA = vol.Schema(
-            {
-                vol.Optional(
-                    COLOR_BACKGROUND,
-                    default=config_entry.options.get("color_background"),
-                ): ColorRGBSelector(),
-                vol.Optional(
-                    COLOR_ZONE_CLEAN,
-                    default=config_entry.options.get("color_zone_clean"),
-                ): ColorRGBSelector(),
-                vol.Optional(
-                    COLOR_WALL, default=config_entry.options.get("color_wall")
-                ): ColorRGBSelector(),
-                vol.Optional(
-                    COLOR_ROBOT, default=config_entry.options.get("color_robot")
-                ): ColorRGBSelector(),
-                vol.Optional(
-                    COLOR_CHARGER, default=config_entry.options.get("color_charger")
-                ): ColorRGBSelector(),
-                vol.Optional(
-                    COLOR_MOVE, default=config_entry.options.get("color_move")
-                ): ColorRGBSelector(),
-                vol.Optional(
-                    COLOR_GO_TO, default=config_entry.options.get("color_go_to")
-                ): ColorRGBSelector(),
-                vol.Optional(
-                    COLOR_NO_GO, default=config_entry.options.get("color_no_go")
-                ): ColorRGBSelector(),
-            }
-        )
-        self.COLOR_2_SCHEMA = vol.Schema(
-            {
-                vol.Optional(
-                    COLOR_ROOM_0, default=config_entry.options.get("color_room_0")
-                ): ColorRGBSelector(),
-                vol.Optional(
-                    COLOR_ROOM_1, default=config_entry.options.get("color_room_1")
-                ): ColorRGBSelector(),
-                vol.Optional(
-                    COLOR_ROOM_2, default=config_entry.options.get("color_room_2")
-                ): ColorRGBSelector(),
-                vol.Optional(
-                    COLOR_ROOM_3, default=config_entry.options.get("color_room_3")
-                ): ColorRGBSelector(),
-                vol.Optional(
-                    COLOR_ROOM_4, default=config_entry.options.get("color_room_4")
-                ): ColorRGBSelector(),
-                vol.Optional(
-                    COLOR_ROOM_5, default=config_entry.options.get("color_room_5")
-                ): ColorRGBSelector(),
-                vol.Optional(
-                    COLOR_ROOM_6, default=config_entry.options.get("color_room_6")
-                ): ColorRGBSelector(),
-                vol.Optional(
-                    COLOR_ROOM_7, default=config_entry.options.get("color_room_7")
-                ): ColorRGBSelector(),
-                vol.Optional(
-                    COLOR_ROOM_8, default=config_entry.options.get("color_room_8")
-                ): ColorRGBSelector(),
-                vol.Optional(
-                    COLOR_ROOM_9, default=config_entry.options.get("color_room_9")
-                ): ColorRGBSelector(),
-                vol.Optional(
-                    COLOR_ROOM_10, default=config_entry.options.get("color_room_10")
-                ): ColorRGBSelector(),
-                vol.Optional(
-                    COLOR_ROOM_11, default=config_entry.options.get("color_room_11")
-                ): ColorRGBSelector(),
-                vol.Optional(
-                    COLOR_ROOM_12, default=config_entry.options.get("color_room_12")
-                ): ColorRGBSelector(),
-                vol.Optional(
-                    COLOR_ROOM_13, default=config_entry.options.get("color_room_13")
-                ): ColorRGBSelector(),
-                vol.Optional(
-                    COLOR_ROOM_14, default=config_entry.options.get("color_room_14")
-                ): ColorRGBSelector(),
-                vol.Optional(
-                    COLOR_ROOM_15, default=config_entry.options.get("color_room_15")
-                ): ColorRGBSelector(),
-            }
-        )
+        _LOGGER.debug(list(self.config_entry.options.values()))
+        options_values = list(self.config_entry.options.values())
+        if len(options_values) > 0:
+            self.IMG_SCHEMA = vol.Schema(
+                {
+                    vol.Required(
+                        ATT_ROTATE, default=config_entry.options.get("rotate_image")
+                    ): vol.In(["0", "90", "180", "270"]),
+                    vol.Required(
+                        ATT_CROP, default=config_entry.options.get("crop_image")
+                    ): cv.string,
+                }
+            )
+            self.COLOR_1_SCHEMA = vol.Schema(
+                {
+                    vol.Optional(
+                        COLOR_BACKGROUND,
+                        default=config_entry.options.get("color_background"),
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ZONE_CLEAN,
+                        default=config_entry.options.get("color_zone_clean"),
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_WALL, default=config_entry.options.get("color_wall")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROBOT, default=config_entry.options.get("color_robot")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_CHARGER, default=config_entry.options.get("color_charger")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_MOVE, default=config_entry.options.get("color_move")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_GO_TO, default=config_entry.options.get("color_go_to")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_NO_GO, default=config_entry.options.get("color_no_go")
+                    ): ColorRGBSelector(),
+                }
+            )
+            self.COLOR_2_SCHEMA = vol.Schema(
+                {
+                    vol.Optional(
+                        COLOR_ROOM_0, default=config_entry.options.get("color_room_0")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROOM_1, default=config_entry.options.get("color_room_1")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROOM_2, default=config_entry.options.get("color_room_2")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROOM_3, default=config_entry.options.get("color_room_3")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROOM_4, default=config_entry.options.get("color_room_4")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROOM_5, default=config_entry.options.get("color_room_5")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROOM_6, default=config_entry.options.get("color_room_6")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROOM_7, default=config_entry.options.get("color_room_7")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROOM_8, default=config_entry.options.get("color_room_8")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROOM_9, default=config_entry.options.get("color_room_9")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROOM_10, default=config_entry.options.get("color_room_10")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROOM_11, default=config_entry.options.get("color_room_11")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROOM_12, default=config_entry.options.get("color_room_12")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROOM_13, default=config_entry.options.get("color_room_13")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROOM_14, default=config_entry.options.get("color_room_14")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROOM_15, default=config_entry.options.get("color_room_15")
+                    ): ColorRGBSelector(),
+                }
+            )
+        else:
+            self.IMG_SCHEMA = vol.Schema(
+                {
+                    vol.Required(
+                        ATT_ROTATE, default=config_entry.data.get("rotate_image")
+                    ): vol.In(["0", "90", "180", "270"]),
+                    vol.Required(
+                        ATT_CROP, default=config_entry.data.get("crop_image")
+                    ): cv.string,
+                }
+            )
+            self.COLOR_1_SCHEMA = vol.Schema(
+                {
+                    vol.Optional(
+                        COLOR_BACKGROUND,
+                        default=config_entry.data.get("color_background"),
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ZONE_CLEAN,
+                        default=config_entry.data.get("color_zone_clean"),
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_WALL, default=config_entry.data.get("color_wall")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROBOT, default=config_entry.data.get("color_robot")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_CHARGER, default=config_entry.data.get("color_charger")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_MOVE, default=config_entry.data.get("color_move")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_GO_TO, default=config_entry.data.get("color_go_to")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_NO_GO, default=config_entry.data.get("color_no_go")
+                    ): ColorRGBSelector(),
+                }
+            )
+            self.COLOR_2_SCHEMA =vol.Schema(
+                {
+                    vol.Optional(
+                        COLOR_ROOM_0, default=config_entry.data.get("color_room_0")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROOM_1, default=config_entry.data.get("color_room_1")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROOM_2, default=config_entry.data.get("color_room_2")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROOM_3, default=config_entry.data.get("color_room_3")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROOM_4, default=config_entry.data.get("color_room_4")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROOM_5, default=config_entry.data.get("color_room_5")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROOM_6, default=config_entry.data.get("color_room_6")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROOM_7, default=config_entry.data.get("color_room_7")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROOM_8, default=config_entry.data.get("color_room_8")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROOM_9, default=config_entry.data.get("color_room_9")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROOM_10, default=config_entry.data.get("color_room_10")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROOM_11, default=config_entry.data.get("color_room_11")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROOM_12, default=config_entry.data.get("color_room_12")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROOM_13, default=config_entry.data.get("color_room_13")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROOM_14, default=config_entry.data.get("color_room_14")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_ROOM_15, default=config_entry.data.get("color_room_15")
+                    ): ColorRGBSelector(),
+                }
+            )
         self.data = None
 
     async def async_step_init(self, user_input: Optional[Dict[str, Any]] = None):
         self.data = user_input
+
         if user_input is not None:
             self.data.update(
                 {
@@ -379,7 +476,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             )
 
             return self.async_create_entry(
-                title=DEFAULT_NAME,
+                title="",
                 data=self.data,
             )
 

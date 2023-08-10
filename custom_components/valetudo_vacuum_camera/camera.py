@@ -235,7 +235,7 @@ class ValetudoCamera(Camera, Entity):
             "vacuum_json_id": self._vac_json_id,
             "robot_position": self._current,
             "calibration_points": self._calibration_points,
-            "rooms_test": self._map_rooms,
+            "rooms": self._map_rooms,
         }
 
     @property
