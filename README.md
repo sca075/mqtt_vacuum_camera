@@ -34,7 +34,7 @@ internal_variables:
 - Dreame D9
 
 
-### Current Release: v1.1.9
+### Current Release: v1.1.9 >> Warning found a bug on this realease.. this release will be available as soon we fix #9
 1. Snapshots function is available since version 1.1.5 but is updated on the 1.1.9 where image will be stored on www folder instead of the integration snapshot folder.
    with this modification is possible to use the notification service of HA as following:
 ```example automation
@@ -82,13 +82,13 @@ Note: The test in Github is still not fully setup this is why there is an X inst
 2) The camera take automaticly a snapshot (vacuum idle/ error / docked) and sore it in the www folder of HA. It is thefore possible to create an automation to send the screenshot to your mobile in different conditions as per below example:
 
 ```
-alias: Vacuum Idle or Error
+alias: Vacuum Error 
 description: ""
 trigger:
   - platform: state
     entity_id:
-      - vacuum.valetudo_silenttepidstinkbug
-    from: idle
+      - vacuum.valetudo_yor_vacuum
+    from: error
     for:
       hours: 0
       minutes: 0
