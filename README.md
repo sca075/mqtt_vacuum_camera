@@ -34,7 +34,7 @@ internal_variables:
 - Dreame D9
 
 
-### Current Release: v1.1.9
+### Current Release: v1.1.9 >> Warning found a bug on this realease.. this release will be available as soon we fix #9
 1. Snapshots function is available since version 1.1.5 but is updated on the 1.1.9 where image will be stored on www folder instead of the integration snapshot folder.
    with this modification is possible to use the notification service of HA as following:
 ```example automation
