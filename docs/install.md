@@ -12,9 +12,9 @@ https://github.com/sca075/valetudo_vacuum_camera.git
 
 Select **Integration** as **Category** and click the **Add** button.
 
-Once the repository is added, please click on the repository and the home page will be display. From there you need to 
- **Download** the integration, [HACS](https://hacs.xyz/) will setup the integration for you. (Note: You can selct here if you want to be notify for beta releases that some time are containg instant fixes). 
- 
+Once the repository is added, please click on the repository and the home page will be display. From there you need to
+**Download** the integration, [HACS](https://hacs.xyz/) will setup the integration for you. (Note: You can selct here if you want to be notify for beta releases that some time are containg instant fixes).
+
 ![Screenshot 2023-08-12 at 17 31 34](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/8ab843a7-be55-4203-b107-c62b64d17032)
 
 You will need to restart Home Assistant at this point to have the integration available. Once Home Assistant will reload, please go in (plase press CTRL clicking the link this shouold open the link in a different tab of your browser) [**Settings** -> **Devices & Services**](https://my.home-assistant.io/redirect/config_flow_start/?domain=valetudo_vacuum_camera) then please confirm to add the integration. The setup wizzard will start.
