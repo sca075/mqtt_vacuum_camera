@@ -1,4 +1,4 @@
-"""Version 1.1.7"""
+"""Version 1.2.0"""
 import logging
 import time
 import paho.mqtt.client as client
@@ -55,10 +55,10 @@ class ValetudoConnector(client.Client):
     def is_data_available(self):
         return self._data_in
 
-    def save_payload(self):
+    def save_payload(self, file_name):
         if self._img_payload and (self._data_in is True):
             with open(
-                "custom_components/valetudo_vacuum_camera/snapshots/mqtt_data.raw", "wb"
+                    "custom_components/valetudo_vacuum_camera/snapshots/mqtt_" + file_name + ".raw", "wb"
             ) as file:
                 file.write(self._img_payload)
             _LOGGER.info("Saved image data from MQTT in mqtt_data.raw!")

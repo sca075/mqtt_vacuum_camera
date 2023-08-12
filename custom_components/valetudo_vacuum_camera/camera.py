@@ -1,4 +1,4 @@
-"""Camera Version 1.1.9"""
+"""Camera Version 1.2.0"""
 from __future__ import annotations
 import logging
 import os
@@ -118,6 +118,9 @@ class ValetudoCamera(Camera, Entity):
         self._mqtt_listen_topic = device_info.get(CONF_VACUUM_CONNECTION_STRING)
         if self._mqtt_listen_topic:
             self._mqtt_listen_topic = str(self._mqtt_listen_topic)
+            file_name = self._mqtt_listen_topic.split("/")
+            self.snapshot_img = "/config/www/snapshot_" + file_name[1].lower() + ".png"
+            self.file_name = file_name[1].lower()
         self._mqtt_user = device_info.get(CONF_MQTT_USER)
         self._mqtt_pass = device_info.get(CONF_MQTT_PASS)
         self._mqtt = ValetudoConnector(
@@ -227,27 +230,39 @@ class ValetudoCamera(Camera, Entity):
 
     @property
     def extra_state_attributes(self):
-        return {
-            "vacuum_entity": self._vacuum_entity,
-            "vacuum_status": self._vacuum_state,
-            "listen_to": self._mqtt_listen_topic,
-            "json_data": self._vac_json_data,
-            "vacuum_json_id": self._vac_json_id,
-            "robot_position": self._current,
-            "calibration_points": self._calibration_points,
-            "rooms": self._map_rooms,
-        }
+        if self._map_rooms is None:
+            return {
+                "vacuum_entity": self._vacuum_entity,
+                "vacuum_status": self._vacuum_state,
+                "listen_to": self._mqtt_listen_topic,
+                "snapshot": "/local/snapshot_" + self.file_name + ".png",
+                "json_data": self._vac_json_data,
+                "vacuum_json_id": self._vac_json_id,
+                "vacuum_position": self._current,
+                "calibration_points": self._calibration_points,
+            }
+        else:
+            return {
+                "vacuum_entity": self._vacuum_entity,
+                "vacuum_status": self._vacuum_state,
+                "listen_to": self._mqtt_listen_topic,
+                "snapshot": "/local/snapshot_" + self.file_name + ".png",
+                "json_data": self._vac_json_data,
+                "vacuum_json_id": self._vac_json_id,
+                "vacuum_position": self._current,
+                "calibration_points": self._calibration_points,
+                "rooms": self._map_rooms,
+            }
 
     @property
     def should_poll(self) -> bool:
         return self._should_poll
 
     def empty_if_no_data(self):
-        snapshot_path = "/config/www/valetudo_snapshot.png"
         # Check if the snapshot file exists
-        if os.path.isfile(snapshot_path) and (self._last_image is None):
+        if os.path.isfile(self.snapshot_img) and (self._last_image is None):
             # Load the snapshot image
-            self._last_image = Image.open(snapshot_path)
+            self._last_image = Image.open(self.snapshot_img)
             _LOGGER.info("Snapshot image loaded")
             return self._last_image
         elif self._last_image is not None:
@@ -261,20 +276,23 @@ class ValetudoCamera(Camera, Entity):
     def take_snapshot(self, json_data, image_data):
         try:
             self._snapshot_taken = True
-            _LOGGER.info("Saving datas and Image Snapshot")
-            # if still available save MQTT payload.
-            if self._mqtt is not None:
-                self._mqtt.save_payload()
-            # Write the JSON data to the file
-            with open(
-                    "custom_components/valetudo_vacuum_camera/snapshots/valetudo_json.json",
-                    "w",
-            ) as file:
-                json_data = json.dumps(json_data, indent=4)
-                file.write(json_data)
+            # When logger is active.
+            if _LOGGER.getEffectiveLevel() is not 0:
+                # Save mqtt raw data file.
+                if self._mqtt is not None:
+                    self._mqtt.save_payload(self.file_name)
+                # Write the JSON data to the file.
+                with open(
+                        "custom_components/valetudo_vacuum_camera/snapshots/" + self.file_name + ".json",
+                        "w",
+                ) as file:
+                    json_data = json.dumps(json_data, indent=4)
+                    file.write(json_data)
+            # Save image ready for snapshot.
             image_data.save(
-                "/config/www/valetudo_snapshot.png"
+                self.snapshot_img
             )
+            _LOGGER.info("Camera Snapshot Taken.")
         except IOError:
             self._snapshot_taken = None
             _LOGGER.warning(
@@ -282,7 +300,7 @@ class ValetudoCamera(Camera, Entity):
             )
         else:
             _LOGGER.debug(
-                "valetudo_snapshot.png acquired during %s",
+                "Snapshot acquired during %s",
                 {self._vacuum_state},
                 " Vacuum State.",
             )
@@ -310,7 +328,14 @@ class ValetudoCamera(Camera, Entity):
             _LOGGER.info("Camera image data update available: %s", process_data)
             start_time = datetime.now()
             try:
+                # bypassed code is for debug purpose only
+                #########################################################
                 parsed_json = self._mqtt.update_data(self._image_grab)
+                #########################################################
+                # json_file = "custom_components/valetudo_vacuum_camera/snapshots/json_v2.json"
+                # with open(json_file, "rb") as j_file:
+                #    tmp_json = j_file.read()
+                # parsed_json = json.loads(tmp_json)
                 self._vac_json_data = "Success"
             except ValueError:
                 self._vac_json_data = "Error"

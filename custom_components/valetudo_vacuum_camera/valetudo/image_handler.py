@@ -1,4 +1,4 @@
-"""Version 1.1.9"""
+"""Version 1.2.0"""
 # Image Handler Module
 # Collection of routines to extract data from the received json.
 # It returns values and images relative to the Map Data extrapolated from the vacuum json.
@@ -402,13 +402,22 @@ class MapImageHandler(object):
         room_properties = {}
         pixel_size = json_data.get('pixelSize', [])
 
+        if 'layers' in json_data \
+                and json_data['layers'][0]['__class'] == 'MapLayer' \
+                and json_data['layers'][0]['type'] == 'floor':
+            list_room_properties = None
+            return list_room_properties
+        else:
+            list_room_properties = []
+
         for layer in json_data.get('layers', []):
             if layer['__class'] == 'MapLayer':
                 meta_data = layer.get('metaData', {})
                 segment_id = meta_data.get('segmentId')
+
                 if segment_id is not None:
                     # active = meta_data.get('active') #todo variables implementation
-                    # name = meta_data.get('name') #todo label implementation
+                    name = meta_data.get('name')
                     # Calculate x and y min/max from compressed pixels
                     x_min = min(layer['compressedPixels'][::3]) * pixel_size
                     x_max = max(layer['compressedPixels'][::3]) * pixel_size
@@ -417,14 +426,19 @@ class MapImageHandler(object):
                     # 'label': name,
                     # 'active': active
                     room_name = str(segment_id)
-                    room_properties[room_name] = {
+                    room_properties[room_name] = ({
+                        'number': segment_id,
                         'x0': x_min,
                         'y0': y_min,
                         'x1': x_max,
                         'y1': y_max,
-                    }
+                        'name': name,
+                        'pos_x': ((x_min + x_max) // 2),
+                        'pos_y': ((y_min + y_max) // 2),
+                    })
+                list_room_properties.append(room_properties)
 
-        return room_properties
+        return list_room_properties
 
     def get_image_from_json(
             self,
@@ -631,7 +645,7 @@ class MapImageHandler(object):
         return self.json_id
 
     def get_rooms_attributes(self):
-        return  self.room_propriety
+        return self.room_propriety
 
     def get_calibration_data(self, rotation_angle):
         calibration_data = []
