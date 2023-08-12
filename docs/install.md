@@ -3,8 +3,9 @@ Using [HACS](https://hacs.xyz/) add custom repositories:
 
 ![Screenshot 2023-08-12 at 17 06 17](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/4abdf05a-eb50-4317-a0e9-8c6984bdba05)
 
-
 please copy the repository link in ***new repository*** section.
+![Screenshot 2023-08-12 at 17 21 03](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/53f1157d-9d6d-4497-9958-3ec08b74f484)
+
 Once installed the integration can be configured via integration / add integration and search Valetudo Camera.
 
 To know the MQTT topic your_vacuum use you might use the vacuum web GUI.
