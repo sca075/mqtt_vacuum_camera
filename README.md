@@ -39,7 +39,7 @@ internal_variables:
 ### Current Release: ![GitHub Latest Release][releases_shield]
 
 ### How to install:
-Please foolow the instructions in [here](https://github.com/sca075/valetudo_vacuum_camera/tree/217f8636a25c58850874c0c15062ac39def72363/docs/install.md).
+Please foolow the instructions in [here](./docs/install.md).
 
 This custom component is developed and tested using a PI4 with Home Assistant OS fully updated [to the last version](https://www.home-assistant.io/faq/release/), this allows
 us to confirm that the component is working properly with Home Assistant. Tested also on Docker Supervised "production" enviroment (fully setup home installation).
