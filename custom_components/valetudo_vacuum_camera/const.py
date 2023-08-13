@@ -1,12 +1,12 @@
 """Constants for the valetudo_vacuum_camera integration."""
-"""Version 1.1.8"""
+"""Version 1.2.1"""
 
 """Required in Config_Flow"""
 PLATFORMS = ["camera"]
 DOMAIN = "valetudo_vacuum_camera"
 DEFAULT_NAME = "valetudo vacuum camera"
-ATT_ROTATE = "rotate_image"
-ATT_CROP = "crop_image"
+ATTR_ROTATE = "rotate_image"
+ATTR_CROP = "crop_image"
 CONF_MQTT_PASS = "broker_password"
 CONF_MQTT_USER = "broker_user"
 CONF_VACUUM_CONNECTION_STRING = "vacuum_map"

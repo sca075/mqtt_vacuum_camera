@@ -1,4 +1,4 @@
-"""Version 1.1.5"""
+"""Version 1.2.1"""
 import logging
 import struct
 import zlib
@@ -99,24 +99,24 @@ class RawToJson:
                     _LOGGER.debug("Valetudo Json data grabbed")
                     return self._jdata
 
-    def camera_message_received(self, payload):
+    def camera_message_received(self, payload, source: "" = None):
         # Process the camera data here
-        _LOGGER.debug("Decoding PNG to JSON")
+        _LOGGER.debug("Decoding, " + source + " PNG to JSON")
         if payload is not None:
             try:
                 extract_data = self.extract_png_chunks(payload)
             except Warning as warning:
-                _LOGGER.warning("MQTT message format error:", {warning})
+                _LOGGER.warning(source + ": MQTT message format error:", {warning})
                 return None
             else:
                 if self._jdata or extract_data is not None:
-                    _LOGGER.debug("Extracting JSON")
+                    _LOGGER.debug(source + ": Extracting JSON")
                     dec_data = zlib.decompress(self._jdata).decode("utf-8")
                     json_data = dec_data
                     response = json.loads(json_data)
-                    _LOGGER.debug("Extracting JSON Complete")
+                    _LOGGER.debug(source + ": Extracting JSON Complete")
                     del json_data
                     return response
         else:
-            _LOGGER.debug("No data to process")
+            _LOGGER.debug(source + ": No data to process")
             return None

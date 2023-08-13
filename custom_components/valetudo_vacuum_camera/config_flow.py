@@ -1,11 +1,10 @@
-"""config_flow ver.1.1.9"""
+"""config_flow ver.1.2.1"""
 
 import voluptuous as vol
 import logging
 from typing import Any, Dict, Optional
 from homeassistant import config_entries
 
-# from homeassistant.const import CONF_NAME
 from homeassistant.core import callback
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.selector import EntitySelector, ColorRGBSelector
@@ -15,9 +14,8 @@ from .const import (
     CONF_VACUUM_CONNECTION_STRING,
     CONF_MQTT_USER,
     CONF_MQTT_PASS,
-    DEFAULT_NAME,
-    ATT_ROTATE,
-    ATT_CROP,
+    ATTR_ROTATE,
+    ATTR_CROP,
     COLOR_MOVE,
     COLOR_ROBOT,
     COLOR_WALL,
@@ -63,8 +61,8 @@ MQTT_SCHEMA = vol.Schema(
 
 IMG_SCHEMA = vol.Schema(
     {
-        vol.Required(ATT_ROTATE, default="0"): vol.In(["0", "90", "180", "270"]),
-        vol.Required(ATT_CROP, default="50"): cv.string,
+        vol.Required(ATTR_ROTATE, default="0"): vol.In(["0", "90", "180", "270"]),
+        vol.Required(ATTR_CROP, default="50"): cv.string,
     }
 )
 
@@ -106,6 +104,9 @@ ROOMS_COLOR_SCHEMA = vol.Schema(
 class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1.2
 
+    def __init__(self):
+        self.data = None
+
     async def async_step_user(self, user_input: Optional[Dict[str, Any]] = None):
         if user_input is not None:
             return await self.async_step_mqtt()
@@ -123,8 +124,8 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             self.data.update(
                 {
-                    "rotate_image": user_input.get(ATT_ROTATE),
-                    "crop_image": user_input.get(ATT_CROP),
+                    "rotate_image": user_input.get(ATTR_ROTATE),
+                    "crop_image": user_input.get(ATTR_CROP),
                 }
             )
 
@@ -192,16 +193,20 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 }
             )
 
+            tmp_name = self.data["vacuum_map"]
+            tmp_name = tmp_name.split("/")
+            default_name = tmp_name[1] + " Camera"
+
             return self.async_create_entry(
-                title=DEFAULT_NAME,
+                title=default_name,
                 data=self.data,
             )
 
         return self.async_show_form(
-            step_id="options_3",
-            data_schema=ROOMS_COLOR_SCHEMA,
-            description_placeholders=self.data,
-        )
+                step_id="options_3",
+                data_schema=ROOMS_COLOR_SCHEMA,
+                description_placeholders=self.data,
+            )
 
     @staticmethod
     @callback
@@ -222,10 +227,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             self.IMG_SCHEMA = vol.Schema(
                 {
                     vol.Required(
-                        ATT_ROTATE, default=config_entry.options.get("rotate_image")
+                        ATTR_ROTATE, default=config_entry.options.get("rotate_image")
                     ): vol.In(["0", "90", "180", "270"]),
                     vol.Required(
-                        ATT_CROP, default=config_entry.options.get("crop_image")
+                        ATTR_CROP, default=config_entry.options.get("crop_image")
                     ): cv.string,
                 }
             )
@@ -315,10 +320,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             self.IMG_SCHEMA = vol.Schema(
                 {
                     vol.Required(
-                        ATT_ROTATE, default=config_entry.data.get("rotate_image")
+                        ATTR_ROTATE, default=config_entry.data.get("rotate_image")
                     ): vol.In(["0", "90", "180", "270"]),
                     vol.Required(
-                        ATT_CROP, default=config_entry.data.get("crop_image")
+                        ATTR_CROP, default=config_entry.data.get("crop_image")
                     ): cv.string,
                 }
             )
@@ -352,7 +357,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     ): ColorRGBSelector(),
                 }
             )
-            self.COLOR_2_SCHEMA =vol.Schema(
+            self.COLOR_2_SCHEMA = vol.Schema(
                 {
                     vol.Optional(
                         COLOR_ROOM_0, default=config_entry.data.get("color_room_0")
@@ -412,8 +417,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             self.data.update(
                 {
-                    "rotate_image": user_input.get(ATT_ROTATE),
-                    "crop_image": user_input.get(ATT_CROP),
+                    "rotate_image": user_input.get(ATTR_ROTATE),
+                    "crop_image": user_input.get(ATTR_CROP),
                 }
             )
             return await self.async_step_init_2()

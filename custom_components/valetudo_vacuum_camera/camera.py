@@ -1,4 +1,4 @@
-"""Camera Version 1.2.0"""
+"""Camera Version 1.2.1"""
 from __future__ import annotations
 import logging
 import os
@@ -41,8 +41,8 @@ from .const import (
     DEFAULT_NAME,
     DOMAIN,
     PLATFORMS,
-    ATT_ROTATE,
-    ATT_CROP,
+    ATTR_ROTATE,
+    ATTR_CROP,
     COLOR_WALL,
     COLOR_ZONE_CLEAN,
     COLOR_ROBOT,
@@ -75,8 +75,8 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
         vol.Required(CONF_VACUUM_ENTITY_ID): cv.string,
         vol.Required(CONF_MQTT_USER): cv.string,
         vol.Required(CONF_MQTT_PASS): cv.string,
-        vol.Required(ATT_ROTATE, default="0"): cv.string,
-        vol.Required(ATT_CROP, default="50"): cv.string,
+        vol.Required(ATTR_ROTATE, default="0"): cv.string,
+        vol.Required(ATTR_CROP, default="50"): cv.string,
         vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.entity_id,
     }
 )
@@ -109,17 +109,19 @@ async def async_setup_platform(
 
 
 class ValetudoCamera(Camera, Entity):
+    _attr_has_entity_name = True
+
     def __init__(self, hass, device_info):
         super().__init__()
         self.hass = hass
-        self._name = device_info.get(CONF_NAME)
-        self._attr_unique_id = "_"  # uses the config name for unique id
         self._vacuum_entity = device_info.get(CONF_VACUUM_ENTITY_ID)
         self._mqtt_listen_topic = device_info.get(CONF_VACUUM_CONNECTION_STRING)
         if self._mqtt_listen_topic:
             self._mqtt_listen_topic = str(self._mqtt_listen_topic)
             file_name = self._mqtt_listen_topic.split("/")
             self.snapshot_img = "/config/www/snapshot_" + file_name[1].lower() + ".png"
+            self._attr_name = file_name[1] + " Camera"
+            self._attr_unique_id = file_name[1].lower() + "_camera"
             self.file_name = file_name[1].lower()
         self._mqtt_user = device_info.get(CONF_MQTT_USER)
         self._mqtt_pass = device_info.get(CONF_MQTT_PASS)
@@ -138,14 +140,14 @@ class ValetudoCamera(Camera, Entity):
         self._base = None
         self._current = None
         self._temp_dir = "config/tmp"
-        self._image_rotate = device_info.get(ATT_ROTATE)
+        self._image_rotate = device_info.get(ATTR_ROTATE)
         if self._image_rotate:
-            self._image_rotate = int(device_info.get(ATT_ROTATE))
+            self._image_rotate = int(device_info.get(ATTR_ROTATE))
         else:
             self._image_rotate = 0
-        self._image_crop = device_info.get(ATT_CROP)
+        self._image_crop = device_info.get(ATTR_CROP)
         if self._image_crop:
-            self._image_crop = int(device_info.get(ATT_CROP))
+            self._image_crop = int(device_info.get(ATTR_CROP))
         else:
             self._image_crop = 0
         self._image = self.update()
@@ -214,7 +216,7 @@ class ValetudoCamera(Camera, Entity):
 
     @property
     def name(self) -> str:
-        return self._name
+        return self._attr_name
 
     def turn_on(self):
         self._mqtt.client_start()
@@ -263,14 +265,14 @@ class ValetudoCamera(Camera, Entity):
         if os.path.isfile(self.snapshot_img) and (self._last_image is None):
             # Load the snapshot image
             self._last_image = Image.open(self.snapshot_img)
-            _LOGGER.info("Snapshot image loaded")
+            _LOGGER.info(self.file_name + ": Snapshot image loaded")
             return self._last_image
         elif self._last_image is not None:
             return self._last_image
         else:
             # Create an empty image with a gray background
             empty_img = Image.new("RGB", (800, 600), "gray")
-            _LOGGER.info("Staring up ...")
+            _LOGGER.info(self.file_name + ": Staring up ...")
             return empty_img
 
     def take_snapshot(self, json_data, image_data):
@@ -292,15 +294,16 @@ class ValetudoCamera(Camera, Entity):
             image_data.save(
                 self.snapshot_img
             )
-            _LOGGER.info("Camera Snapshot Taken.")
+            _LOGGER.info(self.file_name + ": Camera Snapshot Taken.")
         except IOError:
             self._snapshot_taken = None
             _LOGGER.warning(
-                "Error Saving Image Snapshot, no snapshot available till restart."
+                "Error Saving" + self.file_name + ": Snapshot, no snapshot available till restart."
             )
         else:
             _LOGGER.debug(
-                "Snapshot acquired during %s",
+                self.file_name +
+                ": Snapshot acquired during %s",
                 {self._vacuum_state},
                 " Vacuum State.",
             )
@@ -325,7 +328,7 @@ class ValetudoCamera(Camera, Entity):
                 # take the snapshot.
                 self._snapshot_taken = False
             # Starting the image processing.
-            _LOGGER.info("Camera image data update available: %s", process_data)
+            _LOGGER.info(self.file_name + ": Camera image data update available: %s", process_data)
             start_time = datetime.now()
             try:
                 # bypassed code is for debug purpose only
@@ -350,11 +353,13 @@ class ValetudoCamera(Camera, Entity):
                         self._image_crop,
                         self._vacuum_shared.get_user_colors(),
                         self._vacuum_shared.get_rooms_colors(),
+                        self.file_name,
                     )
                     if pil_img is not None:
                         pil_img = pil_img.rotate(self._image_rotate)
                         _LOGGER.debug(
-                            "Applied image rotation: %s", {self._image_rotate}
+                            "Applied " + self.file_name + " image rotation: %s",
+                            {self._image_rotate}
                         )
                         if not self._snapshot_taken and (
                                 self._vacuum_state == "idle"
@@ -367,7 +372,8 @@ class ValetudoCamera(Camera, Entity):
                                     is not self._map_handler.get_frame_number()
                             ):
                                 self._image_grab = False
-                                _LOGGER.info("Suspended the camera data processing.")
+                                _LOGGER.info("Suspended the camera data processing for: " +
+                                             self.file_name + ".")
                                 # take a snapshot
                                 self.take_snapshot(parsed_json, pil_img)
                         self._vac_json_id = self._map_handler.get_json_id()
@@ -391,13 +397,13 @@ class ValetudoCamera(Camera, Entity):
                     self._image = bytes_data
                     # clean up
                     del buffered, pil_img, bytes_data
-                    _LOGGER.info("Camera image update complete")
+                    _LOGGER.info(self.file_name + ": Image update complete")
                     processing_time = (datetime.now() - start_time).total_seconds()
                     self._frame_interval = max(0.1, processing_time)
-                    _LOGGER.debug("Adjusted frame interval: %s", self._frame_interval)
+                    _LOGGER.debug("Adjusted " + self.file_name + ": Frame interval: %s", self._frame_interval)
                 else:
                     _LOGGER.info(
-                        "Camera image not processed. Returning not updated image."
+                        self.file_name + ": Image not processed. Returning not updated image."
                     )
                     self._frame_interval = 0.1
                 return self._image

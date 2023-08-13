@@ -446,7 +446,8 @@ class MapImageHandler(object):
             robot_state,
             crop: int = 50,
             user_colors: Colors = None,
-            rooms_colors: Color = None
+            rooms_colors: Color = None,
+            file_name: "" = None
     ):
         color_wall: Color = user_colors[0]
         color_no_go: Color = user_colors[6]
@@ -458,8 +459,10 @@ class MapImageHandler(object):
         color_zone_clean: Color = user_colors[1]
         try:
             if m_json is not None:
-                _LOGGER.info("Composing the image for the camera.")
+                _LOGGER.info(file_name + ":Composing the image for the camera.")
                 self.room_propriety = self.extract_room_properties(m_json)
+                if self.room_propriety:
+                    _LOGGER.info(file_name + ": Supporting Rooms Cleaning!")
                 size_x = int(m_json["size"]["x"])
                 size_y = int(m_json["size"]["y"])
                 self.img_size = {
@@ -479,7 +482,7 @@ class MapImageHandler(object):
                     predicted_path = paths_data.get("predicted_path", [])
                     path_pixels = paths_data.get("path", [])
                 except KeyError as e:
-                    _LOGGER.info("Error extracting paths data: %s", str(e))
+                    _LOGGER.info(file_name + ": Error extracting paths data: %s", str(e))
 
                 if predicted_path:
                     predicted_path = predicted_path[0]["points"]
@@ -494,18 +497,18 @@ class MapImageHandler(object):
                 try:
                     zone_clean = self.find_zone_entities(m_json, None)
                 except (ValueError, KeyError) as e:
-                    _LOGGER.info("No zone clean: %s", str(e))
+                    _LOGGER.info(file_name + ": No zone clean: %s", str(e))
                     zone_clean = None
                 else:
-                    _LOGGER.debug("Got zone clean: %s", zone_clean)
+                    _LOGGER.debug(file_name + ": Got zone clean: %s", zone_clean)
 
                 try:
                     entity_dict = self.find_points_entities(m_json, None)
                 except (ValueError, KeyError) as e:
-                    _LOGGER.warning("No points in json data: %s", str(e))
+                    _LOGGER.warning(file_name + ": No points in json data: %s", str(e))
                     entity_dict = None
                 else:
-                    _LOGGER.debug("Got the points in the json: %s", entity_dict)
+                    _LOGGER.debug(file_name + ": Got the points in the json: %s", entity_dict)
 
                 robot_position_angle = None
                 robot_position = None
@@ -539,10 +542,10 @@ class MapImageHandler(object):
                 go_to = entity_dict.get("go_to_target")
                 pixel_size = int(m_json["pixelSize"])
                 layers = self.find_layers(m_json["layers"])
-                _LOGGER.debug("Layers to draw: %s", layers.keys())
-                _LOGGER.info("Empty image with background color")
+                _LOGGER.debug(file_name + ": Layers to draw: %s", layers.keys())
+                _LOGGER.info(file_name + ": Empty image with background color")
                 img_np_array = self.create_empty_image(size_x, size_y, color_background)
-                _LOGGER.info("Overlapping Layers")
+                _LOGGER.info(file_name + ": Overlapping Layers")
                 for layer_type, compressed_pixels_list in layers.items():
                     room_id = 0
                     for compressed_pixels in compressed_pixels_list:
@@ -559,15 +562,15 @@ class MapImageHandler(object):
                         elif layer_type == "wall":
                             if zone_clean:
                                 try:
-                                    zones_clean = zone_clean.get("active_zone")
+                                    zones_clean = zone_clean.get(file_name + ": active_zone")
                                 except KeyError:
                                     zones_clean = None
-                                    _LOGGER.debug("No Zone Clean.")
+                                    _LOGGER.debug(file_name + ": No Zone Clean.")
                                 try:
-                                    no_go_zones = zone_clean.get("no_go_area")
+                                    no_go_zones = zone_clean.get(file_name + ": no_go_area")
                                 except KeyError:
                                     no_go_zones = None
-                                    _LOGGER.debug("No No Go area found.")
+                                    _LOGGER.debug(file_name + ": No Go area not found.")
                                 if zones_clean:
                                     img_np_array = self.draw_zone(
                                         img_np_array, zones_clean, color_zone_clean
@@ -580,10 +583,10 @@ class MapImageHandler(object):
                             img_np_array = self.from_json_to_image(
                                 img_np_array, pixels, pixel_size, color_wall
                             )
-                _LOGGER.info("Completed base Layers")
+                _LOGGER.info(file_name + ": Completed base Layers")
 
                 if self.frame_number == 0:
-                    _LOGGER.debug("Drawing image background")
+                    _LOGGER.debug(file_name + ": Drawing image background")
                     img_np_array = self.draw_battery_charger(
                         img_np_array, charger_pos[0], charger_pos[1], color_charger
                     )
@@ -592,7 +595,7 @@ class MapImageHandler(object):
                 else:
                     img_np_array = self.img_base_layer
                     # If there is a zone clean we draw it now.
-                    _LOGGER.debug("Frame number %s", self.frame_number)
+                    _LOGGER.debug(file_name + ": Frame number %s", self.frame_number)
                     self.frame_number += 1
                     if self.frame_number > 5:
                         self.frame_number = 0
@@ -626,7 +629,7 @@ class MapImageHandler(object):
                 del img_np_array
                 return pil_img
         except Exception as e:
-            _LOGGER.error("Error in get_image_from_json: %s", str(e))
+            _LOGGER.error(file_name + ": Error in get_image_from_json: %s", str(e))
             return None
 
     def get_frame_number(self):

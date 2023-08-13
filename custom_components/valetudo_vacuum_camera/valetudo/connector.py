@@ -1,4 +1,4 @@
-"""Version 1.2.0"""
+"""Version 1.2.1"""
 import logging
 import time
 import paho.mqtt.client as client
@@ -37,12 +37,12 @@ class ValetudoConnector(client.Client):
     def update_data(self, process: bool = True):
         if self._img_payload:
             if process:
-                _LOGGER.debug("Processing data from MQTT")
-                result = self._img_decoder.camera_message_received(self._img_payload)
+                _LOGGER.debug("Processing " + self._mqtt_topic + " data from MQTT")
+                result = self._img_decoder.camera_message_received(self._img_payload, self._mqtt_topic)
                 self._data_in = False
                 return result
             else:
-                _LOGGER.debug("No data from MQTT or vacuum docked")
+                _LOGGER.debug("No data from " + self._mqtt_topic + " or vacuum docked")
                 self._data_in = False
                 return None
 
@@ -62,49 +62,49 @@ class ValetudoConnector(client.Client):
                     "custom_components/valetudo_vacuum_camera/snapshots/mqtt_" + file_name + ".raw", "wb"
             ) as file:
                 file.write(self._img_payload)
-            _LOGGER.info("Saved image data from MQTT in mqtt_data.raw!")
+            _LOGGER.info("Saved image data from MQTT in mqtt_" + file_name + ".raw!")
 
     def on_message_callback(self, client, userdata, msg):
         self._rcv_topic = msg.topic
         if self._rcv_topic == (self._mqtt_topic + "/MapData/map-data-hass"):
-            _LOGGER.debug("Received image data from MQTT")
+            _LOGGER.debug("Received " + self._mqtt_topic +" image data from MQTT")
             self._img_payload = msg.payload
             self._data_in = True
         elif self._rcv_topic == (self._mqtt_topic + "/StatusStateAttribute/status"):
-            _LOGGER.debug("Received vacuum status data from MQTT")
+            _LOGGER.debug(self._mqtt_topic + ": Received vacuum status data from MQTT")
             self._payload = msg.payload
             if self._payload:
                 self._mqtt_vac_stat = bytes.decode(msg.payload, "utf-8")
         elif self._rcv_topic == (
             self._mqtt_topic + "/StatusStateAttribute/error_description"
         ):
-            _LOGGER.debug("Received vacuum error data from MQTT")
+            _LOGGER.debug(self._mqtt_topic + ": Received vacuum error data from MQTT")
             self._payload = msg.payload
             self._mqtt_vac_err = bytes.decode(msg.payload, "utf-8")
 
     def on_connect_callback(self, client, userdata, flags, rc):
         self.subscribe(self._mqtt_subscribe)
-        _LOGGER.debug("Connected to MQTT broker.")
+        _LOGGER.debug("Subscribed to MQTT broker with topic: " + self._mqtt_topic)
 
     def stop_and_disconnect(self):
         self.loop_stop(force=False)  # Stop the MQTT loop gracefully
         self.disconnect()  # Disconnect from the broker
-        _LOGGER.debug("Stopped and disconnected from MQTT broker.")
+        _LOGGER.debug(self._mqtt_topic + ": Stopped and disconnected from MQTT broker.")
 
     def connect_broker(self):
         self.connect_async(host=self._broker, port=1883)
         self.enable_bridge_mode()
         self.loop_start()
-        _LOGGER.debug("Connect MQTT broker.")
+        _LOGGER.debug(self._mqtt_topic + ": Connect MQTT broker.")
 
     def client_start(self):
         self.loop_start()
-        _LOGGER.debug("Started MQTT loop")
+        _LOGGER.debug(self._mqtt_topic + ": Started MQTT loop")
 
     def client_stop(self):
         self.loop_stop()
         self._mqtt_run = False
-        _LOGGER.debug("Stopped MQTT loop")
+        _LOGGER.debug(self._mqtt_topic + ": Stopped MQTT loop")
 
     def is_client_check_mode(self, check_topic):
         test_topic = "valetudo/myTopic"
