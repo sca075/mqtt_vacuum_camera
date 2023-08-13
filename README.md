@@ -1,4 +1,5 @@
 [releases_shield]: https://img.shields.io/github/release/sca075/valetudo_vacuum_camera.svg?style=popout
+[latest_release]: https://github.com/sca075/valetudo_vacuum_camera/releases/latest
 
 # Valetudo Vacuum Camera
 ## Integration for Valetudo Vacuums to Home Assistant
@@ -36,7 +37,7 @@ internal_variables:
 - Dreame D9
 
 
-### Current Release: ![GitHub Latest Release][releases_shield]
+### Current Release: [![GitHub Latest Release][releases_shield]][latest_release]
 
 ### How to install:
 Please foolow the instructions in [here](./docs/install.md).
