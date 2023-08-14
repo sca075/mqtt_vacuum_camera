@@ -74,7 +74,7 @@ action:
 mode: single
 ```
 
-3) Change the image options directly form the HA integratios UI with a click on configuration.
+4) Change the image options directly form the HA integratios UI with a click on configuration.
 
 ### In plan:
 1) The entity ID of the camera will be based on the vacuum name, this will be usfull to setup multiple vacuums and cameras.
