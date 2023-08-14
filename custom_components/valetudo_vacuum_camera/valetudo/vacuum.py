@@ -18,6 +18,8 @@ class Vacuum(object):
         self._last_image = None
         self.user_colors = Colors
         self.rooms_colors = Colors
+        self.vacuum_state = None
+        self.vacuum_error = None
 
     def update_user_colors(self, user_colors):
         self.user_colors = user_colors
@@ -43,6 +45,12 @@ class Vacuum(object):
 
     def set_last_image(self, data):
         self._last_image = data
+
+    def set_vacuum_state(self, data):
+        self.vacuum_state = data
+
+    def get_vacuum_state(self):
+        return self.vacuum_state
 
     def last_image_binary(self):
         """last_image_stored

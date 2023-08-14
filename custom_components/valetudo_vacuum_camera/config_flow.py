@@ -203,10 +203,10 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             )
 
         return self.async_show_form(
-                step_id="options_3",
-                data_schema=ROOMS_COLOR_SCHEMA,
-                description_placeholders=self.data,
-            )
+            step_id="options_3",
+            data_schema=ROOMS_COLOR_SCHEMA,
+            description_placeholders=self.data,
+        )
 
     @staticmethod
     @callback

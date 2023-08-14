@@ -1,4 +1,4 @@
-"""Version 1.2.0"""
+"""Version 1.3.0"""
 # Image Handler Module
 # Collection of routines to extract data from the received json.
 # It returns values and images relative to the Map Data extrapolated from the vacuum json.
@@ -7,7 +7,7 @@ import logging
 import math
 
 import numpy as np
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 from custom_components.valetudo_vacuum_camera.utils.colors import color_grey
 from custom_components.valetudo_vacuum_camera.valetudo.vacuum import Vacuum
 from custom_components.valetudo_vacuum_camera.types import Color, Colors
@@ -116,9 +116,8 @@ class MapImageHandler(object):
         image_array[:, :, 0] = background_color[0]  # Set red channel
         image_array[:, :, 1] = background_color[1]  # Set green channel
         image_array[:, :, 2] = background_color[2]  # Set blue channel
-        image_array[:, :, 3] = background_color[
-            3
-        ]  # Set alpha channel to 255 (fully opaque)
+        # Set alpha channel to 255 (fully opaque)
+        image_array[:, :, 3] = background_color[3]
 
         return image_array
 
@@ -178,8 +177,9 @@ class MapImageHandler(object):
             return color_array[color_index]  # Return the color at the specified index
 
     @staticmethod
-    def draw_robot(layers, x, y, angle, fill):
+    def draw_robot(layers, x, y, angle, fill, log: "" = None):
         # Draw Robot
+        _LOGGER.info("Drawing " + log + " Robot With Angle: %s", {angle})
         tmpimg = Image.fromarray(layers)
         draw = ImageDraw.Draw(tmpimg)
         # Outline colour from fill colour
@@ -398,56 +398,70 @@ class MapImageHandler(object):
         return arr
 
     @staticmethod
+    def draw_status_text(image, status):
+        # Load a font
+        font = ImageFont.load_default()
+        # Create a drawing object
+        draw = ImageDraw.Draw(image)
+        # Define the text and position
+        text = status
+        position = (10, 10)  # Upper left corner
+        # Draw the text on the image
+        draw.text(position, text, font=font, fill=(255, 255, 255))
+
+    @staticmethod
     def extract_room_properties(json_data):
         room_properties = {}
-        pixel_size = json_data.get('pixelSize', [])
+        pixel_size = json_data.get("pixelSize", [])
 
-        if 'layers' in json_data \
-                and json_data['layers'][0]['__class'] == 'MapLayer' \
-                and json_data['layers'][0]['type'] == 'floor':
+        if (
+            "layers" in json_data
+            and json_data["layers"][0]["__class"] == "MapLayer"
+            and json_data["layers"][0]["type"] == "floor"
+        ):
             list_room_properties = None
             return list_room_properties
         else:
             list_room_properties = []
 
-        for layer in json_data.get('layers', []):
-            if layer['__class'] == 'MapLayer':
-                meta_data = layer.get('metaData', {})
-                segment_id = meta_data.get('segmentId')
+        for layer in json_data.get("layers", []):
+            if layer["__class"] == "MapLayer":
+                meta_data = layer.get("metaData", {})
+                segment_id = meta_data.get("segmentId")
 
                 if segment_id is not None:
                     # active = meta_data.get('active') #todo variables implementation
-                    name = meta_data.get('name')
+                    name = meta_data.get("name")
                     # Calculate x and y min/max from compressed pixels
-                    x_min = min(layer['compressedPixels'][::3]) * pixel_size
-                    x_max = max(layer['compressedPixels'][::3]) * pixel_size
-                    y_min = min(layer['compressedPixels'][1::3]) * pixel_size
-                    y_max = max(layer['compressedPixels'][1::3]) * pixel_size
+                    x_min = min(layer["compressedPixels"][::3]) * pixel_size
+                    x_max = max(layer["compressedPixels"][::3]) * pixel_size
+                    y_min = min(layer["compressedPixels"][1::3]) * pixel_size
+                    y_max = max(layer["compressedPixels"][1::3]) * pixel_size
                     # 'label': name,
                     # 'active': active
                     room_name = str(segment_id)
-                    room_properties[room_name] = ({
-                        'number': segment_id,
-                        'x0': x_min,
-                        'y0': y_min,
-                        'x1': x_max,
-                        'y1': y_max,
-                        'name': name,
-                        'pos_x': ((x_min + x_max) // 2),
-                        'pos_y': ((y_min + y_max) // 2),
-                    })
+                    room_properties[room_name] = {
+                        "number": segment_id,
+                        "x0": x_min,
+                        "y0": y_min,
+                        "x1": x_max,
+                        "y1": y_max,
+                        "name": name,
+                        "pos_x": ((x_min + x_max) // 2),
+                        "pos_y": ((y_min + y_max) // 2),
+                    }
                 list_room_properties.append(room_properties)
 
         return list_room_properties
 
     def get_image_from_json(
-            self,
-            m_json,
-            robot_state,
-            crop: int = 50,
-            user_colors: Colors = None,
-            rooms_colors: Color = None,
-            file_name: "" = None
+        self,
+        m_json,
+        robot_state,
+        crop: int = 50,
+        user_colors: Colors = None,
+        rooms_colors: Color = None,
+        file_name: "" = None,
     ):
         color_wall: Color = user_colors[0]
         color_no_go: Color = user_colors[6]
@@ -482,7 +496,9 @@ class MapImageHandler(object):
                     predicted_path = paths_data.get("predicted_path", [])
                     path_pixels = paths_data.get("path", [])
                 except KeyError as e:
-                    _LOGGER.info(file_name + ": Error extracting paths data: %s", str(e))
+                    _LOGGER.info(
+                        file_name + ": Error extracting paths data: %s", str(e)
+                    )
 
                 if predicted_path:
                     predicted_path = predicted_path[0]["points"]
@@ -508,7 +524,9 @@ class MapImageHandler(object):
                     _LOGGER.warning(file_name + ": No points in json data: %s", str(e))
                     entity_dict = None
                 else:
-                    _LOGGER.debug(file_name + ": Got the points in the json: %s", entity_dict)
+                    _LOGGER.debug(
+                        file_name + ": Got the points in the json: %s", entity_dict
+                    )
 
                 robot_position_angle = None
                 robot_position = None
@@ -562,12 +580,12 @@ class MapImageHandler(object):
                         elif layer_type == "wall":
                             if zone_clean:
                                 try:
-                                    zones_clean = zone_clean.get(file_name + ": active_zone")
+                                    zones_clean = zone_clean.get("active_zone")
                                 except KeyError:
                                     zones_clean = None
                                     _LOGGER.debug(file_name + ": No Zone Clean.")
                                 try:
-                                    no_go_zones = zone_clean.get(file_name + ": no_go_area")
+                                    no_go_zones = zone_clean.get("no_go_area")
                                 except KeyError:
                                     no_go_zones = None
                                     _LOGGER.debug(file_name + ": No Go area not found.")
@@ -623,6 +641,7 @@ class MapImageHandler(object):
                     robot_position[1],
                     robot_position_angle,
                     color_robot,
+                    file_name,
                 )
                 img_np_array = self.crop_array(img_np_array, crop)
                 pil_img = Image.fromarray(img_np_array, mode="RGBA")

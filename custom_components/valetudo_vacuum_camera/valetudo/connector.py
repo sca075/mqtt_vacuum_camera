@@ -1,4 +1,4 @@
-"""Version 1.2.1"""
+"""Version 1.3.0"""
 import logging
 import time
 import paho.mqtt.client as client
@@ -38,7 +38,9 @@ class ValetudoConnector(client.Client):
         if self._img_payload:
             if process:
                 _LOGGER.debug("Processing " + self._mqtt_topic + " data from MQTT")
-                result = self._img_decoder.camera_message_received(self._img_payload, self._mqtt_topic)
+                result = self._img_decoder.camera_message_received(
+                    self._img_payload, self._mqtt_topic
+                )
                 self._data_in = False
                 return result
             else:
@@ -59,7 +61,10 @@ class ValetudoConnector(client.Client):
         # save payload when available.
         if self._img_payload and (self._data_in is True):
             with open(
-                    "custom_components/valetudo_vacuum_camera/snapshots/mqtt_" + file_name + ".raw", "wb"
+                "custom_components/valetudo_vacuum_camera/snapshots/mqtt_"
+                + file_name
+                + ".raw",
+                "wb",
             ) as file:
                 file.write(self._img_payload)
             _LOGGER.info("Saved image data from MQTT in mqtt_" + file_name + ".raw!")
@@ -67,20 +72,31 @@ class ValetudoConnector(client.Client):
     def on_message_callback(self, client, userdata, msg):
         self._rcv_topic = msg.topic
         if self._rcv_topic == (self._mqtt_topic + "/MapData/map-data-hass"):
-            _LOGGER.debug("Received " + self._mqtt_topic +" image data from MQTT")
+            _LOGGER.debug("Received " + self._mqtt_topic + " image data from MQTT")
             self._img_payload = msg.payload
             self._data_in = True
         elif self._rcv_topic == (self._mqtt_topic + "/StatusStateAttribute/status"):
-            _LOGGER.debug(self._mqtt_topic + ": Received vacuum status data from MQTT")
             self._payload = msg.payload
             if self._payload:
-                self._mqtt_vac_stat = bytes.decode(msg.payload, "utf-8")
+                self._mqtt_vac_stat = bytes.decode(self._payload, "utf-8")
+                _LOGGER.debug(
+                    self._mqtt_topic
+                    + ": Received vacuum "
+                    + self._mqtt_vac_stat
+                    + " status from MQTT:"
+                    + self._rcv_topic
+                )
         elif self._rcv_topic == (
             self._mqtt_topic + "/StatusStateAttribute/error_description"
         ):
-            _LOGGER.debug(self._mqtt_topic + ": Received vacuum error data from MQTT")
             self._payload = msg.payload
             self._mqtt_vac_err = bytes.decode(msg.payload, "utf-8")
+            _LOGGER.debug(
+                self._mqtt_topic
+                + ": Received vacuum "
+                + self._mqtt_vac_err
+                + " from MQTT"
+            )
 
     def on_connect_callback(self, client, userdata, flags, rc):
         self.subscribe(self._mqtt_subscribe)

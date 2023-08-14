@@ -1,4 +1,4 @@
-"""Version 1.2.1"""
+"""Version 1.3.0"""
 import logging
 import struct
 import zlib
@@ -23,27 +23,36 @@ class RawToJson:
         uint32 = struct.Struct(">I")
 
         if data[0] != 0x89:
-            raise Warning("Invalid .png file header")
+            _LOGGER.warning("Invalid .png file header")
+            return None
         elif data[1] != 0x50:
-            raise Warning("Invalid .png file header")
+            _LOGGER.warning("Invalid .png file header")
+            return None
         elif data[2] != 0x4E:
-            raise Warning("Invalid .png file header")
+            _LOGGER.warning("Invalid .png file header")
+            return None
         elif data[3] != 0x47:
-            raise Warning("Invalid .png file header")
+            _LOGGER.warning("Invalid .png file header")
+            return None
         elif data[4] != 0x0D:
-            raise Warning(
+            _LOGGER.warning(
                 "Invalid .png file header: possibly caused by DOS-Unix line ending conversion?"
             )
+            return None
+
         elif data[5] != 0x0A:
-            raise Warning(
+            _LOGGER.warning(
                 "Invalid .png file header: possibly caused by DOS-Unix line ending conversion?"
             )
+            return None
         elif data[6] != 0x1A:
-            raise Warning("Invalid .png file header")
+            _LOGGER.warning("Invalid .png file header")
+            return None
         elif data[7] != 0x0A:
-            raise Warning(
+            _LOGGER.warning(
                 "Invalid .png file header: possibly caused by DOS-Unix line ending conversion?"
             )
+            return None
         else:
             ended = False
             idx = 8
@@ -105,7 +114,7 @@ class RawToJson:
         if payload is not None:
             try:
                 extract_data = self.extract_png_chunks(payload)
-            except Warning as warning:
+            except Exception as warning:
                 _LOGGER.warning(source + ": MQTT message format error:", {warning})
                 return None
             else:
