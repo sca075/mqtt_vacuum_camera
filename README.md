@@ -43,10 +43,10 @@ internal_variables:
 ### How to install:
 Please foolow the instructions in [here](./docs/install.md).
 
-This custom component is developed and tested using a PI4 with Home Assistant OS fully updated [to the last version](https://www.home-assistant.io/faq/release/), this allows
-us to confirm that the component is working properly with Home Assistant. Tested also on Docker Supervised "production" enviroment (fully setup home installation). This camera isn't fast as [ICantBelieveItsNotValetudo](https://github.com/Hypfer/ICantBelieveItsNotValetudo) because it is develped using PIL (as per OpenCV is not supported on Home Assistant OS). Will consider, based also on your requests a platform based release of this integration.
-
-Note: The test in Github is still not fully setup this is why there is an X instead of a V. We don't pass the 84% of test for this reason.
+##Notes:
+1) This custom component is developed and tested using a PI4 with Home Assistant OS fully updated [to the last version](https://www.home-assistant.io/faq/release/), this allows us to confirm that the component is working properly with Home Assistant. Tested also on Docker Supervised "production" enviroment (fully setup home installation).
+2) This camera isn't fast as [ICantBelieveItsNotValetudo](https://github.com/Hypfer/ICantBelieveItsNotValetudo) because it is develped using PIL (as per OpenCV is not supported on Home Assistant OS). Will consider, based also on your requests a platform based release of this integration.
+3) The test in Github is still not fully setup this is why there is an X instead of a V. We don't pass the 84% of test for this reason.
 
 ## Futures:
 1) Generate the calibration points for the lovelace-xiaomi-vacuum-map-card to ensure full compatibility to this user friendly card.
