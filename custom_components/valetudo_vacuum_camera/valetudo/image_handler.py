@@ -648,7 +648,7 @@ class MapImageHandler(object):
                 del img_np_array
                 return pil_img
         except Exception as e:
-            _LOGGER.error(file_name + ": Error in get_image_from_json: %s", str(e))
+            _LOGGER.warning(file_name + ": Error in get_image_from_json: %s", str(e))
             return None
 
     def get_frame_number(self):
