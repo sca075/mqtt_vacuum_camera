@@ -32,8 +32,9 @@ internal_variables:
   ```
 
 **Supported Vacuums:**
-- RoborockV1
-- RoborockS5
+- Roborock.V1
+- Roborock.S50
+- Roborock.S5
 - Dreame D9
 
 
@@ -43,7 +44,7 @@ internal_variables:
 Please foolow the instructions in [here](./docs/install.md).
 
 This custom component is developed and tested using a PI4 with Home Assistant OS fully updated [to the last version](https://www.home-assistant.io/faq/release/), this allows
-us to confirm that the component is working properly with Home Assistant. Tested also on Docker Supervised "production" enviroment (fully setup home installation).
+us to confirm that the component is working properly with Home Assistant. Tested also on Docker Supervised "production" enviroment (fully setup home installation). This camera isn't fast as [ICantBelieveItsNotValetudo](https://github.com/Hypfer/ICantBelieveItsNotValetudo) because it is develped using PIL (as per OpenCV is not supported on Home Assistant OS). Will consider, based also on your requests a platform based release of this integration.
 
 Note: The test in Github is still not fully setup this is why there is an X instead of a V. We don't pass the 84% of test for this reason.
 
@@ -75,10 +76,11 @@ mode: single
 ```
 
 4) Change the image options directly form the HA integratios UI with a click on configuration.
+5) Possibilty to integrate multiple vacuums with this integration as per each camera will be named with the vacuum name (vacuum.robot1 = camera.robot1.. vacuum.robotx = camera.robotx)
 
 ### In plan:
-1) The entity ID of the camera will be based on the vacuum name, this will be usfull to setup multiple vacuums and cameras.
-2) Improving the rooms zones export to the card (at current it requires manual adjustments).
+1) Improving the rooms zones export to the card (at current it requires manual adjustments).
+2) Adding image trimming to the options, in order to centre the map.
 
 ## Tanks to:
 - @PiotrMachowski inspiring this integration and his amazing work.
