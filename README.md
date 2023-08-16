@@ -44,9 +44,9 @@ internal_variables:
 Please foolow the instructions in [here](./docs/install.md).
 
 ## Futures:
-1) Generate the calibration points for the lovelace-xiaomi-vacuum-map-card to ensure full compatibility to this user friendly card.
-2) Generate rooms based configuration when vaccum support this fucntionality, this will allow you to configure the rooms quickly on the [lovelace-xiaomi-vacuum-map-card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
-3) The camera take automaticly a snapshot (vacuum idle/ error / docked) and sore it in the www folder of HA. It is thefore possible to create an automation to send the screenshot to your mobile in different conditions as per below example:
+1) **Automatically Generate the calibration points for the lovelace-xiaomi-vacuum-map-card** to ensure full compatibility to this user friendly card.
+2) **Automatically Generate rooms based configuration when vaccum support this fucntionality**, this will allow you to configure the rooms quickly on the [lovelace-xiaomi-vacuum-map-card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
+3) **The camera take automaticly a snapshot (vacuum idle/ error / docked)** and sore it in the www folder of HA. It is thefore possible to create an automation to send the screenshot to your mobile in different conditions as per below example:
 
 ```
 alias: Vacuum Error 
@@ -70,8 +70,12 @@ action:
 mode: single
 ```
 
-4) Change the image options directly form the HA integratios UI with a click on configuration.
-5) Possibilty to integrate multiple vacuums with this integration as per each camera will be named with the vacuum name (vacuum.robot1 = camera.robot1.. vacuum.robotx = camera.robotx)
+4) **Change the image options** directly form the HA integratios UI with a click on configuration.
+ - Image Rotation: 0, 90, 180, 270 (default is 0).
+ - Cropping function (default is 50% of the standard Valetudo size 5210x5210 = 2605x2605).
+ - Base colors are the colors for robot, charger, walls, background, zones etc.
+ - Rooms colors, Room 1 is acrually also the Floor color (for vacuum that do not supports rooms.  
+5) Possibilty to **integrate multiple vacuums with this integration** as per each camera will be named with the vacuum name (vacuum.robot1 = camera.robot1.. vacuum.robotx = camera.robotx)
 
 ## In plan:
 1) Improving the rooms zones export to the card (at current it requires manual adjustments).
