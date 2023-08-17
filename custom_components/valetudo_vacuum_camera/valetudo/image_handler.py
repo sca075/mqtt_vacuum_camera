@@ -151,26 +151,24 @@ class MapImageHandler(object):
         trimmed_height = cropbox[3] - cropbox[1] - trim_u - trim_b
 
         # Check if the trimmed dimensions are valid
-        if trimmed_width <= 99 or trimmed_height <= 99:
-            _LOGGER.warning("Invalid trim values result in an improperly sized image, check your configuration!")
-        else:
-            # Apply trimming
-            print(cropbox)
-            cropbox = (
-                cropbox[0] - trim_u,
-                cropbox[1] + trim_l,
-                cropbox[2] + trim_b,
-                cropbox[3] - trim_r,
-            )
-            print(cropbox)
+        if trimmed_width <= 0 or trimmed_height <= 0:
+            _LOGGER.warning("Invalid trim values result in an improperly sized image, returning uncropped image")
+            return image_array
 
-        self.crop_area = cropbox
+        # Calculate the new cropping box with trim values
+        new_cropbox = (
+            cropbox[0] + trim_r,
+            cropbox[1] + trim_b,
+            cropbox[2] - trim_l,
+            cropbox[3] - trim_u,
+        )
+
+        self.crop_area = new_cropbox
         _LOGGER.debug("Crop and Trim Box data: %s", self.crop_area)
-        cropped = image_array[cropbox[1] : cropbox[3], cropbox[0] : cropbox[2]]
+        cropped = image_array[new_cropbox[1]:new_cropbox[3], new_cropbox[0]:new_cropbox[2]]
         self.crop_img_size = (cropped.shape[1], cropped.shape[0])
         _LOGGER.debug("Crop and Trim image size: %s", self.crop_img_size)
         return cropped
-
     @staticmethod
     def get_color(color_array, color_name):
         """Getting Colors from specific colours array."""
@@ -436,9 +434,9 @@ class MapImageHandler(object):
         pixel_size = json_data.get("pixelSize", [])
 
         if (
-            "layers" in json_data
-            and json_data["layers"][0]["__class"] == "MapLayer"
-            and json_data["layers"][0]["type"] == "floor"
+                "layers" in json_data
+                and json_data["layers"][0]["__class"] == "MapLayer"
+                and json_data["layers"][0]["type"] == "floor"
         ):
             list_room_properties = None
             return list_room_properties
@@ -476,17 +474,17 @@ class MapImageHandler(object):
         return list_room_properties
 
     def get_image_from_json(
-        self,
-        m_json,
-        robot_state,
-        crop: int = 50,
-        trim_u: int = 0,
-        trim_b: int = 0,
-        trim_l: int = 0,
-        trim_r: int = 0,
-        user_colors: Colors = None,
-        rooms_colors: Color = None,
-        file_name: "" = None,
+            self,
+            m_json,
+            robot_state,
+            crop: int = 50,
+            trim_u: int = 0,
+            trim_b: int = 0,
+            trim_l: int = 0,
+            trim_r: int = 0,
+            user_colors: Colors = None,
+            rooms_colors: Color = None,
+            file_name: "" = None,
     ):
         color_wall: Color = user_colors[0]
         color_no_go: Color = user_colors[6]
