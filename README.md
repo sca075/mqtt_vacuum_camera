@@ -32,8 +32,9 @@ internal_variables:
   ```
 
 **Supported Vacuums:**
-- RoborockV1
-- RoborockS5
+- Roborock.V1
+- Roborock.S50
+- Roborock.S5
 - Dreame D9
 
 
@@ -42,15 +43,10 @@ internal_variables:
 ### How to install:
 Please foolow the instructions in [here](./docs/install.md).
 
-This custom component is developed and tested using a PI4 with Home Assistant OS fully updated [to the last version](https://www.home-assistant.io/faq/release/), this allows
-us to confirm that the component is working properly with Home Assistant. Tested also on Docker Supervised "production" enviroment (fully setup home installation).
-
-Note: The test in Github is still not fully setup this is why there is an X instead of a V. We don't pass the 84% of test for this reason.
-
 ## Futures:
-1) Generate the calibration points for the lovelace-xiaomi-vacuum-map-card to ensure full compatibility to this user friendly card.
-2) Generate rooms based configuration when vaccum support this fucntionality, this will allow you 
-3) The camera take automaticly a snapshot (vacuum idle/ error / docked) and sore it in the www folder of HA. It is thefore possible to create an automation to send the screenshot to your mobile in different conditions as per below example:
+1) **Automatically Generate the calibration points for the lovelace-xiaomi-vacuum-map-card** to ensure full compatibility to this user friendly card.
+2) **Automatically Generate rooms based configuration when vaccum support this fucntionality**, this will allow you to configure the rooms quickly on the [lovelace-xiaomi-vacuum-map-card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
+3) **The camera take automaticly a snapshot (vacuum idle/ error / docked)** and sore it in the www folder of HA. It is thefore possible to create an automation to send the screenshot to your mobile in different conditions as per below example:
 
 ```
 alias: Vacuum Error 
@@ -74,13 +70,23 @@ action:
 mode: single
 ```
 
-4) Change the image options directly form the HA integratios UI with a click on configuration.
+4) **Change the image options** directly form the HA integratios UI with a click on configuration.
+ - Image Rotation: 0, 90, 180, 270 (default is 0).
+ - Cropping function (default is 50% of the standard Valetudo size 5210x5210 = 2605x2605).
+ - Base colors are the colors for robot, charger, walls, background, zones etc.
+ - Rooms colors, Room 1 is acrually also the Floor color (for vacuum that do not supports rooms.  
+5) Possibilty to **integrate multiple vacuums with this integration** as per each camera will be named with the vacuum name (vacuum.robot1 = camera.robot1.. vacuum.robotx = camera.robotx)
 
-### In plan:
-1) The entity ID of the camera will be based on the vacuum name, this will be usfull to setup multiple vacuums and cameras.
-2) Improving the rooms zones export to the card (at current it requires manual adjustments).
+## In plan:
+1) Improving the rooms zones export to the card (at current it requires manual adjustments).
+2) Adding image trimming to the options, in order to centre the map.
 
-## Tanks to:
+## Notes:
+1) This custom component is developed and tested using a PI4 with Home Assistant OS fully updated [to the last version](https://www.home-assistant.io/faq/release/), this allows us to confirm that the component is working properly with Home Assistant. Tested also on Docker Supervised "production" enviroment (fully setup home installation).
+2) This camera isn't fast as [ICantBelieveItsNotValetudo](https://github.com/Hypfer/ICantBelieveItsNotValetudo) because it is develped using PIL (as per OpenCV is not supported on Home Assistant OS). Will consider, based also on your requests a platform based release of this integration.
+3) The test in Github is still not fully setup this is why there is an X instead of a V. We don't pass the 84% of test for this reason.
+
+### Tanks to:
 - @PiotrMachowski inspiring this integration and his amazing work.
 - @Hypfer for freeing the vacuums from the clouds and contiunsly improvig our vacuums :)
 - @billyourself for providing us the data to evolve this project.
