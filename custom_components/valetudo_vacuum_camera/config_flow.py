@@ -1,4 +1,4 @@
-"""config_flow ver.1.2.1"""
+"""config_flow ver.1.3.2"""
 
 import voluptuous as vol
 import logging
@@ -16,6 +16,11 @@ from .const import (
     CONF_MQTT_PASS,
     ATTR_ROTATE,
     ATTR_CROP,
+    ATTR_TRIM_LEFT,
+    ATTR_TRIM_RIGHT,
+    ATTR_TRIM_TOP,
+    ATTR_TRIM_BOTTOM,
+    CONF_VAC_STAT,
     COLOR_MOVE,
     COLOR_ROBOT,
     COLOR_WALL,
@@ -24,7 +29,7 @@ from .const import (
     COLOR_GO_TO,
     COLOR_NO_GO,
     COLOR_ZONE_CLEAN,
-    CONF_COLORS,
+    COLOR_TEXT,
     COLOR_ROOM_0,
     COLOR_ROOM_1,
     COLOR_ROOM_2,
@@ -63,6 +68,11 @@ IMG_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_ROTATE, default="0"): vol.In(["0", "90", "180", "270"]),
         vol.Required(ATTR_CROP, default="50"): cv.string,
+        vol.Optional(ATTR_TRIM_TOP, default="0"): cv.string,
+        vol.Optional(ATTR_TRIM_BOTTOM, default="0"): cv.string,
+        vol.Optional(ATTR_TRIM_LEFT, default="0"): cv.string,
+        vol.Optional(ATTR_TRIM_RIGHT, default="0"): cv.string,
+        vol.Optional(CONF_VAC_STAT, default=False): cv.boolean,
     }
 )
 
@@ -76,6 +86,7 @@ GENERIC_COLOR_SCHEMA = vol.Schema(
         vol.Optional(COLOR_MOVE, default=[238, 247, 255]): ColorRGBSelector(),
         vol.Optional(COLOR_GO_TO, default=[0, 255, 0]): ColorRGBSelector(),
         vol.Optional(COLOR_NO_GO, default=[255, 0, 0]): ColorRGBSelector(),
+        vol.Optional(COLOR_TEXT, default=[255, 255, 255]): ColorRGBSelector(),
     }
 )
 
@@ -102,13 +113,15 @@ ROOMS_COLOR_SCHEMA = vol.Schema(
 
 
 class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
-    VERSION = 1.2
+    VERSION = 1.3
 
     def __init__(self):
         self.data = None
 
     async def async_step_user(self, user_input: Optional[Dict[str, Any]] = None):
         if user_input is not None:
+            self.data = user_input
+            _LOGGER.debug(self.data)
             return await self.async_step_mqtt()
 
         return self.async_show_form(step_id="user", data_schema=VACUUM_SCHEMA)
@@ -126,6 +139,11 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 {
                     "rotate_image": user_input.get(ATTR_ROTATE),
                     "crop_image": user_input.get(ATTR_CROP),
+                    "trim_top": user_input.get(ATTR_TRIM_TOP),
+                    "trim_bottom": user_input.get(ATTR_TRIM_BOTTOM),
+                    "trim_left": user_input.get(ATTR_TRIM_LEFT),
+                    "trim_right": user_input.get(ATTR_TRIM_RIGHT),
+                    "show_vac_status": user_input.get(CONF_VAC_STAT),
                 }
             )
 
@@ -149,18 +167,9 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     "color_no_go": user_input.get(COLOR_NO_GO),
                     "color_zone_clean": user_input.get(COLOR_ZONE_CLEAN),
                     "color_background": user_input.get(COLOR_BACKGROUND),
+                    "color_text": user_input.get(COLOR_TEXT),
                 }
             )
-
-            # Update the USER_COLORS array with the user-defined colors
-            CONF_COLORS[0] = self.data["color_wall"]
-            CONF_COLORS[1] = self.data["color_zone_clean"]
-            CONF_COLORS[2] = self.data["color_robot"]
-            CONF_COLORS[3] = self.data["color_background"]
-            CONF_COLORS[4] = self.data["color_move"]
-            CONF_COLORS[5] = self.data["color_charger"]
-            CONF_COLORS[6] = self.data["color_no_go"]
-            CONF_COLORS[7] = self.data["color_go_to"]
 
             return await self.async_step_options_3()
 
@@ -232,6 +241,11 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Required(
                         ATTR_CROP, default=config_entry.options.get("crop_image")
                     ): cv.string,
+                    vol.Optional(ATTR_TRIM_TOP, default=config_entry.options.get("trim_top")): cv.string,
+                    vol.Optional(ATTR_TRIM_BOTTOM, default=config_entry.options.get("trim_bottom")): cv.string,
+                    vol.Optional(ATTR_TRIM_LEFT, default=config_entry.options.get("trim_left")): cv.string,
+                    vol.Optional(ATTR_TRIM_RIGHT, default=config_entry.options.get("trim_right")): cv.string,
+                    vol.Optional(CONF_VAC_STAT, default=config_entry.options.get("show_vac_status")): cv.boolean,
                 }
             )
             self.COLOR_1_SCHEMA = vol.Schema(
@@ -261,6 +275,9 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     ): ColorRGBSelector(),
                     vol.Optional(
                         COLOR_NO_GO, default=config_entry.options.get("color_no_go")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_TEXT, default=config_entry.options.get("color_text")
                     ): ColorRGBSelector(),
                 }
             )
@@ -325,6 +342,11 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Required(
                         ATTR_CROP, default=config_entry.data.get("crop_image")
                     ): cv.string,
+                    vol.Optional(ATTR_TRIM_TOP, default=config_entry.data.get("trim_top")): cv.string,
+                    vol.Optional(ATTR_TRIM_BOTTOM, default=config_entry.data.get("trim_bottom")): cv.string,
+                    vol.Optional(ATTR_TRIM_LEFT, default=config_entry.data.get("trim_left")): cv.string,
+                    vol.Optional(ATTR_TRIM_RIGHT, default=config_entry.data.get("trim_right")): cv.string,
+                    vol.Optional(CONF_VAC_STAT, default=config_entry.data.get("show_vac_status")): cv.boolean,
                 }
             )
             self.COLOR_1_SCHEMA = vol.Schema(
@@ -354,6 +376,9 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     ): ColorRGBSelector(),
                     vol.Optional(
                         COLOR_NO_GO, default=config_entry.data.get("color_no_go")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
+                        COLOR_TEXT, default=config_entry.data.get("color_text")
                     ): ColorRGBSelector(),
                 }
             )
@@ -419,6 +444,11 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 {
                     "rotate_image": user_input.get(ATTR_ROTATE),
                     "crop_image": user_input.get(ATTR_CROP),
+                    "trim_top": user_input.get(ATTR_TRIM_TOP),
+                    "trim_bottom": user_input.get(ATTR_TRIM_BOTTOM),
+                    "trim_left": user_input.get(ATTR_TRIM_LEFT),
+                    "trim_right": user_input.get(ATTR_TRIM_RIGHT),
+                    "show_vac_status": user_input.get(CONF_VAC_STAT),
                 }
             )
             return await self.async_step_init_2()
@@ -446,6 +476,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     "color_no_go": user_input.get(COLOR_NO_GO),
                     "color_zone_clean": user_input.get(COLOR_ZONE_CLEAN),
                     "color_background": user_input.get(COLOR_BACKGROUND),
+                    "color_text": user_input.get(COLOR_TEXT),
                 }
             )
 

@@ -1,4 +1,4 @@
-"""Colors RGBA Version 1.1.8"""
+"""Colors RGBA Version 1.3.2"""
 
 import logging
 
@@ -13,7 +13,7 @@ color_go_to = (0, 255, 0, 255)
 color_background = (0, 125, 255, 255)
 color_zone_clean = (255, 255, 255, 25)
 color_wall = (255, 255, 0, 255)
-color_white = (255, 255, 255, 255)
+color_text = (255, 255, 255, 255)
 color_grey = (125, 125, 125, 255)
 color_black = (0, 0, 0, 255)
 color_room_0 = (135, 206, 250, 255)
@@ -61,6 +61,7 @@ base_colors_array = [
     color_charger,
     color_no_go,
     color_go_to,
+    color_text,
 ]
 
 color_array = [
@@ -70,7 +71,7 @@ color_array = [
     color_black,
     base_colors_array[2],  # color_robot
     base_colors_array[5],  # color_charger
-    color_white,
+    color_text,
     base_colors_array[4],  # color_move
     base_colors_array[3],  # color_background
     base_colors_array[1],  # color_zone_clean
@@ -85,20 +86,27 @@ def add_alpha_to_rgb(rgb_colors, rgba_colors):
 
     Args:
         rgb_colors (List[Tuple[int, int, int]]): List of RGB colors.
-        rgba_colors (List[Tuple[int, int, int, int]]): List of RGBA colors.
+        rgba_colors (List[Optional[Tuple[int, int, int, int]]]): List of RGBA colors.
 
     Returns:
         List[Tuple[int, int, int, int]]: List of RGBA colors with alpha channel added.
     """
     if len(rgb_colors) != len(rgba_colors):
-        raise ValueError("Input lists must have the same length.")
+        _LOGGER.error("Input lists must have the same length.")
+        return []
 
     result = []
     for rgb, rgba in zip(rgb_colors, rgba_colors):
-        if len(rgb) != 3 or len(rgba) != 4:
-            raise ValueError(
-                "RGB and RGBA colors must be tuples of length 3 and 4, respectively."
-            )
-        result.append((*rgb, rgba[3]))  # Append RGB with the alpha channel from RGBA
+        try:
+            if (rgb and len(rgb) != 3) or (rgba and len(rgba) != 4):
+                _LOGGER.warning(
+                    "RGB and RGBA colors must be tuples of length 3 and 4, respectively."
+                )
+            if rgb is None:
+                result.append((*rgba,))
+            else:
+                result.append((*rgb, rgba[3]))
+        except ValueError:
+            result.append(rgba)
 
     return result

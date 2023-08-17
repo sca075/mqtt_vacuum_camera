@@ -12,14 +12,50 @@ PLATFORMS = [Platform.CAMERA]
 
 
 async def options_update_listener(
-    hass: core.HomeAssistant, config_entry: config_entries.ConfigEntry
+        hass: core.HomeAssistant, config_entry: config_entries.ConfigEntry
 ):
     """Handle options update."""
     await hass.config_entries.async_reload(config_entry.entry_id)
 
 
+async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
+    """Migrate old entry."""
+    _LOGGER.debug("Migrating from version %s", config_entry.version)
+
+    if config_entry.version == 1.2:
+
+        new_data = {**config_entry.data}
+        _LOGGER.debug(new_data)
+        new_data.update({"trim_top": "0"})
+        new_data.update({"trim_bottom": "0"})
+        new_data.update({"trim_left": "0"})
+        new_data.update({"trim_right": "0"})
+        new_data.update({"show_vac_status": False})
+        new_data.update({"color_text": [255, 255, 255]})
+        _LOGGER.debug(new_data)
+        new_options = {**config_entry.options}
+        _LOGGER.debug(new_options)
+        if new_options or len(new_options) > 0:
+            new_options.update({"trim_top": "0"})
+            new_options.update({"trim_bottom": "0"})
+            new_options.update({"trim_left": "0"})
+            new_options.update({"trim_right": "0"})
+            new_options.update({"show_vac_status": False})
+            new_options.update({"color_text": [255, 255, 255]})
+        else:
+            new_options = new_data
+        _LOGGER.debug(new_options)
+
+        config_entry.version = 1.3
+        hass.config_entries.async_update_entry(config_entry, data=new_data)
+        hass.config_entries.async_update_entry(config_entry, options=new_options)
+
+    _LOGGER.info("Migration to version %s successful", config_entry.version)
+    return True
+
+
 async def async_setup_entry(
-    hass: core.HomeAssistant, entry: config_entries.ConfigEntry
+        hass: core.HomeAssistant, entry: config_entries.ConfigEntry
 ) -> bool:
     """Set up platform from a ConfigEntry."""
     hass.data.setdefault(DOMAIN, {})
@@ -38,7 +74,7 @@ async def async_setup_entry(
 
 
 async def async_unload_entry(
-    hass: core.HomeAssistant, entry: config_entries.ConfigEntry
+        hass: core.HomeAssistant, entry: config_entries.ConfigEntry
 ) -> bool:
     """Unload a config entry."""
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):

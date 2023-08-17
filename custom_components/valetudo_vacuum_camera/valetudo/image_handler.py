@@ -134,8 +134,8 @@ class MapImageHandler(object):
         # Convert the image array to a PIL image
         return image_array
 
-    def crop_array(self, image_array, crop_percentage):
-        """Crops a numpy array and returns the cropped image and scale factor."""
+    def crop_and_trim_array(self, image_array, crop_percentage, trim_u=0, trim_b=0, trim_l=0, trim_r=0):
+        """Crops and trims a numpy array and returns the processed image and scale factor."""
         center_x = image_array.shape[1] // 2
         center_y = image_array.shape[0] // 2
         crop_size = int(min(center_x, center_y) * crop_percentage / 100)
@@ -145,11 +145,30 @@ class MapImageHandler(object):
             center_x + crop_size,
             center_y + crop_size,
         )
+
+        # Calculate the dimensions after trimming
+        trimmed_width = cropbox[2] - cropbox[0] - trim_l - trim_r
+        trimmed_height = cropbox[3] - cropbox[1] - trim_u - trim_b
+
+        # Check if the trimmed dimensions are valid
+        if trimmed_width <= 99 or trimmed_height <= 99:
+            _LOGGER.warning("Invalid trim values result in an improperly sized image, check your configuration!")
+        else:
+            # Apply trimming
+            print(cropbox)
+            cropbox = (
+                cropbox[0] - trim_u,
+                cropbox[1] + trim_l,
+                cropbox[2] + trim_b,
+                cropbox[3] - trim_r,
+            )
+            print(cropbox)
+
         self.crop_area = cropbox
-        _LOGGER.debug("Crop Box data: %s", self.crop_area)
+        _LOGGER.debug("Crop and Trim Box data: %s", self.crop_area)
         cropped = image_array[cropbox[1] : cropbox[3], cropbox[0] : cropbox[2]]
         self.crop_img_size = (cropped.shape[1], cropped.shape[0])
-        _LOGGER.debug("Crop image size: %s", self.crop_img_size)
+        _LOGGER.debug("Crop and Trim image size: %s", self.crop_img_size)
         return cropped
 
     @staticmethod
@@ -398,16 +417,18 @@ class MapImageHandler(object):
         return arr
 
     @staticmethod
-    def draw_status_text(image, status):
+    def draw_status_text(image, size, color, status):
         # Load a font
-        font = ImageFont.load_default()
+        path = "custom_components/valetudo_vacuum_camera/utils/fonts/lato/Lato-Regular.ttf"
+        font = ImageFont.truetype(path, size)
+        text = status
         # Create a drawing object
         draw = ImageDraw.Draw(image)
         # Define the text and position
-        text = status
+
         position = (10, 10)  # Upper left corner
         # Draw the text on the image
-        draw.text(position, text, font=font, fill=(255, 255, 255))
+        draw.text(position, text, font=font, fill=color)
 
     @staticmethod
     def extract_room_properties(json_data):
@@ -459,6 +480,10 @@ class MapImageHandler(object):
         m_json,
         robot_state,
         crop: int = 50,
+        trim_u: int = 0,
+        trim_b: int = 0,
+        trim_l: int = 0,
+        trim_r: int = 0,
         user_colors: Colors = None,
         rooms_colors: Color = None,
         file_name: "" = None,
@@ -643,7 +668,13 @@ class MapImageHandler(object):
                     color_robot,
                     file_name,
                 )
-                img_np_array = self.crop_array(img_np_array, crop)
+                img_np_array = self.crop_and_trim_array(
+                    img_np_array,
+                    crop,
+                    int(trim_u),
+                    int(trim_b),
+                    int(trim_l),
+                    int(trim_r),)
                 pil_img = Image.fromarray(img_np_array, mode="RGBA")
                 del img_np_array
                 return pil_img
