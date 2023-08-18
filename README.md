@@ -72,10 +72,10 @@ mode: single
 
 4) **Change the image options** directly form the HA integratios UI with a click on the integration configuration.
  - *Image Rotation*: 0, 90, 180, 270 (default is 0).
- - *Cropping function* (default is 50% of the standard Valetudo size 5210x5210 = 2605x2605).
+ - [*Cropping function*](./docs/croping_trimming.md) (default is 50% of the standard Valetudo size 5210x5210 = 2605x2605).
  - Base colors are the *colors for robot, charger, walls, background, zones etc*.
  - *Rooms colors*, Room 1 is acrually also the Floor color (for vacuum that do not supports rooms).
- - From v1.3.2 is possible to *Trim the images* as desidered.
+ - From v1.3.2 is possible to [*Trim the images*](./docs/croping_trimming.md) as desidered.
  - It is possible to *display on the image the vacuum staus*.  
 5) Possibilty to **integrate multiple vacuums with this integration** as per each camera will be named with the vacuum name (vacuum.robot1 = camera.robot1.. vacuum.robotx = camera.robotx)
 
