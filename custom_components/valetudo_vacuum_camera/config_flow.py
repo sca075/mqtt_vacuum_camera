@@ -5,9 +5,10 @@ import logging
 from typing import Any, Dict, Optional
 from homeassistant import config_entries
 
+from homeassistant.components.vacuum import DOMAIN as ZONE_VACUUM
 from homeassistant.core import callback
 import homeassistant.helpers.config_validation as cv
-from homeassistant.helpers.selector import EntitySelector, ColorRGBSelector
+from homeassistant.helpers.selector import ColorRGBSelector, EntitySelector, EntitySelectorConfig
 from .const import (
     DOMAIN,
     CONF_VACUUM_ENTITY_ID,
@@ -52,7 +53,9 @@ _LOGGER = logging.getLogger(__name__)
 
 VACUUM_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_VACUUM_ENTITY_ID): EntitySelector(),
+        vol.Required(CONF_VACUUM_ENTITY_ID): EntitySelector(
+            EntitySelectorConfig(domain=ZONE_VACUUM)
+        ),
     }
 )
 
