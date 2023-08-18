@@ -70,7 +70,7 @@ action:
 mode: single
 ```
 
-4) **Change the image options** directly form the HA integratios UI with a click on configuration.
+4) **Change the image options** directly form the HA integratios UI with a click on the integration configuration.
  - *Image Rotation*: 0, 90, 180, 270 (default is 0).
  - *Cropping function* (default is 50% of the standard Valetudo size 5210x5210 = 2605x2605).
  - Base colors are the *colors for robot, charger, walls, background, zones etc*.
