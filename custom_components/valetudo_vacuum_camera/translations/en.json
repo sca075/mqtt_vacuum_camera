@@ -33,7 +33,7 @@
           "trim_bottom": "0",
           "trim_left": "0",
           "trim_right": "0",
-          "show_vac_status": false
+          "show_vac_status": "Show Vacuum Status."
         },
         "data_description": {
           "rotate_image": "Degree 0, 90, 180, 270",
@@ -128,7 +128,7 @@
           "trim_bottom": "0",
           "trim_left": "0",
           "trim_right": "0",
-          "show_vac_status": false
+          "show_vac_status": "Show Vacuum Status."
         },
         "data_description": {
           "rotate_image": "Degree 0, 90, 180, 270",
