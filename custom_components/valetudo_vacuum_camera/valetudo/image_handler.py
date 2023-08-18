@@ -138,37 +138,43 @@ class MapImageHandler(object):
         """Crops and trims a numpy array and returns the processed image and scale factor."""
         center_x = image_array.shape[1] // 2
         center_y = image_array.shape[0] // 2
-        crop_size = int(min(center_x, center_y) * crop_percentage / 100)
-        cropbox = (
-            center_x - crop_size,
-            center_y - crop_size,
-            center_x + crop_size,
-            center_y + crop_size,
-        )
+        if crop_percentage > 10:
+            crop_size = int(min(center_x, center_y) * crop_percentage / 100)
+            cropbox = (
+                center_x - crop_size,
+                center_y - crop_size,
+                center_x + crop_size,
+                center_y + crop_size,
+            )
 
-        # Calculate the dimensions after trimming
-        trimmed_width = cropbox[2] - cropbox[0] - trim_l - trim_r
-        trimmed_height = cropbox[3] - cropbox[1] - trim_u - trim_b
+            # Calculate the dimensions after trimming
+            trimmed_width = cropbox[2] - cropbox[0] - trim_l - trim_r
+            trimmed_height = cropbox[3] - cropbox[1] - trim_u - trim_b
 
-        # Check if the trimmed dimensions are valid
-        if trimmed_width <= 0 or trimmed_height <= 0:
-            _LOGGER.warning("Invalid trim values result in an improperly sized image, returning uncropped image")
+            # Check if the trimmed dimensions are valid
+            if trimmed_width <= 99 or trimmed_height <= 99:
+                _LOGGER.warning("Invalid trim values result in an improperly sized image, returning un-trimmed image!")
+                new_cropbox = cropbox
+            else:
+                # Calculate the new cropping box with trim values
+                new_cropbox = (
+                    cropbox[0] + trim_r,
+                    cropbox[1] + trim_b,
+                    cropbox[2] - trim_l,
+                    cropbox[3] - trim_u,
+                )
+
+            self.crop_area = new_cropbox
+            _LOGGER.debug("Crop and Trim Box data: %s", self.crop_area)
+            cropped = image_array[new_cropbox[1]:new_cropbox[3], new_cropbox[0]:new_cropbox[2]]
+            self.crop_img_size = (cropped.shape[1], cropped.shape[0])
+            _LOGGER.debug("Crop and Trim image size: %s", self.crop_img_size)
+            return cropped
+        else:
+            _LOGGER.warning("Cropping value is below 10%. Returning un-cropped image!")
+            self.crop_img_size = (image_array.shape[1], image_array.shape[0])
             return image_array
 
-        # Calculate the new cropping box with trim values
-        new_cropbox = (
-            cropbox[0] + trim_r,
-            cropbox[1] + trim_b,
-            cropbox[2] - trim_l,
-            cropbox[3] - trim_u,
-        )
-
-        self.crop_area = new_cropbox
-        _LOGGER.debug("Crop and Trim Box data: %s", self.crop_area)
-        cropped = image_array[new_cropbox[1]:new_cropbox[3], new_cropbox[0]:new_cropbox[2]]
-        self.crop_img_size = (cropped.shape[1], cropped.shape[0])
-        _LOGGER.debug("Crop and Trim image size: %s", self.crop_img_size)
-        return cropped
     @staticmethod
     def get_color(color_array, color_name):
         """Getting Colors from specific colours array."""

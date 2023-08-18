@@ -38,10 +38,10 @@
         "data_description": {
           "rotate_image": "Degree 0, 90, 180, 270",
           "crop_image": "Crop the image in %",
-          "trim_top": "Trim Crop Top Area",
-          "trim_bottom": "Trim Crop Bottom Area",
-          "trim_left": "Trim Crop Left Area",
-          "trim_right": "Trim Crop Right Area",
+          "trim_top": "Trim Crop Top Area. Pixels amount.",
+          "trim_bottom": "Trim Crop Bottom Area. Pixels amount.",
+          "trim_left": "Trim Crop Left Area. Pixels amount.",
+          "trim_right": "Trim Crop Right Area. Pixels amount.",
           "show_vac_status": "Show the Vacuum Status?"
         },
         "description": "Camera Options. Part 1/3",
@@ -133,10 +133,10 @@
         "data_description": {
           "rotate_image": "Degree 0, 90, 180, 270",
           "crop_image": "Crop the image in %",
-          "trim_top": "Trim Crop Top Area",
-          "trim_bottom": "Trim Crop Bottom Area",
-          "trim_left": "Trim Crop Left Area",
-          "trim_right": "Trim Crop Right Area",
+          "trim_top": "Trim Crop Top Area. Pixels amount.",
+          "trim_bottom": "Trim Crop Bottom Area. Pixels amount.",
+          "trim_left": "Trim Crop Left Area. Pixels amount.",
+          "trim_right": "Trim Crop Right Area. Pixels amount.",
           "show_vac_status": "Show the Vacuum Status?"
         },
         "description": "Camera Options. Part 1/3",
