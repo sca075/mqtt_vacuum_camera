@@ -8,7 +8,7 @@ from custom_components.valetudo_vacuum_camera import config_flow
 @pytest.fixture
 def vacuum_user_input():
     return {
-        config_flow.CONF_VACUUM_ENTITY_ID: "Vacuum Entity ID",
+        config_flow.CONF_VACUUM_ENTITY_ID: "vacuum.entity_id",
     }
 
 
@@ -24,8 +24,8 @@ def mqtt_user_input():
 @pytest.fixture
 def options_user_input():
     return {
-        config_flow.ATT_ROTATE: "Image Rotation",
-        config_flow.ATT_CROP: "Crop Image",
+        config_flow.ATTR_ROTATE: "Image Rotation",
+        config_flow.ATTR_CROP: "Crop Image",
     }
 
 
@@ -100,7 +100,7 @@ async def test_flow_user_creates_config_entry(
     entries = hass.config_entries.async_entries(config_flow.DOMAIN)
     assert len(entries) == 1
     assert entries[0].data == {
-        "vacuum_entity": "Vacuum Entity ID",
+        "vacuum_entity": "vacuum.entity_id",
         "broker_user": "MQTT User Name",
         "broker_password": "MQTT User Password",
         "vacuum_map": "Vacuum Topic Prefix/Identifier",
