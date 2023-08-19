@@ -80,8 +80,9 @@ mode: single
 5) Possibilty to **integrate multiple vacuums with this integration** as per each camera will be named with the vacuum name (vacuum.robot1 = camera.robot1.. vacuum.robotx = camera.robotx)
 
 ## In plan:
-1) Improving the rooms zones export to the card (at current it requires manual adjustments).
-2) Adding image trimming to the options, in order to centre the map.
+1) Configuration: Support for HA MQTT exsternal instanceces. Several user uses MQTT running in container mode. At current it ins't possible to specify the host name during configuration.
+2) Improving the rooms zones export to the card (at current it requires manual adjustments).
+
 
 ## Notes:
 1) This custom component is developed and tested using a PI4 with Home Assistant OS fully updated [to the last version](https://www.home-assistant.io/faq/release/), this allows us to confirm that the component is working properly with Home Assistant. Tested also on Docker Supervised "production" enviroment (fully setup home installation).
