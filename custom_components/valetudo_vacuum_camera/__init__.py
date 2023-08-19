@@ -12,7 +12,7 @@ PLATFORMS = [Platform.CAMERA]
 
 
 async def options_update_listener(
-        hass: core.HomeAssistant, config_entry: config_entries.ConfigEntry
+    hass: core.HomeAssistant, config_entry: config_entries.ConfigEntry
 ):
     """Handle options update."""
     await hass.config_entries.async_reload(config_entry.entry_id)
@@ -23,7 +23,6 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
     _LOGGER.debug("Migrating from version %s", config_entry.version)
 
     if config_entry.version == 1.2:
-
         new_data = {**config_entry.data}
         _LOGGER.debug(new_data)
         new_data.update({"trim_top": "0"})
@@ -55,7 +54,7 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
 
 
 async def async_setup_entry(
-        hass: core.HomeAssistant, entry: config_entries.ConfigEntry
+    hass: core.HomeAssistant, entry: config_entries.ConfigEntry
 ) -> bool:
     """Set up platform from a ConfigEntry."""
     hass.data.setdefault(DOMAIN, {})
@@ -74,7 +73,7 @@ async def async_setup_entry(
 
 
 async def async_unload_entry(
-        hass: core.HomeAssistant, entry: config_entries.ConfigEntry
+    hass: core.HomeAssistant, entry: config_entries.ConfigEntry
 ) -> bool:
     """Unload a config entry."""
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):

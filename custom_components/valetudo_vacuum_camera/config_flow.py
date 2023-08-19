@@ -8,7 +8,11 @@ from homeassistant import config_entries
 from homeassistant.components.vacuum import DOMAIN as ZONE_VACUUM
 from homeassistant.core import callback
 import homeassistant.helpers.config_validation as cv
-from homeassistant.helpers.selector import ColorRGBSelector, EntitySelector, EntitySelectorConfig
+from homeassistant.helpers.selector import (
+    ColorRGBSelector,
+    EntitySelector,
+    EntitySelectorConfig,
+)
 from .const import (
     DOMAIN,
     CONF_VACUUM_ENTITY_ID,
@@ -244,11 +248,23 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Required(
                         ATTR_CROP, default=config_entry.options.get("crop_image")
                     ): cv.string,
-                    vol.Optional(ATTR_TRIM_TOP, default=config_entry.options.get("trim_top")): cv.string,
-                    vol.Optional(ATTR_TRIM_BOTTOM, default=config_entry.options.get("trim_bottom")): cv.string,
-                    vol.Optional(ATTR_TRIM_LEFT, default=config_entry.options.get("trim_left")): cv.string,
-                    vol.Optional(ATTR_TRIM_RIGHT, default=config_entry.options.get("trim_right")): cv.string,
-                    vol.Optional(CONF_VAC_STAT, default=config_entry.options.get("show_vac_status")): cv.boolean,
+                    vol.Optional(
+                        ATTR_TRIM_TOP, default=config_entry.options.get("trim_top")
+                    ): cv.string,
+                    vol.Optional(
+                        ATTR_TRIM_BOTTOM,
+                        default=config_entry.options.get("trim_bottom"),
+                    ): cv.string,
+                    vol.Optional(
+                        ATTR_TRIM_LEFT, default=config_entry.options.get("trim_left")
+                    ): cv.string,
+                    vol.Optional(
+                        ATTR_TRIM_RIGHT, default=config_entry.options.get("trim_right")
+                    ): cv.string,
+                    vol.Optional(
+                        CONF_VAC_STAT,
+                        default=config_entry.options.get("show_vac_status"),
+                    ): cv.boolean,
                 }
             )
             self.COLOR_1_SCHEMA = vol.Schema(
@@ -345,11 +361,21 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Required(
                         ATTR_CROP, default=config_entry.data.get("crop_image")
                     ): cv.string,
-                    vol.Optional(ATTR_TRIM_TOP, default=config_entry.data.get("trim_top")): cv.string,
-                    vol.Optional(ATTR_TRIM_BOTTOM, default=config_entry.data.get("trim_bottom")): cv.string,
-                    vol.Optional(ATTR_TRIM_LEFT, default=config_entry.data.get("trim_left")): cv.string,
-                    vol.Optional(ATTR_TRIM_RIGHT, default=config_entry.data.get("trim_right")): cv.string,
-                    vol.Optional(CONF_VAC_STAT, default=config_entry.data.get("show_vac_status")): cv.boolean,
+                    vol.Optional(
+                        ATTR_TRIM_TOP, default=config_entry.data.get("trim_top")
+                    ): cv.string,
+                    vol.Optional(
+                        ATTR_TRIM_BOTTOM, default=config_entry.data.get("trim_bottom")
+                    ): cv.string,
+                    vol.Optional(
+                        ATTR_TRIM_LEFT, default=config_entry.data.get("trim_left")
+                    ): cv.string,
+                    vol.Optional(
+                        ATTR_TRIM_RIGHT, default=config_entry.data.get("trim_right")
+                    ): cv.string,
+                    vol.Optional(
+                        CONF_VAC_STAT, default=config_entry.data.get("show_vac_status")
+                    ): cv.boolean,
                 }
             )
             self.COLOR_1_SCHEMA = vol.Schema(
