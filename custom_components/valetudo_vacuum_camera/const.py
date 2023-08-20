@@ -1,5 +1,5 @@
 """Constants for the valetudo_vacuum_camera integration."""
-"""Version 1.3.2"""
+"""Version 1.3.4"""
 
 """Required in Config_Flow"""
 PLATFORMS = ["camera"]
@@ -12,6 +12,7 @@ ATTR_TRIM_BOTTOM = "trim_bottom"
 ATTR_TRIM_LEFT = "trim_left"
 ATTR_TRIM_RIGHT = "trim_right"
 CONF_VAC_STAT = "show_vac_status"
+CONF_MQTT_HOST = "broker_host"
 CONF_MQTT_PASS = "broker_password"
 CONF_MQTT_USER = "broker_user"
 CONF_VACUUM_CONNECTION_STRING = "vacuum_map"

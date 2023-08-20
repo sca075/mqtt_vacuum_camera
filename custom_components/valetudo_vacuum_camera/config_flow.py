@@ -1,4 +1,4 @@
-"""config_flow ver.1.3.2"""
+"""config_flow ver.1.3.4"""
 
 import voluptuous as vol
 import logging
@@ -17,6 +17,7 @@ from .const import (
     DOMAIN,
     CONF_VACUUM_ENTITY_ID,
     CONF_VACUUM_CONNECTION_STRING,
+    CONF_MQTT_HOST,
     CONF_MQTT_USER,
     CONF_MQTT_PASS,
     ATTR_ROTATE,
@@ -65,6 +66,7 @@ VACUUM_SCHEMA = vol.Schema(
 
 MQTT_SCHEMA = vol.Schema(
     {
+        vol.Required(CONF_MQTT_HOST, default="core-mosquitto"): cv.string,
         vol.Required(CONF_MQTT_USER): cv.string,
         vol.Required(CONF_MQTT_PASS): cv.string,
         vol.Required(CONF_VACUUM_CONNECTION_STRING): cv.string,

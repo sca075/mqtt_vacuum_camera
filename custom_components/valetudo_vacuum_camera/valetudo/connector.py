@@ -1,4 +1,4 @@
-"""Version 1.3.0"""
+"""Version 1.3.4"""
 import logging
 import time
 import paho.mqtt.client as client
@@ -8,7 +8,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class ValetudoConnector(client.Client):
-    def __init__(self, mqttusr, mqttpass, mqtt_topic, hass):
+    def __init__(self, mqtthost, mqttusr, mqttpass, mqtt_topic, hass):
         super().__init__("valetudo_connector")
         self._mqtt_topic = mqtt_topic
         if mqtt_topic:
@@ -17,7 +17,9 @@ class ValetudoConnector(client.Client):
                 (str(mqtt_topic + "/StatusStateAttribute/status"), 0),
                 (str(mqtt_topic + "/StatusStateAttribute/error_description"), 0),
             ])
-        self._broker = "127.0.0.1"
+        self._broker = mqtthost
+        if not self._broker:
+            self._broker = "core-mosquitto"
         self.username_pw_set(username=mqttusr, password=mqttpass)
         self.on_connect = self.on_connect_callback
         self.on_message = self.on_message_callback

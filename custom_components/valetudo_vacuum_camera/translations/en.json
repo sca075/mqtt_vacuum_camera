@@ -13,17 +13,19 @@
       },
       "mqtt": {
         "data": {
+          "broker_host": "core-mosquitto",
           "broker_user": "MQTT User Name",
           "broker_password": "MQTT User Password",
           "vacuum_map": "Vacuum Topic Prefix/Identifier"
         },
         "data_description": {
+          "broker_host": "MQTT IP or Host Name",
           "broker_user": "MQTT User Name",
           "broker_password": "MQTT User Password",
           "vacuum_map": "Vacuum Topic Prefix/Identifier"
         },
-        "description": "MQTT Configuration.",
-        "title": "MQTT Configuration"
+        "description": "MQTT Client Setup.",
+        "title": "MQTT Client Configuration"
       },
       "options_1": {
         "data": {

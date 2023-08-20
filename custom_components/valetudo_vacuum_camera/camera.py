@@ -1,4 +1,4 @@
-"""Camera Version 1.3.2"""
+"""Camera Version 1.3.4"""
 from __future__ import annotations
 import logging
 import os
@@ -36,6 +36,7 @@ from custom_components.valetudo_vacuum_camera.valetudo.vacuum import Vacuum
 from .const import (
     CONF_VACUUM_CONNECTION_STRING,
     CONF_VACUUM_ENTITY_ID,
+    CONF_MQTT_HOST,
     CONF_MQTT_USER,
     CONF_MQTT_PASS,
     CONF_VAC_STAT,
@@ -77,6 +78,7 @@ from .const import (
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
+        vol.Required(CONF_MQTT_HOST): cv.string,
         vol.Required(CONF_VACUUM_CONNECTION_STRING): cv.string,
         vol.Required(CONF_VACUUM_ENTITY_ID): cv.string,
         vol.Required(CONF_MQTT_USER): cv.string,
@@ -129,10 +131,11 @@ class ValetudoCamera(Camera, Entity):
             self._attr_name = file_name[1] + " Camera"
             self._attr_unique_id = file_name[1].lower() + "_camera"
             self.file_name = file_name[1].lower()
+        self._mqtt_host = device_info.get(CONF_MQTT_HOST)
         self._mqtt_user = device_info.get(CONF_MQTT_USER)
         self._mqtt_pass = device_info.get(CONF_MQTT_PASS)
         self._mqtt = ValetudoConnector(
-            self._mqtt_user, self._mqtt_pass, self._mqtt_listen_topic, hass
+            self._mqtt_host, self._mqtt_user, self._mqtt_pass, self._mqtt_listen_topic, hass
         )
         self._map_handler = MapImageHandler()
         self._map_rooms = None
