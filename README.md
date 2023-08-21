@@ -41,7 +41,7 @@ internal_variables:
 ### Current Release: [![GitHub Latest Release][releases_shield]][latest_release]
 
 ### How to install:
-Please foolow the instructions in [here](./docs/install.md).
+Please foolow the instructions in [here](./docs/install.md). This detailed guide is to setup the camera, there are you can can find the instructions to configure the client that will grab the vacuum data from HA.
 
 ## Futures:
 1) **Automatically Generate the calibration points for the lovelace-xiaomi-vacuum-map-card** to ensure full compatibility to this user friendly card.
@@ -80,8 +80,7 @@ mode: single
 5) Possibilty to **integrate multiple vacuums with this integration** as per each camera will be named with the vacuum name (vacuum.robot1 = camera.robot1.. vacuum.robotx = camera.robotx)
 
 ## In plan:
-1) Configuration: Support for HA MQTT exsternal instanceces. Several user uses MQTT running in container mode. At current it ins't possible to specify the host name during configuration.
-2) Improving the rooms zones export to the card (at current it requires manual adjustments).
+- Improving the rooms zones export to the card (at current it requires manual adjustments).
 
 
 ## Notes:

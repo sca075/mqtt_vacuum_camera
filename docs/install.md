@@ -21,9 +21,17 @@ You will need to restart Home Assistant at this point to have the integration av
 
 ![Screenshot 2023-08-12 at 18 09 11](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/59f0022e-e233-4311-a6aa-37f17996d6f3)
 
+After this fist step the MQTT Client embedded in this Integration will need to be configured, depending from your Home Assistant MQTT setup the integration will connect MQTT to estract the Vacuums maps. If you are using the Home Assistant MQTT core (no external MQTT) by default the camera will connect this, althought you need to provide the MQTT credentials and topic to follow for the client.
+
+![Screenshot 2023-08-20 at 10 28 13](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/a49cb36e-f7b6-421c-ae0b-c88543044767)
+
+MQTT Host can be configured eiter by IP or Host name. The host name **"core-mosquitto" vaule is default for all users using the [official Home Assistant MQTT addon](https://www.home-assistant.io/integrations/mqtt/)**. In this filed it is important to use the same vaule used and your MQTT configuration.
+
+![Screenshot 2023-08-20 at 10 42 53](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/d284dd8e-b115-430c-982b-74f426a2cdb4)
+
 To know the MQTT topic your_vacuum use you might use the vacuum web GUI.
 copy the Topic Prefix/Identifier **only**. Please and past it as a sting in the
-vacuum_map required field.
+***Vacuum Topic Prefix/Identifier*** required field.
 
 <div align="center">
   <img src="/images/img.png" alt="Valetudo Connections Setting Menu">
