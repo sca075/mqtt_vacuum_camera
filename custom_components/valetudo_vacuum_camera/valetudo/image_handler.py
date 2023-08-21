@@ -135,14 +135,14 @@ class MapImageHandler(object):
         return image_array
 
     def crop_and_trim_array(
-        self,
-        image_array,
-        crop_percentage,
-        trim_u=0,
-        trim_b=0,
-        trim_l=0,
-        trim_r=0,
-        rotate: int = 0,
+            self,
+            image_array,
+            crop_percentage,
+            trim_u=0,
+            trim_b=0,
+            trim_l=0,
+            trim_r=0,
+            rotate: int = 0,
     ):
         """Crops and trims a numpy array and returns the processed image and scale factor."""
         center_x = image_array.shape[1] // 2
@@ -195,9 +195,9 @@ class MapImageHandler(object):
             else:
                 # Apply the trim values to the rotated image
                 trimmed = rotated[
-                    trim_u : rotated.shape[0] - trim_b,
-                    trim_l : rotated.shape[1] - trim_r,
-                ]
+                          trim_u : rotated.shape[0] - trim_b,
+                          trim_l : rotated.shape[1] - trim_r,
+                          ]
                 # Calculate the crop area in the original image_array
                 if rotate == 90:
                     new_cropbox = (
@@ -505,14 +505,11 @@ class MapImageHandler(object):
         pixel_size = json_data.get("pixelSize", [])
 
         if (
-            "layers" in json_data
-            and json_data["layers"][0]["__class"] == "MapLayer"
-            and json_data["layers"][0]["type"] == "floor"
+                "layers" in json_data
+                and json_data["layers"][0]["__class"] == "MapLayer"
+                and json_data["layers"][0]["type"] == "floor"
         ):
-            list_room_properties = None
-            return list_room_properties
-        else:
-            list_room_properties = []
+            return room_properties
 
         for layer in json_data.get("layers", []):
             if layer["__class"] == "MapLayer":
@@ -520,43 +517,41 @@ class MapImageHandler(object):
                 segment_id = meta_data.get("segmentId")
 
                 if segment_id is not None:
-                    # active = meta_data.get('active') #todo variables implementation
                     name = meta_data.get("name")
                     # Calculate x and y min/max from compressed pixels
                     x_min = min(layer["compressedPixels"][::3]) * pixel_size
                     x_max = max(layer["compressedPixels"][::3]) * pixel_size
                     y_min = min(layer["compressedPixels"][1::3]) * pixel_size
                     y_max = max(layer["compressedPixels"][1::3]) * pixel_size
-                    # 'label': name,
-                    # 'active': active
                     room_name = str(segment_id)
                     room_properties[room_name] = {
                         "number": segment_id,
-                        "x0": x_min,
-                        "y0": y_min,
-                        "x1": x_max,
-                        "y1": y_max,
+                        "x0": str(x_min),
+                        "y0": str(y_min),
+                        "x1": str(x_max),
+                        "y1": str(y_max),
                         "name": name,
                         "pos_x": ((x_min + x_max) // 2),
                         "pos_y": ((y_min + y_max) // 2),
                     }
-                list_room_properties.append(room_properties)
 
-        return list_room_properties
+        return room_properties
+
+
 
     def get_image_from_json(
-        self,
-        m_json,
-        robot_state,
-        img_rotation: int = 0,
-        crop: int = 50,
-        trim_u: int = 0,
-        trim_b: int = 0,
-        trim_l: int = 0,
-        trim_r: int = 0,
-        user_colors: Colors = None,
-        rooms_colors: Color = None,
-        file_name: "" = None,
+            self,
+            m_json,
+            robot_state,
+            img_rotation: int = 0,
+            crop: int = 50,
+            trim_u: int = 0,
+            trim_b: int = 0,
+            trim_l: int = 0,
+            trim_r: int = 0,
+            user_colors: Colors = None,
+            rooms_colors: Color = None,
+            file_name: "" = None,
     ):
         color_wall: Color = user_colors[0]
         color_no_go: Color = user_colors[6]
