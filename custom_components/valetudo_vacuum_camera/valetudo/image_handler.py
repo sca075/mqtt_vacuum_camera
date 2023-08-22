@@ -1,4 +1,4 @@
-"""Version 1.3.0"""
+"""Version 1.3.5"""
 # Image Handler Module
 # Collection of routines to extract data from the received json.
 # It returns values and images relative to the Map Data extrapolated from the vacuum json.
@@ -504,13 +504,6 @@ class MapImageHandler(object):
         room_properties = {}
         pixel_size = json_data.get("pixelSize", [])
 
-        if (
-                "layers" in json_data
-                and json_data["layers"][0]["__class"] == "MapLayer"
-                and json_data["layers"][0]["type"] == "floor"
-        ):
-            return room_properties
-
         for layer in json_data.get("layers", []):
             if layer["__class"] == "MapLayer":
                 meta_data = layer.get("metaData", {})
@@ -523,19 +516,18 @@ class MapImageHandler(object):
                     x_max = max(layer["compressedPixels"][::3]) * pixel_size
                     y_min = min(layer["compressedPixels"][1::3]) * pixel_size
                     y_max = max(layer["compressedPixels"][1::3]) * pixel_size
+                    corners = [(x_min, y_min),(x_max, y_min),(x_max, y_max),(x_min, y_max)]
                     room_name = str(segment_id)
                     room_properties[room_name] = {
                         "number": segment_id,
-                        "x0": str(x_min),
-                        "y0": str(y_min),
-                        "x1": str(x_max),
-                        "y1": str(y_max),
+                        "outline": corners,
                         "name": name,
-                        "pos_x": ((x_min + x_max) // 2),
-                        "pos_y": ((y_min + y_max) // 2),
+                        "x": ((x_min + x_max) // 2),
+                        "y": ((y_min + y_max) // 2),
                     }
 
         return room_properties
+
 
 
 
