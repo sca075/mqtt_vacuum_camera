@@ -27,6 +27,7 @@ class MapImageHandler(object):
         self.robot_pos = None
         self.charger_pos = None
         self.json_id = None
+        self.json_data = None
         self.go_to = None
         self.img_rotate = 0
         self.room_propriety = None
@@ -528,9 +529,6 @@ class MapImageHandler(object):
 
         return room_properties
 
-
-
-
     def get_image_from_json(
             self,
             m_json,
@@ -556,7 +554,9 @@ class MapImageHandler(object):
         try:
             if m_json is not None:
                 _LOGGER.info(file_name + ":Composing the image for the camera.")
-                self.room_propriety = self.extract_room_properties(m_json)
+                #buffer json data
+                self.json_data = m_json
+
                 if self.room_propriety:
                     _LOGGER.info(file_name + ": Supporting Rooms Cleaning!")
                 size_x = int(m_json["size"]["x"])
@@ -725,6 +725,7 @@ class MapImageHandler(object):
                     color_robot,
                     file_name,
                 )
+                _LOGGER.debug(file_name + " Image Cropping:" + str(crop) + " Image Rotate:" + str(img_rotation))
                 img_np_array = self.crop_and_trim_array(
                     img_np_array,
                     crop,
@@ -757,6 +758,9 @@ class MapImageHandler(object):
         return self.json_id
 
     def get_rooms_attributes(self):
+        if self.json_data:
+            _LOGGER.debug("Checking for rooms data..")
+            self.room_propriety =  MapImageHandler.extract_room_properties(self.json_data)
         return self.room_propriety
 
     def get_calibration_data(self, rotation_angle):

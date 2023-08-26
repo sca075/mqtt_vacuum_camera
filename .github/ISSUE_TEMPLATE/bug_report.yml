@@ -92,11 +92,11 @@ body:
         # Details
   - type: textarea
     validations:
-      required: true
+      required: false
     attributes:
-      label: Camera's configuration
+      label: Camera's settings.
       description: |
-        Please provide camera's YAML configuration to help with problem reproduction.
+        Please provide the used options and settings (if problems with colours just value and used filed).
       render: yaml
   - type: textarea
     attributes:
