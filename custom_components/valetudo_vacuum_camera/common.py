@@ -1,7 +1,9 @@
 import logging
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import entity_registry as er
+from homeassistant.components.mqtt import DOMAIN as MQTT_DOMAIN
+from homeassistant.components.vacuum import DOMAIN as VACUUM_DOMAIN
 from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import entity_registry as er
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -17,8 +19,8 @@ def get_device_info(config_entry_id: str, hass: HomeAssistant) -> str:
         _LOGGER.error("Unable to lookup vacuum's entity ID. Was it removed?")
         return None
 
-    entity_registry = er.async_get(hass)
     device_registry = dr.async_get(hass)
+    entity_registry = er.async_get(hass)
     vacuum_device = device_registry.async_get(
         entity_registry.async_get(vacuum_entity_id).device_id
     )
@@ -28,3 +30,23 @@ def get_device_info(config_entry_id: str, hass: HomeAssistant) -> str:
         return None
 
     return (vacuum_entity_id, vacuum_device)
+
+
+def get_entity_identifier_from_mqtt(
+    mqtt_identifier: str, hass: HomeAssistant
+) -> str | None:
+    """
+    Fetches the vacuum's entity_registry id from the mqtt topic identifier.
+    Return None if it cannot be found.
+    """
+    device_registry = dr.async_get(hass)
+    entity_registry = er.async_get(hass)
+    device = device_registry.async_get_device(
+        identifiers={(MQTT_DOMAIN, mqtt_identifier)}
+    )
+    entities = er.async_entries_for_device(entity_registry, device_id=device.id)
+    for entity in entities:
+        if entity.domain == VACUUM_DOMAIN:
+            return entity.id
+
+    return None
