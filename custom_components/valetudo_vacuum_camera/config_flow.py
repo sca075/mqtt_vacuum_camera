@@ -122,7 +122,7 @@ ROOMS_COLOR_SCHEMA = vol.Schema(
 
 
 class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
-    VERSION = 1.3
+    VERSION = 1.4
 
     def __init__(self):
         self.data = None
