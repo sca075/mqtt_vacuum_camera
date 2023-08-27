@@ -4,10 +4,10 @@
   "codeowners": [
     "@sca075"
   ],
+  "config_flow": true,
   "dependencies": [
     "mqtt"
   ],
-  "config_flow": true,
   "documentation": "https://github.com/sca075/valetudo_vacuum_camera",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/sca075/valetudo_vacuum_camera/issues",
