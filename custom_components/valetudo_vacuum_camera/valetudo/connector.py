@@ -101,5 +101,4 @@ class ValetudoConnector:
                 )
 
     async def async_unsubscribe_from_topics(self):
-        for x in self._unsubscribe_handlers:
-            await x()
+        map(lambda x: x(), self._unsubscribe_handlers)

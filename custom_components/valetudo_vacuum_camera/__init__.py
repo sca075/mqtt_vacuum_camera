@@ -2,9 +2,15 @@
 import logging
 
 from homeassistant import config_entries, core
+from homeassistant.components import mqtt
 from homeassistant.const import Platform
-
-from .const import DOMAIN
+from .const import (
+    CONF_MQTT_HOST,
+    CONF_MQTT_USER,
+    CONF_MQTT_PASS,
+    CONF_VACUUM_CONNECTION_STRING,
+    DOMAIN,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -66,6 +72,16 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
         hass.config_entries.async_update_entry(config_entry, data=new_data)
         hass.config_entries.async_update_entry(config_entry, options=new_options)
 
+    if config_entry.version < 2:
+        new_data = {**config_entry.data}
+        new_data.pop(CONF_MQTT_HOST, None)
+        new_data.pop(CONF_MQTT_USER, None)
+        new_data.pop(CONF_MQTT_PASS, None)
+        new_data.pop(CONF_VACUUM_CONNECTION_STRING, None)
+
+        config_entry.version = 2
+        hass.config_entries.async_update_entry(config_entry, data=new_data)
+
     _LOGGER.info("Migration to version %s successful", config_entry.version)
     return True
 
@@ -103,5 +119,9 @@ async def async_unload_entry(
 
 async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
     """Set up the Valetudo Camera Custom component from yaml configuration."""
+    # Make sure MQTT integration is enabled and the client is available
+    if not await mqtt.async_wait_for_mqtt_client(hass):
+        _LOGGER.error("MQTT integration is not available")
+        return
     hass.data.setdefault(DOMAIN, {})
     return True

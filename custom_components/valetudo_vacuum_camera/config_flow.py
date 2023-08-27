@@ -13,13 +13,10 @@ from homeassistant.helpers.selector import (
     EntitySelector,
     EntitySelectorConfig,
 )
+from homeassistant.helpers import entity_registry as er
 from .const import (
     DOMAIN,
     CONF_VACUUM_ENTITY_ID,
-    CONF_VACUUM_CONNECTION_STRING,
-    CONF_MQTT_HOST,
-    CONF_MQTT_USER,
-    CONF_MQTT_PASS,
     ATTR_ROTATE,
     ATTR_CROP,
     ATTR_TRIM_LEFT,
@@ -27,6 +24,7 @@ from .const import (
     ATTR_TRIM_TOP,
     ATTR_TRIM_BOTTOM,
     CONF_VAC_STAT,
+    CONF_VACUUM_CONFIG_ENTRY_ID,
     COLOR_MOVE,
     COLOR_ROBOT,
     COLOR_WALL,
@@ -53,6 +51,7 @@ from .const import (
     COLOR_ROOM_14,
     COLOR_ROOM_15,
 )
+from .common import get_device_info
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -61,15 +60,6 @@ VACUUM_SCHEMA = vol.Schema(
         vol.Required(CONF_VACUUM_ENTITY_ID): EntitySelector(
             EntitySelectorConfig(domain=ZONE_VACUUM)
         ),
-    }
-)
-
-MQTT_SCHEMA = vol.Schema(
-    {
-        vol.Required(CONF_MQTT_HOST, default="core-mosquitto"): cv.string,
-        vol.Required(CONF_MQTT_USER): cv.string,
-        vol.Required(CONF_MQTT_PASS): cv.string,
-        vol.Required(CONF_VACUUM_CONNECTION_STRING): cv.string,
     }
 )
 
@@ -122,25 +112,21 @@ ROOMS_COLOR_SCHEMA = vol.Schema(
 
 
 class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
-    VERSION = 1.3
+    VERSION = 2.0
 
     def __init__(self):
-        self.data = None
+        self.data = {}
 
     async def async_step_user(self, user_input: Optional[Dict[str, Any]] = None):
         if user_input is not None:
-            self.data = user_input
-            _LOGGER.debug(self.data)
-            return await self.async_step_mqtt()
+            vacuum_entity_id = user_input["vacuum_entity"]
+            entity_registry = er.async_get(self.hass)
+            vacuum_entity = entity_registry.async_get(vacuum_entity_id)
+            self.data.update({CONF_VACUUM_CONFIG_ENTRY_ID: vacuum_entity.id})
 
-        return self.async_show_form(step_id="user", data_schema=VACUUM_SCHEMA)
-
-    async def async_step_mqtt(self, user_input: Optional[Dict[str, Any]] = None):
-        if user_input is not None:
-            self.data = user_input
             return await self.async_step_options_1()
 
-        return self.async_show_form(step_id="mqtt", data_schema=MQTT_SCHEMA)
+        return self.async_show_form(step_id="user", data_schema=VACUUM_SCHEMA)
 
     async def async_step_options_1(self, user_input: Optional[Dict[str, Any]] = None):
         if user_input is not None:
@@ -211,12 +197,12 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 }
             )
 
-            tmp_name = self.data["vacuum_map"]
-            tmp_name = tmp_name.split("/")
-            default_name = tmp_name[1] + " Camera"
+            _, vacuum_device = get_device_info(
+                self.data[CONF_VACUUM_CONFIG_ENTRY_ID], self.hass
+            )
 
             return self.async_create_entry(
-                title=default_name,
+                title=vacuum_device.name + " Camera",
                 data=self.data,
             )
 

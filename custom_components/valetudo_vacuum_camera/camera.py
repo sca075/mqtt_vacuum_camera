@@ -11,8 +11,11 @@ from typing import Optional
 import voluptuous as vol
 from homeassistant.components.camera import Camera, PLATFORM_SCHEMA, SUPPORT_ON_OFF
 from homeassistant.const import CONF_NAME
+from homeassistant.components.mqtt.const import DOMAIN as MQTT_DOMAIN
 from homeassistant import core, config_entries
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.reload import async_setup_reload_service
@@ -37,9 +40,8 @@ from custom_components.valetudo_vacuum_camera.valetudo.vacuum import Vacuum
 from .const import (
     CONF_VACUUM_CONNECTION_STRING,
     CONF_VACUUM_ENTITY_ID,
-    CONF_MQTT_HOST,
-    CONF_MQTT_USER,
-    CONF_MQTT_PASS,
+    CONF_VACUUM_CONFIG_ENTRY_ID,
+    CONF_VACUUM_IDENTIFIERS,
     CONF_VAC_STAT,
     DEFAULT_NAME,
     DOMAIN,
@@ -76,14 +78,12 @@ from .const import (
     COLOR_ROOM_14,
     COLOR_ROOM_15,
 )
+from .common import get_device_info
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
-        vol.Required(CONF_MQTT_HOST): cv.string,
         vol.Required(CONF_VACUUM_CONNECTION_STRING): cv.string,
         vol.Required(CONF_VACUUM_ENTITY_ID): cv.string,
-        vol.Required(CONF_MQTT_USER): cv.string,
-        vol.Required(CONF_MQTT_PASS): cv.string,
         vol.Required(ATTR_ROTATE, default="0"): cv.string,
         vol.Required(ATTR_CROP, default="50"): cv.string,
         vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.entity_id,
@@ -103,6 +103,36 @@ async def async_setup_entry(
     # Update our config to and eventually add or remove option.
     if config_entry.options:
         config.update(config_entry.options)
+
+    vacuum_entity_id, vacuum_device = get_device_info(
+        config[CONF_VACUUM_CONFIG_ENTRY_ID], hass
+    )
+
+    if not vacuum_entity_id:
+        _LOGGER.error("Unable to lookup vacuum's entity ID. Was it removed?")
+        return
+
+    mqtt_topic_vacuum = list(
+        hass.data[MQTT_DOMAIN]
+        .debug_info_entities.get(vacuum_entity_id)
+        .get("subscriptions")
+        .keys()
+    )[0]
+
+    if not mqtt_topic_vacuum:
+        _LOGGER.error("Unable to locate vacuum's mqtt base topic")
+        return
+
+    config.update(
+        {CONF_VACUUM_CONNECTION_STRING: "/".join(mqtt_topic_vacuum.split("/")[:-1])}
+    )
+
+    if not vacuum_device:
+        _LOGGER.error("Unable to locate vacuum's device ID. Was it removed?")
+        return
+
+    config.update({CONF_VACUUM_IDENTIFIERS: vacuum_device.identifiers})
+
     camera = [ValetudoCamera(hass, config)]
     async_add_entities(camera, update_before_add=True)
 
@@ -132,11 +162,10 @@ class ValetudoCamera(Camera):
             self._attr_name = file_name[1] + " Camera"
             self._attr_unique_id = file_name[1].lower() + "_camera"
             self.file_name = file_name[1].lower()
-        self._mqtt_host = device_info.get(CONF_MQTT_HOST)
-        self._mqtt_user = device_info.get(CONF_MQTT_USER)
-        self._mqtt_pass = device_info.get(CONF_MQTT_PASS)
         self._mqtt = ValetudoConnector(self._mqtt_listen_topic, self.hass)
-        self._should_poll = True
+        self._identifiers = device_info.get(CONF_VACUUM_IDENTIFIERS)
+        self._image = None
+        self._should_poll = False
         self._map_handler = MapImageHandler()
         self._map_rooms = None
         self._vacuum_shared = Vacuum()
@@ -187,7 +216,6 @@ class ValetudoCamera(Camera):
         self._image_grab = True
         self._frame_nuber = 0
         self.throttled_camera_image = Throttle(timedelta(seconds=5))(self.camera_image)
-        self._should_poll = False
         try:
             self.user_colors = [
                 device_info.get(COLOR_WALL),
@@ -235,10 +263,8 @@ class ValetudoCamera(Camera):
     async def async_will_remove_from_hass(self) -> None:
         """Handle entity removal from Home Assistant."""
         await super().async_will_remove_from_hass()
-        # Stop the camera and perform any necessary cleanup tasks here
         if self._mqtt:
             await self._mqtt.async_unsubscribe_from_topics()
-        self.turn_off()
 
     @property
     def frame_interval(self) -> float:
@@ -458,3 +484,18 @@ class ValetudoCamera(Camera):
                     )
                     self._frame_interval = 0.1
                 return self._image
+
+    @property
+    def device_info(self):
+        """Return the device info."""
+        device_info = None
+        try:
+            from homeassistant.helpers.device_registry import DeviceInfo
+
+            device_info = DeviceInfo
+        except ImportError:
+            from homeassistant.helpers.entity import DeviceInfo
+
+            device_info = DeviceInfo
+
+        return device_info(identifiers=self._identifiers)
