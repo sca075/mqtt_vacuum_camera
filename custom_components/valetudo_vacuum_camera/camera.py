@@ -78,7 +78,7 @@ from .const import (
     COLOR_ROOM_14,
     COLOR_ROOM_15,
 )
-from .common import get_device_info
+from .common import get_device_info, get_vacuum_mqtt_topic
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
@@ -110,23 +110,13 @@ async def async_setup_entry(
 
     if not vacuum_entity_id:
         _LOGGER.error("Unable to lookup vacuum's entity ID. Was it removed?")
-        return False
+        return
 
-    mqtt_topic_vacuum = None
-    try:
-        mqtt_topic_vacuum = list(
-            mqtt.get_mqtt_data(hass)
-            .debug_info_entities.get(vacuum_entity_id)
-            .get("subscriptions")
-            .keys()
-        )[0]
-    except AttributeError:
-        _LOGGER.error("MQTT was not ready yet, automatically retying")
-        return False
+    mqtt_topic_vacuum = get_vacuum_mqtt_topic(vacuum_entity_id, hass)
 
     if not mqtt_topic_vacuum:
         _LOGGER.error("Unable to locate vacuum's mqtt base topic")
-        return False
+        return
 
     config.update(
         {CONF_VACUUM_CONNECTION_STRING: "/".join(mqtt_topic_vacuum.split("/")[:-1])}
@@ -134,14 +124,12 @@ async def async_setup_entry(
 
     if not vacuum_device:
         _LOGGER.error("Unable to locate vacuum's device ID. Was it removed?")
-        return False
+        return
 
     config.update({CONF_VACUUM_IDENTIFIERS: vacuum_device.identifiers})
 
     camera = [ValetudoCamera(hass, config)]
     async_add_entities(camera, update_before_add=True)
-
-    return True
 
 
 async def async_setup_platform(

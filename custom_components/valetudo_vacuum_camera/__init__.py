@@ -4,6 +4,7 @@ import logging
 from homeassistant import config_entries, core
 from homeassistant.components import mqtt
 from homeassistant.const import Platform
+from homeassistant.exceptions import ConfigEntryNotReady
 from .const import (
     CONF_MQTT_HOST,
     CONF_MQTT_USER,
@@ -12,7 +13,11 @@ from .const import (
     CONF_VACUUM_CONFIG_ENTRY_ID,
     DOMAIN,
 )
-from .common import get_entity_identifier_from_mqtt
+from .common import (
+    get_entity_identifier_from_mqtt,
+    get_device_info,
+    get_vacuum_mqtt_topic,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -119,6 +124,17 @@ async def async_setup_entry(
     # Store a reference to the unsubscribe function to clean up if an entry is unloaded.
     hass_data["unsub_options_update_listener"] = unsub_options_update_listener
     hass.data[DOMAIN][entry.entry_id] = hass_data
+
+    vacuum_entity_id, _ = get_device_info(hass_data[CONF_VACUUM_CONFIG_ENTRY_ID], hass)
+
+    if not vacuum_entity_id:
+        raise ConfigEntryNotReady(
+            "Unable to lookup vacuum's entity ID. Was it removed?"
+        )
+
+    mqtt_topic_vacuum = get_vacuum_mqtt_topic(vacuum_entity_id, hass)
+    if not mqtt_topic_vacuum:
+        raise ConfigEntryNotReady("MQTT was not ready yet, automatically retrying")
 
     # Forward the setup to the camera platform.
     hass.async_create_task(
