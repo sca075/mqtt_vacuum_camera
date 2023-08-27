@@ -9,9 +9,9 @@ from PIL import Image
 from datetime import timedelta
 from typing import Optional
 import voluptuous as vol
+from homeassistant.components import mqtt
 from homeassistant.components.camera import Camera, PLATFORM_SCHEMA, SUPPORT_ON_OFF
 from homeassistant.const import CONF_NAME
-from homeassistant.components.mqtt.const import DOMAIN as MQTT_DOMAIN
 from homeassistant import core, config_entries
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import entity_registry as er
@@ -110,18 +110,23 @@ async def async_setup_entry(
 
     if not vacuum_entity_id:
         _LOGGER.error("Unable to lookup vacuum's entity ID. Was it removed?")
-        return
+        return False
 
-    mqtt_topic_vacuum = list(
-        hass.data[MQTT_DOMAIN]
-        .debug_info_entities.get(vacuum_entity_id)
-        .get("subscriptions")
-        .keys()
-    )[0]
+    mqtt_topic_vacuum = None
+    try:
+        mqtt_topic_vacuum = list(
+            mqtt.get_mqtt_data(hass)
+            .debug_info_entities.get(vacuum_entity_id)
+            .get("subscriptions")
+            .keys()
+        )[0]
+    except AttributeError:
+        _LOGGER.error("MQTT was not ready yet, automatically retying")
+        return False
 
     if not mqtt_topic_vacuum:
         _LOGGER.error("Unable to locate vacuum's mqtt base topic")
-        return
+        return False
 
     config.update(
         {CONF_VACUUM_CONNECTION_STRING: "/".join(mqtt_topic_vacuum.split("/")[:-1])}
@@ -129,12 +134,14 @@ async def async_setup_entry(
 
     if not vacuum_device:
         _LOGGER.error("Unable to locate vacuum's device ID. Was it removed?")
-        return
+        return False
 
     config.update({CONF_VACUUM_IDENTIFIERS: vacuum_device.identifiers})
 
     camera = [ValetudoCamera(hass, config)]
     async_add_entities(camera, update_before_add=True)
+
+    return True
 
 
 async def async_setup_platform(
