@@ -1,11 +1,11 @@
 {
-  "dependencies": [
-    "mqtt"
-  ],
   "domain": "valetudo_vacuum_camera",
   "name": "Valetudo Vacuum Camera",
   "codeowners": [
     "@sca075"
+  ],
+  "dependencies": [
+    "mqtt"
   ],
   "config_flow": true,
   "documentation": "https://github.com/sca075/valetudo_vacuum_camera",
