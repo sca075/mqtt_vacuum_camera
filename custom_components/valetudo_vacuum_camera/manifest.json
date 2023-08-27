@@ -1,4 +1,7 @@
 {
+  "dependencies": [
+    "mqtt"
+  ],
   "domain": "valetudo_vacuum_camera",
   "name": "Valetudo Vacuum Camera",
   "codeowners": [
@@ -12,9 +15,6 @@
     "paho-mqtt",
     "pillow",
     "numpy"
-  ],
-  "dependencies": [
-    "mqtt"
   ],
   "version": "v1.3.5"
 }
