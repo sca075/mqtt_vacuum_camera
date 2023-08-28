@@ -4,12 +4,20 @@ import logging
 from homeassistant import config_entries, core
 from homeassistant.components import mqtt
 from homeassistant.const import Platform
+from homeassistant.exceptions import ConfigEntryNotReady
 from .const import (
     CONF_MQTT_HOST,
     CONF_MQTT_USER,
     CONF_MQTT_PASS,
     CONF_VACUUM_CONNECTION_STRING,
+    CONF_VACUUM_CONFIG_ENTRY_ID,
+    CONF_VACUUM_IDENTIFIERS,
     DOMAIN,
+)
+from .common import (
+    get_entity_identifier_from_mqtt,
+    get_device_info,
+    get_vacuum_mqtt_topic,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -77,7 +85,27 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
         new_data.pop(CONF_MQTT_HOST, None)
         new_data.pop(CONF_MQTT_USER, None)
         new_data.pop(CONF_MQTT_PASS, None)
-        new_data.pop(CONF_VACUUM_CONNECTION_STRING, None)
+
+        mqtt_topic_base = new_data.pop(CONF_VACUUM_CONNECTION_STRING, None)
+        if not mqtt_topic_base:
+            _LOGGER.error(
+                "Unable to migrate to version 2.0. Could not find %s. Please delete and recreate this entry.",
+                CONF_VACUUM_CONNECTION_STRING,
+            )
+            return False
+
+        mqtt_identifier = mqtt_topic_base.split("/")[1]
+        config_entry_id = get_entity_identifier_from_mqtt
+        if not config_entry_id:
+            _LOGGER.error(
+                "Unable to migrate to version 2.0. Could not find a device for %s. Please delete and recreate this entry.",
+                mqtt_topic_base,
+            )
+            return False
+
+        new_data.update(
+            {CONF_VACUUM_CONFIG_ENTRY_ID: config_entry_id(mqtt_identifier, hass)}
+        )
 
         config_entry.version = 2
         hass.config_entries.async_update_entry(config_entry, data=new_data)
@@ -96,9 +124,29 @@ async def async_setup_entry(
     unsub_options_update_listener = entry.add_update_listener(options_update_listener)
     # Store a reference to the unsubscribe function to clean up if an entry is unloaded.
     hass_data["unsub_options_update_listener"] = unsub_options_update_listener
+
+    vacuum_entity_id, vacuum_device = get_device_info(
+        hass_data[CONF_VACUUM_CONFIG_ENTRY_ID], hass
+    )
+
+    if not vacuum_entity_id:
+        raise ConfigEntryNotReady(
+            "Unable to lookup vacuum's entity ID. Was it removed?"
+        )
+
+    mqtt_topic_vacuum = get_vacuum_mqtt_topic(vacuum_entity_id, hass)
+    if not mqtt_topic_vacuum:
+        raise ConfigEntryNotReady("MQTT was not ready yet, automatically retrying")
+
+    hass_data.update(
+        {
+            CONF_VACUUM_CONNECTION_STRING: "/".join(mqtt_topic_vacuum.split("/")[:-1]),
+            CONF_VACUUM_IDENTIFIERS: vacuum_device.identifiers,
+        }
+    )
     hass.data[DOMAIN][entry.entry_id] = hass_data
 
-    # Forward the setup to the sensor platform.
+    # Forward the setup to the camera platform.
     hass.async_create_task(
         hass.config_entries.async_forward_entry_setup(entry, "camera")
     )
@@ -122,6 +170,6 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
     # Make sure MQTT integration is enabled and the client is available
     if not await mqtt.async_wait_for_mqtt_client(hass):
         _LOGGER.error("MQTT integration is not available")
-        return
+        return False
     hass.data.setdefault(DOMAIN, {})
     return True
