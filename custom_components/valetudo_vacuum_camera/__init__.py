@@ -139,9 +139,11 @@ async def async_setup_entry(
         raise ConfigEntryNotReady("MQTT was not ready yet, automatically retrying")
 
     hass_data.update(
-        {CONF_VACUUM_CONNECTION_STRING: "/".join(mqtt_topic_vacuum.split("/")[:-1])}
+        {
+            CONF_VACUUM_CONNECTION_STRING: "/".join(mqtt_topic_vacuum.split("/")[:-1]),
+            CONF_VACUUM_IDENTIFIERS: vacuum_device.identifiers,
+        }
     )
-    hass_data.update({CONF_VACUUM_IDENTIFIERS: vacuum_device.identifiers})
     hass.data[DOMAIN][entry.entry_id] = hass_data
 
     # Forward the setup to the camera platform.
