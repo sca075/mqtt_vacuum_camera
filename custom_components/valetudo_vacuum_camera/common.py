@@ -1,5 +1,6 @@
 import logging
 from homeassistant.core import HomeAssistant
+from homeassistant.components import mqtt
 from homeassistant.components.mqtt import DOMAIN as MQTT_DOMAIN
 from homeassistant.components.vacuum import DOMAIN as VACUUM_DOMAIN
 from homeassistant.helpers import device_registry as dr
@@ -37,7 +38,7 @@ def get_entity_identifier_from_mqtt(
 ) -> str | None:
     """
     Fetches the vacuum's entity_registry id from the mqtt topic identifier.
-    Return None if it cannot be found.
+    Returns None if it cannot be found.
     """
     device_registry = dr.async_get(hass)
     entity_registry = er.async_get(hass)
@@ -50,3 +51,18 @@ def get_entity_identifier_from_mqtt(
             return entity.id
 
     return None
+
+
+def get_vacuum_mqtt_topic(vacuum_entity_id: str, hass: HomeAssistant) -> str | None:
+    """
+    Fetches the mqtt topic identifier from the MQTT integration. Returns None if it cannot be found.
+    """
+    try:
+        return list(
+            mqtt.get_mqtt_data(hass)
+            .debug_info_entities.get(vacuum_entity_id)
+            .get("subscriptions")
+            .keys()
+        )[0]
+    except AttributeError:
+        return None
