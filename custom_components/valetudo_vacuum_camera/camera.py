@@ -1,4 +1,4 @@
-"""Camera Version 1.3.4"""
+"""Camera Version 1.4.0"""
 from __future__ import annotations
 import logging
 import os
@@ -11,12 +11,8 @@ from typing import Optional
 import voluptuous as vol
 from homeassistant.components.camera import Camera, PLATFORM_SCHEMA, SUPPORT_ON_OFF
 from homeassistant.const import CONF_NAME
-from homeassistant.components.mqtt.const import DOMAIN as MQTT_DOMAIN
 from homeassistant import core, config_entries
 from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers import entity_registry as er
-from homeassistant.helpers import device_registry as dr
-from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.reload import async_setup_reload_service
 from homeassistant.helpers.typing import (
@@ -40,7 +36,6 @@ from custom_components.valetudo_vacuum_camera.valetudo.vacuum import Vacuum
 from .const import (
     CONF_VACUUM_CONNECTION_STRING,
     CONF_VACUUM_ENTITY_ID,
-    CONF_VACUUM_CONFIG_ENTRY_ID,
     CONF_VACUUM_IDENTIFIERS,
     CONF_VAC_STAT,
     DEFAULT_NAME,
@@ -78,7 +73,6 @@ from .const import (
     COLOR_ROOM_14,
     COLOR_ROOM_15,
 )
-from .common import get_device_info
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
@@ -94,9 +88,9 @@ _LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
-    hass: core.HomeAssistant,
-    config_entry: config_entries.ConfigEntry,
-    async_add_entities,
+        hass: core.HomeAssistant,
+        config_entry: config_entries.ConfigEntry,
+        async_add_entities,
 ) -> None:
     """Setup camera from a config entry created in the integrations UI."""
     config = hass.data[DOMAIN][config_entry.entry_id]
@@ -104,44 +98,15 @@ async def async_setup_entry(
     if config_entry.options:
         config.update(config_entry.options)
 
-    vacuum_entity_id, vacuum_device = get_device_info(
-        config[CONF_VACUUM_CONFIG_ENTRY_ID], hass
-    )
-
-    if not vacuum_entity_id:
-        _LOGGER.error("Unable to lookup vacuum's entity ID. Was it removed?")
-        return
-
-    mqtt_topic_vacuum = list(
-        hass.data[MQTT_DOMAIN]
-        .debug_info_entities.get(vacuum_entity_id)
-        .get("subscriptions")
-        .keys()
-    )[0]
-
-    if not mqtt_topic_vacuum:
-        _LOGGER.error("Unable to locate vacuum's mqtt base topic")
-        return
-
-    config.update(
-        {CONF_VACUUM_CONNECTION_STRING: "/".join(mqtt_topic_vacuum.split("/")[:-1])}
-    )
-
-    if not vacuum_device:
-        _LOGGER.error("Unable to locate vacuum's device ID. Was it removed?")
-        return
-
-    config.update({CONF_VACUUM_IDENTIFIERS: vacuum_device.identifiers})
-
     camera = [ValetudoCamera(hass, config)]
     async_add_entities(camera, update_before_add=True)
 
 
 async def async_setup_platform(
-    hass: HomeAssistantType,
-    config: ConfigType,
-    async_add_entities: AddEntitiesCallback,
-    discovery_info: DiscoveryInfoType | None = None,
+        hass: HomeAssistantType,
+        config: ConfigType,
+        async_add_entities: AddEntitiesCallback,
+        discovery_info: DiscoveryInfoType | None = None,
 ):
     async_add_entities([ValetudoCamera(hass, config)])
     await async_setup_reload_service(hass, DOMAIN, PLATFORMS)
@@ -153,14 +118,16 @@ class ValetudoCamera(Camera):
     def __init__(self, hass, device_info):
         super().__init__()
         self.hass = hass
+        self._directory_path = os.getcwd()
         self._vacuum_entity = device_info.get(CONF_VACUUM_ENTITY_ID)
+        _LOGGER.debug(self._vacuum_entity)
         self._mqtt_listen_topic = device_info.get(CONF_VACUUM_CONNECTION_STRING)
         if self._mqtt_listen_topic:
             self._mqtt_listen_topic = str(self._mqtt_listen_topic)
             file_name = self._mqtt_listen_topic.split("/")
-            self.snapshot_img = "/config/www/snapshot_" + file_name[1].lower() + ".png"
-            self._attr_name = file_name[1] + " Camera"
-            self._attr_unique_id = file_name[1].lower() + "_camera"
+            self.snapshot_img = self._directory_path + "/www/snapshot_" + file_name[1].lower() + ".png"
+            self._attr_name = " Camera"
+            self._attr_unique_id = "_camera"
             self.file_name = file_name[1].lower()
         self._mqtt = ValetudoConnector(self._mqtt_listen_topic, self.hass)
         self._identifiers = device_info.get(CONF_VACUUM_IDENTIFIERS)
@@ -177,7 +144,6 @@ class ValetudoCamera(Camera):
         self._attr_calibration_points = None
         self._base = None
         self._current = None
-        self._temp_dir = "config/tmp"
         self._image_rotate = device_info.get(ATTR_ROTATE)
         if self._image_rotate:
             self._image_rotate = int(device_info.get(ATTR_ROTATE))
@@ -256,6 +222,7 @@ class ValetudoCamera(Camera):
             _LOGGER.error("Error while populating colors: %s", e)
 
     async def async_added_to_hass(self) -> None:
+        """Handle entity added toHome Assistant."""
         await self._mqtt.async_subscribe_to_topics()
         self._should_poll = True
         self.async_schedule_update_ha_state(True)
@@ -268,31 +235,37 @@ class ValetudoCamera(Camera):
 
     @property
     def frame_interval(self) -> float:
+        """Camera Frame Interval"""
         return 1
 
     def camera_image(
-        self, width: Optional[int] = None, height: Optional[int] = None
+            self, width: Optional[int] = None, height: Optional[int] = None
     ) -> Optional[bytes]:
+        """Camera Image"""
         return self._image
 
     @property
     def name(self) -> str:
+        """Camera Entity Name"""
         return self._attr_name
 
     @property
     def supported_features(self) -> int:
+        """Camera ON OFF Future"""
         return SUPPORT_ON_OFF
 
     @property
     def extra_state_attributes(self):
+        """Camera Attributes"""
         if self._map_rooms is None:
             return {
                 "vacuum_entity": self._vacuum_entity,
                 "vacuum_status": self._vacuum_state,
-                "listen_to": self._mqtt_listen_topic,
-                "snapshot": "/local/snapshot_" + self.file_name + ".png",
-                "json_data": self._vac_json_data,
+                "vacuum_topic": self._mqtt_listen_topic,
                 "vacuum_json_id": self._vac_json_id,
+                "snapshot": self._snapshot_taken,
+                "snapshot_path": "/local/snapshot_" + self.file_name + ".png",
+                "json_data": self._vac_json_data,
                 "vacuum_position": self._current,
                 "calibration_points": self._attr_calibration_points,
             }
@@ -300,10 +273,11 @@ class ValetudoCamera(Camera):
             return {
                 "vacuum_entity": self._vacuum_entity,
                 "vacuum_status": self._vacuum_state,
-                "listen_to": self._mqtt_listen_topic,
-                "snapshot": "/local/snapshot_" + self.file_name + ".png",
-                "json_data": self._vac_json_data,
+                "vacuum_topic": self._mqtt_listen_topic,
                 "vacuum_json_id": self._vac_json_id,
+                "snapshot": self._snapshot_taken,
+                "snapshot_path": "/local/snapshot_" + self.file_name + ".png",
+                "json_data": self._vac_json_data,
                 "vacuum_position": self._current,
                 "calibration_points": self._attr_calibration_points,
                 "rooms": self._map_rooms,
@@ -313,7 +287,20 @@ class ValetudoCamera(Camera):
     def should_poll(self) -> bool:
         return self._should_poll
 
+    @property
+    def device_info(self):
+        """Return the device info."""
+        device_info = None
+        try:
+            from homeassistant.helpers.device_registry import DeviceInfo
+            device_info = DeviceInfo
+        except ImportError:
+            from homeassistant.helpers.entity import DeviceInfo
+            device_info = DeviceInfo
+        return device_info(identifiers=self._identifiers)
+
     def empty_if_no_data(self):
+        """Return an empty image if there are no data"""
         # Check if the snapshot file exists
         if os.path.isfile(self.snapshot_img) and (self._last_image is None):
             # Load the snapshot image
@@ -329,6 +316,7 @@ class ValetudoCamera(Camera):
             return empty_img
 
     def take_snapshot(self, json_data, image_data):
+        """Camera Automatic Snapshots"""
         try:
             self._snapshot_taken = True
             # When logger is active.
@@ -338,10 +326,11 @@ class ValetudoCamera(Camera):
                     self._mqtt.save_payload(self.file_name)
                 # Write the JSON data to the file.
                 with open(
-                    "custom_components/valetudo_vacuum_camera/snapshots/"
-                    + self.file_name
-                    + ".json",
-                    "w",
+                        self._directory_path
+                        + "/custom_components/valetudo_vacuum_camera/snapshots/"
+                        + self.file_name
+                        + ".json",
+                        "w",
                 ) as file:
                     json_data = json.dumps(json_data, indent=4)
                     file.write(json_data)
@@ -360,9 +349,10 @@ class ValetudoCamera(Camera):
                 self.file_name + ": Snapshot acquired during %s",
                 {self._vacuum_state},
                 " Vacuum State.",
-            )
+                )
 
     def update(self):
+        """Camera Frame Update"""
         # check and update the vacuum reported state
         if not self._mqtt:
             return
@@ -372,9 +362,9 @@ class ValetudoCamera(Camera):
         if process_data:
             # if the vacuum is working, or it is the first image.
             if (
-                self._vacuum_state == "cleaning"
-                or self._vacuum_state == "moving"
-                or self._vacuum_state == "returning"
+                    self._vacuum_state == "cleaning"
+                    or self._vacuum_state == "moving"
+                    or self._vacuum_state == "returning"
             ):
                 # grab the image
                 self._image_grab = True
@@ -386,7 +376,7 @@ class ValetudoCamera(Camera):
             _LOGGER.info(
                 self.file_name + ": Camera image data update available: %s",
                 process_data,
-            )
+                )
             # calculate the cycle time for frame adjustment
             start_time = datetime.now()
             try:
@@ -423,23 +413,23 @@ class ValetudoCamera(Camera):
                         _LOGGER.debug(
                             "Applied " + self.file_name + " image rotation: %s",
                             {self._image_rotate},
-                        )
+                            )
                         if self._show_vacuum_state:
                             self._map_handler.draw_status_text(
                                 pil_img,
                                 50,
                                 self._vacuum_shared.user_colors[8],
                                 self.file_name + ": " + self._vacuum_state,
-                            )
+                                )
                         if not self._snapshot_taken and (
-                            self._vacuum_state == "idle"
-                            or self._vacuum_state == "docked"
-                            or self._vacuum_state == "error"
+                                self._vacuum_state == "idle"
+                                or self._vacuum_state == "docked"
+                                or self._vacuum_state == "error"
                         ):
                             # suspend image processing if we are at the next frame.
                             if (
-                                self._frame_nuber
-                                is not self._map_handler.get_frame_number()
+                                    self._frame_nuber
+                                    is not self._map_handler.get_frame_number()
                             ):
                                 self._image_grab = False
                                 _LOGGER.info(
@@ -476,7 +466,7 @@ class ValetudoCamera(Camera):
                     _LOGGER.debug(
                         "Adjusted " + self.file_name + ": Frame interval: %s",
                         self._frame_interval,
-                    )
+                        )
                 else:
                     _LOGGER.info(
                         self.file_name
@@ -484,18 +474,3 @@ class ValetudoCamera(Camera):
                     )
                     self._frame_interval = 0.1
                 return self._image
-
-    @property
-    def device_info(self):
-        """Return the device info."""
-        device_info = None
-        try:
-            from homeassistant.helpers.device_registry import DeviceInfo
-
-            device_info = DeviceInfo
-        except ImportError:
-            from homeassistant.helpers.entity import DeviceInfo
-
-            device_info = DeviceInfo
-
-        return device_info(identifiers=self._identifiers)

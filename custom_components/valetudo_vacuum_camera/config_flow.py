@@ -1,4 +1,4 @@
-"""config_flow ver.1.3.4"""
+"""config_flow ver.1.4.0"""
 
 import voluptuous as vol
 import logging
@@ -16,7 +16,6 @@ from homeassistant.helpers.selector import (
 from homeassistant.helpers import entity_registry as er
 from .const import (
     DOMAIN,
-    CONF_VACUUM_ENTITY_ID,
     ATTR_ROTATE,
     ATTR_CROP,
     ATTR_TRIM_LEFT,
@@ -25,6 +24,7 @@ from .const import (
     ATTR_TRIM_BOTTOM,
     CONF_VAC_STAT,
     CONF_VACUUM_CONFIG_ENTRY_ID,
+    CONF_VACUUM_ENTITY_ID,
     COLOR_MOVE,
     COLOR_ROBOT,
     COLOR_WALL,
@@ -51,15 +51,18 @@ from .const import (
     COLOR_ROOM_14,
     COLOR_ROOM_15,
 )
-from .common import get_device_info
+from .common import (
+    get_entity_identifier_from_mqtt,
+    get_device_info,
+    get_vacuum_mqtt_topic,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
 VACUUM_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_VACUUM_ENTITY_ID): EntitySelector(
-            EntitySelectorConfig(domain=ZONE_VACUUM)
-        ),
+            EntitySelectorConfig(domain=ZONE_VACUUM),)
     }
 )
 
@@ -122,8 +125,15 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             vacuum_entity_id = user_input["vacuum_entity"]
             entity_registry = er.async_get(self.hass)
             vacuum_entity = entity_registry.async_get(vacuum_entity_id)
-            self.data.update({CONF_VACUUM_CONFIG_ENTRY_ID: vacuum_entity.id})
-
+            self.data.update({"vacuum_entity": vacuum_entity_id})
+            self.data.update({"vacuum_config_entry": vacuum_entity.device_id})
+            mqtt_topic_vacuum = get_vacuum_mqtt_topic(vacuum_entity_id, self.hass)
+            self.data.update(
+                {"vacuum_map": "/".join(mqtt_topic_vacuum.split("/")[:-1])}
+            )
+            mqtt_vacuum_identifier = get_entity_identifier_from_mqtt(mqtt_topic_vacuum.split("/")[1], self.hass)
+            self.data.update({"vacuum_identifiers": mqtt_vacuum_identifier})
+            _LOGGER.debug(self.data)
             return await self.async_step_options_1()
 
         return self.async_show_form(step_id="user", data_schema=VACUUM_SCHEMA)

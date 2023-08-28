@@ -1,5 +1,6 @@
-"""Version 1.3.4"""
+"""Version 1.4.0"""
 import logging
+import os
 from homeassistant.core import callback
 from homeassistant.components import mqtt
 from custom_components.valetudo_vacuum_camera.utils.valetudo_jdata import RawToJson
@@ -48,7 +49,8 @@ class ValetudoConnector:
         # save payload when available.
         if self._img_payload and (self._data_in is True):
             with open(
-                "custom_components/valetudo_vacuum_camera/snapshots/mqtt_"
+                str(os.getcwd())
+                + "/custom_components/valetudo_vacuum_camera/snapshots/mqtt_"
                 + file_name
                 + ".raw",
                 "wb",
