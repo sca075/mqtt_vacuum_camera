@@ -11,6 +11,7 @@ from .const import (
     CONF_MQTT_PASS,
     CONF_VACUUM_CONNECTION_STRING,
     CONF_VACUUM_CONFIG_ENTRY_ID,
+    CONF_VACUUM_IDENTIFIERS,
     DOMAIN,
 )
 from .common import (
@@ -123,9 +124,10 @@ async def async_setup_entry(
     unsub_options_update_listener = entry.add_update_listener(options_update_listener)
     # Store a reference to the unsubscribe function to clean up if an entry is unloaded.
     hass_data["unsub_options_update_listener"] = unsub_options_update_listener
-    hass.data[DOMAIN][entry.entry_id] = hass_data
 
-    vacuum_entity_id, _ = get_device_info(hass_data[CONF_VACUUM_CONFIG_ENTRY_ID], hass)
+    vacuum_entity_id, vacuum_device = get_device_info(
+        hass_data[CONF_VACUUM_CONFIG_ENTRY_ID], hass
+    )
 
     if not vacuum_entity_id:
         raise ConfigEntryNotReady(
@@ -135,6 +137,12 @@ async def async_setup_entry(
     mqtt_topic_vacuum = get_vacuum_mqtt_topic(vacuum_entity_id, hass)
     if not mqtt_topic_vacuum:
         raise ConfigEntryNotReady("MQTT was not ready yet, automatically retrying")
+
+    hass_data.update(
+        {CONF_VACUUM_CONNECTION_STRING: "/".join(mqtt_topic_vacuum.split("/")[:-1])}
+    )
+    hass_data.update({CONF_VACUUM_IDENTIFIERS: vacuum_device.identifiers})
+    hass.data[DOMAIN][entry.entry_id] = hass_data
 
     # Forward the setup to the camera platform.
     hass.async_create_task(
