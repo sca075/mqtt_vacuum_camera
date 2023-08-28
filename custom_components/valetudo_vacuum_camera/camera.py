@@ -40,7 +40,6 @@ from custom_components.valetudo_vacuum_camera.valetudo.vacuum import Vacuum
 from .const import (
     CONF_VACUUM_CONNECTION_STRING,
     CONF_VACUUM_ENTITY_ID,
-    CONF_VACUUM_CONFIG_ENTRY_ID,
     CONF_VACUUM_IDENTIFIERS,
     CONF_VAC_STAT,
     DEFAULT_NAME,
@@ -103,30 +102,6 @@ async def async_setup_entry(
     # Update our config to and eventually add or remove option.
     if config_entry.options:
         config.update(config_entry.options)
-
-    vacuum_entity_id, vacuum_device = get_device_info(
-        config[CONF_VACUUM_CONFIG_ENTRY_ID], hass
-    )
-
-    if not vacuum_entity_id:
-        _LOGGER.error("Unable to lookup vacuum's entity ID. Was it removed?")
-        return
-
-    mqtt_topic_vacuum = get_vacuum_mqtt_topic(vacuum_entity_id, hass)
-
-    if not mqtt_topic_vacuum:
-        _LOGGER.error("Unable to locate vacuum's mqtt base topic")
-        return
-
-    config.update(
-        {CONF_VACUUM_CONNECTION_STRING: "/".join(mqtt_topic_vacuum.split("/")[:-1])}
-    )
-
-    if not vacuum_device:
-        _LOGGER.error("Unable to locate vacuum's device ID. Was it removed?")
-        return
-
-    config.update({CONF_VACUUM_IDENTIFIERS: vacuum_device.identifiers})
 
     camera = [ValetudoCamera(hass, config)]
     async_add_entities(camera, update_before_add=True)
