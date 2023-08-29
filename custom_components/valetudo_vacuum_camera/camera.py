@@ -259,7 +259,6 @@ class ValetudoCamera(Camera):
         """Camera Attributes"""
         if self._map_rooms is None:
             return {
-                "vacuum_entity": self._vacuum_entity,
                 "vacuum_status": self._vacuum_state,
                 "vacuum_topic": self._mqtt_listen_topic,
                 "vacuum_json_id": self._vac_json_id,
@@ -271,7 +270,6 @@ class ValetudoCamera(Camera):
             }
         else:
             return {
-                "vacuum_entity": self._vacuum_entity,
                 "vacuum_status": self._vacuum_state,
                 "vacuum_topic": self._mqtt_listen_topic,
                 "vacuum_json_id": self._vac_json_id,
