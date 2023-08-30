@@ -34,6 +34,7 @@ from custom_components.valetudo_vacuum_camera.utils.colors import (
 )
 from custom_components.valetudo_vacuum_camera.valetudo.vacuum import Vacuum
 from .const import (
+    UNIQUE_ID,
     CONF_VACUUM_CONNECTION_STRING,
     CONF_VACUUM_ENTITY_ID,
     CONF_VACUUM_IDENTIFIERS,
@@ -126,8 +127,8 @@ class ValetudoCamera(Camera):
             self._mqtt_listen_topic = str(self._mqtt_listen_topic)
             file_name = self._mqtt_listen_topic.split("/")
             self.snapshot_img = self._directory_path + "/www/snapshot_" + file_name[1].lower() + ".png"
-            self._attr_name = " Camera"
-            self._attr_unique_id = "_camera"
+            self._attr_name = "Camera"
+            self._attr_unique_id = device_info.get(UNIQUE_ID)
             self.file_name = file_name[1].lower()
         self._mqtt = ValetudoConnector(self._mqtt_listen_topic, self.hass)
         self._identifiers = device_info.get(CONF_VACUUM_IDENTIFIERS)

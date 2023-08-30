@@ -12,6 +12,8 @@ from homeassistant.helpers.selector import (
     ColorRGBSelector,
     EntitySelector,
     EntitySelectorConfig,
+    Selector,
+    SelectSelector,
 )
 from homeassistant.helpers import entity_registry as er
 from .const import (
@@ -52,7 +54,7 @@ from .const import (
     COLOR_ROOM_15,
 )
 from .common import (
-    get_entity_identifier_from_mqtt,
+    # get_entity_identifier_from_mqtt,
     get_device_info,
     get_vacuum_mqtt_topic,
 )
@@ -92,6 +94,7 @@ GENERIC_COLOR_SCHEMA = vol.Schema(
     }
 )
 
+
 ROOMS_COLOR_SCHEMA = vol.Schema(
     {
         vol.Optional(COLOR_ROOM_0, default=[135, 206, 250]): ColorRGBSelector(),
@@ -126,6 +129,9 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             entity_registry = er.async_get(self.hass)
             vacuum_entity = entity_registry.async_get(vacuum_entity_id)
             self.data.update({CONF_VACUUM_CONFIG_ENTRY_ID: vacuum_entity.id})
+            our_topic = get_vacuum_mqtt_topic(vacuum_entity_id, self.hass)
+            our_topic = our_topic.split("/")[1]
+            self.data.update({"unique_id": our_topic+"_camera"})
             return await self.async_step_options_1()
 
         return self.async_show_form(step_id="user", data_schema=VACUUM_SCHEMA)

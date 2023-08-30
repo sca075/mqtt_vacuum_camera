@@ -6,7 +6,8 @@
           "vacuum_entity": "Vacuum Entity ID",
           "vacuum_config_entry": "Vacuum Config Data",
           "vacuum_map": "Vacuum Topic",
-          "vacuum_identifiers": "Vacuum MQTT id"
+          "vacuum_identifiers": "Vacuum MQTT id",
+          "unique_id": ""
         },
         "data_description": {
           "vacuum_entity": "Vacuum Entity ID"
