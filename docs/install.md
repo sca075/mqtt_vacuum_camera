@@ -21,7 +21,16 @@ You will need to restart Home Assistant at this point to have the integration av
 
 ![Screenshot 2023-08-12 at 18 09 11](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/59f0022e-e233-4311-a6aa-37f17996d6f3)
 
-After this fist step the MQTT Client embedded in this Integration will need to be configured, depending from your Home Assistant MQTT setup the integration will connect MQTT to estract the Vacuums maps. If you are using the Home Assistant MQTT core (no external MQTT) by default the camera will connect this, althought you need to provide the MQTT credentials and topic to follow for the client.
+***Since ">=" v1.4.0*** the setup will continue with the configuration of the colours you would prefer for each element in the maps. The camera will be connectected automatically to the HA instance MQTT, for each vacuums you configured a new entitiy will be added to the configuration.
+
+![Screenshot 2023-08-28 at 06 32 54](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/f68c8516-610c-4588-9846-13afe30defe7)
+
+The camera entitiy created will have the same friendly name of your vacuum + "Camera" at the end. 
+
+![Screenshot 2023-08-30 at 07 32 54](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/c4c054a5-e021-4c68-804b-9484d35a42ae)
+
+
+***On Versions below "<" v1.4.0*** the MQTT Client embedded in this Integration will need to be configured, depending from your Home Assistant MQTT setup the integration will connect MQTT to estract the Vacuums maps. If you are using the Home Assistant MQTT core (no external MQTT) by default the camera will connect this, althought you need to provide the MQTT credentials you used to configure the Vacuum on MQTT (not the crediantials that HA use to connect the MQTT broker) and topic to follow for the client.
 
 ![Screenshot 2023-08-20 at 10 28 13](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/a49cb36e-f7b6-421c-ae0b-c88543044767)
 
