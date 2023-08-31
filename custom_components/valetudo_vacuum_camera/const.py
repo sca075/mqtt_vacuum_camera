@@ -38,6 +38,8 @@ COLOR_ZONE_CLEAN = "color_zone_clean"
 COLOR_WALL = "color_wall"
 COLOR_TEXT = "color_text"
 
+"""Base Colours RGB array
+currently not in use."""
 CONF_COLORS = [
     COLOR_WALL,
     COLOR_ZONE_CLEAN,
