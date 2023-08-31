@@ -1,5 +1,5 @@
 """Constants for the valetudo_vacuum_camera integration."""
-"""Version 1.3.4"""
+"""Version 1.4.0"""
 
 """Required in Config_Flow"""
 PLATFORMS = ["camera"]
@@ -27,6 +27,7 @@ UNIQUE_ID = "unique_id"
 IDLE_SCAN_INTERVAL = 120
 CLEANING_SCAN_INTERVAL = 5
 
+"""Base Colours RGB"""
 COLOR_CHARGER = "color_charger"
 COLOR_MOVE = "color_move"
 COLOR_ROBOT = "color_robot"
@@ -36,6 +37,19 @@ COLOR_BACKGROUND = "color_background"
 COLOR_ZONE_CLEAN = "color_zone_clean"
 COLOR_WALL = "color_wall"
 COLOR_TEXT = "color_text"
+
+CONF_COLORS = [
+    COLOR_WALL,
+    COLOR_ZONE_CLEAN,
+    COLOR_ROBOT,
+    COLOR_BACKGROUND,
+    COLOR_MOVE,
+    COLOR_CHARGER,
+    COLOR_NO_GO,
+    COLOR_GO_TO,
+]
+
+"Rooms Colours RGB"
 COLOR_ROOM_0 = "color_room_0"
 COLOR_ROOM_1 = "color_room_1"
 COLOR_ROOM_2 = "color_room_2"
@@ -53,13 +67,29 @@ COLOR_ROOM_13 = "color_room_13"
 COLOR_ROOM_14 = "color_room_14"
 COLOR_ROOM_15 = "color_room_15"
 
-CONF_COLORS = [
-    COLOR_WALL,
-    COLOR_ZONE_CLEAN,
-    COLOR_ROBOT,
-    COLOR_BACKGROUND,
-    COLOR_MOVE,
-    COLOR_CHARGER,
-    COLOR_NO_GO,
-    COLOR_GO_TO,
-]
+"""Alpha for RGBA Colours"""
+ALPHA_CHARGER = "alpha_charger"
+ALPHA_MOVE = "alpha_move"
+ALPHA_ROBOT = "alpha_robot"
+ALPHA_NO_GO = "alpha_no_go"
+ALPHA_GO_TO = "alpha_go_to"
+ALPHA_BACKGROUND = "alpha_background"
+ALPHA_ZONE_CLEAN = "alpha_zone_clean"
+ALPHA_WALL = "alpha_wall"
+ALPHA_TEXT = "alpha_text"
+ALPHA_ROOM_0 = "alpha_room_0"
+ALPHA_ROOM_1 = "alpha_room_1"
+ALPHA_ROOM_2 = "alpha_room_2"
+ALPHA_ROOM_3 = "alpha_room_3"
+ALPHA_ROOM_4 = "alpha_room_4"
+ALPHA_ROOM_5 = "alpha_room_5"
+ALPHA_ROOM_6 = "alpha_room_6"
+ALPHA_ROOM_7 = "alpha_room_7"
+ALPHA_ROOM_8 = "alpha_room_8"
+ALPHA_ROOM_9 = "alpha_room_9"
+ALPHA_ROOM_10 = "alpha_room_10"
+ALPHA_ROOM_11 = "alpha_room_11"
+ALPHA_ROOM_12 = "alpha_room_12"
+ALPHA_ROOM_13 = "alpha_room_13"
+ALPHA_ROOM_14 = "alpha_room_14"
+ALPHA_ROOM_15 = "alpha_room_15"
