@@ -117,18 +117,18 @@ class ValetudoCamera(Camera):
     _attr_has_entity_name = True
 
     def __init__(self, hass, device_info):
+        _LOGGER.info("Starting up..")
         super().__init__()
         self.hass = hass
         self._directory_path = os.getcwd()
-        self._vacuum_entity = device_info.get(CONF_VACUUM_ENTITY_ID)
-        _LOGGER.debug(self._vacuum_entity)
         self._mqtt_listen_topic = device_info.get(CONF_VACUUM_CONNECTION_STRING)
         if self._mqtt_listen_topic:
             self._mqtt_listen_topic = str(self._mqtt_listen_topic)
             file_name = self._mqtt_listen_topic.split("/")
             self.snapshot_img = self._directory_path + "/www/snapshot_" + file_name[1].lower() + ".png"
-            self._attr_name = "Camera"
+            self._attr_name = device_info.get(CONF_NAME)
             self._attr_unique_id = device_info.get(UNIQUE_ID)
+            _LOGGER.debug("Camera Unique ID: ", self._attr_unique_id)
             self.file_name = file_name[1].lower()
         self._mqtt = ValetudoConnector(self._mqtt_listen_topic, self.hass)
         self._identifiers = device_info.get(CONF_VACUUM_IDENTIFIERS)

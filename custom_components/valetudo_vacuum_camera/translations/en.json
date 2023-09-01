@@ -7,6 +7,7 @@
           "vacuum_config_entry": "Vacuum Config Data",
           "vacuum_map": "Vacuum Topic",
           "vacuum_identifiers": "Vacuum MQTT id",
+          "camera_name": "",
           "unique_id": ""
         },
         "data_description": {
@@ -31,8 +32,7 @@
           "trim_top": "Trim Crop Top Area. Pixels amount.",
           "trim_bottom": "Trim Crop Bottom Area. Pixels amount.",
           "trim_left": "Trim Crop Left Area. Pixels amount.",
-          "trim_right": "Trim Crop Right Area. Pixels amount.",
-          "show_vac_status": "Show the Vacuum Status?"
+          "trim_right": "Trim Crop Right Area. Pixels amount."
         },
         "description": "Camera Options. Part 1/3",
         "title": "Camera Options"
@@ -47,7 +47,16 @@
           "color_no_go": "[255, 0, 0]",
           "color_zone_clean": "[255, 255, 255]",
           "color_background": "[0, 125, 255]",
-          "color_text": "[255, 255, 255]"
+          "color_text": "[255, 255, 255]",
+          "alpha_charger": "Charger Alpha   ",
+          "alpha_move": "Moves Alpha     ",
+          "alpha_wall": "Walls Alpha     ",
+          "alpha_robot": "Robot Alpha     ",
+          "alpha_go_to": "Go To Area Alpha",
+          "alpha_no_go": "No Go Area Alpha",
+          "alpha_zone_clean": "Zone Clean Alpha",
+          "alpha_background": "Background Alpha",
+          "alpha_text": "Text Alpha      "
         },
         "data_description": {
           "color_charger": "Charger color.",
@@ -126,11 +135,10 @@
           "trim_top": "Trim Crop Top Area. Pixels amount.",
           "trim_bottom": "Trim Crop Bottom Area. Pixels amount.",
           "trim_left": "Trim Crop Left Area. Pixels amount.",
-          "trim_right": "Trim Crop Right Area. Pixels amount.",
-          "show_vac_status": "Show the Vacuum Status?"
+          "trim_right": "Trim Crop Right Area. Pixels amount."
         },
         "description": "Camera Options. Part 1/3",
-        "title": "Camera Options"
+        "title": "Image Options"
       },
       "init_2": {
         "data": {
@@ -142,7 +150,8 @@
           "color_no_go": "[255, 0, 0]",
           "color_zone_clean": "[255, 255, 255]",
           "color_background": "[0, 125, 255]",
-          "color_text": "[255, 255, 255]"
+          "color_text": "[255, 255, 255]",
+          "add_base_alpha": "Add Transparency level:"
         },
         "data_description": {
           "color_charger": "Charger color.",
@@ -156,7 +165,22 @@
           "color_text": "Vacuum Status Text color."
         },
         "description": "Camera Options. Part 2/3",
-        "title": "Camera Options"
+        "title": "Base Colours Setup"
+      },
+      "alpha_1": {
+        "data": {
+          "alpha_charger": "Charger Alpha   ",
+          "alpha_move": "Moves Alpha     ",
+          "alpha_wall": "Walls Alpha     ",
+          "alpha_robot": "Robot Alpha     ",
+          "alpha_go_to": "Go To Area Alpha",
+          "alpha_no_go": "No Go Area Alpha",
+          "alpha_zone_clean": "Zone Clean Alpha",
+          "alpha_background": "Background Alpha",
+          "alpha_text": "Text Alpha      "
+        },
+        "description": "Camera Options. Part 2/3",
+        "title": "Alpha Chanel Base Colours"
       },
       "init_3": {
         "data": {
@@ -175,7 +199,8 @@
           "color_room_12": "[133, 193, 233]",
           "color_room_13": "[245, 176, 65]",
           "color_room_14": "[82, 190, 128]",
-          "color_room_15": "[72, 201, 176]"
+          "color_room_15": "[72, 201, 176]",
+          "add_base_alpha": "Add Transparency level:"
         },
         "data_description": {
           "color_room_0": "Room 1, floor color.",
@@ -196,7 +221,7 @@
           "color_room_15": "Room 16"
         },
         "description": "Camera Options. Part 3/3",
-        "title": "Camera Options"
+        "title": "Rooms Colours"
       }
     }
   }

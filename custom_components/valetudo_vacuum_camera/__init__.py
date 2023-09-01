@@ -1,5 +1,6 @@
 """valetudo vacuum camera"""
 import logging
+import voluptuous_serialize
 
 from homeassistant import config_entries, core
 from homeassistant.components import mqtt
@@ -80,8 +81,10 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
         hass.config_entries.async_update_entry(config_entry, data=new_data)
         hass.config_entries.async_update_entry(config_entry, options=new_options)
 
-    if config_entry.version < 2:
+    if config_entry.version == 2.0:
         new_data = {**config_entry.data}
+        new_options = {**config_entry.options}
+
         new_data.pop(CONF_MQTT_HOST, None)
         new_data.pop(CONF_MQTT_USER, None)
         new_data.pop(CONF_MQTT_PASS, None)
@@ -98,7 +101,8 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
         config_entry_id = get_entity_identifier_from_mqtt
         if not config_entry_id:
             _LOGGER.error(
-                "Unable to migrate to version 2.0. Could not find a device for %s. Please delete and recreate this entry.",
+                "Unable to migrate to version 2.0. Could not find a device for %s. "
+                "Please delete and recreate this entry.",
                 mqtt_topic_base,
             )
             return False
@@ -106,7 +110,13 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
         new_data.update(
             {CONF_VACUUM_CONFIG_ENTRY_ID: config_entry_id(mqtt_identifier, hass)}
         )
-
+        _LOGGER.debug("Init Unique ID", mqtt_identifier.lower() + "vacuum_camera")  # TODO remove this line after test
+        new_data.update(
+            {"unique_id": mqtt_identifier.lower() + "_vacuum_camera"}
+        )
+        #new_options.update({"unique_id": mqtt_identifier + "_camera"})
+        _LOGGER.debug(new_data)
+        _LOGGER.debug(new_options)
         config_entry.version = 2
         hass.config_entries.async_update_entry(config_entry, data=new_data)
 
