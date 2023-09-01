@@ -142,7 +142,8 @@
           "color_no_go": "[255, 0, 0]",
           "color_zone_clean": "[255, 255, 255]",
           "color_background": "[0, 125, 255]",
-          "color_text": "[255, 255, 255]"
+          "color_text": "[255, 255, 255]",
+          "add_base_alpha": "Add Transparency level:"
         },
         "data_description": {
           "color_charger": "Charger color.",
@@ -154,6 +155,32 @@
           "color_zone_clean": "Zone clean color.",
           "color_background": "Background color.",
           "color_text": "Vacuum Status Text color."
+        },
+        "description": "Camera Options. Part 2/3",
+        "title": "Camera Options"
+      },
+      "init_2a": {
+        "data": {
+          "alpha_charger": 255,
+          "alpha_move": 255,
+          "alpha_wall": 255,
+          "alpha_robot": 255,
+          "alpha_go_to": 255,
+          "alpha_no_go": 255,
+          "alpha_zone_clean": 255,
+          "alpha_background": 255,
+          "alpha_text": 255
+        },
+        "data_description": {
+          "alpha_charger": "Charger color.",
+          "alpha_move": "Move color.",
+          "alpha_wall": "Wall color.",
+          "alpha_robot": "Robot color.",
+          "alpha_go_to": "Go-to color.",
+          "alpha_no_go": "No-go color.",
+          "alpha_zone_clean": "Zone clean color.",
+          "alpha_background": "Background color.",
+          "alpha_text": "Vacuum Status Text color."
         },
         "description": "Camera Options. Part 2/3",
         "title": "Camera Options"
