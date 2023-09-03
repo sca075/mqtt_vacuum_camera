@@ -182,6 +182,32 @@
         "description": "Camera Options. Part 2/3",
         "title": "Alpha Chanel Base Colours"
       },
+      "init_2a": {
+        "data": {
+          "alpha_charger": 255,
+          "alpha_move": 255,
+          "alpha_wall": 255,
+          "alpha_robot": 255,
+          "alpha_go_to": 255,
+          "alpha_no_go": 255,
+          "alpha_zone_clean": 255,
+          "alpha_background": 255,
+          "alpha_text": 255
+        },
+        "data_description": {
+          "alpha_charger": "Charger color.",
+          "alpha_move": "Move color.",
+          "alpha_wall": "Wall color.",
+          "alpha_robot": "Robot color.",
+          "alpha_go_to": "Go-to color.",
+          "alpha_no_go": "No-go color.",
+          "alpha_zone_clean": "Zone clean color.",
+          "alpha_background": "Background color.",
+          "alpha_text": "Vacuum Status Text color."
+        },
+        "description": "Camera Options. Part 2/3",
+        "title": "Camera Options"
+      },
       "init_3": {
         "data": {
           "color_room_0": "[135, 206, 250]",
