@@ -1,11 +1,11 @@
 """valetudo vacuum camera"""
 import logging
-import voluptuous_serialize
 
 from homeassistant import config_entries, core
 from homeassistant.components import mqtt
 from homeassistant.const import Platform
 from homeassistant.exceptions import ConfigEntryNotReady
+
 from .const import (
     CONF_MQTT_HOST,
     CONF_MQTT_USER,
@@ -27,7 +27,7 @@ PLATFORMS = [Platform.CAMERA]
 
 
 async def options_update_listener(
-    hass: core.HomeAssistant, config_entry: config_entries.ConfigEntry
+        hass: core.HomeAssistant, config_entry: config_entries.ConfigEntry
 ):
     """Handle options update."""
     await hass.config_entries.async_reload(config_entry.entry_id)
@@ -37,32 +37,9 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
     """Migrate old entry."""
     _LOGGER.debug("Migrating from version %s", config_entry.version)
 
-    if config_entry.version == 1.2:
-        new_data = {**config_entry.data}
-        _LOGGER.debug(new_data)
-        new_data.update({"trim_top": "0"})
-        new_data.update({"trim_bottom": "0"})
-        new_data.update({"trim_left": "0"})
-        new_data.update({"trim_right": "0"})
-        new_data.update({"show_vac_status": False})
-        new_data.update({"color_text": [255, 255, 255]})
-        _LOGGER.debug(new_data)
-        new_options = {**config_entry.options}
-        _LOGGER.debug(new_options)
-        if new_options or len(new_options) > 0:
-            new_options.update({"trim_top": "0"})
-            new_options.update({"trim_bottom": "0"})
-            new_options.update({"trim_left": "0"})
-            new_options.update({"trim_right": "0"})
-            new_options.update({"show_vac_status": False})
-            new_options.update({"color_text": [255, 255, 255]})
-        else:
-            new_options = new_data
-        _LOGGER.debug(new_options)
-
-        config_entry.version = 1.3
-        hass.config_entries.async_update_entry(config_entry, data=new_data)
-        hass.config_entries.async_update_entry(config_entry, options=new_options)
+    if config_entry.version < 1.3:
+        _LOGGER.error("Unable to migrate to version 2.0. Please reconfigure the integration.")
+        return False
 
     if config_entry.version == 1.3:
         new_data = {**config_entry.data}
@@ -82,8 +59,69 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
         hass.config_entries.async_update_entry(config_entry, options=new_options)
 
     if config_entry.version == 2.0:
+        """Version 1.4.0"""
         new_data = {**config_entry.data}
         new_options = {**config_entry.options}
+
+        # Add default Colours Alpha values.
+        new_data.update(
+            {
+                "alpha_charger": 255.0,
+                "alpha_move": 255.0,
+                "alpha_wall": 255.0,
+                "alpha_robot": 255.0,
+                "alpha_go_to": 255.0,
+                "alpha_no_go": 25.0,
+                "alpha_zone_clean": 25.0,
+                "alpha_background": 255.0,
+                "alpha_text": 255.0,
+                "alpha_room_0": 255.0,
+                "alpha_room_1": 255.0,
+                "alpha_room_2": 255.0,
+                "alpha_room_3": 255.0,
+                "alpha_room_4": 255.0,
+                "alpha_room_5": 255.0,
+                "alpha_room_6": 255.0,
+                "alpha_room_7": 255.0,
+                "alpha_room_8": 255.0,
+                "alpha_room_9": 255.0,
+                "alpha_room_10": 255.0,
+                "alpha_room_11": 255.0,
+                "alpha_room_12": 255.0,
+                "alpha_room_13": 255.0,
+                "alpha_room_14": 255.0,
+                "alpha_room_15": 255.0
+            }
+        )
+        new_options.update(
+            {
+                "alpha_charger": 255.0,
+                "alpha_move": 255.0,
+                "alpha_wall": 255.0,
+                "alpha_robot": 255.0,
+                "alpha_go_to": 255.0,
+                "alpha_no_go": 25.0,
+                "alpha_zone_clean": 25.0,
+                "alpha_background": 255.0,
+                "alpha_text": 255.0,
+                "alpha_room_0": 255.0,
+                "alpha_room_1": 255.0,
+                "alpha_room_2": 255.0,
+                "alpha_room_3": 255.0,
+                "alpha_room_4": 255.0,
+                "alpha_room_5": 255.0,
+                "alpha_room_6": 255.0,
+                "alpha_room_7": 255.0,
+                "alpha_room_8": 255.0,
+                "alpha_room_9": 255.0,
+                "alpha_room_10": 255.0,
+                "alpha_room_11": 255.0,
+                "alpha_room_12": 255.0,
+                "alpha_room_13": 255.0,
+                "alpha_room_14": 255.0,
+                "alpha_room_15": 255.0
+            }
+        )
 
         new_data.pop(CONF_MQTT_HOST, None)
         new_data.pop(CONF_MQTT_USER, None)
@@ -101,31 +139,36 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
         config_entry_id = get_entity_identifier_from_mqtt
         if not config_entry_id:
             _LOGGER.error(
-                "Unable to migrate to version 2.0. Could not find a device for %s. "
-                "Please delete and recreate this entry.",
-                mqtt_topic_base,
-            )
+                "Unable to migrate to version 2.0. Please reconfigure the integration."
+            ),
             return False
 
         new_data.update(
             {CONF_VACUUM_CONFIG_ENTRY_ID: config_entry_id(mqtt_identifier, hass)}
         )
-        _LOGGER.debug("Init Unique ID", mqtt_identifier.lower() + "vacuum_camera")  # TODO remove this line after test
-        new_data.update(
-            {"unique_id": mqtt_identifier.lower() + "_vacuum_camera"}
+
+        # Add missing Unique ID
+        _, vacuum_device = get_device_info(
+            config_entry_id(mqtt_identifier, hass), hass
         )
-        #new_options.update({"unique_id": mqtt_identifier + "_camera"})
+        our_id = str(vacuum_device.name).lower().split(" ")
+        if len(our_id) > 1:
+            our_id = our_id[0] + "_" + our_id[1]
+        new_options.update({"unique_id": our_id + "_vacuum_camera"})
+        new_data.update({"unique_id": our_id + "_vacuum_camera"})
         _LOGGER.debug(new_data)
         _LOGGER.debug(new_options)
+
         config_entry.version = 2
         hass.config_entries.async_update_entry(config_entry, data=new_data)
+        hass.config_entries.async_update_entry(config_entry, options=new_options)
 
     _LOGGER.info("Migration to version %s successful", config_entry.version)
     return True
 
 
 async def async_setup_entry(
-    hass: core.HomeAssistant, entry: config_entries.ConfigEntry
+        hass: core.HomeAssistant, entry: config_entries.ConfigEntry
 ) -> bool:
     """Set up platform from a ConfigEntry."""
     hass.data.setdefault(DOMAIN, {})
@@ -164,7 +207,7 @@ async def async_setup_entry(
 
 
 async def async_unload_entry(
-    hass: core.HomeAssistant, entry: config_entries.ConfigEntry
+        hass: core.HomeAssistant, entry: config_entries.ConfigEntry
 ) -> bool:
     """Unload a config entry."""
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):

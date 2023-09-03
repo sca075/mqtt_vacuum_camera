@@ -35,7 +35,7 @@
           "trim_right": "Trim Crop Right Area. Pixels amount."
         },
         "description": "Camera Options. Part 1/3",
-        "title": "Camera Options"
+        "title": "Image Options"
       },
       "options_2": {
         "data": {
@@ -70,7 +70,7 @@
           "color_text": "Vacuum Status Text color."
         },
         "description": "Camera Options. Part 2/3",
-        "title": "Camera Options"
+        "title": "Base Colours Setup."
       },
       "options_3": {
         "data": {
@@ -110,7 +110,7 @@
           "color_room_15": "Room 16"
         },
         "description": "Camera Options. Part 3/3",
-        "title": "Camera Options"
+        "title": "Rooms Colours Setup."
       }
     },
     "abort": {
@@ -151,7 +151,7 @@
           "color_zone_clean": "[255, 255, 255]",
           "color_background": "[0, 125, 255]",
           "color_text": "[255, 255, 255]",
-          "add_base_alpha": "Add Transparency level:"
+          "add_base_alpha": "Configure Transparency level:"
         },
         "data_description": {
           "color_charger": "Charger color.",
@@ -182,32 +182,6 @@
         "description": "Camera Options. Part 2/3",
         "title": "Alpha Chanel Base Colours"
       },
-      "init_2a": {
-        "data": {
-          "alpha_charger": 255,
-          "alpha_move": 255,
-          "alpha_wall": 255,
-          "alpha_robot": 255,
-          "alpha_go_to": 255,
-          "alpha_no_go": 255,
-          "alpha_zone_clean": 255,
-          "alpha_background": 255,
-          "alpha_text": 255
-        },
-        "data_description": {
-          "alpha_charger": "Charger color.",
-          "alpha_move": "Move color.",
-          "alpha_wall": "Wall color.",
-          "alpha_robot": "Robot color.",
-          "alpha_go_to": "Go-to color.",
-          "alpha_no_go": "No-go color.",
-          "alpha_zone_clean": "Zone clean color.",
-          "alpha_background": "Background color.",
-          "alpha_text": "Vacuum Status Text color."
-        },
-        "description": "Camera Options. Part 2/3",
-        "title": "Camera Options"
-      },
       "init_3": {
         "data": {
           "color_room_0": "[135, 206, 250]",
@@ -226,7 +200,7 @@
           "color_room_13": "[245, 176, 65]",
           "color_room_14": "[82, 190, 128]",
           "color_room_15": "[72, 201, 176]",
-          "add_base_alpha": "Add Transparency level:"
+          "add_room_alpha": "Configure Transparency level:"
         },
         "data_description": {
           "color_room_0": "Room 1, floor color.",
@@ -248,6 +222,28 @@
         },
         "description": "Camera Options. Part 3/3",
         "title": "Rooms Colours"
+      },
+      "alpha_2": {
+        "data": {
+          "alpha_room_0": "Room 1, floor color.",
+          "alpha_room_1": "Room 2",
+          "alpha_room_2": "Room 3",
+          "alpha_room_3": "Room 4",
+          "alpha_room_4": "Room 5",
+          "alpha_room_5": "Room 6",
+          "alpha_room_6": "Room 7",
+          "alpha_room_7": "Room 8",
+          "alpha_room_8": "Room 9",
+          "alpha_room_9": "Room 10",
+          "alpha_room_10": "Room 11",
+          "alpha_room_11": "Room 12",
+          "alpha_room_12": "Room 13",
+          "alpha_room_13": "Room 14",
+          "alpha_room_14": "Room 15",
+          "alpha_room_15": "Room 16"
+        },
+        "description": "Camera Options. Part 2/3",
+        "title": "Alpha Chanel Rooms Colours"
       }
     }
   }

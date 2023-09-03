@@ -21,6 +21,7 @@ CONF_VACUUM_CONFIG_ENTRY_ID = "vacuum_config_entry"
 CONF_VACUUM_IDENTIFIERS = "vacuum_identifiers"
 ICON = "mdi:camera"
 NAME = "Valetudo Vacuum Camera"
+CAMERA_NAME = "camera_name"
 UNIQUE_ID = "unique_id"
 
 """App Constants"""

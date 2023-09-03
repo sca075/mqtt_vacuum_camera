@@ -37,7 +37,12 @@ from .const import (
     COLOR_ROOM_15,
     ALPHA_BACKGROUND, ALPHA_CHARGER, ALPHA_MOVE,
     ALPHA_NO_GO, ALPHA_WALL, ALPHA_ROBOT, ALPHA_TEXT,
-    ALPHA_GO_TO, ALPHA_ZONE_CLEAN
+    ALPHA_GO_TO, ALPHA_ZONE_CLEAN, ALPHA_ROOM_0,
+    ALPHA_ROOM_1, ALPHA_ROOM_2, ALPHA_ROOM_3,
+    ALPHA_ROOM_4, ALPHA_ROOM_5, ALPHA_ROOM_6,
+    ALPHA_ROOM_7, ALPHA_ROOM_8, ALPHA_ROOM_9,
+    ALPHA_ROOM_10, ALPHA_ROOM_11, ALPHA_ROOM_12,
+    ALPHA_ROOM_13, ALPHA_ROOM_14, ALPHA_ROOM_15
 )
 from .common import (
     # get_entity_identifier_from_mqtt,
@@ -169,15 +174,6 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     "color_zone_clean": user_input.get(COLOR_ZONE_CLEAN),
                     "color_background": user_input.get(COLOR_BACKGROUND),
                     "color_text": user_input.get(COLOR_TEXT),
-                    "alpha_charger": 255.0,
-                    "alpha_move": 255.0,
-                    "alpha_wall": 255.0,
-                    "alpha_robot": 255.0,
-                    "alpha_go_to": 255.0,
-                    "alpha_no_go": 25.0,
-                    "alpha_zone_clean": 25.0,
-                    "alpha_background": 255.0,
-                    "alpha_text": 255.0,
                 }
             )
 
@@ -246,6 +242,11 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         _LOGGER.debug(list(self.config_entry.options.values()))
         options_values = list(self.config_entry.options.values())
         if len(options_values) > 0:
+            config_dict: NumberSelectorConfig = {
+                "min": 0.0,  # Minimum value
+                "max": 255.0,  # Maximum value
+                "step": 1.0,  # Step value
+            }
             self.IMG_SCHEMA = vol.Schema(
                 {
                     vol.Required(
@@ -309,11 +310,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 }
             )
             _LOGGER.debug("Defined Color 1 Schema")
-            config_dict: NumberSelectorConfig = {
-                "min": 0.0,  # Minimum value
-                "max": 255.0,  # Maximum value
-                "step": 1.0,  # Step value
-            }
             self.ALPHA_1_SCHEMA = vol.Schema(
                 {
                     vol.Optional(
@@ -398,9 +394,63 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Optional(
                         COLOR_ROOM_15, default=config_entry.options.get("color_room_15")
                     ): ColorRGBSelector(),
+                    vol.Optional("add_room_alpha", default=False): BooleanSelector(),
                 }
             )
             _LOGGER.debug("Defined Color 2 Schema")
+            self.ALPHA_2_SCHEMA = vol.Schema(
+                {
+                    vol.Optional(
+                        ALPHA_ROOM_0, default=config_entry.options.get("alpha_room_0"),
+                    ): NumberSelector(config_dict),
+                    vol.Optional(
+                        ALPHA_ROOM_1, default=config_entry.options.get("alpha_room_1"),
+                    ): NumberSelector(config_dict),
+                    vol.Optional(
+                        ALPHA_ROOM_2, default=config_entry.options.get("alpha_room_2")
+                    ): NumberSelector(config_dict),
+                    vol.Optional(
+                        ALPHA_ROOM_3, default=config_entry.options.get("alpha_room_3")
+                    ): NumberSelector(config_dict),
+                    vol.Optional(
+                        ALPHA_ROOM_4, default=config_entry.options.get("alpha_room_4")
+                    ): NumberSelector(config_dict),
+                    vol.Optional(
+                        ALPHA_ROOM_5, default=config_entry.options.get("alpha_room_5")
+                    ): NumberSelector(config_dict),
+                    vol.Optional(
+                        ALPHA_ROOM_6, default=config_entry.options.get("alpha_room_6")
+                    ): NumberSelector(config_dict),
+                    vol.Optional(
+                        ALPHA_ROOM_7, default=config_entry.options.get("alpha_room_7")
+                    ): NumberSelector(config_dict),
+                    vol.Optional(
+                        ALPHA_ROOM_8, default=config_entry.options.get("alpha_room_8")
+                    ): NumberSelector(config_dict),
+                    vol.Optional(
+                        ALPHA_ROOM_9, default=config_entry.options.get("alpha_room_9")
+                    ): NumberSelector(config_dict),
+                    vol.Optional(
+                        ALPHA_ROOM_10, default=config_entry.options.get("alpha_room_10")
+                    ): NumberSelector(config_dict),
+                    vol.Optional(
+                        ALPHA_ROOM_11, default=config_entry.options.get("alpha_room_11")
+                    ): NumberSelector(config_dict),
+                    vol.Optional(
+                        ALPHA_ROOM_12, default=config_entry.options.get("alpha_room_12")
+                    ): NumberSelector(config_dict),
+                    vol.Optional(
+                        ALPHA_ROOM_13, default=config_entry.options.get("alpha_room_13")
+                    ): NumberSelector(config_dict),
+                    vol.Optional(
+                        ALPHA_ROOM_14, default=config_entry.options.get("alpha_room_14")
+                    ): NumberSelector(config_dict),
+                    vol.Optional(
+                        ALPHA_ROOM_15, default=config_entry.options.get("alpha_room_15")
+                    ): NumberSelector(config_dict)
+                }
+            )
+            _LOGGER.debug("Defined Alpha 2 Schema")
         else:
             self.IMG_SCHEMA = vol.Schema(
                 {
@@ -460,7 +510,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     ): ColorRGBSelector(),
                 }
             )
-
             self.COLOR_2_SCHEMA = vol.Schema(
                 {
                     vol.Optional(
@@ -580,11 +629,41 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     "alpha_text": user_input.get(ALPHA_TEXT),
                 }
             )
-            return await self.async_step_init_3()
+            return await self.async_step_init_2()
 
         return self.async_show_form(
             step_id="alpha_1",
             data_schema=self.ALPHA_1_SCHEMA,
+            description_placeholders=self.data,
+        )
+
+    async def async_step_alpha_2(self, user_input: Optional[Dict[str, Any]] = None):
+        if user_input is not None:
+            self.data.update(
+                {
+                    "alpha_room_0": user_input.get(ALPHA_ROOM_0),
+                    "alpha_room_1": user_input.get(ALPHA_ROOM_1),
+                    "alpha_room_2": user_input.get(ALPHA_ROOM_2),
+                    "alpha_room_3": user_input.get(ALPHA_ROOM_3),
+                    "alpha_room_4": user_input.get(ALPHA_ROOM_4),
+                    "alpha_room_5": user_input.get(ALPHA_ROOM_5),
+                    "alpha_room_6": user_input.get(ALPHA_ROOM_6),
+                    "alpha_room_7": user_input.get(ALPHA_ROOM_7),
+                    "alpha_room_8": user_input.get(ALPHA_ROOM_8),
+                    "alpha_room_9": user_input.get(ALPHA_ROOM_9),
+                    "alpha_room_10": user_input.get(ALPHA_ROOM_10),
+                    "alpha_room_11": user_input.get(ALPHA_ROOM_11),
+                    "alpha_room_12": user_input.get(ALPHA_ROOM_12),
+                    "alpha_room_13": user_input.get(ALPHA_ROOM_13),
+                    "alpha_room_14": user_input.get(ALPHA_ROOM_14),
+                    "alpha_room_15": user_input.get(ALPHA_ROOM_15),
+                }
+            )
+            return await self.async_step_init_3()
+
+        return self.async_show_form(
+            step_id="alpha_2",
+            data_schema=self.ALPHA_2_SCHEMA,
             description_placeholders=self.data,
         )
 
@@ -611,10 +690,17 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 }
             )
 
-            return self.async_create_entry(
-                title=self.config_entry.entry_id,
-                data=self.data,
-            )
+            room_alpha = user_input.get("add_room_alpha")
+            _LOGGER.debug(room_alpha)
+            if room_alpha:
+                _LOGGER.debug("adjust alpha of rooms colours")
+                return await self.async_step_alpha_2()
+            else:
+                _LOGGER.debug("self.data at the end", self.data)
+                return self.async_create_entry(
+                    title=self.config_entry.entry_id,
+                    data=self.data,
+                )
 
         return self.async_show_form(
             step_id="init_3",
