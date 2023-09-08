@@ -7,7 +7,8 @@
           "vacuum_config_entry": "Vacuum Config Data",
           "vacuum_map": "Vacuum Topic",
           "vacuum_identifiers": "Vacuum MQTT id",
-          "camera_name": "",
+          "name": "",
+          "friendly_name": "",
           "unique_id": ""
         },
         "data_description": {
