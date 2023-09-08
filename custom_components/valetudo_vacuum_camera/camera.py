@@ -35,6 +35,7 @@ from custom_components.valetudo_vacuum_camera.utils.colors import (
 from custom_components.valetudo_vacuum_camera.valetudo.vacuum import Vacuum
 from .const import (
     UNIQUE_ID,
+    # FRIENDLY_NAME,
     CONF_VACUUM_CONNECTION_STRING,
     CONF_VACUUM_ENTITY_ID,
     CONF_VACUUM_IDENTIFIERS,
@@ -115,6 +116,7 @@ async def async_setup_platform(
 
 class ValetudoCamera(Camera):
     _attr_has_entity_name = True
+    _attr_device_class = Camera
 
     def __init__(self, hass, device_info):
         _LOGGER.info("Starting up..")
@@ -126,7 +128,7 @@ class ValetudoCamera(Camera):
             self._mqtt_listen_topic = str(self._mqtt_listen_topic)
             file_name = self._mqtt_listen_topic.split("/")
             self.snapshot_img = self._directory_path + "/www/snapshot_" + file_name[1].lower() + ".png"
-            self._attr_name = device_info.get(CONF_NAME)
+            # self._attr_name = device_info.get(FRIENDLY_NAME) #
             self._attr_unique_id = device_info.get(UNIQUE_ID)
             _LOGGER.debug("Camera Unique ID: ", self._attr_unique_id)
             self.file_name = file_name[1].lower()
@@ -244,11 +246,6 @@ class ValetudoCamera(Camera):
     ) -> Optional[bytes]:
         """Camera Image"""
         return self._image
-
-    @property
-    def name(self) -> str:
-        """Camera Entity Name"""
-        return self._attr_name
 
     @property
     def supported_features(self) -> int:

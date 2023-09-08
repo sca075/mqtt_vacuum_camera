@@ -4,7 +4,7 @@
 """Required in Config_Flow"""
 PLATFORMS = ["camera"]
 DOMAIN = "valetudo_vacuum_camera"
-DEFAULT_NAME = "valetudo vacuum camera"
+DEFAULT_NAME = "Valetudo Vacuum Camera"
 ATTR_ROTATE = "rotate_image"
 ATTR_CROP = "crop_image"
 ATTR_TRIM_TOP = "trim_top"
@@ -20,7 +20,8 @@ CONF_VACUUM_ENTITY_ID = "vacuum_entity"
 CONF_VACUUM_CONFIG_ENTRY_ID = "vacuum_config_entry"
 CONF_VACUUM_IDENTIFIERS = "vacuum_identifiers"
 ICON = "mdi:camera"
-NAME = "Valetudo Vacuum Camera"
+NAME = "name"
+FRIENDLY_NAME = "friendly_name"
 CAMERA_NAME = "camera_name"
 UNIQUE_ID = "unique_id"
 

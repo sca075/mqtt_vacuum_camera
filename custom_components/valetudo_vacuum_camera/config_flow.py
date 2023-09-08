@@ -5,6 +5,7 @@ from typing import Any, Dict, Optional
 from homeassistant import config_entries
 
 from homeassistant.components.vacuum import DOMAIN as ZONE_VACUUM
+from homeassistant.const import CONF_NAME
 from homeassistant.core import callback
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.selector import (
@@ -58,12 +59,6 @@ VACUUM_SCHEMA = vol.Schema(
             EntitySelectorConfig(domain=ZONE_VACUUM),)
     }
 )
-
-BASE_COLOURS = {
-    "color_background": ("Image Background", [0, 125, 255]),
-    "color_zone_clean": ("Clean Zone", [255, 255, 255]),
-    "color_wall": ("Walls Color", [255, 255, 0])
-}
 
 IMG_SCHEMA = vol.Schema(
     {
@@ -130,11 +125,17 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 self.data[CONF_VACUUM_CONFIG_ENTRY_ID], self.hass
             )
             self.name = vacuum_device.name
-            self.data.update({"camera_name": str(self.name)})
-            our_id = str(self.name).lower().split(" ")
-            if len(our_id) > 1:
-                our_id = our_id[0] + "_" + our_id[1]
-            self.data.update({"unique_id": our_id + "_vacuum_camera"})
+            self.data.update({CONF_NAME: str(self.name)})
+            self.data.update({"friendly_name": str(self.name)})
+
+            if str(self.name).count(" ") >= 1:
+                our_id = str(self.name).lower().split(" ")
+                our_id = our_id[0] + "_" + our_id[1] + "_vacuum_camera"
+            else:
+                our_id = self.name.lower() + "_vacuum_camera"
+            self.data.update({"unique_id": our_id})
+            await self.async_set_unique_id(unique_id=our_id, raise_on_progress=True)
+
             return await self.async_step_options_1()
 
         return self.async_show_form(step_id="user", data_schema=VACUUM_SCHEMA)
@@ -696,7 +697,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 _LOGGER.debug("adjust alpha of rooms colours")
                 return await self.async_step_alpha_2()
             else:
-                _LOGGER.debug("self.data at the end", self.data)
+                _LOGGER.debug("self.data at the end %s", self.data)
                 return self.async_create_entry(
                     title=self.config_entry.entry_id,
                     data=self.data,
