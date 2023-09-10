@@ -10,7 +10,7 @@ from datetime import timedelta
 from typing import Optional
 import voluptuous as vol
 from homeassistant.components.camera import Camera, PLATFORM_SCHEMA, SUPPORT_ON_OFF
-from homeassistant.const import CONF_NAME
+from homeassistant.const import CONF_NAME, CONF_UNIQUE_ID
 from homeassistant import core, config_entries
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -34,7 +34,6 @@ from .utils.colors import (
 )
 from .valetudo.vacuum import Vacuum
 from .const import (
-    UNIQUE_ID,
     CONF_VACUUM_CONNECTION_STRING,
     CONF_VACUUM_ENTITY_ID,
     CONF_VACUUM_IDENTIFIERS,
@@ -132,7 +131,8 @@ class ValetudoCamera(Camera):
             )
             self._attr_name = "Camera"
             self._attr_unique_id = device_info.get(
-                UNIQUE_ID, get_vacuum_unique_id_from_mqtt_topic(self._mqtt_listen_topic)
+                CONF_UNIQUE_ID,
+                get_vacuum_unique_id_from_mqtt_topic(self._mqtt_listen_topic),
             )
             self.file_name = file_name[1].lower()
         self._mqtt = ValetudoConnector(self._mqtt_listen_topic, self.hass)
