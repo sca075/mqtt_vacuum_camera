@@ -6,6 +6,7 @@ from typing import Any, Dict, Optional
 from homeassistant import config_entries
 
 from homeassistant.components.vacuum import DOMAIN as ZONE_VACUUM
+from homeassistant.const import CONF_UNIQUE_ID
 from homeassistant.core import callback
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.selector import (
@@ -54,9 +55,9 @@ from .const import (
     COLOR_ROOM_15,
 )
 from .common import (
-    # get_entity_identifier_from_mqtt,
     get_device_info,
     get_vacuum_mqtt_topic,
+    get_vacuum_unique_id_from_mqtt_topic,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -64,7 +65,8 @@ _LOGGER = logging.getLogger(__name__)
 VACUUM_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_VACUUM_ENTITY_ID): EntitySelector(
-            EntitySelectorConfig(domain=ZONE_VACUUM),)
+            EntitySelectorConfig(domain=ZONE_VACUUM),
+        )
     }
 )
 
@@ -128,10 +130,14 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             vacuum_entity_id = user_input["vacuum_entity"]
             entity_registry = er.async_get(self.hass)
             vacuum_entity = entity_registry.async_get(vacuum_entity_id)
-            self.data.update({CONF_VACUUM_CONFIG_ENTRY_ID: vacuum_entity.id})
-            our_topic = get_vacuum_mqtt_topic(vacuum_entity_id, self.hass)
-            our_topic = our_topic.split("/")[1]
-            self.data.update({"unique_id": our_topic+"_camera"})
+            self.data.update(
+                {
+                    CONF_VACUUM_CONFIG_ENTRY_ID: vacuum_entity.id,
+                    CONF_UNIQUE_ID: get_vacuum_unique_id_from_mqtt_topic(
+                        get_vacuum_mqtt_topic(vacuum_entity_id, self.hass)
+                    ),
+                }
+            )
             return await self.async_step_options_1()
 
         return self.async_show_form(step_id="user", data_schema=VACUUM_SCHEMA)

@@ -3,7 +3,7 @@ import logging
 
 from homeassistant import config_entries, core
 from homeassistant.components import mqtt
-from homeassistant.const import Platform
+from homeassistant.const import CONF_UNIQUE_ID, Platform
 from homeassistant.exceptions import ConfigEntryNotReady
 from .const import (
     CONF_MQTT_HOST,
@@ -18,6 +18,7 @@ from .common import (
     get_entity_identifier_from_mqtt,
     get_device_info,
     get_vacuum_mqtt_topic,
+    get_vacuum_unique_id_from_mqtt_topic,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -95,16 +96,18 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
             return False
 
         mqtt_identifier = mqtt_topic_base.split("/")[1]
-        config_entry_id = get_entity_identifier_from_mqtt
+        config_entry_id = get_entity_identifier_from_mqtt(mqtt_identifier, hass)
         if not config_entry_id:
             _LOGGER.error(
                 "Unable to migrate to version 2.0. Could not find a device for %s. Please delete and recreate this entry.",
                 mqtt_topic_base,
             )
             return False
-
         new_data.update(
-            {CONF_VACUUM_CONFIG_ENTRY_ID: config_entry_id(mqtt_identifier, hass)}
+            {
+                CONF_VACUUM_CONFIG_ENTRY_ID: config_entry_id,
+                CONF_UNIQUE_ID: get_vacuum_unique_id_from_mqtt_topic(mqtt_topic_base),
+            }
         )
 
         config_entry.version = 2

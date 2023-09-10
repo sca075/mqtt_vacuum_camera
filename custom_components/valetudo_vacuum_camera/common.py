@@ -66,3 +66,10 @@ def get_vacuum_mqtt_topic(vacuum_entity_id: str, hass: HomeAssistant) -> str | N
         )[0]
     except AttributeError:
         return None
+
+
+def get_vacuum_unique_id_from_mqtt_topic(vacuum_mqtt_topic: str) -> str:
+    """
+    Returns the unique_id computed from the mqtt_topic for the vacuum.
+    """
+    return vacuum_mqtt_topic.split("/")[1] + "_camera"
