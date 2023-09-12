@@ -3,7 +3,7 @@ import logging
 
 from homeassistant import config_entries, core
 from homeassistant.components import mqtt
-from homeassistant.const import Platform
+from homeassistant.const import CONF_UNIQUE_ID, Platform
 from homeassistant.exceptions import ConfigEntryNotReady
 from .const import (
     CONF_MQTT_HOST,
@@ -18,6 +18,7 @@ from .common import (
     get_entity_identifier_from_mqtt,
     get_device_info,
     get_vacuum_mqtt_topic,
+    get_vacuum_unique_id_from_mqtt_topic,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -95,16 +96,18 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
             return False
 
         mqtt_identifier = mqtt_topic_base.split("/")[1]
-        config_entry_id = get_entity_identifier_from_mqtt
+        config_entry_id = get_entity_identifier_from_mqtt(mqtt_identifier, hass)
         if not config_entry_id:
             _LOGGER.error(
                 "Unable to migrate to version 2.0. Could not find a device for %s. Please delete and recreate this entry.",
                 mqtt_topic_base,
             )
             return False
-
         new_data.update(
-            {CONF_VACUUM_CONFIG_ENTRY_ID: config_entry_id(mqtt_identifier, hass)}
+            {
+                CONF_VACUUM_CONFIG_ENTRY_ID: config_entry_id,
+                CONF_UNIQUE_ID: get_vacuum_unique_id_from_mqtt_topic(mqtt_topic_base),
+            }
         )
 
         config_entry.version = 2
@@ -120,16 +123,6 @@ async def async_setup_entry(
     """Set up platform from a ConfigEntry."""
     hass.data.setdefault(DOMAIN, {})
     hass_data = dict(entry.data)
-    _LOGGER.debug(hass_data)
-    _LOGGER.debug(dict(entry.options))
-    _LOGGER.debug(entry.entry_id)
-    _LOGGER.debug(entry.version)
-    _LOGGER.debug(entry.unique_id)
-    _LOGGER.debug(entry.source)
-    # Registers update listener to update config entry when options are updated.
-    unsub_options_update_listener = entry.add_update_listener(options_update_listener)
-    # Store a reference to the unsubscribe function to clean up if an entry is unloaded.
-    hass_data["unsub_options_update_listener"] = unsub_options_update_listener
 
     vacuum_entity_id, vacuum_device = get_device_info(
         hass_data[CONF_VACUUM_CONFIG_ENTRY_ID], hass
@@ -150,6 +143,11 @@ async def async_setup_entry(
             CONF_VACUUM_IDENTIFIERS: vacuum_device.identifiers,
         }
     )
+
+    # Registers update listener to update config entry when options are updated.
+    unsub_options_update_listener = entry.add_update_listener(options_update_listener)
+    # Store a reference to the unsubscribe function to clean up if an entry is unloaded.
+    hass_data["unsub_options_update_listener"] = unsub_options_update_listener
     hass.data[DOMAIN][entry.entry_id] = hass_data
 
     # Forward the setup to the camera platform.
