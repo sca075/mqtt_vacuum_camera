@@ -15,6 +15,7 @@ from homeassistant.helpers.selector import (
     EntitySelectorConfig,
     Selector,
     SelectSelector,
+    BooleanSelector,
 )
 from homeassistant.helpers import entity_registry as er
 from .const import (
@@ -78,7 +79,7 @@ IMG_SCHEMA = vol.Schema(
         vol.Optional(ATTR_TRIM_BOTTOM, default="0"): cv.string,
         vol.Optional(ATTR_TRIM_LEFT, default="0"): cv.string,
         vol.Optional(ATTR_TRIM_RIGHT, default="0"): cv.string,
-        vol.Optional(CONF_VAC_STAT, default=False): cv.boolean,
+        vol.Optional(CONF_VAC_STAT, default=False): BooleanSelector(),
     }
 )
 
@@ -130,24 +131,17 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             vacuum_entity_id = user_input["vacuum_entity"]
             entity_registry = er.async_get(self.hass)
             vacuum_entity = entity_registry.async_get(vacuum_entity_id)
-
-            unique_id = get_vacuum_unique_id_from_mqtt_topic(
-                get_vacuum_mqtt_topic(vacuum_entity_id, self.hass)
+            our_id = get_vacuum_unique_id_from_mqtt_topic(
+            get_vacuum_mqtt_topic(vacuum_entity_id, self.hass)
             )
-
-            for existing_entity in self._async_current_entries():
-                if (
-                    existing_entity.data.get(CONF_VACUUM_ENTITY_ID) == vacuum_entity.id
-                    or existing_entity.data.get(CONF_UNIQUE_ID) == unique_id
-                ):
-                    return self.async_abort(reason="already_configured")
-
             self.data.update(
                 {
                     CONF_VACUUM_CONFIG_ENTRY_ID: vacuum_entity.id,
-                    CONF_UNIQUE_ID: unique_id,
+                    CONF_UNIQUE_ID: our_id,
+                    "platform": "valetudo_vacuum_camera",
                 }
             )
+            await self.async_set_unique_id(unique_id=our_id, raise_on_progress=True)
             return await self.async_step_options_1()
 
         return self.async_show_form(step_id="user", data_schema=VACUUM_SCHEMA)
@@ -276,7 +270,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Optional(
                         CONF_VAC_STAT,
                         default=config_entry.options.get("show_vac_status"),
-                    ): cv.boolean,
+                    ): BooleanSelector(),
                 }
             )
             self.COLOR_1_SCHEMA = vol.Schema(
@@ -387,7 +381,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     ): cv.string,
                     vol.Optional(
                         CONF_VAC_STAT, default=config_entry.data.get("show_vac_status")
-                    ): cv.boolean,
+                    ): BooleanSelector(),
                 }
             )
             self.COLOR_1_SCHEMA = vol.Schema(
