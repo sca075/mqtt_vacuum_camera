@@ -131,17 +131,24 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             vacuum_entity_id = user_input["vacuum_entity"]
             entity_registry = er.async_get(self.hass)
             vacuum_entity = entity_registry.async_get(vacuum_entity_id)
-            our_id = get_vacuum_unique_id_from_mqtt_topic(
-            get_vacuum_mqtt_topic(vacuum_entity_id, self.hass)
+
+            unique_id = get_vacuum_unique_id_from_mqtt_topic(
+                get_vacuum_mqtt_topic(vacuum_entity_id, self.hass)
             )
+
+            for existing_entity in self._async_current_entries():
+                if (
+                    existing_entity.data.get(CONF_VACUUM_ENTITY_ID) == vacuum_entity.id
+                    or existing_entity.data.get(CONF_UNIQUE_ID) == unique_id
+                ):
+                    return self.async_abort(reason="already_configured")
+
             self.data.update(
                 {
                     CONF_VACUUM_CONFIG_ENTRY_ID: vacuum_entity.id,
-                    CONF_UNIQUE_ID: our_id,
-                    "platform": "valetudo_vacuum_camera",
+                    CONF_UNIQUE_ID: unique_id,
                 }
             )
-            await self.async_set_unique_id(unique_id=our_id, raise_on_progress=True)
             return await self.async_step_options_1()
 
         return self.async_show_form(step_id="user", data_schema=VACUUM_SCHEMA)
