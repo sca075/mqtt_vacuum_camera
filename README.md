@@ -37,6 +37,8 @@ internal_variables:
 - Roborock.S5
 - Dreame D9
 
+![Screenshot 2023-08-28 at 06 32 54](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/73d088cf-ad92-45d1-96f7-e140ebaaf6b0)
+
 
 ### Current Release: [![GitHub Latest Release][releases_shield]][latest_release]
 
