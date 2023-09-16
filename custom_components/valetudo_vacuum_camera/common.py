@@ -34,7 +34,7 @@ def get_device_info(config_entry_id: str, hass: HomeAssistant) -> str:
 
 
 def get_entity_identifier_from_mqtt(
-    mqtt_identifier: str, hass: HomeAssistant
+        mqtt_identifier: str, hass: HomeAssistant
 ) -> str | None:
     """
     Fetches the vacuum's entity_registry id from the mqtt topic identifier.
@@ -66,3 +66,10 @@ def get_vacuum_mqtt_topic(vacuum_entity_id: str, hass: HomeAssistant) -> str | N
         )[0]
     except AttributeError:
         return None
+
+
+def get_vacuum_unique_id_from_mqtt_topic(vacuum_mqtt_topic: str) -> str:
+    """
+    Returns the unique_id computed from the mqtt_topic for the vacuum.
+    """
+    return vacuum_mqtt_topic.split("/")[1] + "_camera"

@@ -1,4 +1,4 @@
-"""Camera Version 1.4.0"""
+"""Camera Version 1.4.1"""
 from __future__ import annotations
 import logging
 import os
@@ -10,7 +10,7 @@ from datetime import timedelta
 from typing import Optional
 import voluptuous as vol
 from homeassistant.components.camera import Camera, PLATFORM_SCHEMA, SUPPORT_ON_OFF
-from homeassistant.const import CONF_NAME
+from homeassistant.const import CONF_NAME, CONF_UNIQUE_ID
 from homeassistant import core, config_entries
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -21,21 +21,18 @@ from homeassistant.helpers.typing import (
     HomeAssistantType,
 )
 from homeassistant.util import Throttle
-from custom_components.valetudo_vacuum_camera.valetudo.connector import (
+from .valetudo.connector import (
     ValetudoConnector,
 )
-from custom_components.valetudo_vacuum_camera.valetudo.image_handler import (
+from .valetudo.image_handler import (
     MapImageHandler,
 )
-from custom_components.valetudo_vacuum_camera.utils.colors import (
-    base_colors_array,
-    rooms_color,
+from .utils.colors import (
     add_alpha_to_rgb,
 )
-from custom_components.valetudo_vacuum_camera.valetudo.vacuum import Vacuum
+
+from .valetudo.vacuum import Vacuum
 from .const import (
-    UNIQUE_ID,
-    # FRIENDLY_NAME,
     CONF_VACUUM_CONNECTION_STRING,
     CONF_VACUUM_ENTITY_ID,
     CONF_VACUUM_IDENTIFIERS,
@@ -49,32 +46,22 @@ from .const import (
     ATTR_TRIM_BOTTOM,
     ATTR_TRIM_LEFT,
     ATTR_TRIM_RIGHT,
-    COLOR_WALL,
-    COLOR_ZONE_CLEAN,
-    COLOR_ROBOT,
-    COLOR_BACKGROUND,
-    COLOR_MOVE,
-    COLOR_CHARGER,
-    COLOR_TEXT,
-    COLOR_NO_GO,
-    COLOR_GO_TO,
-    COLOR_ROOM_0,
-    COLOR_ROOM_1,
-    COLOR_ROOM_2,
-    COLOR_ROOM_3,
-    COLOR_ROOM_4,
-    COLOR_ROOM_5,
-    COLOR_ROOM_6,
-    COLOR_ROOM_7,
-    COLOR_ROOM_8,
-    COLOR_ROOM_9,
-    COLOR_ROOM_10,
-    COLOR_ROOM_11,
-    COLOR_ROOM_12,
-    COLOR_ROOM_13,
-    COLOR_ROOM_14,
-    COLOR_ROOM_15,
+    COLOR_WALL, COLOR_ZONE_CLEAN, COLOR_ROBOT,
+    COLOR_BACKGROUND, COLOR_MOVE, COLOR_CHARGER,
+    COLOR_TEXT, COLOR_NO_GO, COLOR_GO_TO, COLOR_ROOM_0,
+    COLOR_ROOM_1, COLOR_ROOM_2, COLOR_ROOM_3, COLOR_ROOM_4,
+    COLOR_ROOM_5, COLOR_ROOM_6, COLOR_ROOM_7, COLOR_ROOM_8,
+    COLOR_ROOM_9, COLOR_ROOM_10, COLOR_ROOM_11, COLOR_ROOM_12,
+    COLOR_ROOM_13, COLOR_ROOM_14, COLOR_ROOM_15,
+    ALPHA_WALL, ALPHA_ZONE_CLEAN, ALPHA_ROBOT,
+    ALPHA_BACKGROUND, ALPHA_MOVE, ALPHA_CHARGER,
+    ALPHA_TEXT, ALPHA_NO_GO, ALPHA_GO_TO, ALPHA_ROOM_0,
+    ALPHA_ROOM_1, ALPHA_ROOM_2, ALPHA_ROOM_3, ALPHA_ROOM_4,
+    ALPHA_ROOM_5, ALPHA_ROOM_6, ALPHA_ROOM_7, ALPHA_ROOM_8,
+    ALPHA_ROOM_9, ALPHA_ROOM_10, ALPHA_ROOM_11, ALPHA_ROOM_12,
+    ALPHA_ROOM_13, ALPHA_ROOM_14, ALPHA_ROOM_15,
 )
+from .common import get_vacuum_unique_id_from_mqtt_topic
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
@@ -116,21 +103,24 @@ async def async_setup_platform(
 
 class ValetudoCamera(Camera):
     _attr_has_entity_name = True
-    _attr_device_class = Camera
 
     def __init__(self, hass, device_info):
-        _LOGGER.info("Starting up..")
         super().__init__()
         self.hass = hass
         self._directory_path = os.getcwd()
+        _LOGGER.debug("Camera Starting up..")
         self._mqtt_listen_topic = device_info.get(CONF_VACUUM_CONNECTION_STRING)
         if self._mqtt_listen_topic:
             self._mqtt_listen_topic = str(self._mqtt_listen_topic)
             file_name = self._mqtt_listen_topic.split("/")
-            self.snapshot_img = self._directory_path + "/www/snapshot_" + file_name[1].lower() + ".png"
-            # self._attr_name = device_info.get(FRIENDLY_NAME) #
-            self._attr_unique_id = device_info.get(UNIQUE_ID)
-            _LOGGER.debug("Camera Unique ID: ", self._attr_unique_id)
+            self.snapshot_img = (
+                    self._directory_path + "/www/snapshot_" + file_name[1].lower() + ".png"
+            )
+            self._attr_name = "Camera"
+            self._attr_unique_id = device_info.get(
+                CONF_UNIQUE_ID,
+                get_vacuum_unique_id_from_mqtt_topic(self._mqtt_listen_topic),
+            )
             self.file_name = file_name[1].lower()
         self._mqtt = ValetudoConnector(self._mqtt_listen_topic, self.hass)
         self._identifiers = device_info.get(CONF_VACUUM_IDENTIFIERS)
@@ -197,6 +187,17 @@ class ValetudoCamera(Camera):
                 device_info.get(COLOR_GO_TO),
                 device_info.get(COLOR_TEXT),
             ]
+            self.user_alpha = [
+                device_info.get(ALPHA_WALL),
+                device_info.get(ALPHA_ZONE_CLEAN),
+                device_info.get(ALPHA_ROBOT),
+                device_info.get(ALPHA_BACKGROUND),
+                device_info.get(ALPHA_MOVE),
+                device_info.get(ALPHA_CHARGER),
+                device_info.get(ALPHA_NO_GO),
+                device_info.get(ALPHA_GO_TO),
+                device_info.get(ALPHA_TEXT),
+            ]
             self.rooms_colors = [
                 device_info.get(COLOR_ROOM_0),
                 device_info.get(COLOR_ROOM_1),
@@ -215,11 +216,29 @@ class ValetudoCamera(Camera):
                 device_info.get(COLOR_ROOM_14),
                 device_info.get(COLOR_ROOM_15),
             ]
+            self.rooms_alpha = [
+                device_info.get(ALPHA_ROOM_0),
+                device_info.get(ALPHA_ROOM_1),
+                device_info.get(ALPHA_ROOM_2),
+                device_info.get(ALPHA_ROOM_3),
+                device_info.get(ALPHA_ROOM_4),
+                device_info.get(ALPHA_ROOM_5),
+                device_info.get(ALPHA_ROOM_6),
+                device_info.get(ALPHA_ROOM_7),
+                device_info.get(ALPHA_ROOM_8),
+                device_info.get(ALPHA_ROOM_9),
+                device_info.get(ALPHA_ROOM_10),
+                device_info.get(ALPHA_ROOM_11),
+                device_info.get(ALPHA_ROOM_12),
+                device_info.get(ALPHA_ROOM_13),
+                device_info.get(ALPHA_ROOM_14),
+                device_info.get(ALPHA_ROOM_15),
+            ]
             self._vacuum_shared.update_user_colors(
-                add_alpha_to_rgb(self.user_colors, base_colors_array)
+                add_alpha_to_rgb(self.user_alpha, self.user_colors)
             )
             self._vacuum_shared.update_rooms_colors(
-                add_alpha_to_rgb(self.rooms_colors, rooms_color)
+                add_alpha_to_rgb(self.rooms_alpha, self.rooms_colors)
             )
         except (ValueError, IndexError, UnboundLocalError) as e:
             _LOGGER.error("Error while populating colors: %s", e)
@@ -246,6 +265,11 @@ class ValetudoCamera(Camera):
     ) -> Optional[bytes]:
         """Camera Image"""
         return self._image
+
+    @property
+    def name(self) -> str:
+        """Camera Entity Name"""
+        return self._attr_name
 
     @property
     def supported_features(self) -> int:
@@ -289,9 +313,11 @@ class ValetudoCamera(Camera):
         device_info = None
         try:
             from homeassistant.helpers.device_registry import DeviceInfo
+
             device_info = DeviceInfo
         except ImportError:
             from homeassistant.helpers.entity import DeviceInfo
+
             device_info = DeviceInfo
         return device_info(identifiers=self._identifiers)
 

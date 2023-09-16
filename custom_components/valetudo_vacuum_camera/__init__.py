@@ -90,7 +90,7 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
         mqtt_topic_base = new_data.pop(CONF_VACUUM_CONNECTION_STRING, None)
         if not mqtt_topic_base:
             _LOGGER.error(
-                "Unable to migrate to version 2.0. Could not find %s. Please delete and recreate this entry.",
+                "Unable to migrate to version 2.0. Could not find %s. Please recreate this entry.",
                 CONF_VACUUM_CONNECTION_STRING,
             )
             return False
@@ -99,7 +99,7 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
         config_entry_id = get_entity_identifier_from_mqtt(mqtt_identifier, hass)
         if not config_entry_id:
             _LOGGER.error(
-                "Unable to migrate to version 2.0. Could not find a device for %s. Please delete and recreate this entry.",
+                "Unable to migrate to version 2.0. Could not find a device for %s. Please recreate this entry.",
                 mqtt_topic_base,
             )
             return False
@@ -123,7 +123,7 @@ async def async_setup_entry(
     """Set up platform from a ConfigEntry."""
     hass.data.setdefault(DOMAIN, {})
     hass_data = dict(entry.data)
-
+    entry.unique_id
     vacuum_entity_id, vacuum_device = get_device_info(
         hass_data[CONF_VACUUM_CONFIG_ENTRY_ID], hass
     )
