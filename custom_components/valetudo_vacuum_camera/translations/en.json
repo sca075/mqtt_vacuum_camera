@@ -104,7 +104,7 @@
       }
     },
     "abort": {
-      "already_configured": "This add on has already been configured."
+      "already_configured": "Only one instance per vacuum can be configured."
     }
   },
   "options": {
