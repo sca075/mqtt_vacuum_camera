@@ -1,5 +1,4 @@
-"""config_flow ver.1.4.0"""
-
+"""config_flow ver.1.4.1"""
 import voluptuous as vol
 import logging
 from typing import Any, Dict, Optional
@@ -13,15 +12,14 @@ from homeassistant.helpers.selector import (
     ColorRGBSelector,
     EntitySelector,
     EntitySelectorConfig,
-    Selector,
-    SelectSelector,
-    BooleanSelector,
+    NumberSelector,
+    NumberSelectorConfig,
+    BooleanSelector
 )
 from homeassistant.helpers import entity_registry as er
 from .const import (
     DOMAIN,
-    ATTR_ROTATE,
-    ATTR_CROP,
+    ATTR_ROTATE, ATTR_CROP,
     ATTR_TRIM_LEFT,
     ATTR_TRIM_RIGHT,
     ATTR_TRIM_TOP,
@@ -29,33 +27,26 @@ from .const import (
     CONF_VAC_STAT,
     CONF_VACUUM_CONFIG_ENTRY_ID,
     CONF_VACUUM_ENTITY_ID,
-    COLOR_MOVE,
-    COLOR_ROBOT,
-    COLOR_WALL,
-    COLOR_CHARGER,
-    COLOR_BACKGROUND,
-    COLOR_GO_TO,
-    COLOR_NO_GO,
-    COLOR_ZONE_CLEAN,
-    COLOR_TEXT,
-    COLOR_ROOM_0,
-    COLOR_ROOM_1,
-    COLOR_ROOM_2,
-    COLOR_ROOM_3,
-    COLOR_ROOM_4,
-    COLOR_ROOM_5,
-    COLOR_ROOM_6,
-    COLOR_ROOM_7,
-    COLOR_ROOM_8,
-    COLOR_ROOM_9,
-    COLOR_ROOM_10,
-    COLOR_ROOM_11,
-    COLOR_ROOM_12,
-    COLOR_ROOM_13,
-    COLOR_ROOM_14,
+    COLOR_MOVE, COLOR_ROBOT, COLOR_WALL,
+    COLOR_CHARGER, COLOR_BACKGROUND, COLOR_GO_TO,
+    COLOR_NO_GO, COLOR_ZONE_CLEAN, COLOR_TEXT,
+    COLOR_ROOM_0, COLOR_ROOM_1, COLOR_ROOM_2,
+    COLOR_ROOM_3, COLOR_ROOM_4, COLOR_ROOM_5,
+    COLOR_ROOM_6, COLOR_ROOM_7, COLOR_ROOM_8,
+    COLOR_ROOM_9, COLOR_ROOM_10, COLOR_ROOM_11,
+    COLOR_ROOM_12, COLOR_ROOM_13, COLOR_ROOM_14,
     COLOR_ROOM_15,
+    ALPHA_BACKGROUND, ALPHA_CHARGER, ALPHA_MOVE,
+    ALPHA_NO_GO, ALPHA_WALL, ALPHA_ROBOT, ALPHA_TEXT,
+    ALPHA_GO_TO, ALPHA_ZONE_CLEAN, ALPHA_ROOM_0,
+    ALPHA_ROOM_1, ALPHA_ROOM_2, ALPHA_ROOM_3,
+    ALPHA_ROOM_4, ALPHA_ROOM_5, ALPHA_ROOM_6,
+    ALPHA_ROOM_7, ALPHA_ROOM_8, ALPHA_ROOM_9,
+    ALPHA_ROOM_10, ALPHA_ROOM_11, ALPHA_ROOM_12,
+    ALPHA_ROOM_13, ALPHA_ROOM_14, ALPHA_ROOM_15
 )
 from .common import (
+    # get_entity_identifier_from_mqtt,
     get_device_info,
     get_vacuum_mqtt_topic,
     get_vacuum_unique_id_from_mqtt_topic,
@@ -66,8 +57,7 @@ _LOGGER = logging.getLogger(__name__)
 VACUUM_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_VACUUM_ENTITY_ID): EntitySelector(
-            EntitySelectorConfig(domain=ZONE_VACUUM),
-        )
+            EntitySelectorConfig(domain=ZONE_VACUUM),)
     }
 )
 
@@ -97,7 +87,6 @@ GENERIC_COLOR_SCHEMA = vol.Schema(
     }
 )
 
-
 ROOMS_COLOR_SCHEMA = vol.Schema(
     {
         vol.Optional(COLOR_ROOM_0, default=[135, 206, 250]): ColorRGBSelector(),
@@ -121,10 +110,12 @@ ROOMS_COLOR_SCHEMA = vol.Schema(
 
 
 class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
-    VERSION = 2.0
+    VERSION = 2.1
 
     def __init__(self):
         self.data = {}
+        self.options = {}
+        self.name = ""
 
     async def async_step_user(self, user_input: Optional[Dict[str, Any]] = None):
         if user_input is not None:
@@ -138,24 +129,27 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
             for existing_entity in self._async_current_entries():
                 if (
-                    existing_entity.data.get(CONF_VACUUM_ENTITY_ID) == vacuum_entity.id
-                    or existing_entity.data.get(CONF_UNIQUE_ID) == unique_id
+                        existing_entity.data.get(CONF_VACUUM_ENTITY_ID) == vacuum_entity.id
+                        or existing_entity.data.get(CONF_UNIQUE_ID) == unique_id
                 ):
                     return self.async_abort(reason="already_configured")
 
             self.data.update(
                 {
                     CONF_VACUUM_CONFIG_ENTRY_ID: vacuum_entity.id,
-                    CONF_UNIQUE_ID: unique_id,
                 }
             )
+
+            # set the unique_id in the entry configuration
+            await self.async_set_unique_id(unique_id=unique_id, raise_on_progress=True)
+
             return await self.async_step_options_1()
 
         return self.async_show_form(step_id="user", data_schema=VACUUM_SCHEMA)
 
     async def async_step_options_1(self, user_input: Optional[Dict[str, Any]] = None):
         if user_input is not None:
-            self.data.update(
+            self.options.update(
                 {
                     "rotate_image": user_input.get(ATTR_ROTATE),
                     "crop_image": user_input.get(ATTR_CROP),
@@ -172,12 +166,12 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="options_1",
             data_schema=IMG_SCHEMA,
-            description_placeholders=self.data,
+            description_placeholders=self.options,
         )
 
     async def async_step_options_2(self, user_input: Optional[Dict[str, Any]] = None):
         if user_input is not None:
-            self.data.update(
+            self.options.update(
                 {
                     "color_charger": user_input.get(COLOR_CHARGER),
                     "color_move": user_input.get(COLOR_MOVE),
@@ -188,6 +182,16 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     "color_zone_clean": user_input.get(COLOR_ZONE_CLEAN),
                     "color_background": user_input.get(COLOR_BACKGROUND),
                     "color_text": user_input.get(COLOR_TEXT),
+                    "alpha_charger": 255.0,
+                    "alpha_move": 255.0,
+                    "alpha_wall": 255.0,
+                    "alpha_robot": 255.0,
+                    "alpha_go_to": 255.0,
+                    "alpha_no_go": 25.0,
+                    "alpha_zone_clean": 25.0,
+                    "alpha_background": 255.0,
+                    "alpha_text": 255.0,
+
                 }
             )
 
@@ -196,12 +200,12 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="options_2",
             data_schema=GENERIC_COLOR_SCHEMA,
-            description_placeholders=self.data,
+            description_placeholders=self.options,
         )
 
     async def async_step_options_3(self, user_input: Optional[Dict[str, Any]] = None):
         if user_input is not None:
-            self.data.update(
+            self.options.update(
                 {
                     "color_room_0": user_input.get(COLOR_ROOM_0),
                     "color_room_1": user_input.get(COLOR_ROOM_1),
@@ -219,6 +223,22 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     "color_room_13": user_input.get(COLOR_ROOM_13),
                     "color_room_14": user_input.get(COLOR_ROOM_14),
                     "color_room_15": user_input.get(COLOR_ROOM_15),
+                    "alpha_room_0": 255.0,
+                    "alpha_room_1": 255.0,
+                    "alpha_room_2": 255.0,
+                    "alpha_room_3": 255.0,
+                    "alpha_room_4": 255.0,
+                    "alpha_room_5": 255.0,
+                    "alpha_room_6": 255.0,
+                    "alpha_room_7": 255.0,
+                    "alpha_room_8": 255.0,
+                    "alpha_room_9": 255.0,
+                    "alpha_room_10": 255.0,
+                    "alpha_room_11": 255.0,
+                    "alpha_room_12": 255.0,
+                    "alpha_room_13": 255.0,
+                    "alpha_room_14": 255.0,
+                    "alpha_room_15": 255.0,
                 }
             )
 
@@ -226,21 +246,26 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 self.data[CONF_VACUUM_CONFIG_ENTRY_ID], self.hass
             )
 
+            # Return the data and options to config_entry
+            # This to duplicate the data recreating the options
+            # in the options flow.
+
             return self.async_create_entry(
                 title=vacuum_device.name + " Camera",
                 data=self.data,
+                options=self.options
             )
 
         return self.async_show_form(
             step_id="options_3",
             data_schema=ROOMS_COLOR_SCHEMA,
-            description_placeholders=self.data,
+            description_placeholders=self.options,
         )
 
     @staticmethod
     @callback
     def async_get_options_flow(
-        config_entry: config_entries.ConfigEntry,
+            config_entry: config_entries.ConfigEntry,
     ) -> config_entries.OptionsFlow:
         """Create the options flow."""
         return OptionsFlowHandler(config_entry)
@@ -250,9 +275,16 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self, config_entry: config_entries.ConfigEntry):
         """Initialize options flow."""
         self.config_entry = config_entry
+        self.unique_id = self.config_entry.unique_id
+        self.data = {}
         _LOGGER.debug(list(self.config_entry.options.values()))
         options_values = list(self.config_entry.options.values())
         if len(options_values) > 0:
+            config_dict: NumberSelectorConfig = {
+                "min": 0.0,  # Minimum value
+                "max": 255.0,  # Maximum value
+                "step": 1.0,  # Step value
+            }
             self.IMG_SCHEMA = vol.Schema(
                 {
                     vol.Required(
@@ -280,6 +312,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     ): BooleanSelector(),
                 }
             )
+            _LOGGER.debug("Defined Image Schema")
             self.COLOR_1_SCHEMA = vol.Schema(
                 {
                     vol.Optional(
@@ -313,6 +346,41 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     ): ColorRGBSelector(),
                 }
             )
+            _LOGGER.debug("Defined Color 1 Schema")
+            self.ALPHA_1_SCHEMA = vol.Schema(
+                {
+                    vol.Optional(
+                        ALPHA_BACKGROUND,
+                        default=config_entry.options.get("alpha_background"),
+                    ): NumberSelector(config_dict),
+                    vol.Optional(
+                        ALPHA_ZONE_CLEAN,
+                        default=config_entry.options.get("alpha_zone_clean"),
+                    ): NumberSelector(config_dict),
+                    vol.Optional(
+                        ALPHA_WALL, default=config_entry.options.get("alpha_wall")
+                    ): NumberSelector(config_dict),
+                    vol.Optional(
+                        ALPHA_ROBOT, default=config_entry.options.get("alpha_robot")
+                    ): NumberSelector(config_dict),
+                    vol.Optional(
+                        ALPHA_CHARGER, default=config_entry.options.get("alpha_charger")
+                    ): NumberSelector(config_dict),
+                    vol.Optional(
+                        ALPHA_MOVE, default=config_entry.options.get("alpha_move")
+                    ): NumberSelector(config_dict),
+                    vol.Optional(
+                        ALPHA_GO_TO, default=config_entry.options.get("alpha_go_to")
+                    ): NumberSelector(config_dict),
+                    vol.Optional(
+                        ALPHA_NO_GO, default=config_entry.options.get("alpha_no_go")
+                    ): NumberSelector(config_dict),
+                    vol.Optional(
+                        ALPHA_TEXT, default=config_entry.options.get("alpha_text")
+                    ): NumberSelector(config_dict),
+                }
+            )
+            _LOGGER.debug("Defined Alpha 1 Schema")
             self.COLOR_2_SCHEMA = vol.Schema(
                 {
                     vol.Optional(
@@ -365,122 +433,62 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     ): ColorRGBSelector(),
                 }
             )
-        else:
-            self.IMG_SCHEMA = vol.Schema(
-                {
-                    vol.Required(
-                        ATTR_ROTATE, default=config_entry.data.get("rotate_image")
-                    ): vol.In(["0", "90", "180", "270"]),
-                    vol.Required(
-                        ATTR_CROP, default=config_entry.data.get("crop_image")
-                    ): cv.string,
-                    vol.Optional(
-                        ATTR_TRIM_TOP, default=config_entry.data.get("trim_top")
-                    ): cv.string,
-                    vol.Optional(
-                        ATTR_TRIM_BOTTOM, default=config_entry.data.get("trim_bottom")
-                    ): cv.string,
-                    vol.Optional(
-                        ATTR_TRIM_LEFT, default=config_entry.data.get("trim_left")
-                    ): cv.string,
-                    vol.Optional(
-                        ATTR_TRIM_RIGHT, default=config_entry.data.get("trim_right")
-                    ): cv.string,
-                    vol.Optional(
-                        CONF_VAC_STAT, default=config_entry.data.get("show_vac_status")
-                    ): BooleanSelector(),
-                }
-            )
-            self.COLOR_1_SCHEMA = vol.Schema(
+            _LOGGER.debug("Defined Color 2 Schema")
+            self.ALPHA_2_SCHEMA = vol.Schema(
                 {
                     vol.Optional(
-                        COLOR_BACKGROUND,
-                        default=config_entry.data.get("color_background"),
-                    ): ColorRGBSelector(),
+                        ALPHA_ROOM_0, default=config_entry.options.get("alpha_room_0"),
+                    ): NumberSelector(config_dict),
                     vol.Optional(
-                        COLOR_ZONE_CLEAN,
-                        default=config_entry.data.get("color_zone_clean"),
-                    ): ColorRGBSelector(),
+                        ALPHA_ROOM_1, default=config_entry.options.get("alpha_room_1"),
+                    ): NumberSelector(config_dict),
                     vol.Optional(
-                        COLOR_WALL, default=config_entry.data.get("color_wall")
-                    ): ColorRGBSelector(),
+                        ALPHA_ROOM_2, default=config_entry.options.get("alpha_room_2")
+                    ): NumberSelector(config_dict),
                     vol.Optional(
-                        COLOR_ROBOT, default=config_entry.data.get("color_robot")
-                    ): ColorRGBSelector(),
+                        ALPHA_ROOM_3, default=config_entry.options.get("alpha_room_3")
+                    ): NumberSelector(config_dict),
                     vol.Optional(
-                        COLOR_CHARGER, default=config_entry.data.get("color_charger")
-                    ): ColorRGBSelector(),
+                        ALPHA_ROOM_4, default=config_entry.options.get("alpha_room_4")
+                    ): NumberSelector(config_dict),
                     vol.Optional(
-                        COLOR_MOVE, default=config_entry.data.get("color_move")
-                    ): ColorRGBSelector(),
+                        ALPHA_ROOM_5, default=config_entry.options.get("alpha_room_5")
+                    ): NumberSelector(config_dict),
                     vol.Optional(
-                        COLOR_GO_TO, default=config_entry.data.get("color_go_to")
-                    ): ColorRGBSelector(),
+                        ALPHA_ROOM_6, default=config_entry.options.get("alpha_room_6")
+                    ): NumberSelector(config_dict),
                     vol.Optional(
-                        COLOR_NO_GO, default=config_entry.data.get("color_no_go")
-                    ): ColorRGBSelector(),
+                        ALPHA_ROOM_7, default=config_entry.options.get("alpha_room_7")
+                    ): NumberSelector(config_dict),
                     vol.Optional(
-                        COLOR_TEXT, default=config_entry.data.get("color_text")
-                    ): ColorRGBSelector(),
+                        ALPHA_ROOM_8, default=config_entry.options.get("alpha_room_8")
+                    ): NumberSelector(config_dict),
+                    vol.Optional(
+                        ALPHA_ROOM_9, default=config_entry.options.get("alpha_room_9")
+                    ): NumberSelector(config_dict),
+                    vol.Optional(
+                        ALPHA_ROOM_10, default=config_entry.options.get("alpha_room_10")
+                    ): NumberSelector(config_dict),
+                    vol.Optional(
+                        ALPHA_ROOM_11, default=config_entry.options.get("alpha_room_11")
+                    ): NumberSelector(config_dict),
+                    vol.Optional(
+                        ALPHA_ROOM_12, default=config_entry.options.get("alpha_room_12")
+                    ): NumberSelector(config_dict),
+                    vol.Optional(
+                        ALPHA_ROOM_13, default=config_entry.options.get("alpha_room_13")
+                    ): NumberSelector(config_dict),
+                    vol.Optional(
+                        ALPHA_ROOM_14, default=config_entry.options.get("alpha_room_14")
+                    ): NumberSelector(config_dict),
+                    vol.Optional(
+                        ALPHA_ROOM_15, default=config_entry.options.get("alpha_room_15")
+                    ): NumberSelector(config_dict)
                 }
             )
-            self.COLOR_2_SCHEMA = vol.Schema(
-                {
-                    vol.Optional(
-                        COLOR_ROOM_0, default=config_entry.data.get("color_room_0")
-                    ): ColorRGBSelector(),
-                    vol.Optional(
-                        COLOR_ROOM_1, default=config_entry.data.get("color_room_1")
-                    ): ColorRGBSelector(),
-                    vol.Optional(
-                        COLOR_ROOM_2, default=config_entry.data.get("color_room_2")
-                    ): ColorRGBSelector(),
-                    vol.Optional(
-                        COLOR_ROOM_3, default=config_entry.data.get("color_room_3")
-                    ): ColorRGBSelector(),
-                    vol.Optional(
-                        COLOR_ROOM_4, default=config_entry.data.get("color_room_4")
-                    ): ColorRGBSelector(),
-                    vol.Optional(
-                        COLOR_ROOM_5, default=config_entry.data.get("color_room_5")
-                    ): ColorRGBSelector(),
-                    vol.Optional(
-                        COLOR_ROOM_6, default=config_entry.data.get("color_room_6")
-                    ): ColorRGBSelector(),
-                    vol.Optional(
-                        COLOR_ROOM_7, default=config_entry.data.get("color_room_7")
-                    ): ColorRGBSelector(),
-                    vol.Optional(
-                        COLOR_ROOM_8, default=config_entry.data.get("color_room_8")
-                    ): ColorRGBSelector(),
-                    vol.Optional(
-                        COLOR_ROOM_9, default=config_entry.data.get("color_room_9")
-                    ): ColorRGBSelector(),
-                    vol.Optional(
-                        COLOR_ROOM_10, default=config_entry.data.get("color_room_10")
-                    ): ColorRGBSelector(),
-                    vol.Optional(
-                        COLOR_ROOM_11, default=config_entry.data.get("color_room_11")
-                    ): ColorRGBSelector(),
-                    vol.Optional(
-                        COLOR_ROOM_12, default=config_entry.data.get("color_room_12")
-                    ): ColorRGBSelector(),
-                    vol.Optional(
-                        COLOR_ROOM_13, default=config_entry.data.get("color_room_13")
-                    ): ColorRGBSelector(),
-                    vol.Optional(
-                        COLOR_ROOM_14, default=config_entry.data.get("color_room_14")
-                    ): ColorRGBSelector(),
-                    vol.Optional(
-                        COLOR_ROOM_15, default=config_entry.data.get("color_room_15")
-                    ): ColorRGBSelector(),
-                }
-            )
-        self.data = None
+            _LOGGER.debug("Defined Alpha 2 Schema")
 
     async def async_step_init(self, user_input: Optional[Dict[str, Any]] = None):
-        self.data = user_input
-
         if user_input is not None:
             self.data.update(
                 {
@@ -503,10 +511,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_init_2(self, user_input: Optional[Dict[str, Any]] = None):
         _LOGGER.debug("async_step_init_2 called")
-        _LOGGER.debug(
-            "color robot in the options: %s",
-            self.config_entry.options.get("color_robot"),
-        )
         if user_input is not None:
             self.data.update(
                 {
@@ -521,12 +525,34 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     "color_text": user_input.get(COLOR_TEXT),
                 }
             )
-
-            return await self.async_step_init_3()
+            return await self.async_step_alpha_1()
         _LOGGER.debug("self.data before show form: %s", self.data)
         return self.async_show_form(
             step_id="init_2",
             data_schema=self.COLOR_1_SCHEMA,
+            description_placeholders=self.data,
+        )
+
+    async def async_step_alpha_1(self, user_input: Optional[Dict[str, Any]] = None):
+        if user_input is not None:
+            self.data.update(
+                {
+                    "alpha_charger": user_input.get(ALPHA_CHARGER),
+                    "alpha_move": user_input.get(ALPHA_MOVE),
+                    "alpha_wall": user_input.get(ALPHA_WALL),
+                    "alpha_robot": user_input.get(ALPHA_ROBOT),
+                    "alpha_go_to": user_input.get(ALPHA_GO_TO),
+                    "alpha_no_go": user_input.get(ALPHA_NO_GO),
+                    "alpha_zone_clean": user_input.get(ALPHA_ZONE_CLEAN),
+                    "alpha_background": user_input.get(ALPHA_BACKGROUND),
+                    "alpha_text": user_input.get(ALPHA_TEXT),
+                }
+            )
+            return await self.async_step_init_3()
+
+        return self.async_show_form(
+            step_id="alpha_1",
+            data_schema=self.ALPHA_1_SCHEMA,
             description_placeholders=self.data,
         )
 
@@ -553,13 +579,48 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 }
             )
 
+            return await self.async_step_alpha_2()
+
+        return self.async_show_form(
+            step_id="init_3",
+            data_schema=self.COLOR_2_SCHEMA,
+            description_placeholders=self.data,
+        )
+
+    async def async_step_alpha_2(self, user_input: Optional[Dict[str, Any]] = None):
+        if user_input is not None:
+            self.data.update(
+                {
+                    "alpha_room_0": user_input.get(ALPHA_ROOM_0),
+                    "alpha_room_1": user_input.get(ALPHA_ROOM_1),
+                    "alpha_room_2": user_input.get(ALPHA_ROOM_2),
+                    "alpha_room_3": user_input.get(ALPHA_ROOM_3),
+                    "alpha_room_4": user_input.get(ALPHA_ROOM_4),
+                    "alpha_room_5": user_input.get(ALPHA_ROOM_5),
+                    "alpha_room_6": user_input.get(ALPHA_ROOM_6),
+                    "alpha_room_7": user_input.get(ALPHA_ROOM_7),
+                    "alpha_room_8": user_input.get(ALPHA_ROOM_8),
+                    "alpha_room_9": user_input.get(ALPHA_ROOM_9),
+                    "alpha_room_10": user_input.get(ALPHA_ROOM_10),
+                    "alpha_room_11": user_input.get(ALPHA_ROOM_11),
+                    "alpha_room_12": user_input.get(ALPHA_ROOM_12),
+                    "alpha_room_13": user_input.get(ALPHA_ROOM_13),
+                    "alpha_room_14": user_input.get(ALPHA_ROOM_14),
+                    "alpha_room_15": user_input.get(ALPHA_ROOM_15),
+                }
+            )
+
+            _LOGGER.debug("self.data at the end %s", self.data)
+            _, vacuum_device = get_device_info(
+                self.config_entry.data.get(CONF_VACUUM_CONFIG_ENTRY_ID), self.hass
+            )
             return self.async_create_entry(
                 title="",
                 data=self.data,
             )
 
         return self.async_show_form(
-            step_id="init_3",
-            data_schema=self.COLOR_2_SCHEMA,
+            step_id="alpha_2",
+            data_schema=self.ALPHA_2_SCHEMA,
             description_placeholders=self.data,
         )

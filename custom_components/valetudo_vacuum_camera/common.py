@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import logging
+
 from homeassistant.core import HomeAssistant
 from homeassistant.components import mqtt
 from homeassistant.components.mqtt import DOMAIN as MQTT_DOMAIN
@@ -9,7 +12,7 @@ from homeassistant.helpers import entity_registry as er
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
-def get_device_info(config_entry_id: str, hass: HomeAssistant) -> str:
+def get_device_info(config_entry_id: str, hass: HomeAssistant) -> tuple[str, DeviceEntry] | None:
     """
     Fetches the vacuum's entity ID and Device from the
     entity registry and device registry.
@@ -30,11 +33,11 @@ def get_device_info(config_entry_id: str, hass: HomeAssistant) -> str:
         _LOGGER.error("Unable to locate vacuum's device ID. Was it removed?")
         return None
 
-    return (vacuum_entity_id, vacuum_device)
+    return vacuum_entity_id, vacuum_device
 
 
 def get_entity_identifier_from_mqtt(
-    mqtt_identifier: str, hass: HomeAssistant
+        mqtt_identifier: str, hass: HomeAssistant
 ) -> str | None:
     """
     Fetches the vacuum's entity_registry id from the mqtt topic identifier.

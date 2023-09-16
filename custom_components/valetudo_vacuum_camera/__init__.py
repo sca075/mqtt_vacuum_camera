@@ -3,7 +3,7 @@ import logging
 
 from homeassistant import config_entries, core
 from homeassistant.components import mqtt
-from homeassistant.const import CONF_UNIQUE_ID, Platform
+from homeassistant.const import CONF_UNIQUE_ID, Platform, CONF_NAME
 from homeassistant.exceptions import ConfigEntryNotReady
 from .const import (
     CONF_MQTT_HOST,
@@ -90,7 +90,7 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
         mqtt_topic_base = new_data.pop(CONF_VACUUM_CONNECTION_STRING, None)
         if not mqtt_topic_base:
             _LOGGER.error(
-                "Unable to migrate to version 2.0. Could not find %s. Please delete and recreate this entry.",
+                "Unable to migrate to version 2.0. Could not find %s. Please recreate this entry.",
                 CONF_VACUUM_CONNECTION_STRING,
             )
             return False
@@ -99,7 +99,7 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
         config_entry_id = get_entity_identifier_from_mqtt(mqtt_identifier, hass)
         if not config_entry_id:
             _LOGGER.error(
-                "Unable to migrate to version 2.0. Could not find a device for %s. Please delete and recreate this entry.",
+                "Unable to migrate to version 2.0. Could not find a device for %s. Please recreate this entry.",
                 mqtt_topic_base,
             )
             return False
@@ -112,6 +112,84 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
 
         config_entry.version = 2
         hass.config_entries.async_update_entry(config_entry, data=new_data)
+
+    if config_entry.version == 2.0:
+        _LOGGER.debug("Migrating from version %s", config_entry.version)
+        new_data = {**config_entry.data}
+        new_options = {**config_entry.options}
+
+        if len(dict(new_options)) == 0:
+            new_options["rotate_image"] = new_data["rotate_image"]
+            new_options["crop_image"] = new_data["crop_image"]
+            new_options["trim_top"] = new_data["trim_top"]
+            new_options["trim_bottom"] = new_data["trim_bottom"]
+            new_options["trim_left"] = new_data["trim_left"]
+            new_options["show_vac_status"] = new_data["show_vac_status"]
+            new_options["color_charger"] = new_data["color_charger"]
+            new_options["color_move"] = new_data["color_move"]
+            new_options["color_wall"] = new_data["color_wall"]
+            new_options["color_robot"] = new_data["color_robot"]
+            new_options["color_zone_clean"] = new_data["color_zone_clean"]
+            new_options["color_background"] = new_data["color_background"]
+            new_options["color_text"] = new_data["color_text"]
+            new_options["color_room_0"] = new_data["color_room_0"]
+            new_options["color_room_1"] = new_data["color_room_1"]
+            new_options["color_room_2"] = new_data["color_room_2"]
+            new_options["color_room_3"] = new_data["color_room_3"]
+            new_options["color_room_4"] = new_data["color_room_4"]
+            new_options["color_room_5"] = new_data["color_room_5"]
+            new_options["color_room_6"] = new_data["color_room_6"]
+            new_options["color_room_7"] = new_data["color_room_7"]
+            new_options["color_room_8"] = new_data["color_room_8"]
+            new_options["color_room_9"] = new_data["color_room_9"]
+            new_options["color_room_10"] = new_data["color_room_10"]
+            new_options["color_room_11"] = new_data["color_room_11"]
+            new_options["color_room_12"] = new_data["color_room_12"]
+            new_options["color_room_13"] = new_data["color_room_13"]
+            new_options["color_room_14"] = new_data["color_room_14"]
+            new_options["color_room_15"] = new_data["color_room_15"]
+        # Remove unwanted data from new_data
+        unwanted_keys = ["rotate_image", "crop_image", "trim_top", "trim_bottom",
+                         "trim_left", "trim_right", "show_vac_status", "color_charger",
+                         "color_move", "color_wall", "color_robot", "color_go_to",
+                         "color_zone_clean", "color_background", "color_text",
+                         "color_room_0", "color_room_1", "color_room_2", "color_room_3",
+                         "color_room_4", "color_room_5", "color_room_6", "color_room_7",
+                         "color_room_8", "color_room_9", "color_room_10", "color_room_11",
+                         "color_room_12", "color_room_13", "color_room_14", "color_room_15"]
+        for key in unwanted_keys:
+            new_data.pop(key, None)
+
+        new_options.update({"alpha_charger": 255.0,
+                            "alpha_move": 255.0,
+                            "alpha_wall": 255.0,
+                            "alpha_robot": 255.0,
+                            "alpha_go_to": 255.0,
+                            "alpha_no_go": 25.0,
+                            "alpha_zone_clean": 25.0,
+                            "alpha_background": 255.0,
+                            "alpha_text": 255.0,
+                            "alpha_room_0": 255.0,
+                            "alpha_room_1": 255.0,
+                            "alpha_room_2": 255.0,
+                            "alpha_room_3": 255.0,
+                            "alpha_room_4": 255.0,
+                            "alpha_room_5": 255.0,
+                            "alpha_room_6": 255.0,
+                            "alpha_room_7": 255.0,
+                            "alpha_room_8": 255.0,
+                            "alpha_room_9": 255.0,
+                            "alpha_room_10": 255.0,
+                            "alpha_room_11": 255.0,
+                            "alpha_room_12": 255.0,
+                            "alpha_room_13": 255.0,
+                            "alpha_room_14": 255.0,
+                            "alpha_room_15": 255.0
+                            })
+
+        config_entry.version = 2.1
+        hass.config_entries.async_update_entry(config_entry, data=new_data)
+        hass.config_entries.async_update_entry(config_entry, options=new_options)
 
     _LOGGER.info("Migration to version %s successful", config_entry.version)
     return True
@@ -141,6 +219,8 @@ async def async_setup_entry(
         {
             CONF_VACUUM_CONNECTION_STRING: "/".join(mqtt_topic_vacuum.split("/")[:-1]),
             CONF_VACUUM_IDENTIFIERS: vacuum_device.identifiers,
+            CONF_UNIQUE_ID: entry.unique_id,
+            CONF_NAME: "Camera",
         }
     )
 

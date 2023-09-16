@@ -1,4 +1,4 @@
-"""Colors RGBA Version 1.3.2"""
+"""Colors RGBA Version 1.4.1"""
 
 import logging
 
@@ -80,33 +80,31 @@ color_array = [
 ]
 
 
-def add_alpha_to_rgb(rgb_colors, rgba_colors):
+def add_alpha_to_rgb(alpha_channels, rgb_colors):
     """
-    Add alpha channel to RGB colors using corresponding RGBA colors.
+    Add alpha channel to RGB colors using corresponding alpha channels.
 
     Args:
+        alpha_channels (List[Optional[int]]): List of alpha channel values (0-255).
         rgb_colors (List[Tuple[int, int, int]]): List of RGB colors.
-        rgba_colors (List[Optional[Tuple[int, int, int, int]]]): List of RGBA colors.
 
     Returns:
         List[Tuple[int, int, int, int]]: List of RGBA colors with alpha channel added.
     """
-    if len(rgb_colors) != len(rgba_colors):
+    if len(alpha_channels) != len(rgb_colors):
         _LOGGER.error("Input lists must have the same length.")
         return []
 
     result = []
-    for rgb, rgba in zip(rgb_colors, rgba_colors):
+    for alpha, rgb in zip(alpha_channels, rgb_colors):
         try:
-            if (rgb and len(rgb) != 3) or (rgba and len(rgba) != 4):
-                _LOGGER.warning(
-                    "RGB and RGBA colors must be tuples of length 3 and 4, respectively."
-                )
+            if alpha is not None and (alpha < 0 or alpha > 255):
+                _LOGGER.warning("Alpha channel value must be in the range 0-255.")
             if rgb is None:
-                result.append((*rgba,))
+                result.append((0, 0, 0, alpha))
             else:
-                result.append((*rgb, rgba[3]))
+                result.append((rgb[0], rgb[1], rgb[2], alpha))
         except ValueError:
-            result.append(rgba)
+            result.append(None)
 
     return result
