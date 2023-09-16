@@ -85,7 +85,7 @@ def add_alpha_to_rgb(alpha_channels, rgb_colors):
     Add alpha channel to RGB colors using corresponding alpha channels.
 
     Args:
-        alpha_channels (List[Optional[int]]): List of alpha channel values (0-255).
+        alpha_channels (List[Optional[float]]): List of alpha channel values (0.0-255.0).
         rgb_colors (List[Tuple[int, int, int]]): List of RGB colors.
 
     Returns:
@@ -98,13 +98,17 @@ def add_alpha_to_rgb(alpha_channels, rgb_colors):
     result = []
     for alpha, rgb in zip(alpha_channels, rgb_colors):
         try:
-            if alpha is not None and (alpha < 0 or alpha > 255):
-                _LOGGER.warning("Alpha channel value must be in the range 0-255.")
+            alpha_int = int(alpha)
+            if alpha_int < 0:
+                alpha_int = 0
+            elif alpha_int > 255:
+                alpha_int = 255
+
             if rgb is None:
-                result.append((0, 0, 0, alpha))
+                result.append((0, 0, 0, alpha_int))
             else:
-                result.append((rgb[0], rgb[1], rgb[2], alpha))
-        except ValueError:
+                result.append((rgb[0], rgb[1], rgb[2], alpha_int))
+        except (ValueError, TypeError):
             result.append(None)
 
     return result
