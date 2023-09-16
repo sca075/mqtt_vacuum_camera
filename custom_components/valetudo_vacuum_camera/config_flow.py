@@ -110,7 +110,7 @@ ROOMS_COLOR_SCHEMA = vol.Schema(
 
 
 class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
-    VERSION = 2.0
+    VERSION = 2.1
 
     def __init__(self):
         self.data = {}
@@ -137,7 +137,6 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             self.data.update(
                 {
                     CONF_VACUUM_CONFIG_ENTRY_ID: vacuum_entity.id,
-                    CONF_UNIQUE_ID: unique_id,
                 }
             )
 

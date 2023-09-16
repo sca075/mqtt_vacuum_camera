@@ -1,4 +1,4 @@
-"""Version 1.3.5"""
+"""Version 1.4.1"""
 # Image Handler Module
 # Collection of routines to extract data from the received json.
 # It returns values and images relative to the Map Data extrapolated from the vacuum json.
@@ -554,7 +554,7 @@ class MapImageHandler(object):
         try:
             if m_json is not None:
                 _LOGGER.info(file_name + ":Composing the image for the camera.")
-                #buffer json data
+                # buffer json data
                 self.json_data = m_json
 
                 if self.room_propriety:
@@ -672,6 +672,7 @@ class MapImageHandler(object):
                                     no_go_zones = None
                                     _LOGGER.debug(file_name + ": No Go area not found.")
                                 if zones_clean:
+                                    self.frame_number = 1
                                     img_np_array = self.draw_zone(
                                         img_np_array, zones_clean, color_zone_clean
                                     )
@@ -701,6 +702,7 @@ class MapImageHandler(object):
                         self.frame_number = 0
                 # All below will be drawn each time
                 if go_to:
+                    self.frame_number = 1
                     img_np_array = self.draw_go_to_flag(
                         img_np_array,
                         (go_to[0]["points"][0], go_to[0]["points"][1]),
