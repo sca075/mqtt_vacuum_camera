@@ -3,7 +3,7 @@ import logging
 
 from homeassistant import config_entries, core
 from homeassistant.components import mqtt
-from homeassistant.const import CONF_UNIQUE_ID, Platform, CONF_NAME
+from homeassistant.const import CONF_UNIQUE_ID, Platform
 from homeassistant.exceptions import ConfigEntryNotReady
 from .const import (
     CONF_MQTT_HOST,
@@ -129,6 +129,7 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
             new_options["color_move"] = new_data["color_move"]
             new_options["color_wall"] = new_data["color_wall"]
             new_options["color_robot"] = new_data["color_robot"]
+            new_options["color_no_go"] = new_data["color_no_go"]
             new_options["color_zone_clean"] = new_data["color_zone_clean"]
             new_options["color_background"] = new_data["color_background"]
             new_options["color_text"] = new_data["color_text"]
@@ -152,7 +153,7 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
         unwanted_keys = ["rotate_image", "crop_image", "trim_top", "trim_bottom",
                          "trim_left", "trim_right", "show_vac_status", "color_charger",
                          "color_move", "color_wall", "color_robot", "color_go_to",
-                         "color_zone_clean", "color_background", "color_text",
+                         "color_zone_clean", "color_background", "color_text", "color_no_go",
                          "color_room_0", "color_room_1", "color_room_2", "color_room_3",
                          "color_room_4", "color_room_5", "color_room_6", "color_room_7",
                          "color_room_8", "color_room_9", "color_room_10", "color_room_11",
@@ -220,7 +221,6 @@ async def async_setup_entry(
             CONF_VACUUM_CONNECTION_STRING: "/".join(mqtt_topic_vacuum.split("/")[:-1]),
             CONF_VACUUM_IDENTIFIERS: vacuum_device.identifiers,
             CONF_UNIQUE_ID: entry.unique_id,
-            CONF_NAME: "Camera",
         }
     )
 
