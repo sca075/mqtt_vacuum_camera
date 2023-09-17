@@ -84,7 +84,8 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
 
     if config_entry.version <= 2.0:
         new_data = {**config_entry.data}
-        if config_entry.version is not 2.0:
+        if config_entry.version < 2.0:
+            _LOGGER.debug("Migration for version 1.4.0 in progress.")
             new_data.pop(CONF_MQTT_HOST, None)
             new_data.pop(CONF_MQTT_USER, None)
             new_data.pop(CONF_MQTT_PASS, None)
@@ -110,7 +111,8 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
                     CONF_VACUUM_CONFIG_ENTRY_ID: config_entry_id,
                 }
             )
-            _LOGGER.debug("Migrating to version 2.0 completed.. config update to 2.1 in progress")
+            _LOGGER.debug("Migrating to version 2.0 completed..")
+        _LOGGER("config update for v1.4.1 in progress...")
         if mqtt_topic_base is not "":
             config_entry.unique_id = get_vacuum_unique_id_from_mqtt_topic(mqtt_topic_base)
         else:
