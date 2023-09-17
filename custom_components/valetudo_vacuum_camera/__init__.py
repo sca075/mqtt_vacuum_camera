@@ -81,44 +81,44 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
         hass.config_entries.async_update_entry(config_entry, data=new_data)
         hass.config_entries.async_update_entry(config_entry, options=new_options)
 
-    if config_entry.version < 2:
+    if config_entry.version <= 2.0:
         new_data = {**config_entry.data}
-        new_data.pop(CONF_MQTT_HOST, None)
-        new_data.pop(CONF_MQTT_USER, None)
-        new_data.pop(CONF_MQTT_PASS, None)
+        if config_entry.version is not 2.0:
+            new_data.pop(CONF_MQTT_HOST, None)
+            new_data.pop(CONF_MQTT_USER, None)
+            new_data.pop(CONF_MQTT_PASS, None)
 
-        mqtt_topic_base = new_data.pop(CONF_VACUUM_CONNECTION_STRING, None)
-        if not mqtt_topic_base:
-            _LOGGER.error(
-                "Unable to migrate to version 2.0. Could not find %s. Please recreate this entry.",
-                CONF_VACUUM_CONNECTION_STRING,
+
+            mqtt_topic_base = new_data.pop(CONF_VACUUM_CONNECTION_STRING, None)
+            if not mqtt_topic_base:
+                _LOGGER.error(
+                    "Unable to migrate to version 2.0. Could not find %s. Please recreate this entry.",
+                    CONF_VACUUM_CONNECTION_STRING,
+                )
+                return False
+
+            mqtt_identifier = mqtt_topic_base.split("/")[1]
+            config_entry_id = get_entity_identifier_from_mqtt(mqtt_identifier, hass)
+            if not config_entry_id:
+                _LOGGER.error(
+                    "Unable to migrate to version 2.0. Could not find a device for %s. Please recreate this entry.",
+                    mqtt_topic_base,
+                )
+                return False
+            new_data.update(
+                {
+                    CONF_VACUUM_CONFIG_ENTRY_ID: config_entry_id,
+                    CONF_UNIQUE_ID: get_vacuum_unique_id_from_mqtt_topic(mqtt_topic_base),
+                }
             )
-            return False
 
-        mqtt_identifier = mqtt_topic_base.split("/")[1]
-        config_entry_id = get_entity_identifier_from_mqtt(mqtt_identifier, hass)
-        if not config_entry_id:
-            _LOGGER.error(
-                "Unable to migrate to version 2.0. Could not find a device for %s. Please recreate this entry.",
-                mqtt_topic_base,
-            )
-            return False
-        new_data.update(
-            {
-                CONF_VACUUM_CONFIG_ENTRY_ID: config_entry_id,
-                CONF_UNIQUE_ID: get_vacuum_unique_id_from_mqtt_topic(mqtt_topic_base),
-            }
-        )
+            _LOGGER.debug("Migrating to version 2.0 completed.. Starting migration to version 2.1")
 
-        config_entry.version = 2
-        hass.config_entries.async_update_entry(config_entry, data=new_data)
-
-    if config_entry.version == 2.0:
-        _LOGGER.debug("Migrating from version %s", config_entry.version)
         new_data = {**config_entry.data}
         new_options = {**config_entry.options}
 
         if len(dict(new_options)) == 0:
+            _LOGGER.debug("No Camera Options in the Configuration..")
             new_options["rotate_image"] = new_data["rotate_image"]
             new_options["crop_image"] = new_data["crop_image"]
             new_options["trim_top"] = new_data["trim_top"]
@@ -149,6 +149,8 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
             new_options["color_room_13"] = new_data["color_room_13"]
             new_options["color_room_14"] = new_data["color_room_14"]
             new_options["color_room_15"] = new_data["color_room_15"]
+
+        _LOGGER.debug("Config Entry data Clean up...")
         # Remove unwanted data from new_data
         unwanted_keys = ["rotate_image", "crop_image", "trim_top", "trim_bottom",
                          "trim_left", "trim_right", "show_vac_status", "color_charger",
@@ -161,6 +163,7 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
         for key in unwanted_keys:
             new_data.pop(key, None)
 
+        _LOGGER.debug("Adding Transparency data to the Options..")
         new_options.update({"alpha_charger": 255.0,
                             "alpha_move": 255.0,
                             "alpha_wall": 255.0,
