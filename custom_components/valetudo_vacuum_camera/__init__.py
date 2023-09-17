@@ -34,6 +34,7 @@ async def options_update_listener(
 
 
 async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
+    mqtt_topic_base = ""
     """Migrate old entry."""
     _LOGGER.debug("Migrating from version %s", config_entry.version)
 
@@ -88,7 +89,6 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
             new_data.pop(CONF_MQTT_USER, None)
             new_data.pop(CONF_MQTT_PASS, None)
 
-
             mqtt_topic_base = new_data.pop(CONF_VACUUM_CONNECTION_STRING, None)
             if not mqtt_topic_base:
                 _LOGGER.error(
@@ -108,11 +108,17 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
             new_data.update(
                 {
                     CONF_VACUUM_CONFIG_ENTRY_ID: config_entry_id,
-                    CONF_UNIQUE_ID: get_vacuum_unique_id_from_mqtt_topic(mqtt_topic_base),
                 }
             )
-
             _LOGGER.debug("Migrating to version 2.0 completed.. Starting migration to version 2.1")
+        if mqtt_topic_base is not "":
+            config_entry.unique_id = get_vacuum_unique_id_from_mqtt_topic(mqtt_topic_base)
+        else:
+            config_entry.unique_id = new_data.pop("unique_id", None)
+        _LOGGER.debug("Updating unique_id .. to %s", config_entry.unique_id)
+        if not config_entry.unique_id:
+            _LOGGER.error("Migration Failed, please reconfigure Valetudo Vacuum Camera.")
+            return False
 
         new_data = {**config_entry.data}
         new_options = {**config_entry.options}
