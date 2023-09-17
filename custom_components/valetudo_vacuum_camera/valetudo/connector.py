@@ -50,7 +50,7 @@ class ValetudoConnector:
         if self._img_payload and (self._data_in is True):
             with open(
                 str(os.getcwd())
-                + "/custom_components/valetudo_vacuum_camera/snapshots/mqtt_"
+                + "/www/"
                 + file_name
                 + ".raw",
                 "wb",

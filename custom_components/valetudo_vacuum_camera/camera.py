@@ -2,7 +2,6 @@
 from __future__ import annotations
 import logging
 import os
-import json
 from io import BytesIO
 from datetime import datetime
 from PIL import Image
@@ -30,7 +29,7 @@ from .valetudo.image_handler import (
 from .utils.colors import (
     add_alpha_to_rgb,
 )
-
+from .snapshots.snapshot import Snapshots
 from .valetudo.vacuum import Vacuum
 from .const import (
     CONF_VACUUM_CONNECTION_STRING,
@@ -106,9 +105,10 @@ class ValetudoCamera(Camera):
 
     def __init__(self, hass, device_info):
         super().__init__()
+        _LOGGER.debug("Camera Starting up..")
         self.hass = hass
         self._directory_path = os.getcwd()
-        _LOGGER.debug("Camera Starting up..")
+        self._snapshots = Snapshots(self._directory_path + "/www/")
         self._mqtt_listen_topic = device_info.get(CONF_VACUUM_CONNECTION_STRING)
         if self._mqtt_listen_topic:
             self._mqtt_listen_topic = str(self._mqtt_listen_topic)
@@ -346,16 +346,8 @@ class ValetudoCamera(Camera):
                 # Save mqtt raw data file.
                 if self._mqtt is not None:
                     self._mqtt.save_payload(self.file_name)
-                # Write the JSON data to the file.
-                with open(
-                        self._directory_path
-                        + "/custom_components/valetudo_vacuum_camera/snapshots/"
-                        + self.file_name
-                        + ".json",
-                        "w",
-                ) as file:
-                    json_data = json.dumps(json_data, indent=4)
-                    file.write(json_data)
+                # Write the JSON and data to the file.
+                self._snapshots.data_snapshot(self.file_name, json_data)
             # Save image ready for snapshot.
             image_data.save(self.snapshot_img)
             _LOGGER.info(self.file_name + ": Camera Snapshot Taken.")

@@ -123,7 +123,7 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
         new_options = {**config_entry.options}
 
         if len(dict(new_options)) == 0:
-            _LOGGER.debug("No Camera Options in the Configuration..")
+            _LOGGER.debug("Camera Options not in the Configuration..")
             new_options["rotate_image"] = new_data["rotate_image"]
             new_options["crop_image"] = new_data["crop_image"]
             new_options["trim_top"] = new_data["trim_top"]

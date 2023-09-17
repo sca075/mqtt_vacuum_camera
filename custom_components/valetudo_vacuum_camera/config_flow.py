@@ -276,8 +276,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         """Initialize options flow."""
         self.config_entry = config_entry
         self.unique_id = self.config_entry.unique_id
-        self.data = {}
-        _LOGGER.debug(list(self.config_entry.options.values()))
+        self.options = {}
+        _LOGGER.debug("Options edit in progress.. options before edit: ", list(self.config_entry.options.values()))
         options_values = list(self.config_entry.options.values())
         if len(options_values) > 0:
             config_dict: NumberSelectorConfig = {
@@ -490,7 +490,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_init(self, user_input: Optional[Dict[str, Any]] = None):
         if user_input is not None:
-            self.data.update(
+            self.options.update(
                 {
                     "rotate_image": user_input.get(ATTR_ROTATE),
                     "crop_image": user_input.get(ATTR_CROP),
@@ -506,13 +506,13 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="init",
             data_schema=self.IMG_SCHEMA,
-            description_placeholders=self.data,
+            description_placeholders=self.options,
         )
 
     async def async_step_init_2(self, user_input: Optional[Dict[str, Any]] = None):
         _LOGGER.debug("async_step_init_2 called")
         if user_input is not None:
-            self.data.update(
+            self.options.update(
                 {
                     "color_charger": user_input.get(COLOR_CHARGER),
                     "color_move": user_input.get(COLOR_MOVE),
@@ -526,16 +526,16 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 }
             )
             return await self.async_step_alpha_1()
-        _LOGGER.debug("self.data before show form: %s", self.data)
+        _LOGGER.debug("self.data before show form: %s", self.options)
         return self.async_show_form(
             step_id="init_2",
             data_schema=self.COLOR_1_SCHEMA,
-            description_placeholders=self.data,
+            description_placeholders=self.options,
         )
 
     async def async_step_alpha_1(self, user_input: Optional[Dict[str, Any]] = None):
         if user_input is not None:
-            self.data.update(
+            self.options.update(
                 {
                     "alpha_charger": user_input.get(ALPHA_CHARGER),
                     "alpha_move": user_input.get(ALPHA_MOVE),
@@ -553,12 +553,12 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="alpha_1",
             data_schema=self.ALPHA_1_SCHEMA,
-            description_placeholders=self.data,
+            description_placeholders=self.options,
         )
 
     async def async_step_init_3(self, user_input: Optional[Dict[str, Any]] = None):
         if user_input is not None:
-            self.data.update(
+            self.options.update(
                 {
                     "color_room_0": user_input.get(COLOR_ROOM_0),
                     "color_room_1": user_input.get(COLOR_ROOM_1),
@@ -584,12 +584,12 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="init_3",
             data_schema=self.COLOR_2_SCHEMA,
-            description_placeholders=self.data,
+            description_placeholders=self.options,
         )
 
     async def async_step_alpha_2(self, user_input: Optional[Dict[str, Any]] = None):
         if user_input is not None:
-            self.data.update(
+            self.options.update(
                 {
                     "alpha_room_0": user_input.get(ALPHA_ROOM_0),
                     "alpha_room_1": user_input.get(ALPHA_ROOM_1),
@@ -610,17 +610,17 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 }
             )
 
-            _LOGGER.debug("self.data at the end %s", self.data)
+            _LOGGER.debug("Options data after update: %s", self.options)
             _, vacuum_device = get_device_info(
                 self.config_entry.data.get(CONF_VACUUM_CONFIG_ENTRY_ID), self.hass
             )
             return self.async_create_entry(
                 title="",
-                data=self.data,
+                data=self.options,
             )
 
         return self.async_show_form(
             step_id="alpha_2",
             data_schema=self.ALPHA_2_SCHEMA,
-            description_placeholders=self.data,
+            description_placeholders=self.options,
         )

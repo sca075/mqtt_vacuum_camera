@@ -672,7 +672,6 @@ class MapImageHandler(object):
                                     no_go_zones = None
                                     _LOGGER.debug(file_name + ": No Go area not found.")
                                 if zones_clean:
-                                    self.frame_number = 1
                                     img_np_array = self.draw_zone(
                                         img_np_array, zones_clean, color_zone_clean
                                     )
