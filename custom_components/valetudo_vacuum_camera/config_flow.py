@@ -14,12 +14,13 @@ from homeassistant.helpers.selector import (
     EntitySelectorConfig,
     NumberSelector,
     NumberSelectorConfig,
-    BooleanSelector
+    BooleanSelector,
 )
 from homeassistant.helpers import entity_registry as er
 from .const import (
     DOMAIN,
-    ATTR_ROTATE, ATTR_CROP,
+    ATTR_ROTATE,
+    ATTR_CROP,
     ATTR_TRIM_LEFT,
     ATTR_TRIM_RIGHT,
     ATTR_TRIM_TOP,
@@ -27,23 +28,56 @@ from .const import (
     CONF_VAC_STAT,
     CONF_VACUUM_CONFIG_ENTRY_ID,
     CONF_VACUUM_ENTITY_ID,
-    COLOR_MOVE, COLOR_ROBOT, COLOR_WALL,
-    COLOR_CHARGER, COLOR_BACKGROUND, COLOR_GO_TO,
-    COLOR_NO_GO, COLOR_ZONE_CLEAN, COLOR_TEXT,
-    COLOR_ROOM_0, COLOR_ROOM_1, COLOR_ROOM_2,
-    COLOR_ROOM_3, COLOR_ROOM_4, COLOR_ROOM_5,
-    COLOR_ROOM_6, COLOR_ROOM_7, COLOR_ROOM_8,
-    COLOR_ROOM_9, COLOR_ROOM_10, COLOR_ROOM_11,
-    COLOR_ROOM_12, COLOR_ROOM_13, COLOR_ROOM_14,
+    COLOR_MOVE,
+    COLOR_ROBOT,
+    COLOR_WALL,
+    COLOR_CHARGER,
+    COLOR_BACKGROUND,
+    COLOR_GO_TO,
+    COLOR_NO_GO,
+    COLOR_ZONE_CLEAN,
+    COLOR_TEXT,
+    COLOR_ROOM_0,
+    COLOR_ROOM_1,
+    COLOR_ROOM_2,
+    COLOR_ROOM_3,
+    COLOR_ROOM_4,
+    COLOR_ROOM_5,
+    COLOR_ROOM_6,
+    COLOR_ROOM_7,
+    COLOR_ROOM_8,
+    COLOR_ROOM_9,
+    COLOR_ROOM_10,
+    COLOR_ROOM_11,
+    COLOR_ROOM_12,
+    COLOR_ROOM_13,
+    COLOR_ROOM_14,
     COLOR_ROOM_15,
-    ALPHA_BACKGROUND, ALPHA_CHARGER, ALPHA_MOVE,
-    ALPHA_NO_GO, ALPHA_WALL, ALPHA_ROBOT, ALPHA_TEXT,
-    ALPHA_GO_TO, ALPHA_ZONE_CLEAN, ALPHA_ROOM_0,
-    ALPHA_ROOM_1, ALPHA_ROOM_2, ALPHA_ROOM_3,
-    ALPHA_ROOM_4, ALPHA_ROOM_5, ALPHA_ROOM_6,
-    ALPHA_ROOM_7, ALPHA_ROOM_8, ALPHA_ROOM_9,
-    ALPHA_ROOM_10, ALPHA_ROOM_11, ALPHA_ROOM_12,
-    ALPHA_ROOM_13, ALPHA_ROOM_14, ALPHA_ROOM_15
+    ALPHA_BACKGROUND,
+    ALPHA_CHARGER,
+    ALPHA_MOVE,
+    ALPHA_NO_GO,
+    ALPHA_WALL,
+    ALPHA_ROBOT,
+    ALPHA_TEXT,
+    ALPHA_GO_TO,
+    ALPHA_ZONE_CLEAN,
+    ALPHA_ROOM_0,
+    ALPHA_ROOM_1,
+    ALPHA_ROOM_2,
+    ALPHA_ROOM_3,
+    ALPHA_ROOM_4,
+    ALPHA_ROOM_5,
+    ALPHA_ROOM_6,
+    ALPHA_ROOM_7,
+    ALPHA_ROOM_8,
+    ALPHA_ROOM_9,
+    ALPHA_ROOM_10,
+    ALPHA_ROOM_11,
+    ALPHA_ROOM_12,
+    ALPHA_ROOM_13,
+    ALPHA_ROOM_14,
+    ALPHA_ROOM_15,
 )
 from .common import (
     # get_entity_identifier_from_mqtt,
@@ -57,7 +91,8 @@ _LOGGER = logging.getLogger(__name__)
 VACUUM_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_VACUUM_ENTITY_ID): EntitySelector(
-            EntitySelectorConfig(domain=ZONE_VACUUM),)
+            EntitySelectorConfig(domain=ZONE_VACUUM),
+        )
     }
 )
 
@@ -129,8 +164,8 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
             for existing_entity in self._async_current_entries():
                 if (
-                        existing_entity.data.get(CONF_VACUUM_ENTITY_ID) == vacuum_entity.id
-                        or existing_entity.data.get(CONF_UNIQUE_ID) == unique_id
+                    existing_entity.data.get(CONF_VACUUM_ENTITY_ID) == vacuum_entity.id
+                    or existing_entity.data.get(CONF_UNIQUE_ID) == unique_id
                 ):
                     return self.async_abort(reason="already_configured")
 
@@ -191,7 +226,6 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     "alpha_zone_clean": 25.0,
                     "alpha_background": 255.0,
                     "alpha_text": 255.0,
-
                 }
             )
 
@@ -253,7 +287,7 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_create_entry(
                 title=vacuum_device.name + " Camera",
                 data=self.data,
-                options=self.options
+                options=self.options,
             )
 
         return self.async_show_form(
@@ -265,7 +299,7 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(
-            config_entry: config_entries.ConfigEntry,
+        config_entry: config_entries.ConfigEntry,
     ) -> config_entries.OptionsFlow:
         """Create the options flow."""
         return OptionsFlowHandler(config_entry)
@@ -277,7 +311,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         self.config_entry = config_entry
         self.unique_id = self.config_entry.unique_id
         self.options = {}
-        _LOGGER.debug("Options edit in progress.. options before edit: ", list(self.config_entry.options.values()))
+        _LOGGER.debug(
+            "Options edit in progress.. options before edit: ",
+            list(self.config_entry.options.values()),
+        )
         options_values = list(self.config_entry.options.values())
         if len(options_values) > 0:
             config_dict: NumberSelectorConfig = {
@@ -437,10 +474,12 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             self.ALPHA_2_SCHEMA = vol.Schema(
                 {
                     vol.Optional(
-                        ALPHA_ROOM_0, default=config_entry.options.get("alpha_room_0"),
+                        ALPHA_ROOM_0,
+                        default=config_entry.options.get("alpha_room_0"),
                     ): NumberSelector(config_dict),
                     vol.Optional(
-                        ALPHA_ROOM_1, default=config_entry.options.get("alpha_room_1"),
+                        ALPHA_ROOM_1,
+                        default=config_entry.options.get("alpha_room_1"),
                     ): NumberSelector(config_dict),
                     vol.Optional(
                         ALPHA_ROOM_2, default=config_entry.options.get("alpha_room_2")
@@ -483,7 +522,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     ): NumberSelector(config_dict),
                     vol.Optional(
                         ALPHA_ROOM_15, default=config_entry.options.get("alpha_room_15")
-                    ): NumberSelector(config_dict)
+                    ): NumberSelector(config_dict),
                 }
             )
             _LOGGER.debug("Defined Alpha 2 Schema")

@@ -45,20 +45,56 @@ from .const import (
     ATTR_TRIM_BOTTOM,
     ATTR_TRIM_LEFT,
     ATTR_TRIM_RIGHT,
-    COLOR_WALL, COLOR_ZONE_CLEAN, COLOR_ROBOT,
-    COLOR_BACKGROUND, COLOR_MOVE, COLOR_CHARGER,
-    COLOR_TEXT, COLOR_NO_GO, COLOR_GO_TO, COLOR_ROOM_0,
-    COLOR_ROOM_1, COLOR_ROOM_2, COLOR_ROOM_3, COLOR_ROOM_4,
-    COLOR_ROOM_5, COLOR_ROOM_6, COLOR_ROOM_7, COLOR_ROOM_8,
-    COLOR_ROOM_9, COLOR_ROOM_10, COLOR_ROOM_11, COLOR_ROOM_12,
-    COLOR_ROOM_13, COLOR_ROOM_14, COLOR_ROOM_15,
-    ALPHA_WALL, ALPHA_ZONE_CLEAN, ALPHA_ROBOT,
-    ALPHA_BACKGROUND, ALPHA_MOVE, ALPHA_CHARGER,
-    ALPHA_TEXT, ALPHA_NO_GO, ALPHA_GO_TO, ALPHA_ROOM_0,
-    ALPHA_ROOM_1, ALPHA_ROOM_2, ALPHA_ROOM_3, ALPHA_ROOM_4,
-    ALPHA_ROOM_5, ALPHA_ROOM_6, ALPHA_ROOM_7, ALPHA_ROOM_8,
-    ALPHA_ROOM_9, ALPHA_ROOM_10, ALPHA_ROOM_11, ALPHA_ROOM_12,
-    ALPHA_ROOM_13, ALPHA_ROOM_14, ALPHA_ROOM_15,
+    COLOR_WALL,
+    COLOR_ZONE_CLEAN,
+    COLOR_ROBOT,
+    COLOR_BACKGROUND,
+    COLOR_MOVE,
+    COLOR_CHARGER,
+    COLOR_TEXT,
+    COLOR_NO_GO,
+    COLOR_GO_TO,
+    COLOR_ROOM_0,
+    COLOR_ROOM_1,
+    COLOR_ROOM_2,
+    COLOR_ROOM_3,
+    COLOR_ROOM_4,
+    COLOR_ROOM_5,
+    COLOR_ROOM_6,
+    COLOR_ROOM_7,
+    COLOR_ROOM_8,
+    COLOR_ROOM_9,
+    COLOR_ROOM_10,
+    COLOR_ROOM_11,
+    COLOR_ROOM_12,
+    COLOR_ROOM_13,
+    COLOR_ROOM_14,
+    COLOR_ROOM_15,
+    ALPHA_WALL,
+    ALPHA_ZONE_CLEAN,
+    ALPHA_ROBOT,
+    ALPHA_BACKGROUND,
+    ALPHA_MOVE,
+    ALPHA_CHARGER,
+    ALPHA_TEXT,
+    ALPHA_NO_GO,
+    ALPHA_GO_TO,
+    ALPHA_ROOM_0,
+    ALPHA_ROOM_1,
+    ALPHA_ROOM_2,
+    ALPHA_ROOM_3,
+    ALPHA_ROOM_4,
+    ALPHA_ROOM_5,
+    ALPHA_ROOM_6,
+    ALPHA_ROOM_7,
+    ALPHA_ROOM_8,
+    ALPHA_ROOM_9,
+    ALPHA_ROOM_10,
+    ALPHA_ROOM_11,
+    ALPHA_ROOM_12,
+    ALPHA_ROOM_13,
+    ALPHA_ROOM_14,
+    ALPHA_ROOM_15,
 )
 from .common import get_vacuum_unique_id_from_mqtt_topic
 
@@ -76,9 +112,9 @@ _LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
-        hass: core.HomeAssistant,
-        config_entry: config_entries.ConfigEntry,
-        async_add_entities,
+    hass: core.HomeAssistant,
+    config_entry: config_entries.ConfigEntry,
+    async_add_entities,
 ) -> None:
     """Setup camera from a config entry created in the integrations UI."""
     config = hass.data[DOMAIN][config_entry.entry_id]
@@ -91,10 +127,10 @@ async def async_setup_entry(
 
 
 async def async_setup_platform(
-        hass: HomeAssistantType,
-        config: ConfigType,
-        async_add_entities: AddEntitiesCallback,
-        discovery_info: DiscoveryInfoType | None = None,
+    hass: HomeAssistantType,
+    config: ConfigType,
+    async_add_entities: AddEntitiesCallback,
+    discovery_info: DiscoveryInfoType | None = None,
 ):
     async_add_entities([ValetudoCamera(hass, config)])
     await async_setup_reload_service(hass, DOMAIN, PLATFORMS)
@@ -114,7 +150,7 @@ class ValetudoCamera(Camera):
             self._mqtt_listen_topic = str(self._mqtt_listen_topic)
             file_name = self._mqtt_listen_topic.split("/")
             self.snapshot_img = (
-                    self._directory_path + "/www/snapshot_" + file_name[1].lower() + ".png"
+                self._directory_path + "/www/snapshot_" + file_name[1].lower() + ".png"
             )
             self._attr_name = "Camera"
             self._attr_unique_id = device_info.get(
@@ -137,36 +173,12 @@ class ValetudoCamera(Camera):
         self._attr_calibration_points = None
         self._base = None
         self._current = None
-        self._image_rotate = device_info.get(ATTR_ROTATE)
-        if self._image_rotate:
-            self._image_rotate = int(device_info.get(ATTR_ROTATE))
-        else:
-            self._image_rotate = 0
-        self._image_crop = device_info.get(ATTR_CROP)
-        if self._image_crop:
-            self._image_crop = int(device_info.get(ATTR_CROP))
-        else:
-            self._image_crop = 0
-        self._trim_up = device_info.get(ATTR_TRIM_TOP)
-        if self._trim_up:
-            self._trim_up = int(device_info.get(ATTR_TRIM_TOP))
-        else:
-            self._trim_up = 0
-        self._trim_down = device_info.get(ATTR_TRIM_BOTTOM)
-        if self._trim_down:
-            self._trim_do = int(device_info.get(ATTR_TRIM_BOTTOM))
-        else:
-            self._trim_down = 0
-        self._trim_left = device_info.get(ATTR_TRIM_LEFT)
-        if self._trim_down:
-            self._trim_do = int(device_info.get(ATTR_TRIM_LEFT))
-        else:
-            self._trim_left = 0
-        self._trim_right = device_info.get(ATTR_TRIM_RIGHT)
-        if self._trim_down:
-            self._trim_do = int(device_info.get(ATTR_TRIM_RIGHT))
-        else:
-            self._trim_right = 0
+        self._image_rotate = int(device_info.get(ATTR_ROTATE, 0))
+        self._image_crop = int(device_info.get(ATTR_CROP, 0))
+        self._trim_up = int(device_info.get(ATTR_TRIM_TOP, 0))
+        self._trim_down = int(device_info.get(ATTR_TRIM_BOTTOM, 0))
+        self._trim_left = int(device_info.get(ATTR_TRIM_LEFT, 0))
+        self._trim_right = int(device_info.get(ATTR_TRIM_RIGHT, 0))
         self._snapshot_taken = False
         self._show_vacuum_state = device_info.get(CONF_VAC_STAT)
         if not self._show_vacuum_state:
@@ -261,7 +273,7 @@ class ValetudoCamera(Camera):
         return 1
 
     def camera_image(
-            self, width: Optional[int] = None, height: Optional[int] = None
+        self, width: Optional[int] = None, height: Optional[int] = None
     ) -> Optional[bytes]:
         """Camera Image"""
         return self._image
@@ -363,7 +375,7 @@ class ValetudoCamera(Camera):
                 self.file_name + ": Snapshot acquired during %s",
                 {self._vacuum_state},
                 " Vacuum State.",
-                )
+            )
 
     def update(self):
         """Camera Frame Update"""
@@ -376,9 +388,9 @@ class ValetudoCamera(Camera):
         if process_data:
             # if the vacuum is working, or it is the first image.
             if (
-                    self._vacuum_state == "cleaning"
-                    or self._vacuum_state == "moving"
-                    or self._vacuum_state == "returning"
+                self._vacuum_state == "cleaning"
+                or self._vacuum_state == "moving"
+                or self._vacuum_state == "returning"
             ):
                 # grab the image
                 self._image_grab = True
@@ -390,7 +402,7 @@ class ValetudoCamera(Camera):
             _LOGGER.info(
                 self.file_name + ": Camera image data update available: %s",
                 process_data,
-                )
+            )
             # calculate the cycle time for frame adjustment
             start_time = datetime.now()
             try:
@@ -427,23 +439,23 @@ class ValetudoCamera(Camera):
                         _LOGGER.debug(
                             "Applied " + self.file_name + " image rotation: %s",
                             {self._image_rotate},
-                            )
+                        )
                         if self._show_vacuum_state:
                             self._map_handler.draw_status_text(
                                 pil_img,
                                 50,
                                 self._vacuum_shared.user_colors[8],
                                 self.file_name + ": " + self._vacuum_state,
-                                )
+                            )
                         if not self._snapshot_taken and (
-                                self._vacuum_state == "idle"
-                                or self._vacuum_state == "docked"
-                                or self._vacuum_state == "error"
+                            self._vacuum_state == "idle"
+                            or self._vacuum_state == "docked"
+                            or self._vacuum_state == "error"
                         ):
                             # suspend image processing if we are at the next frame.
                             if (
-                                    self._frame_nuber
-                                    is not self._map_handler.get_frame_number()
+                                self._frame_nuber
+                                is not self._map_handler.get_frame_number()
                             ):
                                 self._image_grab = False
                                 _LOGGER.info(
@@ -480,7 +492,7 @@ class ValetudoCamera(Camera):
                     _LOGGER.debug(
                         "Adjusted " + self.file_name + ": Frame interval: %s",
                         self._frame_interval,
-                        )
+                    )
                 else:
                     _LOGGER.info(
                         self.file_name
