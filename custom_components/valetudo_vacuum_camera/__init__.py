@@ -27,7 +27,7 @@ PLATFORMS = [Platform.CAMERA]
 
 
 async def options_update_listener(
-        hass: core.HomeAssistant, config_entry: config_entries.ConfigEntry
+    hass: core.HomeAssistant, config_entry: config_entries.ConfigEntry
 ):
     """Handle options update."""
     await hass.config_entries.async_reload(config_entry.entry_id)
@@ -36,7 +36,7 @@ async def options_update_listener(
 async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
     mqtt_topic_base = ""
     """Migrate old entry."""
-    _LOGGER.debug("Migrating from version %s", config_entry.version)
+    _LOGGER.debug("Migrating config entry from version %s", config_entry.version)
 
     if config_entry.version == 1.2:
         new_data = {**config_entry.data}
@@ -85,7 +85,7 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
     if config_entry.version <= 2.0:
         new_data = {**config_entry.data}
         if config_entry.version < 2.0:
-            _LOGGER.debug("Migration for version 1.4.0 in progress.")
+            _LOGGER.debug("Migration for integration version 1.4.0 in progress.")
             new_data.pop(CONF_MQTT_HOST, None)
             new_data.pop(CONF_MQTT_USER, None)
             new_data.pop(CONF_MQTT_PASS, None)
@@ -93,7 +93,7 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
             mqtt_topic_base = new_data.pop(CONF_VACUUM_CONNECTION_STRING, None)
             if not mqtt_topic_base:
                 _LOGGER.error(
-                    "Unable to migrate to version 2.0. Could not find %s. Please recreate this entry.",
+                    "Unable to migrate to config entry version 2.0. Could not find %s. Please recreate this entry.",
                     CONF_VACUUM_CONNECTION_STRING,
                 )
                 return False
@@ -102,7 +102,7 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
             config_entry_id = get_entity_identifier_from_mqtt(mqtt_identifier, hass)
             if not config_entry_id:
                 _LOGGER.error(
-                    "Unable to migrate to version 2.0. Could not find a device for %s. Please recreate this entry.",
+                    "Unable to migrate to config entry version 2.0. Could not find a device for %s. Please recreate this entry.",
                     mqtt_topic_base,
                 )
                 return False
@@ -111,103 +111,104 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
                     CONF_VACUUM_CONFIG_ENTRY_ID: config_entry_id,
                 }
             )
-            _LOGGER.debug("Migrating to version 2.0 completed..")
-        _LOGGER("config update for v1.4.1 in progress...")
-        if mqtt_topic_base is not "":
-            config_entry.unique_id = get_vacuum_unique_id_from_mqtt_topic(mqtt_topic_base)
+            _LOGGER.debug("Migrating to config entry version 2.0 completed..")
+        _LOGGER.debug("Migration for integration version 1.4.1 in progress.")
+        if mqtt_topic_base:
+            config_entry.unique_id = get_vacuum_unique_id_from_mqtt_topic(
+                mqtt_topic_base
+            )
         else:
             config_entry.unique_id = new_data.pop("unique_id", None)
         _LOGGER.debug("Updating unique_id .. to %s", config_entry.unique_id)
         if not config_entry.unique_id:
-            _LOGGER.error("Migration Failed, please reconfigure Valetudo Vacuum Camera.")
+            _LOGGER.error(
+                "Migration Failed, please reconfigure Valetudo Vacuum Camera."
+            )
             return False
 
         new_options = {**config_entry.options}
 
+        keys_to_migrate = [
+            "rotate_image",
+            "crop_image",
+            "trim_top",
+            "trim_bottom",
+            "trim_left",
+            "trim_right",
+            "show_vac_status",
+            "color_charger",
+            "color_move",
+            "color_wall",
+            "color_robot",
+            "color_go_to",
+            "color_zone_clean",
+            "color_background",
+            "color_text",
+            "color_no_go",
+            "color_room_0",
+            "color_room_1",
+            "color_room_2",
+            "color_room_3",
+            "color_room_4",
+            "color_room_5",
+            "color_room_6",
+            "color_room_7",
+            "color_room_8",
+            "color_room_9",
+            "color_room_10",
+            "color_room_11",
+            "color_room_12",
+            "color_room_13",
+            "color_room_14",
+            "color_room_15",
+        ]
         if len(dict(new_options)) == 0:
-            _LOGGER.debug("Camera Options not in the Configuration..")
-            new_options["rotate_image"] = new_data["rotate_image"]
-            new_options["crop_image"] = new_data["crop_image"]
-            new_options["trim_top"] = new_data["trim_top"]
-            new_options["trim_bottom"] = new_data["trim_bottom"]
-            new_options["trim_left"] = new_data["trim_left"]
-            new_options["show_vac_status"] = new_data["show_vac_status"]
-            new_options["color_charger"] = new_data["color_charger"]
-            new_options["color_move"] = new_data["color_move"]
-            new_options["color_wall"] = new_data["color_wall"]
-            new_options["color_robot"] = new_data["color_robot"]
-            new_options["color_no_go"] = new_data["color_no_go"]
-            new_options["color_zone_clean"] = new_data["color_zone_clean"]
-            new_options["color_background"] = new_data["color_background"]
-            new_options["color_text"] = new_data["color_text"]
-            new_options["color_room_0"] = new_data["color_room_0"]
-            new_options["color_room_1"] = new_data["color_room_1"]
-            new_options["color_room_2"] = new_data["color_room_2"]
-            new_options["color_room_3"] = new_data["color_room_3"]
-            new_options["color_room_4"] = new_data["color_room_4"]
-            new_options["color_room_5"] = new_data["color_room_5"]
-            new_options["color_room_6"] = new_data["color_room_6"]
-            new_options["color_room_7"] = new_data["color_room_7"]
-            new_options["color_room_8"] = new_data["color_room_8"]
-            new_options["color_room_9"] = new_data["color_room_9"]
-            new_options["color_room_10"] = new_data["color_room_10"]
-            new_options["color_room_11"] = new_data["color_room_11"]
-            new_options["color_room_12"] = new_data["color_room_12"]
-            new_options["color_room_13"] = new_data["color_room_13"]
-            new_options["color_room_14"] = new_data["color_room_14"]
-            new_options["color_room_15"] = new_data["color_room_15"]
-
-        _LOGGER.debug("Config Entry data Clean up...")
-        # Remove unwanted data from new_data
-        unwanted_keys = ["rotate_image", "crop_image", "trim_top", "trim_bottom",
-                         "trim_left", "trim_right", "show_vac_status", "color_charger",
-                         "color_move", "color_wall", "color_robot", "color_go_to",
-                         "color_zone_clean", "color_background", "color_text", "color_no_go",
-                         "color_room_0", "color_room_1", "color_room_2", "color_room_3",
-                         "color_room_4", "color_room_5", "color_room_6", "color_room_7",
-                         "color_room_8", "color_room_9", "color_room_10", "color_room_11",
-                         "color_room_12", "color_room_13", "color_room_14", "color_room_15"]
-        for key in unwanted_keys:
-            new_data.pop(key, None)
+            new_options.update((k, new_data.pop(k)) for k in keys_to_migrate)
 
         _LOGGER.debug("Adding Transparency data to the Options..")
-        new_options.update({"alpha_charger": 255.0,
-                            "alpha_move": 255.0,
-                            "alpha_wall": 255.0,
-                            "alpha_robot": 255.0,
-                            "alpha_go_to": 255.0,
-                            "alpha_no_go": 25.0,
-                            "alpha_zone_clean": 25.0,
-                            "alpha_background": 255.0,
-                            "alpha_text": 255.0,
-                            "alpha_room_0": 255.0,
-                            "alpha_room_1": 255.0,
-                            "alpha_room_2": 255.0,
-                            "alpha_room_3": 255.0,
-                            "alpha_room_4": 255.0,
-                            "alpha_room_5": 255.0,
-                            "alpha_room_6": 255.0,
-                            "alpha_room_7": 255.0,
-                            "alpha_room_8": 255.0,
-                            "alpha_room_9": 255.0,
-                            "alpha_room_10": 255.0,
-                            "alpha_room_11": 255.0,
-                            "alpha_room_12": 255.0,
-                            "alpha_room_13": 255.0,
-                            "alpha_room_14": 255.0,
-                            "alpha_room_15": 255.0
-                            })
+        new_options.update(
+            {
+                "alpha_charger": 255.0,
+                "alpha_move": 255.0,
+                "alpha_wall": 255.0,
+                "alpha_robot": 255.0,
+                "alpha_go_to": 255.0,
+                "alpha_no_go": 25.0,
+                "alpha_zone_clean": 25.0,
+                "alpha_background": 255.0,
+                "alpha_text": 255.0,
+                "alpha_room_0": 255.0,
+                "alpha_room_1": 255.0,
+                "alpha_room_2": 255.0,
+                "alpha_room_3": 255.0,
+                "alpha_room_4": 255.0,
+                "alpha_room_5": 255.0,
+                "alpha_room_6": 255.0,
+                "alpha_room_7": 255.0,
+                "alpha_room_8": 255.0,
+                "alpha_room_9": 255.0,
+                "alpha_room_10": 255.0,
+                "alpha_room_11": 255.0,
+                "alpha_room_12": 255.0,
+                "alpha_room_13": 255.0,
+                "alpha_room_14": 255.0,
+                "alpha_room_15": 255.0,
+            }
+        )
 
         config_entry.version = 2.1
-        hass.config_entries.async_update_entry(config_entry, data=new_data)
-        hass.config_entries.async_update_entry(config_entry, options=new_options)
+        hass.config_entries.async_update_entry(
+            config_entry, data=new_data, options=new_options
+        )
 
-    _LOGGER.info("Migration to version %s successful", config_entry.version)
+    _LOGGER.info(
+        "Migration to config entry version %s successful", config_entry.version
+    )
     return True
 
 
 async def async_setup_entry(
-        hass: core.HomeAssistant, entry: config_entries.ConfigEntry
+    hass: core.HomeAssistant, entry: config_entries.ConfigEntry
 ) -> bool:
     """Set up platform from a ConfigEntry."""
     hass.data.setdefault(DOMAIN, {})
@@ -248,7 +249,7 @@ async def async_setup_entry(
 
 
 async def async_unload_entry(
-        hass: core.HomeAssistant, entry: config_entries.ConfigEntry
+    hass: core.HomeAssistant, entry: config_entries.ConfigEntry
 ) -> bool:
     """Unload a config entry."""
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
