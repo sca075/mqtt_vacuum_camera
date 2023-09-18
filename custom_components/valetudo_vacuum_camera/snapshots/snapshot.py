@@ -1,6 +1,7 @@
 import os
 import json
 import zipfile
+import shutil
 
 
 class Snapshots:
@@ -9,18 +10,23 @@ class Snapshots:
 
     @staticmethod
     def _get_filtered_logs():
-        # Modify this method to filter the logs as needed, e.g., by reading the Home Assistant log file
-        # and selecting logs relevant to your component.
+        # Make a copy of home-assistant.log to home-assistant.tmp
+        log_file_path = os.path.join(os.getcwd(), "home-assistant.log")
+        tmp_log_file_path = os.path.join(os.getcwd(), "home-assistant.tmp")
+
+        if os.path.exists(log_file_path):
+            shutil.copyfile(log_file_path, tmp_log_file_path)
 
         filtered_logs = []
 
-        log_file_path = os.path.join(os.getcwd() + "/home-assistant.log")
-
-        if os.path.exists(log_file_path):
-            with open(log_file_path, "r") as log_file:
+        if os.path.exists(tmp_log_file_path):
+            with open(tmp_log_file_path, "r") as log_file:
                 for line in log_file:
                     if "custom_components.valetudo_vacuum_camera" in line:
                         filtered_logs.append(line.strip())
+
+            # Delete the temporary log file
+            os.remove(tmp_log_file_path)
 
         return "\n".join(filtered_logs)
 
