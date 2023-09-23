@@ -5,6 +5,7 @@ from homeassistant.core import callback
 from homeassistant.components import mqtt
 from custom_components.valetudo_vacuum_camera.utils.valetudo_jdata import RawToJson
 
+
 _LOGGER = logging.getLogger(__name__)
 _QOS = 0
 
@@ -56,7 +57,7 @@ class ValetudoConnector:
                 "wb",
             ) as file:
                 file.write(self._img_payload)
-            _LOGGER.info("Saved image data from MQTT in mqtt_" + file_name + ".raw!")
+            _LOGGER.info("Saved image data from MQTT in " + file_name + ".raw!")
 
     @callback
     async def async_message_received(self, msg):

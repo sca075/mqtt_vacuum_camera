@@ -556,7 +556,6 @@ class MapImageHandler(object):
                 _LOGGER.info(file_name + ":Composing the image for the camera.")
                 # buffer json data
                 self.json_data = m_json
-
                 if self.room_propriety:
                     _LOGGER.info(file_name + ": Supporting Rooms Cleaning!")
                 size_x = int(m_json["size"]["x"])
@@ -686,7 +685,7 @@ class MapImageHandler(object):
                 _LOGGER.info(file_name + ": Completed base Layers")
 
                 if self.frame_number == 0:
-                    _LOGGER.debug(file_name + ": Drawing image background")
+                    _LOGGER.debug(file_name + ": Drawing image objects")
                     img_np_array = self.draw_battery_charger(
                         img_np_array, charger_pos[0], charger_pos[1], color_charger
                     )
@@ -694,11 +693,10 @@ class MapImageHandler(object):
                     self.frame_number += 1
                 else:
                     img_np_array = self.img_base_layer
-                    # If there is a zone clean we draw it now.
-                    _LOGGER.debug(file_name + ": Frame number %s", self.frame_number)
                     self.frame_number += 1
                     if self.frame_number > 5:
                         self.frame_number = 0
+                _LOGGER.debug(file_name + ": Frame number %s", self.frame_number)
                 # All below will be drawn each time
                 if go_to:
                     self.frame_number = 1

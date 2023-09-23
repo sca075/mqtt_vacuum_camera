@@ -107,14 +107,14 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
         vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.entity_id,
     }
 )
-SCAN_INTERVAL = timedelta(seconds=6)
+SCAN_INTERVAL = timedelta(seconds=3)
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
-    hass: core.HomeAssistant,
-    config_entry: config_entries.ConfigEntry,
-    async_add_entities,
+        hass: core.HomeAssistant,
+        config_entry: config_entries.ConfigEntry,
+        async_add_entities,
 ) -> None:
     """Setup camera from a config entry created in the integrations UI."""
     config = hass.data[DOMAIN][config_entry.entry_id]
@@ -127,10 +127,10 @@ async def async_setup_entry(
 
 
 async def async_setup_platform(
-    hass: HomeAssistantType,
-    config: ConfigType,
-    async_add_entities: AddEntitiesCallback,
-    discovery_info: DiscoveryInfoType | None = None,
+        hass: HomeAssistantType,
+        config: ConfigType,
+        async_add_entities: AddEntitiesCallback,
+        discovery_info: DiscoveryInfoType | None = None,
 ):
     async_add_entities([ValetudoCamera(hass, config)])
     await async_setup_reload_service(hass, DOMAIN, PLATFORMS)
@@ -150,7 +150,7 @@ class ValetudoCamera(Camera):
             self._mqtt_listen_topic = str(self._mqtt_listen_topic)
             file_name = self._mqtt_listen_topic.split("/")
             self.snapshot_img = (
-                self._directory_path + "/www/snapshot_" + file_name[1].lower() + ".png"
+                    self._directory_path + "/www/snapshot_" + file_name[1].lower() + ".png"
             )
             self._attr_name = "Camera"
             self._attr_unique_id = device_info.get(
@@ -186,7 +186,7 @@ class ValetudoCamera(Camera):
         self._last_image = None
         self._image_grab = True
         self._frame_nuber = 0
-        self.throttled_camera_image = Throttle(timedelta(seconds=5))(self.camera_image)
+        self.throttled_camera_image = Throttle(timedelta(seconds=2))(self.camera_image)
         try:
             self.user_colors = [
                 device_info.get(COLOR_WALL),
@@ -273,7 +273,7 @@ class ValetudoCamera(Camera):
         return 1
 
     def camera_image(
-        self, width: Optional[int] = None, height: Optional[int] = None
+            self, width: Optional[int] = None, height: Optional[int] = None
     ) -> Optional[bytes]:
         """Camera Image"""
         return self._image
@@ -375,40 +375,34 @@ class ValetudoCamera(Camera):
                 self.file_name + ": Snapshot acquired during %s",
                 {self._vacuum_state},
                 " Vacuum State.",
-            )
+                )
 
-    def update(self):
+    async def async_update(self):
         """Camera Frame Update"""
         # check and update the vacuum reported state
         if not self._mqtt:
             return
         # If we have data from MQTT, we process the image
-        self._vacuum_state = self._mqtt.get_vacuum_status()
-        process_data = self._mqtt.is_data_available()
+        self._vacuum_state = await self._mqtt.get_vacuum_status()
+        process_data = await self._mqtt.is_data_available()
         if process_data:
-            # if the vacuum is working, or it is the first image.
-            if (
-                self._vacuum_state == "cleaning"
-                or self._vacuum_state == "moving"
-                or self._vacuum_state == "returning"
-            ):
-                # grab the image
-                self._image_grab = True
-                self._frame_nuber = self._map_handler.get_frame_number()
-                # when the vacuum goes / is in idle, error or docked
-                # take the snapshot.
-                self._snapshot_taken = False
+            # grab the image
+            self._image_grab = True
+            self._frame_nuber = self._map_handler.get_frame_number()
+            # when the vacuum goes / is in idle, error or docked
+            # take the snapshot.
+            self._snapshot_taken = False
             # Starting the image processing.
             _LOGGER.info(
                 self.file_name + ": Camera image data update available: %s",
                 process_data,
-            )
+                )
             # calculate the cycle time for frame adjustment
             start_time = datetime.now()
             try:
                 # bypassed code is for debug purpose only
                 #########################################################
-                parsed_json = self._mqtt.update_data(self._image_grab)
+                parsed_json = await self._mqtt.update_data(self._image_grab)
                 #########################################################
                 # json_file = "custom_components/valetudo_vacuum_camera/snapshots/json_v2.json"
                 # with open(json_file, "rb") as j_file:
@@ -422,7 +416,7 @@ class ValetudoCamera(Camera):
                 # Just in case, let's check that the data is available
                 if parsed_json is not None:
                     self._map_rooms = self._map_handler.get_rooms_attributes()
-                    pil_img = self._map_handler.get_image_from_json(
+                    pil_img = await self._map_handler.get_image_from_json(
                         m_json=parsed_json,
                         robot_state=self._vacuum_state,
                         crop=self._image_crop,
@@ -439,23 +433,23 @@ class ValetudoCamera(Camera):
                         _LOGGER.debug(
                             "Applied " + self.file_name + " image rotation: %s",
                             {self._image_rotate},
-                        )
+                            )
                         if self._show_vacuum_state:
                             self._map_handler.draw_status_text(
                                 pil_img,
                                 50,
                                 self._vacuum_shared.user_colors[8],
                                 self.file_name + ": " + self._vacuum_state,
-                            )
+                                )
                         if not self._snapshot_taken and (
-                            self._vacuum_state == "idle"
-                            or self._vacuum_state == "docked"
-                            or self._vacuum_state == "error"
+                                self._vacuum_state == "idle"
+                                or self._vacuum_state == "docked"
+                                or self._vacuum_state == "error"
                         ):
                             # suspend image processing if we are at the next frame.
                             if (
-                                self._frame_nuber
-                                is not self._map_handler.get_frame_number()
+                                    self._frame_nuber
+                                    is not self._map_handler.get_frame_number()
                             ):
                                 self._image_grab = False
                                 _LOGGER.info(
@@ -492,7 +486,7 @@ class ValetudoCamera(Camera):
                     _LOGGER.debug(
                         "Adjusted " + self.file_name + ": Frame interval: %s",
                         self._frame_interval,
-                    )
+                        )
                 else:
                     _LOGGER.info(
                         self.file_name
