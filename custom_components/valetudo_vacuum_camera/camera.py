@@ -26,7 +26,7 @@ from .valetudo.connector import (
 from .valetudo.image_handler import (
     MapImageHandler,
 )
-from .utils.colors import (
+from .utils.colors_man import (
     add_alpha_to_rgb,
 )
 from .snapshots.snapshot import Snapshots
@@ -391,7 +391,7 @@ class ValetudoCamera(Camera):
             self._frame_nuber = self._map_handler.get_frame_number()
             # when the vacuum goes / is in idle, error or docked
             # take the snapshot.
-            # self._snapshot_taken = False
+            self._snapshot_taken = False
             # Starting the image processing.
             _LOGGER.info(
                 self.file_name + ": Camera image data update available: %s",

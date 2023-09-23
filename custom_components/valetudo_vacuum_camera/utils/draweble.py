@@ -1,6 +1,6 @@
 import logging
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
+from PIL import ImageDraw, ImageFont
 import math
 
 _LOGGER = logging.getLogger(__name__)
@@ -11,14 +11,7 @@ class Drawable:
     @staticmethod
     def create_empty_image(width, height, background_color):
         # Create the empty image array
-        image_array = np.zeros((height, width, 4), dtype=np.uint8)
-        # Set the background color
-        image_array[:, :, 0] = background_color[0]  # Set red channel
-        image_array[:, :, 1] = background_color[1]  # Set green channel
-        image_array[:, :, 2] = background_color[2]  # Set blue channel
-        # Set alpha channel to 255 (fully opaque)
-        image_array[:, :, 3] = background_color[3]
-
+        image_array = np.full((height, width, 4), background_color, dtype=np.uint8)
         return image_array
 
     @staticmethod
@@ -54,20 +47,20 @@ class Drawable:
         # Define flag color
         pole_color = (0, 0, 255, 255)  # RGBA color (blue)
         # Define flag size and position
-        flag_size = 40
-        pole_width = 3
+        flag_size = 50
+        pole_width = 6
         # Adjust flag coordinates based on rotation angle
         if rotation_angle == 90:
-            x1 = center[0] - flag_size
-            y1 = center[1] + (pole_width // 2)
-            x2 = x1 + (flag_size // 4)
-            y2 = y1 - (flag_size // 2)
-            x3 = center[0] - (flag_size // 2)
-            y3 = center[1] + (pole_width // 2)
+            x1 = center[0] + flag_size
+            y1 = center[1] - (pole_width // 2)
+            x2 = x1 - (flag_size // 4)
+            y2 = y1 + (flag_size // 2)
+            x3 = center[0] + (flag_size // 2)
+            y3 = center[1] - (pole_width // 2)
             # Define pole end position
-            xp1 = center[0] - flag_size
+            xp1 = center[0]
             yp1 = center[1] - (pole_width // 2)
-            xp2 = center[0]
+            xp2 = center[0] + flag_size
             yp2 = center[1] + (pole_width // 2)
         elif rotation_angle == 180:
             x1 = center[0]
@@ -82,16 +75,16 @@ class Drawable:
             xp2 = center[0] + (pole_width // 2)
             yp2 = y3
         elif rotation_angle == 270:
-            x1 = center[0] + flag_size
-            y1 = center[1] - (pole_width // 2)
-            x2 = x1 - (flag_size // 4)
-            y2 = y1 + (flag_size // 2)
-            x3 = center[0] + (flag_size // 2)
-            y3 = center[1] - (pole_width // 2)
+            x1 = center[0] - flag_size
+            y1 = center[1] + (pole_width // 2)
+            x2 = x1 + (flag_size // 4)
+            y2 = y1 - (flag_size // 2)
+            x3 = center[0] - (flag_size // 2)
+            y3 = center[1] + (pole_width // 2)
             # Define pole end position
-            xp1 = center[0]
+            xp1 = center[0] - flag_size
             yp1 = center[1] - (pole_width // 2)
-            xp2 = center[0] + flag_size
+            xp2 = center[0]
             yp2 = center[1] + (pole_width // 2)
         else:
             # rotation_angle == 0 (no rotation)
@@ -107,22 +100,13 @@ class Drawable:
             xp2 = center[0] + (pole_width // 2)
             yp2 = center[1] + flag_size
 
-        # Create an Image object from the layer array
-        tmp_img = Image.fromarray(layer)
-        # Create a draw object
-        tmp_draw = ImageDraw.Draw(tmp_img)
-        # Draw flag on layer
-        tmp_draw.polygon([x1, y1, x2, y2, x3, y3], fill=flag_color)
-        # Draw flag pole
-        tmp_draw.rectangle(
-            (xp1, yp1, xp2, yp2),
-            fill=pole_color,
-        )
+        # Draw flag outline using _polygon_outline
+        points = [(x1, y1), (x2, y2), (x3, y3)]
+        layer = Drawable._polygon_outline(layer, points, 1, flag_color, flag_color)
 
-        # Convert the Image object back to the numpy array
-        layer = np.array(tmp_img)
-        # Clean up
-        del tmp_img, tmp_draw
+        # Draw pole using _line
+        layer = Drawable._line(layer, xp1, yp1, xp2, yp2, pole_color, pole_width)
+
         return layer
 
     @staticmethod
@@ -256,17 +240,33 @@ class Drawable:
         return result_image
 
     @staticmethod
-    def _polygon_outline(arr, points, width, outline_color):
+    def _polygon_outline(arr, points, width, outline_color, fill_color=None):
         """
-        Draw the outline of a filled polygon on the array.
+        Draw the outline of a filled polygon on the array using _line.
         """
         for i in range(len(points)):
             # Get the current and next points to draw a line between them
             current_point = points[i]
             next_point = points[(i + 1) % len(points)]  # Wrap around to the first point
 
-            # Use the draw_lines function to draw a line between the current and next points
-            arr = Drawable.lines(arr, [current_point, next_point], width, outline_color)
+            # Use the _line function to draw a line between the current and next points
+            arr = Drawable._line(
+                arr,
+                current_point[0], current_point[1],
+                next_point[0], next_point[1],
+                outline_color,
+                width
+            )
+            # Fill the polygon area with the specified fill color
+            if fill_color is not None:
+                min_x = min(point[0] for point in points)
+                max_x = max(point[0] for point in points)
+                min_y = min(point[1] for point in points)
+                max_y = max(point[1] for point in points)
+
+                for x in range(min_x, max_x + 1):
+                    for y in range(min_y, max_y + 1):
+                        arr[y, x] = fill_color
 
         return arr
 
@@ -295,7 +295,8 @@ class Drawable:
 
     @staticmethod
     def robot(layers, x, y, angle, fill, log=""):
-        tmp_layer = np.zeros((52, 52, 4))
+        background_color = layers[y+25, x+25]
+        tmp_layer = np.full((52, 52, 4), background_color, dtype=np.uint8)
         tmp_x, tmp_y = 25, 25
         # Draw Robot
         _LOGGER.info(f"Drawing {log} Robot With Angle: {angle}")

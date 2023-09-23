@@ -8,10 +8,10 @@ from __future__ import annotations
 import logging
 import numpy as np
 from PIL import Image
-from custom_components.valetudo_vacuum_camera.utils.colors import color_grey
+from custom_components.valetudo_vacuum_camera.utils.colors_man import color_grey
 from custom_components.valetudo_vacuum_camera.types import Color, Colors
-from custom_components.valetudo_vacuum_camera.valetudo.img_data import ImageData
-from custom_components.valetudo_vacuum_camera.valetudo.draweble import Drawable
+from custom_components.valetudo_vacuum_camera.utils.img_data import ImageData
+from custom_components.valetudo_vacuum_camera.utils.draweble import Drawable
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -156,7 +156,7 @@ class MapImageHandler(object):
                     x_max = max(layer["compressedPixels"][::3]) * pixel_size
                     y_min = min(layer["compressedPixels"][1::3]) * pixel_size
                     y_max = max(layer["compressedPixels"][1::3]) * pixel_size
-                    corners = [(x_min, y_min),(x_max, y_min),(x_max, y_max),(x_min, y_max)]
+                    corners = [(x_min, y_min), (x_max, y_min), (x_max, y_max), (x_min, y_max)]
                     room_name = str(segment_id)
                     room_properties[room_name] = {
                         "number": segment_id,
@@ -228,10 +228,16 @@ class MapImageHandler(object):
                     predicted_path = self.data.sublist(predicted_path, 2)
                     predicted_pat2 = self.data.sublist_join(predicted_path, 2)
 
-                if path_pixels:
-                    path_pixels = path_pixels[0]["points"]
-                    path_pixels = self.data.sublist(path_pixels, 2)
-                    path_pixel2 = self.data.sublist_join(path_pixels, 2)
+                if path_pixels:  # Fix Dreame Z10 Pro missing path's
+                    all_path_points = []  # Initialize an empty list to collect all path points
+
+                    for path in path_pixels:
+                        # Get the points from the current path and extend the all_path_points list
+                        points = path.get("points", [])
+                        all_path_points.extend(points)
+
+                    sub_lists = self.data.sublist(all_path_points, 2)
+                    path_pixel2 = self.data.sublist_join(sub_lists, 2)
 
                 try:
                     zone_clean = self.data.find_zone_entities(m_json, None)
