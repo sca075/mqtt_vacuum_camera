@@ -1,10 +1,9 @@
-"""Version 1.4.0"""
+"""Version 1.4.3"""
 import logging
 import os
 from homeassistant.core import callback
 from homeassistant.components import mqtt
 from custom_components.valetudo_vacuum_camera.utils.valetudo_jdata import RawToJson
-
 
 _LOGGER = logging.getLogger(__name__)
 _QOS = 0
@@ -23,7 +22,7 @@ class ValetudoConnector:
         self._data_in = False
         self._img_decoder = RawToJson(hass)
 
-    def update_data(self, process: bool = True):
+    async def update_data(self, process: bool = True):
         if self._img_payload:
             if process:
                 _LOGGER.debug("Processing " + self._mqtt_topic + " data from MQTT")
@@ -37,27 +36,27 @@ class ValetudoConnector:
                 self._data_in = False
                 return None
 
-    def get_vacuum_status(self):
+    async def get_vacuum_status(self):
         return self._mqtt_vac_stat
 
-    def get_vacuum_error(self):
+    async def get_vacuum_error(self):
         return self._mqtt_vac_err
 
-    def is_data_available(self):
+    async def is_data_available(self):
         return self._data_in
 
     def save_payload(self, file_name):
         # save payload when available.
         if self._img_payload and (self._data_in is True):
             with open(
-                str(os.getcwd())
-                + "/www/"
-                + file_name
-                + ".raw",
-                "wb",
+                    str(os.getcwd())
+                    + "/www/"
+                    + file_name
+                    + ".raw",
+                    "wb",
             ) as file:
                 file.write(self._img_payload)
-            _LOGGER.info("Saved image data from MQTT in " + file_name + ".raw!")
+            _LOGGER.info("Saved image data from MQTT in mqtt_" + file_name + ".raw!")
 
     @callback
     async def async_message_received(self, msg):
@@ -79,7 +78,7 @@ class ValetudoConnector:
                     + self._rcv_topic
                 )
         elif self._rcv_topic == (
-            self._mqtt_topic + "/StatusStateAttribute/error_description"
+                self._mqtt_topic + "/StatusStateAttribute/error_description"
         ):
             self._payload = msg.payload
             self._mqtt_vac_err = bytes.decode(msg.payload, "utf-8")

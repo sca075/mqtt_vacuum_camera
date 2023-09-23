@@ -186,7 +186,7 @@ class ValetudoCamera(Camera):
         self._last_image = None
         self._image_grab = True
         self._frame_nuber = 0
-        self.throttled_camera_image = Throttle(timedelta(seconds=2))(self.camera_image)
+        self.throttled_camera_image = Throttle(timedelta(seconds=4))(self.camera_image)
         try:
             self.user_colors = [
                 device_info.get(COLOR_WALL),
@@ -391,7 +391,7 @@ class ValetudoCamera(Camera):
             self._frame_nuber = self._map_handler.get_frame_number()
             # when the vacuum goes / is in idle, error or docked
             # take the snapshot.
-            self._snapshot_taken = False
+            # self._snapshot_taken = False
             # Starting the image processing.
             _LOGGER.info(
                 self.file_name + ": Camera image data update available: %s",
@@ -435,7 +435,7 @@ class ValetudoCamera(Camera):
                             {self._image_rotate},
                             )
                         if self._show_vacuum_state:
-                            self._map_handler.draw_status_text(
+                            self._map_handler.draw.draw_status_text(
                                 pil_img,
                                 50,
                                 self._vacuum_shared.user_colors[8],

@@ -3,14 +3,15 @@
 # Collection of routines to extract data from the received json.
 # It returns values and images relative to the Map Data extrapolated from the vacuum json.
 
-import logging
-import math
+from __future__ import annotations
 
+import logging
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image
 from custom_components.valetudo_vacuum_camera.utils.colors import color_grey
-from custom_components.valetudo_vacuum_camera.valetudo.vacuum import Vacuum
 from custom_components.valetudo_vacuum_camera.types import Color, Colors
+from custom_components.valetudo_vacuum_camera.valetudo.img_data import ImageData
+from custom_components.valetudo_vacuum_camera.valetudo.draweble import Drawable
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -31,111 +32,10 @@ class MapImageHandler(object):
         self.go_to = None
         self.img_rotate = 0
         self.room_propriety = None
-        self.vacuum = Vacuum()
+        self.data = ImageData
+        self.draw = Drawable
 
-    @staticmethod
-    def sublist(lst, n):
-        return [lst[i : i + n] for i in range(0, len(lst), n)]
-
-    @staticmethod
-    def sublist_join(lst, n):
-        arr = np.array(lst)
-        num_windows = len(lst) - n + 1
-        result = [arr[i : i + n].tolist() for i in range(num_windows)]
-        return result
-
-    def find_layers(self, json_obj, layer_dict=None):
-        if layer_dict is None:
-            layer_dict = {}
-        if isinstance(json_obj, dict):
-            if "__class" in json_obj and json_obj["__class"] == "MapLayer":
-                layer_type = json_obj.get("type")
-                if layer_type:
-                    if layer_type not in layer_dict:
-                        layer_dict[layer_type] = []
-                    layer_dict[layer_type].append(json_obj.get("compressedPixels", []))
-            for value in json_obj.items():
-                self.find_layers(value, layer_dict)
-        elif isinstance(json_obj, list):
-            for item in json_obj:
-                self.find_layers(item, layer_dict)
-        return layer_dict
-
-    @staticmethod
-    def find_points_entities(json_obj, entity_dict=None):
-        if entity_dict is None:
-            entity_dict = {}
-        if isinstance(json_obj, dict):
-            if json_obj.get("__class") == "PointMapEntity":
-                entity_type = json_obj.get("type")
-                if entity_type:
-                    entity_dict.setdefault(entity_type, []).append(json_obj)
-            for value in json_obj.values():
-                MapImageHandler.find_points_entities(value, entity_dict)
-        elif isinstance(json_obj, list):
-            for item in json_obj:
-                MapImageHandler.find_points_entities(item, entity_dict)
-        return entity_dict
-
-    @staticmethod
-    def find_paths_entities(json_obj, entity_dict=None):
-        if entity_dict is None:
-            entity_dict = {}
-        if isinstance(json_obj, dict):
-            if json_obj.get("__class") == "PathMapEntity":
-                entity_type = json_obj.get("type")
-                if entity_type:
-                    entity_dict.setdefault(entity_type, []).append(json_obj)
-            for value in json_obj.values():
-                MapImageHandler.find_paths_entities(value, entity_dict)
-        elif isinstance(json_obj, list):
-            for item in json_obj:
-                MapImageHandler.find_paths_entities(item, entity_dict)
-        return entity_dict
-
-    @staticmethod
-    def find_zone_entities(json_obj, entity_dict=None):
-        if entity_dict is None:
-            entity_dict = {}
-        if isinstance(json_obj, dict):
-            if json_obj.get("__class") == "PolygonMapEntity":
-                entity_type = json_obj.get("type")
-                if entity_type:
-                    entity_dict.setdefault(entity_type, []).append(json_obj)
-            for value in json_obj.values():
-                MapImageHandler.find_zone_entities(value, entity_dict)
-        elif isinstance(json_obj, list):
-            for item in json_obj:
-                MapImageHandler.find_zone_entities(item, entity_dict)
-        return entity_dict
-
-    @staticmethod
-    def create_empty_image(width, height, background_color):
-        # Create the empty image array
-        image_array = np.zeros((height, width, 4), dtype=np.uint8)
-        # Set the background color
-        image_array[:, :, 0] = background_color[0]  # Set red channel
-        image_array[:, :, 1] = background_color[1]  # Set green channel
-        image_array[:, :, 2] = background_color[2]  # Set blue channel
-        # Set alpha channel to 255 (fully opaque)
-        image_array[:, :, 3] = background_color[3]
-
-        return image_array
-
-    @staticmethod
-    def from_json_to_image(layer, data, pixel_size, color):
-        # Create an array of zeros for the image
-        image_array = layer
-        # Draw rectangles for each point in data
-        for x, y, z in data:
-            for i in range(z):
-                col = (x + i) * pixel_size
-                row = y * pixel_size
-                image_array[row : row + pixel_size, col : col + pixel_size] = color
-        # Convert the image array to a PIL image
-        return image_array
-
-    def crop_and_trim_array(
+    async def crop_and_trim_array(
             self,
             image_array,
             crop_percentage,
@@ -240,267 +140,6 @@ class MapImageHandler(object):
             return image_array
 
     @staticmethod
-    def get_color(color_array, color_name):
-        """Getting Colors from specific colours array."""
-        color_index = {
-            "walls": 0,
-            "no_go": 1,
-            "go_to": 2,
-            "predicted_path": 3,
-            "robot": 4,
-            "charger": 5,
-            "path": 6,
-            "move": 7,
-            "background": 8,
-            "clean": 9,
-            "transparent": 10,
-        }.get(
-            color_name, 10
-        )  # Default to transparent if color name is not found
-
-        if color_name == "rooms":
-            return color_array[11]  # Return the sublist of room colors
-        else:
-            return color_array[color_index]  # Return the color at the specified index
-
-    @staticmethod
-    def draw_robot(layers, x, y, angle, fill, log: "" = None):
-        # Draw Robot
-        _LOGGER.info("Drawing " + log + " Robot With Angle: %s", {angle})
-        tmpimg = Image.fromarray(layers)
-        draw = ImageDraw.Draw(tmpimg)
-        # Outline colour from fill colour
-        outline = ((fill[0]) // 2, (fill[1]) // 2, (fill[2]) // 2)
-        radius = 25  # Radius of the vacuum constant
-        r_scaled = radius // 11  # Offset scale for placement of the objects.
-        # Draw the robot outline
-        draw.ellipse(
-            (x - radius, y - radius, x + radius, y + radius), fill=fill, outline=outline
-        )
-        # Draw bin cover
-        r_cover = r_scaled * 12
-        angle = angle - 80
-        a1 = ((angle + 80) - 80) / 180 * math.pi
-        a2 = ((angle + 80) + 80) / 180 * math.pi
-        x1 = int(x - r_cover * math.sin(a1))
-        y1 = int(y + r_cover * math.cos(a1))
-        x2 = int(x - r_cover * math.sin(a2))
-        y2 = int(y + r_cover * math.cos(a2))
-        draw.line((x1, y1, x2, y2), fill=outline, width=1)
-        # draw Lidar
-        lidar_angle = np.deg2rad(
-            angle + 170
-        )  # Convert angle to radians and adjust for LIDAR orientation
-        lidar_x = int(x + 15 * np.cos(lidar_angle))  # Calculate LIDAR x-coordinate
-        lidar_y = int(y + 15 * np.sin(lidar_angle))  # Calculate LIDAR y-coordinate
-        r_lidar = r_scaled * 3  # Scale factor for the lidar
-        draw.ellipse(
-            (
-                lidar_x - r_lidar,
-                lidar_y - r_lidar,
-                lidar_x + r_lidar,
-                lidar_y + r_lidar,
-            ),
-            fill=outline,
-            width=5,
-        )
-        # Draw Button
-        r_button = r_scaled * 1  # scale factor of the button
-        butt_x = int(x - 20 * np.cos(lidar_angle))  # Calculate the button x-coordinate
-        butt_y = int(y - 20 * np.sin(lidar_angle))  # Calculate the button y-coordinate
-        draw.ellipse(
-            (
-                butt_x - r_button,
-                butt_y - r_button,
-                butt_x + r_button,
-                butt_y + r_button,
-            ),
-            fill=outline,
-            width=1,
-        )
-        # Convert the PIL image back to a Numpy array
-        layers = np.array(tmpimg)
-        del tmpimg
-        return layers
-
-    @staticmethod
-    def draw_battery_charger(layers, x, y, color):
-        # Draw Battery Charger
-        charger_width = 10
-        charger_height = 20
-        # Get the starting and ending indices of the charger rectangle
-        start_row = y - charger_height // 2
-        end_row = start_row + charger_height
-        start_col = x - charger_width // 2
-        end_col = start_col + charger_width
-        # Fill in the charger rectangle with the specified color
-        layers[start_row:end_row, start_col:end_col] = color
-        return layers
-
-    @staticmethod
-    def draw_go_to_flag(layer, center, rotation_angle, flag_color):
-        # Define flag color
-        pole_color = (0, 0, 255, 255)  # RGBA color (blue)
-        # Define flag size and position
-        flag_size = 40
-        pole_width = 3
-        # Adjust flag coordinates based on rotation angle
-        if rotation_angle == 90:
-            x1 = center[0] - flag_size
-            y1 = center[1] + (pole_width // 2)
-            x2 = x1 + (flag_size // 4)
-            y2 = y1 - (flag_size // 2)
-            x3 = center[0] - (flag_size // 2)
-            y3 = center[1] + (pole_width // 2)
-            # Define pole end position
-            xp1 = center[0] - flag_size
-            yp1 = center[1] - (pole_width // 2)
-            xp2 = center[0]
-            yp2 = center[1] + (pole_width // 2)
-        elif rotation_angle == 180:
-            x1 = center[0]
-            y1 = center[1] - (flag_size // 2)
-            x2 = center[0] - (flag_size // 2)
-            y2 = y1 + (flag_size // 4)
-            x3 = center[0]
-            y3 = center[1]
-            # Define pole end position
-            xp1 = center[0] - (pole_width // 2)
-            yp1 = center[1] - flag_size
-            xp2 = center[0] + (pole_width // 2)
-            yp2 = y3
-        elif rotation_angle == 270:
-            x1 = center[0] + flag_size
-            y1 = center[1] - (pole_width // 2)
-            x2 = x1 - (flag_size // 4)
-            y2 = y1 + (flag_size // 2)
-            x3 = center[0] + (flag_size // 2)
-            y3 = center[1] - (pole_width // 2)
-            # Define pole end position
-            xp1 = center[0]
-            yp1 = center[1] - (pole_width // 2)
-            xp2 = center[0] + flag_size
-            yp2 = center[1] + (pole_width // 2)
-        else:
-            # rotation_angle == 0 (no rotation)
-            x1 = center[0]
-            y1 = center[1]
-            x2 = center[0] + (flag_size // 2)
-            y2 = y1 + (flag_size // 4)
-            x3 = center[0]
-            y3 = center[1] + flag_size // 2
-            # Define pole end position
-            xp1 = center[0] - (pole_width // 2)
-            yp1 = y1
-            xp2 = center[0] + (pole_width // 2)
-            yp2 = center[1] + flag_size
-
-        # Create an Image object from the layer array
-        tmp_img = Image.fromarray(layer)
-        # Create a draw object
-        draw = ImageDraw.Draw(tmp_img)
-        # Draw flag on layer
-        draw.polygon([x1, y1, x2, y2, x3, y3], fill=flag_color)
-        # Draw flag pole
-        draw.rectangle(
-            (xp1, yp1, xp2, yp2),
-            fill=pole_color,
-        )
-
-        # Convert the Image object back to the numpy array
-        layer = np.array(tmp_img)
-        # Clean up
-        del draw, tmp_img
-        return layer
-
-    @staticmethod
-    def draw_zone(layers, coordinates, color):
-        dot_radius = 2
-        dot_spacing = 4
-        # Create an Image object from the numpy array
-        tmp_img = Image.fromarray(layers, mode="RGBA")
-        outline = ((color[0]) // 2, (color[1]) // 2, (color[2]) // 2)
-        # Draw rectangle on the image
-        draw = ImageDraw.Draw(tmp_img)
-        tot_zones = len(coordinates) - 1
-        while tot_zones >= 0:
-            tot_zones = tot_zones - 1
-            points = coordinates[tot_zones]["points"]
-            draw.polygon(points, outline=outline)
-            min_x = min(points[::2])
-            max_x = max(points[::2])
-            min_y = min(points[1::2])
-            max_y = max(points[1::2])
-            for y in range(min_y, max_y, dot_spacing):
-                for x in range(min_x, max_x, dot_spacing):
-                    for i in range(dot_radius):
-                        draw.ellipse(
-                            [
-                                (x - i, y - i),
-                                (x + i, y + i),
-                            ],
-                            fill=color,
-                        )
-        # Convert the Image object back to the numpy array
-        layers = np.array(tmp_img)
-        # Free memory
-        del tmp_img, tot_zones, draw, outline
-        return layers
-
-    @staticmethod
-    def draw_lines(arr, coords, width, color):
-        for coord in coords:
-            # Use Bresenham's line algorithm to get the coordinates of the line pixels
-            x0, y0 = coord[0]
-            try:
-                x1, y1 = coord[1]
-            except IndexError:
-                x1 = x0
-                y1 = y0
-            dx = abs(x1 - x0)
-            dy = abs(y1 - y0)
-            sx = 1 if x0 < x1 else -1
-            sy = 1 if y0 < y1 else -1
-            err = dx - dy
-            line_pixels = []
-            while True:
-                line_pixels.append((x0, y0))
-                if x0 == x1 and y0 == y1:
-                    break
-                e2 = 2 * err
-                if e2 > -dy:
-                    err -= dy
-                    x0 += sx
-                if e2 < dx:
-                    err += dx
-                    y0 += sy
-
-            # Iterate over the line pixels and draw filled rectangles with the specified width
-            for pixel in line_pixels:
-                x, y = pixel
-                for i in range(width):
-                    for j in range(width):
-                        if 0 <= x + i < arr.shape[0] and 0 <= y + j < arr.shape[1]:
-                            arr[y + i, x + j] = color
-        return arr
-
-    @staticmethod
-    def draw_status_text(image, size, color, status):
-        # Load a font
-        path = (
-            "custom_components/valetudo_vacuum_camera/utils/fonts/lato/Lato-Regular.ttf"
-        )
-        font = ImageFont.truetype(path, size)
-        text = status
-        # Create a drawing object
-        draw = ImageDraw.Draw(image)
-        # Define the text and position
-
-        position = (10, 10)  # Upper left corner
-        # Draw the text on the image
-        draw.text(position, text, font=font, fill=color)
-
-    @staticmethod
     def extract_room_properties(json_data):
         room_properties = {}
         pixel_size = json_data.get("pixelSize", [])
@@ -529,7 +168,7 @@ class MapImageHandler(object):
 
         return room_properties
 
-    def get_image_from_json(
+    async def get_image_from_json(
             self,
             m_json,
             robot_state,
@@ -543,6 +182,7 @@ class MapImageHandler(object):
             rooms_colors: Color = None,
             file_name: "" = None,
     ):
+
         color_wall: Color = user_colors[0]
         color_no_go: Color = user_colors[6]
         color_go_to: Color = user_colors[7]
@@ -551,11 +191,13 @@ class MapImageHandler(object):
         color_move: Color = user_colors[4]
         color_background: Color = user_colors[3]
         color_zone_clean: Color = user_colors[1]
+
         try:
             if m_json is not None:
                 _LOGGER.info(file_name + ":Composing the image for the camera.")
                 # buffer json data
                 self.json_data = m_json
+
                 if self.room_propriety:
                     _LOGGER.info(file_name + ": Supporting Rooms Cleaning!")
                 size_x = int(m_json["size"]["x"])
@@ -573,7 +215,7 @@ class MapImageHandler(object):
                 path_pixel2 = None
 
                 try:
-                    paths_data = self.find_paths_entities(m_json, None)
+                    paths_data = self.data.find_paths_entities(m_json, None)
                     predicted_path = paths_data.get("predicted_path", [])
                     path_pixels = paths_data.get("path", [])
                 except KeyError as e:
@@ -583,16 +225,16 @@ class MapImageHandler(object):
 
                 if predicted_path:
                     predicted_path = predicted_path[0]["points"]
-                    predicted_path = self.sublist(predicted_path, 2)
-                    predicted_pat2 = self.sublist_join(predicted_path, 2)
+                    predicted_path = self.data.sublist(predicted_path, 2)
+                    predicted_pat2 = self.data.sublist_join(predicted_path, 2)
 
                 if path_pixels:
                     path_pixels = path_pixels[0]["points"]
-                    path_pixels = self.sublist(path_pixels, 2)
-                    path_pixel2 = self.sublist_join(path_pixels, 2)
+                    path_pixels = self.data.sublist(path_pixels, 2)
+                    path_pixel2 = self.data.sublist_join(path_pixels, 2)
 
                 try:
-                    zone_clean = self.find_zone_entities(m_json, None)
+                    zone_clean = self.data.find_zone_entities(m_json, None)
                 except (ValueError, KeyError) as e:
                     _LOGGER.info(file_name + ": No zone clean: %s", str(e))
                     zone_clean = None
@@ -600,7 +242,7 @@ class MapImageHandler(object):
                     _LOGGER.debug(file_name + ": Got zone clean: %s", zone_clean)
 
                 try:
-                    entity_dict = self.find_points_entities(m_json, None)
+                    entity_dict = self.data.find_points_entities(m_json, None)
                 except (ValueError, KeyError) as e:
                     _LOGGER.warning(file_name + ": No points in json data: %s", str(e))
                     entity_dict = None
@@ -640,18 +282,18 @@ class MapImageHandler(object):
 
                 go_to = entity_dict.get("go_to_target")
                 pixel_size = int(m_json["pixelSize"])
-                layers = self.find_layers(m_json["layers"])
+                layers = self.data.find_layers(m_json["layers"])
                 _LOGGER.debug(file_name + ": Layers to draw: %s", layers.keys())
                 _LOGGER.info(file_name + ": Empty image with background color")
-                img_np_array = self.create_empty_image(size_x, size_y, color_background)
+                img_np_array = self.draw.create_empty_image(size_x, size_y, color_background)
                 _LOGGER.info(file_name + ": Overlapping Layers")
                 for layer_type, compressed_pixels_list in layers.items():
                     room_id = 0
                     for compressed_pixels in compressed_pixels_list:
-                        pixels = self.sublist(compressed_pixels, 3)
+                        pixels = self.data.sublist(compressed_pixels, 3)
                         if layer_type == "segment" or layer_type == "floor":
                             room_color = rooms_colors[room_id]
-                            img_np_array = self.from_json_to_image(
+                            img_np_array = await self.draw.from_json_to_image(
                                 img_np_array, pixels, pixel_size, room_color
                             )
                             if room_id < 15:
@@ -671,52 +313,49 @@ class MapImageHandler(object):
                                     no_go_zones = None
                                     _LOGGER.debug(file_name + ": No Go area not found.")
                                 if zones_clean:
-                                    img_np_array = self.draw_zone(
+                                    img_np_array = self.draw.zones(
                                         img_np_array, zones_clean, color_zone_clean
                                     )
                                 if no_go_zones:
-                                    img_np_array = self.draw_zone(
+                                    img_np_array = self.draw.zones(
                                         img_np_array, no_go_zones, color_no_go
                                     )
                             # Drawing walls.
-                            img_np_array = self.from_json_to_image(
+                            img_np_array = await self.draw.from_json_to_image(
                                 img_np_array, pixels, pixel_size, color_wall
                             )
                 _LOGGER.info(file_name + ": Completed base Layers")
 
-                if self.frame_number == 0:
-                    _LOGGER.debug(file_name + ": Drawing image objects")
-                    img_np_array = self.draw_battery_charger(
-                        img_np_array, charger_pos[0], charger_pos[1], color_charger
-                    )
-                    self.img_base_layer = img_np_array
-                    self.frame_number += 1
-                else:
-                    img_np_array = self.img_base_layer
-                    self.frame_number += 1
-                    if self.frame_number > 5:
-                        self.frame_number = 0
+                img_np_array = self.draw.battery_charger(
+                    img_np_array, charger_pos[0], charger_pos[1], color_charger
+                )
+                # self.img_base_layer = img_np_array
+                self.frame_number += 1
+                # img_np_array = self.img_base_layer
+                # If there is a zone clean we draw it now.
                 _LOGGER.debug(file_name + ": Frame number %s", self.frame_number)
+                self.frame_number += 1
+                if self.frame_number > 5:
+                    self.frame_number = 0
                 # All below will be drawn each time
                 if go_to:
-                    self.frame_number = 1
-                    img_np_array = self.draw_go_to_flag(
+                    img_np_array = self.draw.go_to_flag(
                         img_np_array,
                         (go_to[0]["points"][0], go_to[0]["points"][1]),
                         self.img_rotate,
                         color_go_to,
                     )
                 if predicted_pat2:
-                    img_np_array = self.draw_lines(
+                    img_np_array = self.draw.lines(
                         img_np_array, predicted_pat2, 2, color_grey
                     )
                 if path_pixel2:
-                    img_np_array = self.draw_lines(
+                    img_np_array = self.draw.lines(
                         img_np_array, path_pixel2, 5, color_move
                     )
                 if robot_state == "docked":
-                    robot_position_angle = robot_position_angle + 180
-                img_np_array = self.draw_robot(
+                    robot_position_angle = robot_position_angle - 180
+                img_np_array = self.draw.robot(
                     img_np_array,
                     robot_position[0],
                     robot_position[1],
@@ -725,7 +364,7 @@ class MapImageHandler(object):
                     file_name,
                 )
                 _LOGGER.debug(file_name + " Image Cropping:" + str(crop) + " Image Rotate:" + str(img_rotation))
-                img_np_array = self.crop_and_trim_array(
+                img_np_array = await self.crop_and_trim_array(
                     img_np_array,
                     crop,
                     int(trim_u),
@@ -759,7 +398,7 @@ class MapImageHandler(object):
     def get_rooms_attributes(self):
         if self.json_data:
             _LOGGER.debug("Checking for rooms data..")
-            self.room_propriety =  MapImageHandler.extract_room_properties(self.json_data)
+            self.room_propriety = MapImageHandler.extract_room_properties(self.json_data)
         return self.room_propriety
 
     def get_calibration_data(self, rotation_angle):

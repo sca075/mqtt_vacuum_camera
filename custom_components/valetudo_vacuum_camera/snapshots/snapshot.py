@@ -1,4 +1,6 @@
 """Snapshot Version 1.4.3"""
+# Added Errors handling.
+
 import os
 import json
 import zipfile
