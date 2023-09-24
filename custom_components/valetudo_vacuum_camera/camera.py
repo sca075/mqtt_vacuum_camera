@@ -283,6 +283,12 @@ class ValetudoCamera(Camera):
         """Camera Entity Name"""
         return self._attr_name
 
+    def turn_on(self):
+        self._should_poll = True
+
+    def turn_off(self):
+        self._should_poll = False
+
     @property
     def supported_features(self) -> int:
         """Camera ON OFF Future"""
