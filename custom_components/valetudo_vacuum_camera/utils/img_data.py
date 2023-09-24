@@ -1,3 +1,10 @@
+"""
+Collections of Json and List routines
+ImageData is part of the Image_Handler
+used functions to search data in the json
+provided for the creation of the new camera frame
+Last changes on Version: 1.4.3
+"""
 
 import logging
 
@@ -7,18 +14,26 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class ImageData:
-    def __init__(self):
-        self.jsondata = None
+
     @staticmethod
     def sublist(lst, n):
+        """ Sub lists of specific n number of elements """
         return [lst[i : i + n] for i in range(0, len(lst), n)]
 
     @staticmethod
     def sublist_join(lst, n):
+        """ Join the lists in a unique list of n elements """
         arr = np.array(lst)
         num_windows = len(lst) - n + 1
         result = [arr[i : i + n].tolist() for i in range(num_windows)]
         return result
+
+    """ 
+    The below functions are basically the same ech one
+    of them is allowing filtering and putting together in a
+    list the specific Layers, Paths, Zones and Pints in the 
+    Vacuums Json in parallel.
+    """
 
     @staticmethod
     def find_layers(json_obj, layer_dict=None):

@@ -1,7 +1,9 @@
-"""Version 1.4.1"""
-# Image Handler Module
-# Collection of routines to extract data from the received json.
-# It returns values and images relative to the Map Data extrapolated from the vacuum json.
+"""
+Image Handler Module.
+It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
+It also returns calibration, rooms data to the card and other images information to the camera.
+Last Changed on Version: 1.4.3
+"""
 
 from __future__ import annotations
 

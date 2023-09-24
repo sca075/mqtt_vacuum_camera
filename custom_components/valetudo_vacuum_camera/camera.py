@@ -435,7 +435,7 @@ class ValetudoCamera(Camera):
                             {self._image_rotate},
                             )
                         if self._show_vacuum_state:
-                            self._map_handler.draw.draw_status_text(
+                            self._map_handler.draw.status_text(
                                 pil_img,
                                 50,
                                 self._vacuum_shared.user_colors[8],
