@@ -31,12 +31,13 @@ internal_variables:
   topic: valetudo/your_topic  
   ```
 
-**Supported Vacuums:**
+**Known Supported Vacuums:**
 - Roborock.V1
 - Roborock.S50
 - Roborock.S5
 - Dreame D9
 - Dreame Z10 Pro
+- Give us feedback please ;) (waiting for your vacuum to be add to the list)
 
 ![Screenshot 2023-09-12 at 22 53 29](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/4f5981e3-39f2-449a-8a43-39870631e9a1)
 
