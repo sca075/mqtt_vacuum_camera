@@ -94,7 +94,9 @@ debug function in HA is active ***(we don't store data in the www folder if the 
 
 ## Notes:
 1) This custom component is developed and tested using a PI4 with Home Assistant OS fully updated [to the last version](https://www.home-assistant.io/faq/release/), this allows us to confirm that the component is working properly with Home Assistant. Tested also on Docker Supervised "production" enviroment (fully setup home installation).
-~~2) This camera isn't fast as [ICantBelieveItsNotValetudo](https://github.com/Hypfer/ICantBelieveItsNotValetudo) because it is develped using PIL (as per OpenCV is not supported on Home Assistant OS). Will consider, based also on your requests a platform based release of this integration.~~
+   
+  ~~2. This camera isn't fast as [ICantBelieveItsNotValetudo](https://github.com/Hypfer/ICantBelieveItsNotValetudo) because it is develped using PIL (as per OpenCV is not supported on Home Assistant OS). Will consider, based also on your requests a platform based release of this integration.~~
+
 2) The test in Github is still not fully setup this is why there is an X instead of a V. We don't pass the 84% of test for this reason.
 
 ### Tanks to:
