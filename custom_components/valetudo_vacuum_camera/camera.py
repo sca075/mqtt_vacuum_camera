@@ -386,17 +386,22 @@ class ValetudoCamera(Camera):
         self._vacuum_state = await self._mqtt.get_vacuum_status()
         process_data = await self._mqtt.is_data_available()
         if process_data:
-            # grab the image
-            self._image_grab = True
-            self._frame_nuber = self._map_handler.get_frame_number()
-            # when the vacuum goes / is in idle, error or docked
-            # take the snapshot.
-            self._snapshot_taken = False
-            # Starting the image processing.
-            _LOGGER.info(
-                self.file_name + ": Camera image data update available: %s",
-                process_data,
-                )
+            # if the vacuum is working, or it is the first image.
+            if (
+                    self._vacuum_state == "cleaning"
+                    or self._vacuum_state == "moving"
+                    or self._vacuum_state == "returning"
+            ):
+                # grab the image
+                self._image_grab = True
+                self._frame_nuber = self._map_handler.get_frame_number()
+                # when the vacuum goes / is in idle, error or docked
+                # take the snapshot.
+                self._snapshot_taken = False
+                _LOGGER.info(
+                    self.file_name + ": Camera image data update available: %s",
+                    process_data,
+                    )
             # calculate the cycle time for frame adjustment
             start_time = datetime.now()
             try:
