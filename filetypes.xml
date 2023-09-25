@@ -3,7 +3,6 @@
     <extensionMap>
       <mapping pattern=".coverage" type="PLAIN_TEXT" />
       <mapping ext="raw" type="PLAIN_TEXT" />
-      <removed_mapping ext="cfg" approved="true" type="TSCN" />
     </extensionMap>
   </component>
 </application>
