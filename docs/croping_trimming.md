@@ -41,4 +41,4 @@ On the test image (previusly cropped at 25%) removing 350 pixesels from top of t
 It is possile therefore to optimize the view to dsiplay only the map (without empty spacess arround it).
 
 The calibrations points of the maps will be automatically updated at each map transformations. 
-The robot positon and coordinates will not change, maing that thre will be no changes on whatver cleaning area pre-defined.
+The robot positon and coordinates will not change, meaning that there will be no functional changes for the pre-defined cleaning areas.
