@@ -1,3 +1,5 @@
+'''test camera.py version 1.4.x'''
+
 import socket
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch

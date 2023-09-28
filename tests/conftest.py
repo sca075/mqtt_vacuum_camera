@@ -1,4 +1,6 @@
 """pytest fixtures."""
+# from version 1.4.x use internal broker
+
 import pytest
 from homeassistant.setup import async_setup_component
 # from homeassistant.components import mqtt
