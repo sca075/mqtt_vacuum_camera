@@ -1,7 +1,7 @@
 import pytest
-from homeassistant import config_entries, core
+# from homeassistant import config_entries, core
 from custom_components.valetudo_vacuum_camera import config_flow
-from unittest.mock import patch
+# from unittest.mock import patch
 from unittest import mock
 
 @pytest.fixture

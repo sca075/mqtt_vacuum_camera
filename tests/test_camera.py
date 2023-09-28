@@ -11,10 +11,12 @@ def mock_mqtt(hass, mqtt_mock):
     mqtt_mock().async_subscribe.return_value = AsyncMock()
     return mqtt_mock
 
+
 def load_mqtt_topic_from_file(file_path):
     """Load MQTT topic from a file."""
     with open(file_path, 'r') as file:
         return file.read().strip()
+
 
 @pytest.mark.asyncio
 @pytest.mark.enable_socket

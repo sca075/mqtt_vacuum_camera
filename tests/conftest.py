@@ -1,7 +1,7 @@
 """pytest fixtures."""
 import pytest
 from homeassistant.setup import async_setup_component
-from homeassistant.components import mqtt
+# from homeassistant.components import mqtt
 from custom_components.valetudo_vacuum_camera.const import DOMAIN
 
 
