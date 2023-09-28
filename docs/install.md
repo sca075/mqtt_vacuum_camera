@@ -35,7 +35,7 @@ The camera entitiy created will have the same friendly name of your vacuum + "Ca
 
 ![Screenshot 2023-08-20 at 10 28 13](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/a49cb36e-f7b6-421c-ae0b-c88543044767)
 
-MQTT Host can be configured eiter by IP or Host name. The host name **"core-mosquitto" vaule is default for all users using the [official Home Assistant MQTT addon](https://www.home-assistant.io/integrations/mqtt/)**. In this filed it is important to use the same vaule used and your MQTT configuration.
+MQTT Host can be configured eiter by IP or Host name. The host name **"core-mosquitto" vaule is default for all users using the [official Home Assistant MQTT addon](https://www.home-assistant.io/integrations/mqtt/)**. In this filed it is important to use the same credentials vaules used while you to setup the vacuum to connect your MQTT.
 
 ![Screenshot 2023-08-20 at 10 42 53](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/d284dd8e-b115-430c-982b-74f426a2cdb4)
 
