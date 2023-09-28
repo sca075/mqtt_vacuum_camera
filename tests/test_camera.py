@@ -1,57 +1,49 @@
-from unittest.mock import AsyncMock, MagicMock
 import socket
 import pytest
+from unittest.mock import AsyncMock, MagicMock, patch
 from custom_components.valetudo_vacuum_camera.camera import ValetudoCamera
 from homeassistant.components.camera import Camera
 
+@pytest.fixture
+def mock_mqtt(hass, mqtt_mock):
+    """Mock the MQTT component."""
+    mqtt_mock().async_subscribe.return_value = AsyncMock()
+    return mqtt_mock
 
-@pytest.mark.allow_hosts(["127.0.0.1"], 1883)
-# @pytest.mark.asyncio
+def load_mqtt_topic_from_file(file_path):
+    """Load MQTT topic from a file."""
+    with open(file_path, 'r') as file:
+        return file.read().strip()
+
+@pytest.mark.asyncio
 @pytest.mark.enable_socket
-async def test_update_success(hass, aioclient_mock, socket_enabled):
+async def test_update_success(hass, aioclient_mock, socket_enabled, enable_custom_integrations, mock_mqtt):
     """Tests a fully successful async_update."""
+    # Load MQTT topic from file
+    mqtt_topic = load_mqtt_topic_from_file('tests/mqtt_data.raw')
+
     camera = MagicMock()
     camera.getitem = AsyncMock(
         side_effect=[
-            # step vacuum id response
             {
                 "vacuum_entity": "vacuum.my_vacuum",
-            },
-            # step mqtt response
-            {
-                "broker_user": "mqttUser",
-                "broker_password": "mqttPassword",
-                "vacuum_map": "valetudo/myTopic",
-            },
-            # step image options response
-            {
-                "rotate_image": "0",
-                "crop_image": "50",
-            },
-            # step image options response 2
-            {
-                "color_charger": "[255, 128, 0]",
-                "color_move": "[238, 247, 255]",
-                "color_wall": "[255, 255, 0]",
-                "color_robot": "[255, 255, 204]",
-                "color_go_to": "[0, 255, 0]",
-                "color_no_go": "[255, 0, 0]",
-                "color_zone_clean": "[255, 255, 255]",
-                "color_background": "[0, 125, 255]",
+                "vacuum_map": "valetudo/my_vacuum"
             },
         ]
     )
-    camera = ValetudoCamera(Camera, {"path": "homeassistant/core"})
-    camera.throttled_camera_image()
-    camera.update()
-    camera.turn_off()
+
+    with patch('custom_components.valetudo_vacuum_camera.camera.ConfigFlowHandler.async_step_user', return_value={'title': 'My Vacuum Camera'}):
+        camera = ValetudoCamera(Camera, {"path": "homeassistant/core"})
+        camera.throttled_camera_image()
+        camera.camera_image()
 
     expected = {
         "calibration_points": None,
         "json_data": None,
         "listen_to": None,
         "robot_position": None,
-        "vacuum_entity": None,
+        "snapshot": None,
+        "snapshot_path": "/local/snapshot_" + "my_vacuum" + ".png",
         "vacuum_json_id": None,
         "vacuum_status": None,
     }
@@ -60,4 +52,7 @@ async def test_update_success(hass, aioclient_mock, socket_enabled):
     assert camera.available is True
     assert camera.state == "idle"
     assert expected == camera.extra_state_attributes
-    # assert camera.camera_image() is not None
+    assert camera.name == "Camera"
+
+    # Assert that the MQTT topic is as expected
+    assert mqtt_topic == "valetudo/my_vacuum/MapData/map-data-hass"

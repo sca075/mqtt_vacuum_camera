@@ -1,4 +1,4 @@
-"""Camera Version 1.4.1"""
+"""Camera Version 1.4.3"""
 from __future__ import annotations
 import logging
 import os
@@ -360,7 +360,7 @@ class ValetudoCamera(Camera):
         try:
             self._snapshot_taken = True
             # When logger is active.
-            if _LOGGER.getEffectiveLevel() is not 0:
+            if _LOGGER.getEffectiveLevel() != 0:
                 # Save mqtt raw data file.
                 if self._mqtt is not None:
                     self._mqtt.save_payload(self.file_name)

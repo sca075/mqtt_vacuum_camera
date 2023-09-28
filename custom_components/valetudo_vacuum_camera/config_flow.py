@@ -1,4 +1,4 @@
-"""config_flow ver.1.4.1"""
+"""config_flow ver.1.4.2"""
 import voluptuous as vol
 import logging
 from typing import Any, Dict, Optional

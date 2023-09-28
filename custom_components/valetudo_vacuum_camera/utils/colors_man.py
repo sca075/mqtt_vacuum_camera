@@ -1,4 +1,4 @@
-"""Colors RGBA Version 1.4.1"""
+"""Colors RGBA Version 1.4.3"""
 
 import logging
 

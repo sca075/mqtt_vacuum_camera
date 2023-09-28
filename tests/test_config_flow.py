@@ -1,33 +1,14 @@
 import pytest
-from unittest import mock
-from unittest.mock import patch
-from homeassistant.config_entries import ConfigEntry
+from homeassistant import config_entries, core
 from custom_components.valetudo_vacuum_camera import config_flow
-
+from unittest.mock import patch
+from unittest import mock
 
 @pytest.fixture
 def vacuum_user_input():
     return {
         config_flow.CONF_VACUUM_ENTITY_ID: "vacuum.entity_id",
     }
-
-
-@pytest.fixture
-def mqtt_user_input():
-    return {
-        config_flow.CONF_MQTT_USER: "MQTT User Name",
-        config_flow.CONF_MQTT_PASS: "MQTT User Password",
-        config_flow.CONF_VACUUM_CONNECTION_STRING: "Vacuum Topic Prefix/Identifier",
-    }
-
-
-@pytest.fixture
-def options_user_input():
-    return {
-        config_flow.ATTR_ROTATE: "Image Rotation",
-        config_flow.ATTR_CROP: "Crop Image",
-    }
-
 
 async def test_flow_user_init(hass):
     """Test the initialization of the form for step of the config flow."""
@@ -46,45 +27,8 @@ async def test_flow_user_init(hass):
     }
     assert expected == result
 
-
-async def test_flow_mqtt(hass, vacuum_user_input):
-    """Test the initialization of the form for MQTT step of the config flow."""
-    result = await hass.config_entries.flow.async_init(
-        config_flow.DOMAIN, context={"source": "user"}
-    )
-    expected = {
-        "data_schema": config_flow.MQTT_SCHEMA,
-        "description_placeholders": None,
-        "errors": None,
-        "flow_id": mock.ANY,
-        "handler": config_flow.ValetudoCameraFlowHandler,
-        "last_step": None,
-        "step_id": "mqtt",
-        "type": "form",
-    }
-    assert expected == result
-
-
-async def test_flow_options(hass, mqtt_user_input):
-    """Test the initialization of the form for Options step of the config flow."""
-    result = await hass.config_entries.flow.async_init(
-        config_flow.DOMAIN, context={"source": "user"}
-    )
-    expected = {
-        "data_schema": config_flow.OPTIONS_SCHEMA,
-        "description_placeholders": mqtt_user_input,
-        "errors": None,
-        "flow_id": mock.ANY,
-        "handler": config_flow.ValetudoCameraFlowHandler,
-        "last_step": None,
-        "step_id": "options",
-        "type": "form",
-    }
-    assert expected == result
-
-
 async def test_flow_user_creates_config_entry(
-    hass, vacuum_user_input, mqtt_user_input, options_user_input
+        hass, vacuum_user_input
 ):
     """Test the config entry is successfully created."""
     result = await hass.config_entries.flow.async_init(
@@ -92,7 +36,7 @@ async def test_flow_user_creates_config_entry(
     )
     await hass.config_entries.flow.async_configure(
         result["flow_id"],
-        user_input={**vacuum_user_input, **mqtt_user_input, **options_user_input},
+        user_input={**vacuum_user_input},
     )
     await hass.async_block_till_done()
 
@@ -101,9 +45,4 @@ async def test_flow_user_creates_config_entry(
     assert len(entries) == 1
     assert entries[0].data == {
         "vacuum_entity": "vacuum.entity_id",
-        "broker_user": "MQTT User Name",
-        "broker_password": "MQTT User Password",
-        "vacuum_map": "Vacuum Topic Prefix/Identifier",
-        "rotate_image": "Image Rotation",
-        "crop_image": "Crop Image",
     }
