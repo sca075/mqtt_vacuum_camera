@@ -14,10 +14,14 @@ Extract the maps for rooted Vacuum Cleaners with Valetudo Firmware to Home Assis
 This Integration decode the vacuum map and render it to Home Assistant, when you want also to control your vacuum you will need to also install the:
 [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card) from HACS as well.
 
-Configuration of the card (thanks to @PiotrMachowski) once the camera is selected requires:
-calibration source to be set to camera: true
+Configuration of the card (thanks to @PiotrMachowski) once the camera is installed requires:
+*calibration source to be set to camera **not to identity**.*
+```
+calibration_source: 
+  camera: true 
+```
 
-This will pass automatically the data to the card.
+The below pass automatically the data to use the card please do not forget to use the **internal_variables** *your topic can be retrived also from the camera attribe vacuum_topic.* 
 
 ```
 type: custom:xiaomi-vacuum-map-card
@@ -31,12 +35,13 @@ internal_variables:
   topic: valetudo/your_topic  
   ```
 
-**Supported Vacuums:**
+**Known Supported Vacuums:**
 - Roborock.V1
 - Roborock.S50
 - Roborock.S5
 - Dreame D9
 - Dreame Z10 Pro
+- Give us feedback please ;) (waiting for your vacuum to be add to the list as in general it works with all flashed Valetudo vacuums)
 
 ![Screenshot 2023-09-12 at 22 53 29](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/4f5981e3-39f2-449a-8a43-39870631e9a1)
 

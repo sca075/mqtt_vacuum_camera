@@ -4,6 +4,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from custom_components.valetudo_vacuum_camera.camera import ValetudoCamera
 from homeassistant.components.camera import Camera
 
+
 @pytest.fixture
 def mock_mqtt(hass, mqtt_mock):
     """Mock the MQTT component."""

@@ -10,6 +10,7 @@ def vacuum_user_input():
         config_flow.CONF_VACUUM_ENTITY_ID: "vacuum.entity_id",
     }
 
+
 async def test_flow_user_init(hass):
     """Test the initialization of the form for step of the config flow."""
     result = await hass.config_entries.flow.async_init(
