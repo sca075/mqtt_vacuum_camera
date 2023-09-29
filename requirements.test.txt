@@ -9,12 +9,12 @@ pytest-asyncio==0.21.0
 pytest-cov==4.1.0
 pytest-socket==0.6.0
 pytest-mqtt == 0.2.0
-pytest-homeassistant-custom-component==0.13.53
+pytest-homeassistant-custom-component==0.13.45
 
 #pytest-asyncio==0.20.2
 #pytest-xdist==2.5.0
 #pytest-homeassistant-custom-component==0.12.49
-pytest-mqtt==0.2.0
+#pytest-mqtt==0.2.0
 #pytest-sugar==0.9.5
 #pytest-unordered==0.5.2
 #pytest-timeout==2.1.0
