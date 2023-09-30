@@ -10,11 +10,11 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
-# @pytest.fixture(autouse=True)
-# def mock_mqtt(hass, mqtt_mock):
-#     """Mock the MQTT component."""
-#     mqtt_mock().async_subscribe.return_value = AsyncMock()
-#     return mqtt_mock
+@pytest.fixture(autouse=True)
+def mock_mqtt(hass, mqtt_mock):
+    """Mock the MQTT component."""
+    mqtt_mock().async_subscribe.return_value = AsyncMock()
+    return mqtt_mock
 
 async def test_async_setup(hass):
     """Test the component get setup."""
