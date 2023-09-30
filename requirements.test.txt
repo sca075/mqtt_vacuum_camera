@@ -1,15 +1,18 @@
 # From our manifest.json for our custom component
 pillow==9.5.0
 numpy==1.23.2
+janus
+
 
 # Strictly for tests
-coverage==7.2.7
+janus==1.0.0
+coverage==7.2.4
 pytest==7.3.1
-pytest-asyncio==0.21.0
-pytest-cov==4.1.0
-pytest-socket==0.6.0
+pytest-asyncio==0.20.3
+pytest-cov==3.0.0
+pytest-socket==0.5.1
 pytest-mqtt == 0.2.0
-pytest-homeassistant-custom-component==0.13.53
+pytest-homeassistant-custom-component==0.13.45
 
 #pytest-asyncio==0.20.2
 #pytest-xdist==2.5.0

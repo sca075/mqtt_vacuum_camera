@@ -3,15 +3,9 @@
 import socket
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
+
 from custom_components.valetudo_vacuum_camera.camera import ValetudoCamera
 from homeassistant.components.camera import Camera
-
-
-@pytest.fixture
-def mock_mqtt(hass, mqtt_mock):
-    """Mock the MQTT component."""
-    mqtt_mock().async_subscribe.return_value = AsyncMock()
-    return mqtt_mock
 
 
 def load_mqtt_topic_from_file(file_path):
@@ -26,7 +20,10 @@ async def test_update_success(hass, aioclient_mock, socket_enabled, enable_custo
     """Tests a fully successful async_update."""
     # Load MQTT topic from file
     mqtt_topic = load_mqtt_topic_from_file('tests/mqtt_data.raw')
-
+    mock_mqtt.send(mqtt_topic)
+    if mock_mqtt.cr_running:
+        print("We are testing the Camera")
+    print("**************")
     camera = MagicMock()
     camera.getitem = AsyncMock(
         side_effect=[

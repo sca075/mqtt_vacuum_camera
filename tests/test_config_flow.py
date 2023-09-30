@@ -9,7 +9,7 @@ from unittest import mock
 @pytest.fixture
 def vacuum_user_input():
     return {
-        config_flow.CONF_VACUUM_ENTITY_ID: "vacuum.entity_id",
+        config_flow.CONF_VACUUM_ENTITY_ID: "vacuum.my_vacuum",
     }
 
 
