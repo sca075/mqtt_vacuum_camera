@@ -5,7 +5,7 @@ janus==1.0.0
 
 
 # Strictly for tests
-coverage==7.2.4
+coverage==7.0.0
 pytest==7.3.1
 #pytest-asyncio==0.20.3
 pytest-cov==3.0.0
