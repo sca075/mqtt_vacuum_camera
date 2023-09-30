@@ -57,8 +57,8 @@ Please foolow the instructions in [here](./docs/install.md). This detailed guide
 2) **Automatically Generate rooms based configuration when vaccum support this fucntionality**, this will allow you to configure the rooms quickly on the [lovelace-xiaomi-vacuum-map-card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
 3) **The camera take automaticly a snapshot (vacuum idle/ error / docked)** and sore it in the www folder of HA. It is thefore possible to create an automation to send the screenshot to your mobile in different conditions as per below example, the vacuum is in idle for 30 second, or the camera took a snapshot 5 sec. ago..  **(please keep in mind that this image will be not automatically deleted from your www folder)**:
 
-```alias: Vacuum idle
-description: vacuum notification with image
+```alias: Vacuum stopped at position
+description: vacuum camera notification with image
 trigger:
   - platform: state
     entity_id:
@@ -79,12 +79,12 @@ trigger:
       seconds: 30
 condition: []
 action:
-  - service: notify.mobile_app_sandros_iphone
+  - service: notify.mobile_app_your_phone
     data:
-      message: Vacuum in idle
-      title: Vacuum in idle
+      message: Vacuum Camera Snapshot
+      title: Vacuum Camera Snapshot
       data:
-        image: /local/snapshot_silenttepidstinkbug.png
+        image: /local/snapshot_your_vacuum.png
 mode: single
 ```
 
