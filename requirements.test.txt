@@ -1,7 +1,6 @@
 # From our manifest.json for our custom component
 pillow==9.5.0
 numpy==1.23.2
-janus
 
 
 # Strictly for tests
