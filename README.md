@@ -55,27 +55,36 @@ Please foolow the instructions in [here](./docs/install.md). This detailed guide
 ## Futures:
 1) **Automatically Generate the calibration points for the lovelace-xiaomi-vacuum-map-card** to ensure full compatibility to this user friendly card.
 2) **Automatically Generate rooms based configuration when vaccum support this fucntionality**, this will allow you to configure the rooms quickly on the [lovelace-xiaomi-vacuum-map-card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
-3) **The camera take automaticly a snapshot (vacuum idle/ error / docked)** and sore it in the www folder of HA. It is thefore possible to create an automation to send the screenshot to your mobile in different conditions as per below example **(please keep in mind that this image will be not automatically deleted from your www folder)**:
+3) **The camera take automaticly a snapshot (vacuum idle/ error / docked)** and sore it in the www folder of HA. It is thefore possible to create an automation to send the screenshot to your mobile in different conditions as per below example, the vacuum is in idle for 30 second, or the camera took a snapshot 5 sec. ago..  **(please keep in mind that this image will be not automatically deleted from your www folder)**:
 
-```
-alias: Vacuum Error 
-description: ""
+```alias: Vacuum idle
+description: vacuum notification with image
 trigger:
   - platform: state
     entity_id:
-      - vacuum.valetudo_yor_vacuum
-    from: error
+      - camera.your_camera
+    attribute: snapshot
+    to: true
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 5
+  - platform: state
+    entity_id:
+      - vacuum.valetudo_your
+    to: idle
     for:
       hours: 0
       minutes: 0
       seconds: 30
 condition: []
 action:
-  - service: notify.mobile_app_your_phone
+  - service: notify.mobile_app_sandros_iphone
     data:
-      message: Vacuum idle
+      message: Vacuum in idle
+      title: Vacuum in idle
       data:
-        image: /local/your_vacuum_snapshot.png
+        image: /local/snapshot_silenttepidstinkbug.png
 mode: single
 ```
 
