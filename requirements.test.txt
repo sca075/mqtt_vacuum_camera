@@ -1,10 +1,10 @@
 # From our manifest.json for our custom component
 pillow==9.5.0
 numpy==1.23.2
+janus==1.0.0
 
 
 # Strictly for tests
-janus==1.0.0
 coverage==7.2.4
 pytest==7.3.1
 pytest-asyncio==0.20.3
