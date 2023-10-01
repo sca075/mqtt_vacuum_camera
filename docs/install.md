@@ -26,7 +26,7 @@ You will need to restart Home Assistant at this point to have the integration av
 ![Screenshot 2023-08-30 at 07 23 30](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/5587ecc0-859e-4bd4-ba18-0f96df0c55a5)
 
 
-The camera entitiy created will have the same friendly name of your vacuum + "Camera" at the end. 
+The camera entity created will have the same friendly name of your vacuum + "Camera" at the end.
 
 ![Screenshot 2023-08-30 at 07 32 54](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/c4c054a5-e021-4c68-804b-9484d35a42ae)
 

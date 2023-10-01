@@ -357,7 +357,7 @@ class ValetudoCamera(Camera):
         else:
             # Create an empty image with a gray background
             empty_img = Image.new("RGB", (800, 600), "gray")
-            _LOGGER.info(self.file_name + ": Staring up ...")
+            _LOGGER.info(self.file_name + ": Starting up ...")
             return empty_img
 
     def take_snapshot(self, json_data, image_data):
