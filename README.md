@@ -1,6 +1,5 @@
 [releases_shield]: https://img.shields.io/github/release/sca075/valetudo_vacuum_camera.svg?style=popout
 [latest_release]: https://github.com/sca075/valetudo_vacuum_camera/releases/latest
-[easy setup]: (#how-to-install)
 
 # Valetudo Vacuum Camera
 ## Integration for Valetudo Vacuums to Home Assistant
@@ -9,7 +8,7 @@
 ![img_1](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/78752c27-1754-4d1f-9109-3003b36a1900)
 
 **About:**
-Extract the maps for rooted Vacuum Cleaners with Hypfer Valetudo Firmware to Home Assistant via MQTT, [easy setup] thanks to HACS and guided configuration via Home Assistant GUI.
+Extract the maps for rooted Vacuum Cleaners with Hypfer Valetudo Firmware to Home Assistant via MQTT, [easy setup](./docs/install.md) thanks to HACS and guided configuration via Home Assistant GUI.
 
 **What it is:**
 Recently deisgned successor of ICantBelieveItsNotValetudo is [ValetudoPNG](https://github.com/erkexzcx/valetudopng) that can be used as alternative, althought we wanted to simplify the setup of a camera that decode the vacuum maps and render it to Home Assistant, therefore, when you want also to control your vacuum you will need to also install the:
