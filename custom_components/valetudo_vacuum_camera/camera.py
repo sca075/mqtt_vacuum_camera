@@ -1,6 +1,7 @@
-"""Camera Version 1.4.3"""
+"""Camera Version 1.4.4"""
 from __future__ import annotations
 import logging
+import json
 import os
 from io import BytesIO
 from datetime import datetime
@@ -143,16 +144,19 @@ class ValetudoCamera(Camera):
         super().__init__()
         _LOGGER.debug("Camera Starting up..")
         self.hass = hass
+        self._attr_name = "Camera"
         self._directory_path = os.getcwd()
         self._snapshots = Snapshots(self._directory_path + "/www/")
         self._mqtt_listen_topic = device_info.get(CONF_VACUUM_CONNECTION_STRING)
+        if not self._mqtt_listen_topic:
+            # tests mode
+            self._mqtt_listen_topic = "valetudo/TestVacuum"
         if self._mqtt_listen_topic:
             self._mqtt_listen_topic = str(self._mqtt_listen_topic)
             file_name = self._mqtt_listen_topic.split("/")
             self.snapshot_img = (
                     self._directory_path + "/www/snapshot_" + file_name[1].lower() + ".png"
             )
-            self._attr_name = "Camera"
             self._attr_unique_id = device_info.get(
                 CONF_UNIQUE_ID,
                 get_vacuum_unique_id_from_mqtt_topic(self._mqtt_listen_topic),
@@ -161,6 +165,8 @@ class ValetudoCamera(Camera):
         self._mqtt = ValetudoConnector(self._mqtt_listen_topic, self.hass)
         self._identifiers = device_info.get(CONF_VACUUM_IDENTIFIERS)
         self._image = None
+        self._image_w = None
+        self._image_h = None
         self._should_poll = False
         self._map_handler = MapImageHandler()
         self._map_rooms = None
@@ -186,6 +192,7 @@ class ValetudoCamera(Camera):
         self._last_image = None
         self._image_grab = True
         self._frame_nuber = 0
+        self.test_json = None
         self.throttled_camera_image = Throttle(timedelta(seconds=4))(self.camera_image)
         try:
             self.user_colors = [
@@ -299,6 +306,7 @@ class ValetudoCamera(Camera):
         """Camera Attributes"""
         if self._map_rooms is None:
             return {
+                "friendly_name": self._attr_name,
                 "vacuum_status": self._vacuum_state,
                 "vacuum_topic": self._mqtt_listen_topic,
                 "vacuum_json_id": self._vac_json_id,
@@ -310,6 +318,7 @@ class ValetudoCamera(Camera):
             }
         else:
             return {
+                "friendly_name": self._attr_name,
                 "vacuum_status": self._vacuum_state,
                 "vacuum_topic": self._mqtt_listen_topic,
                 "vacuum_json_id": self._vac_json_id,
@@ -342,6 +351,7 @@ class ValetudoCamera(Camera):
     def empty_if_no_data(self):
         """Return an empty image if there are no data"""
         # Check if the snapshot file exists
+        _LOGGER.info(self.snapshot_img + ": saerching Snapshot image")
         if os.path.isfile(self.snapshot_img) and (self._last_image is None):
             # Load the snapshot image
             self._last_image = Image.open(self.snapshot_img)
@@ -360,7 +370,9 @@ class ValetudoCamera(Camera):
         try:
             self._snapshot_taken = True
             # When logger is active.
-            if _LOGGER.getEffectiveLevel() != 0:
+            if ((_LOGGER.getEffectiveLevel() > 0) and
+                    (_LOGGER.getEffectiveLevel() != 30)
+            ):
                 # Save mqtt raw data file.
                 if self._mqtt is not None:
                     self._mqtt.save_payload(self.file_name)
@@ -386,11 +398,15 @@ class ValetudoCamera(Camera):
     async def async_update(self):
         """Camera Frame Update"""
         # check and update the vacuum reported state
-        if not self._mqtt:
+        if not self._mqtt and self._mqtt_listen_topic != "valetudo/TestVacuum":
             return
         # If we have data from MQTT, we process the image
-        self._vacuum_state = await self._mqtt.get_vacuum_status()
-        process_data = await self._mqtt.is_data_available()
+        if self._mqtt_listen_topic != "valetudo/TestVacuum":
+            self._vacuum_state = await self._mqtt.get_vacuum_status()
+            process_data = await self._mqtt.is_data_available()
+        else:
+            self._vacuum_state = "cleaning"
+            process_data = True
         if process_data:
             # if the vacuum is working, or it is the first image.
             if (
@@ -415,10 +431,8 @@ class ValetudoCamera(Camera):
                 #########################################################
                 parsed_json = await self._mqtt.update_data(self._image_grab)
                 #########################################################
-                # json_file = "custom_components/valetudo_vacuum_camera/snapshots/json_v2.json"
-                # with open(json_file, "rb") as j_file:
-                #     tmp_json = j_file.read()
-                # parsed_json = json.loads(tmp_json)
+                if self.test_json:
+                    parsed_json = json.loads(self.test_json)
                 self._vac_json_data = "Success"
             except ValueError:
                 self._vac_json_data = "Error"
@@ -486,6 +500,8 @@ class ValetudoCamera(Camera):
                     buffered = BytesIO()
                     # backup the image
                     self._last_image = pil_img
+                    self._image_w = pil_img.width
+                    self._image_h = pil_img.height
                     pil_img.save(buffered, format="PNG")
                     bytes_data = buffered.getvalue()
                     self._image = bytes_data
@@ -504,4 +520,67 @@ class ValetudoCamera(Camera):
                         + ": Image not processed. Returning not updated image."
                     )
                     self._frame_interval = 0.1
+                self.camera_image(self._image_w, self._image_h)
                 return self._image
+
+    async def test_camera_scenario(self, test_payload, mqtt_data):
+        self.user_colors = [
+            (255, 255, 255),
+            (255, 255, 255),
+            (255, 255, 255),
+            (255, 255, 255),
+            (255, 255, 255),
+            (255, 255, 255),
+            (255, 255, 255),
+            (255, 255, 255),
+            (255, 255, 255),
+        ]
+        self.user_alpha = [
+            (255.0),
+            (255.0),
+            (255.0),
+            (255.0),
+            (255.0),
+            (255.0),
+            (255.0),
+            (255.0),
+            (255.0),
+        ]
+        self.rooms_colors = [
+            (255, 255, 255),
+            (255, 255, 255),
+            (255, 255, 255),
+            (255, 255, 255),
+            (255, 255, 255),
+            (255, 255, 255),
+            (255, 255, 255),
+            (255, 255, 255),
+            (255, 255, 255),
+            (255, 255, 255),
+            (255, 255, 255),
+            (255, 255, 255),
+            (255, 255, 255),
+            (255, 255, 255),
+            (255, 255, 255),
+            (255, 255, 255),
+        ]
+        self.rooms_alpha = [
+            (255.0),
+            (255.0),
+            (255.0),
+            (255.0),
+            (255.0),
+            (255.0),
+            (255.0),
+            (255.0),
+            (255.0),
+            (255.0),
+            (255.0),
+            (255.0),
+            (255.0),
+            (255.0),
+            (255.0),
+            (255.0),
+        ]
+        self.test_json = test_payload
+        self._mqtt.get_test_payload(mqtt_data)

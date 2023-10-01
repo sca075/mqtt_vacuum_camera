@@ -6,7 +6,9 @@
   ],
   "config_flow": true,
   "dependencies": [
-    "mqtt"
+    "mqtt",
+    "http",
+    "file_upload"
   ],
   "documentation": "https://github.com/sca075/valetudo_vacuum_camera",
   "iot_class": "local_polling",
@@ -15,5 +17,5 @@
     "pillow",
     "numpy"
   ],
-  "version": "v1.4.2"
+  "version": "v1.4.4"
 }
