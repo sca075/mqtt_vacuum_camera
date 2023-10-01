@@ -1,4 +1,4 @@
-"""Camera Version 1.4.3"""
+"""Camera Version 1.4.4"""
 from __future__ import annotations
 import logging
 import os
@@ -161,6 +161,8 @@ class ValetudoCamera(Camera):
         self._mqtt = ValetudoConnector(self._mqtt_listen_topic, self.hass)
         self._identifiers = device_info.get(CONF_VACUUM_IDENTIFIERS)
         self._image = None
+        self._image_w = None
+        self._image_h = None
         self._should_poll = False
         self._map_handler = MapImageHandler()
         self._map_rooms = None
@@ -299,6 +301,7 @@ class ValetudoCamera(Camera):
         """Camera Attributes"""
         if self._map_rooms is None:
             return {
+                "friendly_name": self._attr_name,
                 "vacuum_status": self._vacuum_state,
                 "vacuum_topic": self._mqtt_listen_topic,
                 "vacuum_json_id": self._vac_json_id,
@@ -310,6 +313,7 @@ class ValetudoCamera(Camera):
             }
         else:
             return {
+                "friendly_name": self._attr_name,
                 "vacuum_status": self._vacuum_state,
                 "vacuum_topic": self._mqtt_listen_topic,
                 "vacuum_json_id": self._vac_json_id,
@@ -342,6 +346,7 @@ class ValetudoCamera(Camera):
     def empty_if_no_data(self):
         """Return an empty image if there are no data"""
         # Check if the snapshot file exists
+        _LOGGER.info(self.snapshot_img + ": saerching Snapshot image")
         if os.path.isfile(self.snapshot_img) and (self._last_image is None):
             # Load the snapshot image
             self._last_image = Image.open(self.snapshot_img)
@@ -360,7 +365,9 @@ class ValetudoCamera(Camera):
         try:
             self._snapshot_taken = True
             # When logger is active.
-            if _LOGGER.getEffectiveLevel() != 0:
+            if ((_LOGGER.getEffectiveLevel() > 0) and 
+                    (_LOGGER.getEffectiveLevel() != 30)
+            ):
                 # Save mqtt raw data file.
                 if self._mqtt is not None:
                     self._mqtt.save_payload(self.file_name)
@@ -486,6 +493,8 @@ class ValetudoCamera(Camera):
                     buffered = BytesIO()
                     # backup the image
                     self._last_image = pil_img
+                    self._image_w = pil_img.width
+                    self._image_h = pil_img.height
                     pil_img.save(buffered, format="PNG")
                     bytes_data = buffered.getvalue()
                     self._image = bytes_data
@@ -504,4 +513,5 @@ class ValetudoCamera(Camera):
                         + ": Image not processed. Returning not updated image."
                     )
                     self._frame_interval = 0.1
+                self.camera_image(self._image_w, self._image_h)
                 return self._image
