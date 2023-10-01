@@ -55,16 +55,24 @@ Please foolow the instructions in [here](./docs/install.md). This detailed guide
 ## Futures:
 1) **Automatically Generate the calibration points for the lovelace-xiaomi-vacuum-map-card** to ensure full compatibility to this user friendly card.
 2) **Automatically Generate rooms based configuration when vaccum support this fucntionality**, this will allow you to configure the rooms quickly on the [lovelace-xiaomi-vacuum-map-card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
-3) **The camera take automaticly a snapshot (vacuum idle/ error / docked)** and sore it in the www folder of HA. It is thefore possible to create an automation to send the screenshot to your mobile in different conditions as per below example **(please keep in mind that this image will be not automatically deleted from your www folder)**:
+3) **The camera take automaticly a snapshot (vacuum idle/ error / docked)** and sore it in the www folder of HA. It is thefore possible to create an automation to send the screenshot to your mobile in different conditions as per below example, the vacuum is in idle for 30 second, or the camera took a snapshot 5 sec. ago.. (you need to edit the automation in yamil becase of the boolean value True is translated to "True" from the UI editor. **(please keep in mind that this image will be not automatically deleted from your www folder)**:
 
-```
-alias: Vacuum Error 
-description: ""
+```alias: Vacuum stopped at position
+description: vacuum camera notification with image
 trigger:
   - platform: state
     entity_id:
-      - vacuum.valetudo_yor_vacuum
-    from: error
+      - camera.your_camera
+    attribute: snapshot
+    to: true
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 5
+  - platform: state
+    entity_id:
+      - vacuum.valetudo_your
+    to: idle
     for:
       hours: 0
       minutes: 0
@@ -73,9 +81,10 @@ condition: []
 action:
   - service: notify.mobile_app_your_phone
     data:
-      message: Vacuum idle
+      message: Vacuum Camera Snapshot
+      title: Vacuum Camera Snapshot
       data:
-        image: /local/your_vacuum_snapshot.png
+        image: /local/snapshot_your_vacuum.png
 mode: single
 ```
 
