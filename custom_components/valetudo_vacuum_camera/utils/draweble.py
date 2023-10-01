@@ -336,10 +336,12 @@ class Drawable:
         this helps numpy to work faster and at lower
         memory cost.
         """
-        # We pick one pixel from the layer in input for the background color
-        background_color = layers[y+25, x+25]
-        # Create a 52*52 empty image numpy array
-        tmp_layer = np.full((52, 52, 4), background_color, dtype=np.uint8)
+        # Create a 52*52 image numpy array of the background behind the robot
+        top_left_x = x - 26
+        top_left_y = y - 26
+        bottom_right_x = top_left_x + 52
+        bottom_right_y = top_left_y + 52
+        tmp_layer = layers[top_left_y:bottom_right_y, top_left_x:bottom_right_x].copy()
         # centre of the above array is used from the rest of the code.
         # to draw the robot.
         tmp_x, tmp_y = 26, 26
