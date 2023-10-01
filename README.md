@@ -1,5 +1,6 @@
 [releases_shield]: https://img.shields.io/github/release/sca075/valetudo_vacuum_camera.svg?style=popout
 [latest_release]: https://github.com/sca075/valetudo_vacuum_camera/releases/latest
+[easy setup]: (#how-to-install)
 
 # Valetudo Vacuum Camera
 ## Integration for Valetudo Vacuums to Home Assistant
@@ -8,10 +9,10 @@
 ![img_1](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/78752c27-1754-4d1f-9109-3003b36a1900)
 
 **About:**
-Extract the maps for rooted Vacuum Cleaners with Valetudo Firmware to Home Assistant via MQTT.
+Extract the maps for rooted Vacuum Cleaners with Hypfer Valetudo Firmware to Home Assistant via MQTT, [easy setup] thanks to HACS and guided configuration via Home Assistant GUI.
 
 **What it is:**
-This Integration decode the vacuum map and render it to Home Assistant, when you want also to control your vacuum you will need to also install the:
+Recently deisgned successor of ICantBelieveItsNotValetudo is [ValetudoPNG](https://github.com/erkexzcx/valetudopng) that can be used as alternative, althought we wanted to simplify the setup of a camera that decode the vacuum maps and render it to Home Assistant, therefore, when you want also to control your vacuum you will need to also install the:
 [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card) from HACS as well.
 
 Configuration of the card (thanks to @PiotrMachowski) once the camera is installed requires:
@@ -50,7 +51,7 @@ internal_variables:
 ### Current Release: [![GitHub Latest Release][releases_shield]][latest_release]
 
 ### How to install:
-Please foolow the instructions in [here](./docs/install.md). This detailed guide is to setup the camera, there are you can can find the instructions to configure the client that will grab the vacuum data from HA.
+Via [HACS](https://hacs.xyz//setup/download) please foolow the instructions in [here](./docs/install.md). This detailed guide is to setup the camera, there are you can can find the instructions to configure the client that will grab the vacuum data from HA.
 
 ## Futures:
 1) **Automatically Generate the calibration points for the lovelace-xiaomi-vacuum-map-card** to ensure full compatibility to this user friendly card.
@@ -71,7 +72,7 @@ trigger:
       seconds: 5
   - platform: state
     entity_id:
-      - vacuum.valetudo_your
+      - vacuum.valetudo_your_vacuum
     to: idle
     for:
       hours: 0
