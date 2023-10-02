@@ -1,10 +1,15 @@
-"""Version 1.4.4"""
+"""
+Version 1.4.5
+- Removed the PNG decode, the json is extracted from map-data instead of map-data hass.
+- Valetudo Re vacuum payload is going to be save on the WWW folder file "mqtt_valetudo_re.raw".
+- Tested no influence on the camera performance.
+"""
 import logging
 import os
 import json
+import zlib
 from homeassistant.core import callback
 from homeassistant.components import mqtt
-from custom_components.valetudo_vacuum_camera.utils.valetudo_jdata import RawToJson
 
 _LOGGER = logging.getLogger(__name__)
 _QOS = 0
@@ -21,15 +26,15 @@ class ValetudoConnector:
         self._mqtt_vac_stat = None
         self._mqtt_vac_err = None
         self._data_in = False
-        self._img_decoder = RawToJson(hass)
+        self._rnd_payload = None  # Payload from Valetudo Re
 
     async def update_data(self, process: bool = True):
         if self._img_payload:
             if process:
                 _LOGGER.debug("Processing " + self._mqtt_topic + " data from MQTT")
-                result = self._img_decoder.camera_message_received(
-                    self._img_payload, self._mqtt_topic
-                )
+                json_data = zlib.decompress(self._img_payload).decode("utf-8")
+                result = json.loads(json_data)
+                _LOGGER.debug(self._mqtt_topic + ": Extracting JSON Complete")
                 self._data_in = False
                 return result
             else:
@@ -63,11 +68,14 @@ class ValetudoConnector:
     async def async_message_received(self, msg):
         self._rcv_topic = msg.topic
 
-        if (self._rcv_topic == (self._mqtt_topic + "/MapData/map-data-hass") or
-                self._rcv_topic == (self._mqtt_topic + "/map")):  # Attempt ValetudoRe data decode.
+        if (self._rcv_topic == (self._mqtt_topic + "/MapData/map-data") or
+                self._rcv_topic == (self._mqtt_topic + "/map-data")):  # Attempt get ValetudoRe data.
             _LOGGER.debug("Received " + self._mqtt_topic + " image data from MQTT")
             self._img_payload = msg.payload
-            self._data_in = True
+            if self._rcv_topic == (self._mqtt_topic + "/map-data"):
+                self.save_payload("valetudo_re")
+            else:
+                self._data_in = True
         elif self._rcv_topic == (self._mqtt_topic + "/StatusStateAttribute/status"):
             self._payload = msg.payload
             if self._payload:
@@ -79,7 +87,7 @@ class ValetudoConnector:
                     + " status from MQTT:"
                     + self._rcv_topic
                 )
-        elif self._rcv_topic == (self._mqtt_topic + "/state"): # for ValetudoRe
+        elif self._rcv_topic == (self._mqtt_topic + "/state"):  # for ValetudoRe
             self._payload = msg.payload
             if self._payload:
                 tmp_data = json.loads(self._payload)
@@ -106,10 +114,10 @@ class ValetudoConnector:
     async def async_subscribe_to_topics(self):
         if self._mqtt_topic:
             for x in [
-                self._mqtt_topic + "/MapData/map-data-hass",
+                self._mqtt_topic + "/MapData/map-data",
                 self._mqtt_topic + "/StatusStateAttribute/status",
                 self._mqtt_topic + "/StatusStateAttribute/error_description",
-                self._mqtt_topic + "/map",  # added for ValetudoRe
+                self._mqtt_topic + "/map-data",  # added for ValetudoRe
                 self._mqtt_topic + "/state",  # added for ValetudoRe
             ]:
                 self._unsubscribe_handlers.append(
@@ -120,3 +128,9 @@ class ValetudoConnector:
 
     async def async_unsubscribe_from_topics(self):
         map(lambda x: x(), self._unsubscribe_handlers)
+
+    @staticmethod
+    def get_test_payload(payload_data):
+        ValetudoConnector._img_payload = payload_data
+        _LOGGER.debug("Processing Test Data..")
+        ValetudoConnector._data_in = True
