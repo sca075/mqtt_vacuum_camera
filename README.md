@@ -55,30 +55,29 @@ Via [HACS](https://hacs.xyz//setup/download) please foolow the instructions in [
 ## Futures:
 1) **Automatically Generate the calibration points for the lovelace-xiaomi-vacuum-map-card** to ensure full compatibility to this user friendly card.
 2) **Automatically Generate rooms based configuration when vaccum support this fucntionality**, this will allow you to configure the rooms quickly on the [lovelace-xiaomi-vacuum-map-card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
-3) **The camera take automaticly a snapshot (vacuum idle/ error / docked)** and sore it in the www folder of HA. It is thefore possible to create an automation to send the screenshot to your mobile in different conditions as per below example, the vacuum is in idle for 30 second, or the camera took a snapshot 5 sec. ago.. (you need to edit the automation in yamil becase of the boolean value True is translated to "True" from the UI editor. **(please keep in mind that this image will be not automatically deleted from your www folder)**:
+3) **The camera take automaticly a snapshot (vacuum idle/ error / docked)** and sore it in the www folder of HA. It is thefore possible to create an automation to send the screenshot to your mobile in different conditions as per below example, the vacuum changes status to idle, error or docked, the camera take a snaphot (you need to edit the automation in yamil becase of the boolean value True is translated to "True" from the UI editor, home assistant will notify you.
+**(please keep in mind that the snaphot image will be not automatically deleted from your www folder)**:
 
-```alias: Vacuum stopped at position
-description: vacuum camera notification with image
+```
+
+alias: vacuum notification
+description: ""
 trigger:
   - platform: state
     entity_id:
-      - camera.your_camera
+      - camera.v1_your_vacuum_camera
     attribute: snapshot
     from: false
     to: true
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 5
 condition: []
 action:
   - service: notify.mobile_app_your_phone
     data:
-      message: Vacuum Camera Snapshot
-      title: Vacuum Camera Snapshot
+      message: Vacuum {{states("vacuum.valetudo_your_vacuum")}}
       data:
         image: /local/snapshot_your_vacuum.png
 mode: single
+
 ```
 
 *This function will store also a zip file with diagnostic data on the www folder, we filter the data relative to this integration from the HA logs and those data are stored only if the
