@@ -15,6 +15,7 @@ Recently deisgned successor of ICantBelieveItsNotValetudo is [ValetudoPNG](https
 [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card) from HACS as well.
 
 Configuration of the card (thanks to @PiotrMachowski) once the camera is installed requires:
+
 *calibration source to be set to camera **not to identity**.*
 ```
 calibration_source: 
