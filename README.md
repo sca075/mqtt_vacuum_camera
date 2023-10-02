@@ -8,10 +8,10 @@
 ![img_1](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/78752c27-1754-4d1f-9109-3003b36a1900)
 
 **About:**
-Extract the maps for rooted Vacuum Cleaners with Valetudo Firmware to Home Assistant via MQTT.
+Extract the maps for rooted Vacuum Cleaners with Hypfer Valetudo Firmware to Home Assistant via MQTT, [easy setup](./docs/install.md) thanks to HACS and guided configuration via Home Assistant GUI.
 
 **What it is:**
-This Integration decode the vacuum map and render it to Home Assistant, when you want also to control your vacuum you will need to also install the:
+Recently deisgned successor of ICantBelieveItsNotValetudo is [ValetudoPNG](https://github.com/erkexzcx/valetudopng) that can be used as alternative, althought we wanted to simplify the setup of a camera that decode the vacuum maps and render it to Home Assistant, therefore, when you want also to control your vacuum you will need to also install the:
 [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card) from HACS as well.
 
 Configuration of the card (thanks to @PiotrMachowski) once the camera is installed requires:
@@ -50,7 +50,7 @@ internal_variables:
 ### Current Release: [![GitHub Latest Release][releases_shield]][latest_release]
 
 ### How to install:
-Please foolow the instructions in [here](./docs/install.md). This detailed guide is to setup the camera, there are you can can find the instructions to configure the client that will grab the vacuum data from HA.
+Via [HACS](https://hacs.xyz//setup/download) please foolow the instructions in [here](./docs/install.md). This detailed guide is to setup the camera, there are you can can find the instructions to configure the client that will grab the vacuum data from HA.
 
 ## Futures:
 1) **Automatically Generate the calibration points for the lovelace-xiaomi-vacuum-map-card** to ensure full compatibility to this user friendly card.
@@ -64,19 +64,12 @@ trigger:
     entity_id:
       - camera.your_camera
     attribute: snapshot
+    from: false
     to: true
     for:
       hours: 0
       minutes: 0
       seconds: 5
-  - platform: state
-    entity_id:
-      - vacuum.valetudo_your
-    to: idle
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 30
 condition: []
 action:
   - service: notify.mobile_app_your_phone
@@ -107,11 +100,8 @@ debug function in HA is active ***(we don't store data in the www folder if the 
 
 
 ## Notes:
-1) This custom component is developed and tested using a PI4 with Home Assistant OS fully updated [to the last version](https://www.home-assistant.io/faq/release/), this allows us to confirm that the component is working properly with Home Assistant. Tested also on Docker Supervised "production" enviroment (fully setup home installation).
+- This integration is developed and tested using a PI4 with Home Assistant OS fully updated [to the last version](https://www.home-assistant.io/faq/release/), this allows us to confirm that the component is working properly with Home Assistant. Tested also on Docker Supervised "production" enviroment (fully setup home installation).
    
-  ~~2. This camera isn't fast as [ICantBelieveItsNotValetudo](https://github.com/Hypfer/ICantBelieveItsNotValetudo) because it is develped using PIL (as per OpenCV is not supported on Home Assistant OS). Will consider, based also on your requests a platform based release of this integration.~~
-
-2) The test in Github is still not fully setup this is why there is an X instead of a V. We don't pass the 84% of test for this reason.
 
 ### Tanks to:
 - @PiotrMachowski inspiring this integration and his amazing work.

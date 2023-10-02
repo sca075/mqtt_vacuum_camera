@@ -148,9 +148,6 @@ class ValetudoCamera(Camera):
         self._directory_path = os.getcwd()
         self._snapshots = Snapshots(self._directory_path + "/www/")
         self._mqtt_listen_topic = device_info.get(CONF_VACUUM_CONNECTION_STRING)
-        if not self._mqtt_listen_topic:
-            # tests mode
-            self._mqtt_listen_topic = "valetudo/TestVacuum"
         if self._mqtt_listen_topic:
             self._mqtt_listen_topic = str(self._mqtt_listen_topic)
             file_name = self._mqtt_listen_topic.split("/")
@@ -370,9 +367,9 @@ class ValetudoCamera(Camera):
         try:
             self._snapshot_taken = True
             # When logger is active.
-            if ((_LOGGER.getEffectiveLevel() > 0) and
-                    (_LOGGER.getEffectiveLevel() != 30)
-            ):
+
+            if ((_LOGGER.getEffectiveLevel() > 0) and 
+                    (_LOGGER.getEffectiveLevel() != 30):
                 # Save mqtt raw data file.
                 if self._mqtt is not None:
                     self._mqtt.save_payload(self.file_name)
@@ -398,15 +395,11 @@ class ValetudoCamera(Camera):
     async def async_update(self):
         """Camera Frame Update"""
         # check and update the vacuum reported state
-        if not self._mqtt and self._mqtt_listen_topic != "valetudo/TestVacuum":
+        if not self._mqtt:
             return
         # If we have data from MQTT, we process the image
-        if self._mqtt_listen_topic != "valetudo/TestVacuum":
-            self._vacuum_state = await self._mqtt.get_vacuum_status()
-            process_data = await self._mqtt.is_data_available()
-        else:
-            self._vacuum_state = "cleaning"
-            process_data = True
+        self._vacuum_state = "cleaning"
+        process_data = True
         if process_data:
             # if the vacuum is working, or it is the first image.
             if (
@@ -522,65 +515,3 @@ class ValetudoCamera(Camera):
                     self._frame_interval = 0.1
                 self.camera_image(self._image_w, self._image_h)
                 return self._image
-
-    async def test_camera_scenario(self, test_payload, mqtt_data):
-        self.user_colors = [
-            (255, 255, 255),
-            (255, 255, 255),
-            (255, 255, 255),
-            (255, 255, 255),
-            (255, 255, 255),
-            (255, 255, 255),
-            (255, 255, 255),
-            (255, 255, 255),
-            (255, 255, 255),
-        ]
-        self.user_alpha = [
-            (255.0),
-            (255.0),
-            (255.0),
-            (255.0),
-            (255.0),
-            (255.0),
-            (255.0),
-            (255.0),
-            (255.0),
-        ]
-        self.rooms_colors = [
-            (255, 255, 255),
-            (255, 255, 255),
-            (255, 255, 255),
-            (255, 255, 255),
-            (255, 255, 255),
-            (255, 255, 255),
-            (255, 255, 255),
-            (255, 255, 255),
-            (255, 255, 255),
-            (255, 255, 255),
-            (255, 255, 255),
-            (255, 255, 255),
-            (255, 255, 255),
-            (255, 255, 255),
-            (255, 255, 255),
-            (255, 255, 255),
-        ]
-        self.rooms_alpha = [
-            (255.0),
-            (255.0),
-            (255.0),
-            (255.0),
-            (255.0),
-            (255.0),
-            (255.0),
-            (255.0),
-            (255.0),
-            (255.0),
-            (255.0),
-            (255.0),
-            (255.0),
-            (255.0),
-            (255.0),
-            (255.0),
-        ]
-        self.test_json = test_payload
-        self._mqtt.get_test_payload(mqtt_data)
