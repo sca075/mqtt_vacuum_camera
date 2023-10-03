@@ -67,15 +67,13 @@ class ValetudoConnector:
     @callback
     async def async_message_received(self, msg):
         self._rcv_topic = msg.topic
-
+        if self._rcv_topic == (self._mqtt_topic + "/map-data"):
+            self.save_payload("valetudo_re")
         if (self._rcv_topic == (self._mqtt_topic + "/MapData/map-data") or
                 self._rcv_topic == (self._mqtt_topic + "/map-data")):  # Attempt get ValetudoRe data.
             _LOGGER.debug("Received " + self._mqtt_topic + " image data from MQTT")
             self._img_payload = msg.payload
-            if self._rcv_topic == (self._mqtt_topic + "/map-data"):
-                self.save_payload("valetudo_re")
-            else:
-                self._data_in = True
+            self._data_in = True
         elif self._rcv_topic == (self._mqtt_topic + "/StatusStateAttribute/status"):
             self._payload = msg.payload
             if self._payload:
