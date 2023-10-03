@@ -33,3 +33,7 @@ mode: single
 
 *Aside the image, this function will store also a zip file with diagnostic data on the www folder, we filter the data relative to this integration from the HA logs and those data are stored only if the
 log debug function in HA is active ***(we don't store any data in the www folder if the user do not log the data)***.*
+
+![Screenshot 2023-10-03 at 06 55 36](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/6aedcdd3-6f39-4b11-8c0f-6da99f5490e9)
+
+![Screenshot 2023-10-03 at 06 58 36](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/363881f5-bca6-462f-80d8-9a6351bcf285)
