@@ -67,7 +67,7 @@ class ValetudoConnector:
     @callback
     async def async_message_received(self, msg):
         self._rcv_topic = msg.topic
-        if self._rcv_topic == (self._mqtt_topic + "/map-data"):
+        if self._rcv_topic == (self._mqtt_topic + "/map_data"):
             self.save_payload("valetudo_re")
         if (self._rcv_topic == (self._mqtt_topic + "/MapData/map-data") or
                 self._rcv_topic == (self._mqtt_topic + "/map_data")):  # Attempt get ValetudoRe data.
