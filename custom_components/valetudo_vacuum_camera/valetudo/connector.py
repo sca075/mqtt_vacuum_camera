@@ -70,7 +70,7 @@ class ValetudoConnector:
         if self._rcv_topic == (self._mqtt_topic + "/map-data"):
             self.save_payload("valetudo_re")
         if (self._rcv_topic == (self._mqtt_topic + "/MapData/map-data") or
-                self._rcv_topic == (self._mqtt_topic + "/map-data")):  # Attempt get ValetudoRe data.
+                self._rcv_topic == (self._mqtt_topic + "/map_data")):  # Attempt get ValetudoRe data.
             _LOGGER.debug("Received " + self._mqtt_topic + " image data from MQTT")
             self._img_payload = msg.payload
             self._data_in = True
@@ -115,7 +115,7 @@ class ValetudoConnector:
                 self._mqtt_topic + "/MapData/map-data",
                 self._mqtt_topic + "/StatusStateAttribute/status",
                 self._mqtt_topic + "/StatusStateAttribute/error_description",
-                self._mqtt_topic + "/map-data",  # added for ValetudoRe
+                self._mqtt_topic + "/map_data",  # added for ValetudoRe
                 self._mqtt_topic + "/state",  # added for ValetudoRe
             ]:
                 self._unsubscribe_handlers.append(
