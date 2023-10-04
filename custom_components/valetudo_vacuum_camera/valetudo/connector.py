@@ -51,9 +51,10 @@ class ValetudoConnector:
     async def is_data_available(self):
         return self._data_in
 
-    def save_payload(self, file_name):
+    async def save_payload(self, file_name):
         # save payload when available.
-        if self._img_payload and (self._data_in is True):
+        if (self._img_payload and (self._data_in is True)) or \
+                (self._rnd_payload is not None):
             with open(
                     str(os.getcwd())
                     + "/www/"
@@ -68,7 +69,8 @@ class ValetudoConnector:
     async def async_message_received(self, msg):
         self._rcv_topic = msg.topic
         if self._rcv_topic == (self._mqtt_topic + "/map_data"):
-            self.save_payload("valetudo_re")
+            self._rnd_payload = self._rcv_topic
+            await self.save_payload("valetudo_re")
         if (self._rcv_topic == (self._mqtt_topic + "/MapData/map-data") or
                 self._rcv_topic == (self._mqtt_topic + "/map_data")):  # Attempt get ValetudoRe data.
             _LOGGER.debug("Received " + self._mqtt_topic + " image data from MQTT")
