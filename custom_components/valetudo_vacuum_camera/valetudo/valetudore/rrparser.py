@@ -216,3 +216,4 @@ class RRMapParser:
                         for zone in parsedMapData["forbidden_mop_zones"]
                     ]
         return parsedMapData
+
