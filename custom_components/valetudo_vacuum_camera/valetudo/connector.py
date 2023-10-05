@@ -79,7 +79,7 @@ class ValetudoConnector:
         if self._rcv_topic == (self._mqtt_topic + "/map_data"):  # Attempt get ValetudoRe data.
             self._rnd_payload = self._rcv_topic
             self.save_payload("valetudo_re")
-            tmp_json = await self._rand_data.PARSE(self._rnd_payload)
+            tmp_json = self._rand_data.PARSE(self._rnd_payload)
             # tmp_json.update(self._rand_data.PARSEDATA(self._rnd_payload))
             _LOGGER.debug("got RAND payload: %s", tmp_json)
         if self._rcv_topic == self._mqtt_topic + "/MapData/map-data":
