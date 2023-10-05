@@ -11,6 +11,8 @@ import zlib
 from homeassistant.core import callback
 from homeassistant.components import mqtt
 
+from custom_components.valetudo_vacuum_camera.valetudo.valetudore.rrparser import RRMapParser
+
 _LOGGER = logging.getLogger(__name__)
 _QOS = 0
 
@@ -27,6 +29,7 @@ class ValetudoConnector:
         self._mqtt_vac_err = None
         self._data_in = False
         self._rnd_payload = None  # Payload from Valetudo Re
+        self._rand_data = RRMapParser
 
     async def update_data(self, process: bool = True):
         if self._img_payload:
@@ -55,6 +58,11 @@ class ValetudoConnector:
         # save payload when available.
         if (self._img_payload and (self._data_in is True)) or \
                 (self._rnd_payload is not None):
+            file_data = "No data"
+            if self._img_payload:
+                file_data = self._img_payload
+            elif self._rnd_payload:
+                file_data = self._rnd_payload
             with open(
                     str(os.getcwd())
                     + "/www/"
@@ -62,17 +70,19 @@ class ValetudoConnector:
                     + ".raw",
                     "wb",
             ) as file:
-                file.write(self._img_payload)
+                file.write(file_data)
             _LOGGER.info("Saved image data from MQTT in mqtt_" + file_name + ".raw!")
 
     @callback
     async def async_message_received(self, msg):
         self._rcv_topic = msg.topic
-        if self._rcv_topic == (self._mqtt_topic + "/map_data"):
+        if self._rcv_topic == (self._mqtt_topic + "/map_data"):  # Attempt get ValetudoRe data.
             self._rnd_payload = self._rcv_topic
             self.save_payload("valetudo_re")
-        if (self._rcv_topic == (self._mqtt_topic + "/MapData/map-data") or
-                self._rcv_topic == (self._mqtt_topic + "/map_data")):  # Attempt get ValetudoRe data.
+            tmp_json = await self._rand_data.PARSE(self._rnd_payload)
+            # tmp_json.update(self._rand_data.PARSEDATA(self._rnd_payload))
+            _LOGGER.debug("got RAND payload: %s", tmp_json)
+        if self._rcv_topic == self._mqtt_topic + "/MapData/map-data":
             _LOGGER.debug("Received " + self._mqtt_topic + " image data from MQTT")
             self._img_payload = msg.payload
             self._data_in = True
