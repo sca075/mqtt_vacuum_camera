@@ -42,6 +42,7 @@ internal_variables:
 - Roborock.S5
 - Dreame D9
 - Dreame Z10 Pro
+- Mi Robot Vacuum-Mop P
 - Give us feedback please ;) (waiting for your vacuum to be add to the list as in general it works with all flashed Valetudo vacuums)
 
 ![Screenshot 2023-09-12 at 22 53 29](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/4f5981e3-39f2-449a-8a43-39870631e9a1)
