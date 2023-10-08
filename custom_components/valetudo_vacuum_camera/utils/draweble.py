@@ -3,7 +3,7 @@ Collections of Drawing Utility
 Drawable is part of the Image_Handler
 used functions to draw the elements on the Numpy Array
 that is actually our camera frame.
-Last changes on Version: 1.4.3
+Last changes on Version: 1.4.5
 """
 
 import logging
@@ -336,7 +336,7 @@ class Drawable:
         this helps numpy to work faster and at lower
         memory cost.
         """
-        # Create a 52*52 image numpy array of the background behind the robot
+        # Create a 52*52 empty image numpy array of the background
         top_left_x = x - 26
         top_left_y = y - 26
         bottom_right_x = top_left_x + 52
@@ -349,7 +349,7 @@ class Drawable:
         _LOGGER.info(f"Drawing {log} Robot With Angle: {angle}")
         radius = 25  # Radius of the vacuum constant
         r_scaled = radius // 11  # Offset scale for placement of the objects.
-        r_cover = r_scaled * 12 # Scale factor for cover
+        r_cover = r_scaled * 12  # Scale factor for cover
         lidar_angle = np.deg2rad(angle + 90)  # Convert angle to radians and adjust for LIDAR orientation
         r_lidar = r_scaled * 3  # Scale factor for the lidar
         r_button = r_scaled * 1  # scale factor of the button

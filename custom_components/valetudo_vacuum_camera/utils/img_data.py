@@ -3,7 +3,7 @@ Collections of Json and List routines
 ImageData is part of the Image_Handler
 used functions to search data in the json
 provided for the creation of the new camera frame
-Last changes on Version: 1.4.3
+Last changes on Version: 1.4.5
 """
 
 import logging
@@ -100,3 +100,24 @@ class ImageData:
             for item in json_obj:
                 ImageData.find_zone_entities(item, entity_dict)
         return entity_dict
+
+    @staticmethod
+    def from_rrm_to_compressed_pixels(pixel_data, image_width, image_height):
+        compressed_pixels = []
+
+        current_x, current_y, count = None, None, 0
+
+        for index in pixel_data:
+            x = index % image_width
+            y = index // image_width
+            if current_x == x and current_y == y:
+                count += 1
+            else:
+                if current_x is not None:
+                    compressed_pixels.append([current_x, current_y, count])
+                current_x, current_y, count = x, y, 1
+
+        if current_x is not None:
+            compressed_pixels.append([current_x, current_y, count])
+
+        return compressed_pixels

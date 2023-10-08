@@ -1,4 +1,4 @@
-"""config_flow ver.1.4.2"""
+"""config_flow ver.1.4.5"""
 import voluptuous as vol
 import logging
 from typing import Any, Dict, Optional
@@ -26,6 +26,7 @@ from .const import (
     ATTR_TRIM_TOP,
     ATTR_TRIM_BOTTOM,
     CONF_VAC_STAT,
+    CONF_SNAPSHOTS_ENABLE,
     CONF_VACUUM_CONFIG_ENTRY_ID,
     CONF_VACUUM_ENTITY_ID,
     COLOR_MOVE,
@@ -164,8 +165,8 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
             for existing_entity in self._async_current_entries():
                 if (
-                    existing_entity.data.get(CONF_VACUUM_ENTITY_ID) == vacuum_entity.id
-                    or existing_entity.data.get(CONF_UNIQUE_ID) == unique_id
+                        existing_entity.data.get(CONF_VACUUM_ENTITY_ID) == vacuum_entity.id
+                        or existing_entity.data.get(CONF_UNIQUE_ID) == unique_id
                 ):
                     return self.async_abort(reason="already_configured")
 
@@ -299,7 +300,7 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(
-        config_entry: config_entries.ConfigEntry,
+            config_entry: config_entries.ConfigEntry,
     ) -> config_entries.OptionsFlow:
         """Create the options flow."""
         return OptionsFlowHandler(config_entry)
@@ -346,6 +347,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Optional(
                         CONF_VAC_STAT,
                         default=config_entry.options.get("show_vac_status"),
+                    ): BooleanSelector(),
+                    vol.Optional(
+                        CONF_SNAPSHOTS_ENABLE,
+                        default=config_entry.options.get(CONF_SNAPSHOTS_ENABLE, True),
                     ): BooleanSelector(),
                 }
             )
@@ -538,6 +543,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     "trim_left": user_input.get(ATTR_TRIM_LEFT),
                     "trim_right": user_input.get(ATTR_TRIM_RIGHT),
                     "show_vac_status": user_input.get(CONF_VAC_STAT),
+                    CONF_SNAPSHOTS_ENABLE: user_input.get(CONF_SNAPSHOTS_ENABLE),
                 }
             )
             return await self.async_step_init_2()

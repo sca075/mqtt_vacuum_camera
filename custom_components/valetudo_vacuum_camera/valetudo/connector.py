@@ -54,7 +54,7 @@ class ValetudoConnector:
     async def is_data_available(self):
         return self._data_in
 
-    def save_payload(self, file_name):
+    async def save_payload(self, file_name):
         # save payload when available.
         if (self._img_payload and (self._data_in is True)) or \
                 (self._rnd_payload is not None):
@@ -77,11 +77,12 @@ class ValetudoConnector:
     async def async_message_received(self, msg):
         self._rcv_topic = msg.topic
         if self._rcv_topic == (self._mqtt_topic + "/map_data"):  # Attempt get ValetudoRe data.
-            self._rnd_payload = self._rcv_topic  # Save the received topic
-            self.save_payload("valetudo_re")
-            tmp_json = self._rand_data.PARSE(self._rnd_payload) # parse the topic
-            # tmp_json.update(self._rand_data.PARSEDATA(self._rnd_payload))
+            self._rnd_payload = msg.payload  # Save the received payload
+            await self.save_payload("valetudo_re")
+            tmp_json = self._rand_data.PARSE(self._rnd_payload)  # parse the topic
+            tmp_json.update(await self._rand_data.PARSEDATA(self._rnd_payload))
             _LOGGER.debug("got RAND payload: %s", tmp_json)
+
         if self._rcv_topic == self._mqtt_topic + "/MapData/map-data":
             _LOGGER.debug("Received " + self._mqtt_topic + " image data from MQTT")
             self._img_payload = msg.payload

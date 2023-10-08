@@ -2,9 +2,8 @@
 Image Handler Module.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Last Changed on Version: 1.4.3
+Last Changed on Version: 1.4.5
 """
-
 from __future__ import annotations
 
 import logging
@@ -14,6 +13,7 @@ from custom_components.valetudo_vacuum_camera.utils.colors_man import color_grey
 from custom_components.valetudo_vacuum_camera.types import Color, Colors
 from custom_components.valetudo_vacuum_camera.utils.img_data import ImageData
 from custom_components.valetudo_vacuum_camera.utils.draweble import Drawable
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -25,6 +25,7 @@ class MapImageHandler(object):
         self.crop_area = None
         self.crop_img_size = None
         self.img_base_layer = None
+
         self.frame_number = 0
         self.path_pixels = None
         self.robot_pos = None
@@ -36,6 +37,7 @@ class MapImageHandler(object):
         self.room_propriety = None
         self.data = ImageData
         self.draw = Drawable
+        # self.img_base_robot = Drawable.robot(np.zeros((52, 52, 4)),25,25,0,(255,255,255,255))
 
     async def crop_and_trim_array(
             self,
@@ -158,7 +160,7 @@ class MapImageHandler(object):
                     x_max = max(layer["compressedPixels"][::3]) * pixel_size
                     y_min = min(layer["compressedPixels"][1::3]) * pixel_size
                     y_max = max(layer["compressedPixels"][1::3]) * pixel_size
-                    corners = [(x_min, y_min), (x_max, y_min), (x_max, y_max), (x_min, y_max)]
+                    corners = [(x_min, y_min),(x_max, y_min),(x_max, y_max),(x_min, y_max)]
                     room_name = str(segment_id)
                     room_properties[room_name] = {
                         "number": segment_id,
@@ -229,17 +231,6 @@ class MapImageHandler(object):
                     predicted_path = predicted_path[0]["points"]
                     predicted_path = self.data.sublist(predicted_path, 2)
                     predicted_pat2 = self.data.sublist_join(predicted_path, 2)
-
-                if path_pixels:  # Fix Dreame Z10 Pro missing path's
-                    all_path_points = []  # Initialize an empty list to collect all path points
-
-                    for path in path_pixels:
-                        # Get the points from the current path and extend the all_path_points list
-                        points = path.get("points", [])
-                        all_path_points.extend(points)
-
-                    sub_lists = self.data.sublist(all_path_points, 2)
-                    path_pixel2 = self.data.sublist_join(sub_lists, 2)
 
                 try:
                     zone_clean = self.data.find_zone_entities(m_json, None)
@@ -357,10 +348,20 @@ class MapImageHandler(object):
                     img_np_array = self.draw.lines(
                         img_np_array, predicted_pat2, 2, color_grey
                     )
-                if path_pixel2:
-                    img_np_array = self.draw.lines(
-                        img_np_array, path_pixel2, 5, color_move
-                    )
+                # draw path
+                if path_pixels:
+                    all_path_points = []  # Initialize an empty list to collect all path points
+
+                    for path in path_pixels:
+                        # Get the points from the current path and extend the all_path_points list
+                        points = path.get("points", [])
+                        #all_path_points.extend(points)
+
+                        sublists = self.data.sublist(points, 2)
+                        path_pixel2 = self.data.sublist_join(sublists, 2)
+                        img_np_array = self.draw.lines(
+                            img_np_array, path_pixel2, 5, color_move
+                        )
                 if robot_state == "docked":
                     robot_position_angle = robot_position_angle - 180
                 img_np_array = self.draw.robot(

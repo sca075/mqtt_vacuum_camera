@@ -1,4 +1,4 @@
-"""Camera Version 1.4.4"""
+"""Camera Version 1.4.5"""
 from __future__ import annotations
 import logging
 import os
@@ -20,7 +20,7 @@ from homeassistant.helpers.typing import (
     HomeAssistantType,
 )
 from homeassistant.util import Throttle
-from .valetudo.connector import (
+from custom_components.valetudo_vacuum_camera.valetudo.connector import (
     ValetudoConnector,
 )
 from .valetudo.image_handler import (
@@ -36,6 +36,7 @@ from .const import (
     CONF_VACUUM_ENTITY_ID,
     CONF_VACUUM_IDENTIFIERS,
     CONF_VAC_STAT,
+    CONF_SNAPSHOTS_ENABLE,
     DEFAULT_NAME,
     DOMAIN,
     PLATFORMS,
@@ -96,7 +97,7 @@ from .const import (
     ALPHA_ROOM_14,
     ALPHA_ROOM_15,
 )
-from .common import get_vacuum_unique_id_from_mqtt_topic
+from custom_components.valetudo_vacuum_camera.common import get_vacuum_unique_id_from_mqtt_topic
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
@@ -143,16 +144,17 @@ class ValetudoCamera(Camera):
         super().__init__()
         _LOGGER.debug("Camera Starting up..")
         self.hass = hass
-        self._directory_path = os.getcwd()
+        self._attr_name = "Camera"
+        self._directory_path = os.getcwd()  # get Home Assistant path
         self._snapshots = Snapshots(self._directory_path + "/www/")
         self._mqtt_listen_topic = device_info.get(CONF_VACUUM_CONNECTION_STRING)
+        self.file_name = ""
         if self._mqtt_listen_topic:
             self._mqtt_listen_topic = str(self._mqtt_listen_topic)
             file_name = self._mqtt_listen_topic.split("/")
             self.snapshot_img = (
                     self._directory_path + "/www/snapshot_" + file_name[1].lower() + ".png"
             )
-            self._attr_name = "Camera"
             self._attr_unique_id = device_info.get(
                 CONF_UNIQUE_ID,
                 get_vacuum_unique_id_from_mqtt_topic(self._mqtt_listen_topic),
@@ -185,6 +187,13 @@ class ValetudoCamera(Camera):
         self._show_vacuum_state = device_info.get(CONF_VAC_STAT)
         if not self._show_vacuum_state:
             self._show_vacuum_state = False
+        # If not configured, default to True for compatibility
+        self._enable_snapshots = device_info.get(CONF_SNAPSHOTS_ENABLE)
+        if self._enable_snapshots is None:
+            self._enable_snapshots = True
+        # If snapshots are disbled, delete stale data
+        if not self._enable_snapshots and self.snapshot_img and os.path.isfile(self.snapshot_img):
+            os.remove(self.snapshot_img)
         self._last_image = None
         self._image_grab = True
         self._frame_nuber = 0
@@ -299,31 +308,23 @@ class ValetudoCamera(Camera):
     @property
     def extra_state_attributes(self):
         """Camera Attributes"""
-        if self._map_rooms is None:
-            return {
-                "friendly_name": self._attr_name,
-                "vacuum_status": self._vacuum_state,
-                "vacuum_topic": self._mqtt_listen_topic,
-                "vacuum_json_id": self._vac_json_id,
-                "snapshot": self._snapshot_taken,
-                "snapshot_path": "/local/snapshot_" + self.file_name + ".png",
-                "json_data": self._vac_json_data,
-                "vacuum_position": self._current,
-                "calibration_points": self._attr_calibration_points,
-            }
+        attrs = {
+            "friendly_name": self._attr_name,
+            "vacuum_status": self._vacuum_state,
+            "vacuum_topic": self._mqtt_listen_topic,
+            "vacuum_json_id": self._vac_json_id,
+            "json_data": self._vac_json_data,
+            "vacuum_position": self._current,
+            "calibration_points": self._attr_calibration_points,
+        }
+        if self._enable_snapshots:
+            attrs["snapshot"] = self._snapshot_taken
+            attrs["snapshot_path"] = "/local/snapshot_" + self.file_name + ".png"
         else:
-            return {
-                "friendly_name": self._attr_name,
-                "vacuum_status": self._vacuum_state,
-                "vacuum_topic": self._mqtt_listen_topic,
-                "vacuum_json_id": self._vac_json_id,
-                "snapshot": self._snapshot_taken,
-                "snapshot_path": "/local/snapshot_" + self.file_name + ".png",
-                "json_data": self._vac_json_data,
-                "vacuum_position": self._current,
-                "calibration_points": self._attr_calibration_points,
-                "rooms": self._map_rooms,
-            }
+            attrs["snapshot"] = False
+        if self._map_rooms is not None:
+            attrs["rooms"] = self._map_rooms
+        return attrs
 
     @property
     def should_poll(self) -> bool:
@@ -346,7 +347,7 @@ class ValetudoCamera(Camera):
     def empty_if_no_data(self):
         """Return an empty image if there are no data"""
         # Check if the snapshot file exists
-        _LOGGER.info(self.snapshot_img + ": saerching Snapshot image")
+        _LOGGER.info(self.snapshot_img + ": searching Snapshot image")
         if os.path.isfile(self.snapshot_img) and (self._last_image is None):
             # Load the snapshot image
             self._last_image = Image.open(self.snapshot_img)
@@ -360,22 +361,22 @@ class ValetudoCamera(Camera):
             _LOGGER.info(self.file_name + ": Starting up ...")
             return empty_img
 
-    def take_snapshot(self, json_data, image_data):
+    async def take_snapshot(self, json_data, image_data):
         """Camera Automatic Snapshots"""
         try:
             self._snapshot_taken = True
             # When logger is active.
-            if ((_LOGGER.getEffectiveLevel() > 0) and 
-                    (_LOGGER.getEffectiveLevel() != 30)
-            ):
+            if ((_LOGGER.getEffectiveLevel() > 0) and
+                    (_LOGGER.getEffectiveLevel() != 30)):
                 # Save mqtt raw data file.
                 if self._mqtt is not None:
-                    self._mqtt.save_payload(self.file_name)
+                    await self._mqtt.save_payload(self.file_name)
                 # Write the JSON and data to the file.
                 self._snapshots.data_snapshot(self.file_name, json_data)
             # Save image ready for snapshot.
-            image_data.save(self.snapshot_img)
-            _LOGGER.info(self.file_name + ": Camera Snapshot Taken.")
+            if self._enable_snapshots:
+                image_data.save(self.snapshot_img)
+                _LOGGER.info(self.file_name + ": Camera Snapshot Taken.")
         except IOError:
             self._snapshot_taken = None
             _LOGGER.warning(
@@ -476,7 +477,7 @@ class ValetudoCamera(Camera):
                                     + "."
                                 )
                                 # take a snapshot
-                                self.take_snapshot(parsed_json, pil_img)
+                                await self.take_snapshot(parsed_json, pil_img)
                         self._vac_json_id = self._map_handler.get_json_id()
                         self._base = self._map_handler.get_charger_position()
                         self._current = self._map_handler.get_robot_position()

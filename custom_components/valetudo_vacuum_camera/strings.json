@@ -23,7 +23,8 @@
           "trim_bottom": "0",
           "trim_left": "0",
           "trim_right": "0",
-          "show_vac_status": "Show Vacuum Status."
+          "show_vac_status": "Show Vacuum Status.",
+          "enable_www_snapshots": "Export PNG snapshots in /www/ directory."
         },
         "data_description": {
           "rotate_image": "Degree 0, 90, 180, 270",
@@ -117,7 +118,8 @@
           "trim_bottom": "0",
           "trim_left": "0",
           "trim_right": "0",
-          "show_vac_status": "Show Vacuum Status."
+          "show_vac_status": "Show Vacuum Status.",
+          "enable_www_snapshots": "Export PNG snapshots."
         },
         "data_description": {
           "rotate_image": "Degree 0, 90, 180, 270",

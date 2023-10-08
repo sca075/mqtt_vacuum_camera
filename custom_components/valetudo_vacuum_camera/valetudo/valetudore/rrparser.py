@@ -1,7 +1,18 @@
+"""
+Version 1.4.5
+- This parser is the python version of @rand256 valetudo_mapper.
+- This class is extracting the vacuum map_data.
+- Additional functions are to get in our image_handler the images datas.
+"""
+
 import struct
 import math
 
+
 class RRMapParser:
+    def __init__(self):
+        self.map_data = None
+
     TOOLS = {
         "DIMENSION_PIXELS": 1024,
         "DIMENSION_MM": 50 * 1024
@@ -58,7 +69,7 @@ class RRMapParser:
                 },
                 "pixels": {
                     "floor": [],
-                    "obstacle": [],
+                    "walls": [],
                     "segments": []
                 }
             }
@@ -70,7 +81,7 @@ class RRMapParser:
                         continue
                     elif segment_type == 1:
                         if pixels:
-                            parameters["pixels"]["obstacle"].append(i)
+                            parameters["pixels"]["walls"].append(i)
                     else:
                         if pixels:
                             parameters["pixels"]["floor"].append(i)
@@ -147,11 +158,13 @@ class RRMapParser:
             return {}
 
     @staticmethod
-    def PARSEDATA(mapBuf, pixels=False):
+    async def PARSEDATA(mapBuf, pixels=False):
         if not RRMapParser.PARSE(mapBuf)["map_index"]:
             return None
-        blocks = RRMapParser.parseBlock(mapBuf, 0x14, None, pixels)
-        parsedMapData = {}
+        else:
+            parsedMapData = {}
+            blocks = RRMapParser.parseBlock(mapBuf, 0x14, None, pixels)
+
         if blocks[RRMapParser.TYPES["IMAGE"]]:
             parsedMapData["image"] = blocks[RRMapParser.TYPES["IMAGE"]]
             for item in [
@@ -177,12 +190,17 @@ class RRMapParser:
                             )
                         )
                 if RRMapParser.TYPES["CHARGER_LOCATION"] in blocks:
-                    parsedMapData["charger"] = blocks[RRMapParser.TYPES["CHARGER_LOCATION"]]["position"]
-                    parsedMapData["charger"][1] = RRMapParser.TOOLS["DIMENSION_MM"] - parsedMapData["charger"][1]
+                    charger = blocks[RRMapParser.TYPES["CHARGER_LOCATION"]]["position"]
+                    charger[0] = RRMapParser.TOOLS["DIMENSION_MM"] - charger[0]
+                    charger[1] = RRMapParser.TOOLS["DIMENSION_MM"] - charger[1]
+                    parsedMapData["charger"] = charger
                 if RRMapParser.TYPES["ROBOT_POSITION"] in blocks:
-                    parsedMapData["robot"] = blocks[RRMapParser.TYPES["ROBOT_POSITION"]]["position"]
-                    parsedMapData["robot"][1] = RRMapParser.TOOLS["DIMENSION_MM"] - parsedMapData["robot"][1]
-                    parsedMapData["robot_angle"] = parsedMapData["robot"][0] if "robot" in parsedMapData else \
+                    robot = blocks[RRMapParser.TYPES["ROBOT_POSITION"]]["position"]
+                    rob_angle = blocks[RRMapParser.TYPES["ROBOT_POSITION"]]["angle"]
+                    robot[0] = RRMapParser.TOOLS["DIMENSION_MM"] - robot[0]
+                    robot[1] = RRMapParser.TOOLS["DIMENSION_MM"] - robot[1]
+                    parsedMapData["robot"] = robot
+                    parsedMapData["robot_angle"] = rob_angle if "robot" in parsedMapData else \
                         parsedMapData["path"]["current_angle"] if "path" in parsedMapData else 0
                 if RRMapParser.TYPES["GOTO_TARGET"] in blocks:
                     parsedMapData["goto_target"] = blocks[RRMapParser.TYPES["GOTO_TARGET"]]["position"]
@@ -215,5 +233,73 @@ class RRMapParser:
                          zone[4], RRMapParser.TOOLS["DIMENSION_MM"] - zone[5], zone[6], RRMapParser.TOOLS["DIMENSION_MM"] - zone[7]]
                         for zone in parsedMapData["forbidden_mop_zones"]
                     ]
-        return parsedMapData
 
+            return parsedMapData
+
+    async def parse_data(self, payload, pixels=False):
+        self.map_data = await self.PARSEDATA(payload, pixels)
+        return self.map_data
+
+    def get_image(self):
+        return self.map_data.get("image", {})
+
+    def get_path(self):
+        return self.map_data.get("path", {})
+
+
+    def get_goto_predicted_path(self):
+        return self.map_data.get("goto_predicted_path", {})
+
+
+    def get_charger_position(self):
+        return self.map_data.get("charger", {})
+
+    def get_robot_position(self):
+        return self.map_data.get("robot", {})
+
+    def get_robot_angle(self):
+        return self.map_data.get("robot_angle", 0)
+
+    def get_goto_target(self):
+        return self.map_data.get("goto_target", {})
+
+    def get_currently_cleaned_zones(self):
+        return self.map_data.get("currently_cleaned_zones", [])
+
+    def get_forbidden_zones(self):
+        return self.map_data.get("forbidden_zones", [])
+
+    def get_virtual_walls(self):
+        return self.map_data.get("virtual_walls", [])
+
+    def get_currently_cleaned_blocks(self):
+        return self.map_data.get("currently_cleaned_blocks", [])
+
+    def get_forbidden_mop_zones(self):
+        return self.map_data.get("forbidden_mop_zones", [])
+
+    def get_image_size(self):
+        image = self.get_image()
+        if image:
+            dimensions = image.get("dimensions", {})
+            return dimensions.get("width", 0), dimensions.get("height", 0)
+        return 0, 0
+
+    def get_floor(self):
+        img = self.get_image()
+        return img.get("pixels", {}).get("floor", [])
+
+    def get_walls(self):
+        img = self.get_image()
+        return img.get("pixels", {}).get("walls", [])
+
+    def get_segments(self):
+        img = self.get_image()
+        segments = img.get("pixels", {}).get("segments", [])
+        segment_count = img.get("segments", {}).get("count", 0)
+
+        # Only return segments if the count is greater than 0
+        if segment_count > 0:
+            return segments
+        else:
+            return []

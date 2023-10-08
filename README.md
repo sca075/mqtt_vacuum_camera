@@ -14,7 +14,7 @@ Extract the maps for rooted Vacuum Cleaners with Hypfer Valetudo Firmware to Hom
 Recently designed successor of ICantBelieveItsNotValetudo is [ValetudoPNG](https://github.com/erkexzcx/valetudopng) that can be used as alternative, althought we wanted to simplify the setup of a camera that decode the vacuum maps and render it to Home Assistant, therefore, when you want also to control your vacuum you will need to also install the:
 [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card) from HACS as well.
 
-Configuration of the card (thanks to [@PiotrMachowski](https://github.com/PiotrMachowski) once the camera is installed requires:
+Configuration of the card (thanks to [@PiotrMachowski](https://github.com/PiotrMachowski)) once the camera is installed requires:
 
 *calibration source to be set to camera **not to identity**.*
 ```
@@ -84,5 +84,6 @@ Via [HACS](https://hacs.xyz//setup/download) please follow the instructions in [
 - [@billyourself](https://github.com/billyourself) for providing us the data and motivation to evolve this project.
 - [@Skeletorjus](https://github.com/Skeletorjus) that using this integration gave us several ideas to improve it.
 - [@rohankapoorcom](https://github.com/rohankapoorcom) autor of the v1.4.0 that make really easy to set up this integration.
+- [@gunjambi]() that found a solution to re-draw the robot and also implemented the snapshots png to be enabled or disabled from the options.
 - And to all of you using this integration and reporting any issues, improvements and vacuums used with it.
 

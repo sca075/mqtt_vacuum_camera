@@ -14,7 +14,7 @@ from .const import (
     CONF_VACUUM_IDENTIFIERS,
     DOMAIN,
 )
-from .common import (
+from custom_components.valetudo_vacuum_camera.common import (
     get_entity_identifier_from_mqtt,
     get_device_info,
     get_vacuum_mqtt_topic,
@@ -27,7 +27,7 @@ PLATFORMS = [Platform.CAMERA]
 
 
 async def options_update_listener(
-    hass: core.HomeAssistant, config_entry: config_entries.ConfigEntry
+        hass: core.HomeAssistant, config_entry: config_entries.ConfigEntry
 ):
     """Handle options update."""
     await hass.config_entries.async_reload(config_entry.entry_id)
@@ -208,7 +208,7 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
 
 
 async def async_setup_entry(
-    hass: core.HomeAssistant, entry: config_entries.ConfigEntry
+        hass: core.HomeAssistant, entry: config_entries.ConfigEntry
 ) -> bool:
     """Set up platform from a ConfigEntry."""
     hass.data.setdefault(DOMAIN, {})
@@ -249,7 +249,7 @@ async def async_setup_entry(
 
 
 async def async_unload_entry(
-    hass: core.HomeAssistant, entry: config_entries.ConfigEntry
+        hass: core.HomeAssistant, entry: config_entries.ConfigEntry
 ) -> bool:
     """Unload a config entry."""
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
