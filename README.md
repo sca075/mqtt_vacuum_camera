@@ -84,6 +84,6 @@ Via [HACS](https://hacs.xyz//setup/download) please follow the instructions in [
 - [@billyourself](https://github.com/billyourself) for providing us the data and motivation to evolve this project.
 - [@Skeletorjus](https://github.com/Skeletorjus) that using this integration gave us several ideas to improve it.
 - [@rohankapoorcom](https://github.com/rohankapoorcom) autor of the v1.4.0 that make really easy to set up this integration.
-- [@gunjambi]() that found a solution to re-draw the robot and also implemented the snapshots png to be enabled or disabled from the options.
+- [@gunjambi](https://github.com/gunjambi) that found a solution to re-draw the robot and also implemented the snapshots png to be enabled or disabled from the options.
 - And to all of you using this integration and reporting any issues, improvements and vacuums used with it.
 

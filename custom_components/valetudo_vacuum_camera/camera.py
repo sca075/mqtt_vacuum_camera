@@ -2,6 +2,7 @@
 from __future__ import annotations
 import logging
 import os
+import json
 from io import BytesIO
 from datetime import datetime
 from PIL import Image
@@ -391,6 +392,18 @@ class ValetudoCamera(Camera):
                 " Vacuum State.",
                 )
 
+    async def load_test_json(self, file_path=None):
+        # Load a test json
+        if file_path:
+            json_file = file_path
+            with open(json_file, "rb") as j_file:
+                tmp_json = j_file.read()
+            parsed_json = json.loads(tmp_json)
+            self._should_poll = False
+            return parsed_json
+        else:
+            return None
+
     async def async_update(self):
         """Camera Frame Update"""
         # check and update the vacuum reported state
@@ -423,11 +436,9 @@ class ValetudoCamera(Camera):
                 #########################################################
                 parsed_json = await self._mqtt.update_data(self._image_grab)
                 #########################################################
-                # json_file = "custom_components/valetudo_vacuum_camera/snapshots/json_v2.json"
-                # with open(json_file, "rb") as j_file:
-                #     tmp_json = j_file.read()
-                # parsed_json = json.loads(tmp_json)
-                self._vac_json_data = "Success"
+                # parsed_json = await self.load_test_json(
+                #     "custom_components/valetudo_vacuum_camera/snapshots/json_v2.json")
+                # self._vac_json_data = "Success"
             except ValueError:
                 self._vac_json_data = "Error"
                 pass
