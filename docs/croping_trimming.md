@@ -1,9 +1,9 @@
 ### Cropping Function:
 Valetudo images are normally quite huge, this results in an heavy handling of the images. 
 Some vacuums also produces so big images that could seriusly effect the way HA works (sometimes also crash it).
-For a prattical and more convinient way to automate the vacuums with HA this integration have the possibility to crop the images.
+For a practical and more convenient way to automate the vacuums with HA this integration have the possibility to crop the images.
 
-Att 100% the images will be display at full size:
+At 100% the images will be display at full size:
 
 ![Screenshot 2023-08-18 at 10 33 05](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/983d0848-e3b5-4db6-8957-f25bc6cd073f)
 

@@ -11,7 +11,7 @@
 Extract the maps for rooted Vacuum Cleaners with Hypfer Valetudo Firmware to Home Assistant via MQTT, [easy setup](./docs/install.md) thanks to [HACS](https://hacs.xyz/)  and guided configuration via Home Assistant GUI.
 
 **What it is:**
-Recently deisgned successor of ICantBelieveItsNotValetudo is [ValetudoPNG](https://github.com/erkexzcx/valetudopng) that can be used as alternative, althought we wanted to simplify the setup of a camera that decode the vacuum maps and render it to Home Assistant, therefore, when you want also to control your vacuum you will need to also install the:
+Recently designed successor of ICantBelieveItsNotValetudo is [ValetudoPNG](https://github.com/erkexzcx/valetudopng) that can be used as alternative, althought we wanted to simplify the setup of a camera that decode the vacuum maps and render it to Home Assistant, therefore, when you want also to control your vacuum you will need to also install the:
 [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card) from HACS as well.
 
 Configuration of the card (thanks to [@PiotrMachowski](https://github.com/PiotrMachowski) once the camera is installed requires:
@@ -53,7 +53,7 @@ internal_variables:
 ### How to install:
 Via [HACS](https://hacs.xyz//setup/download) please follow the instructions in [here](./docs/install.md). This detailed guide will help to set up the camera.
 
-## Futures:
+## Features:
 1) **Automatically Generate the calibration points for the lovelace-xiaomi-vacuum-map-card** to ensure full compatibility to this user-friendly card.
 2) **Automatically Generate rooms based configuration when vacuum support this functionality**, this will allow you to configure the rooms quickly on the [lovelace-xiaomi-vacuum-map-card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
 3) **The camera take automatically [snapshots](./docs/snapshots.md) (when the vacuum idle/ error / docked)**
