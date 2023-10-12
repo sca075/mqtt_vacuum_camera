@@ -169,7 +169,7 @@ class MapImageHandler(object):
                         "x": ((x_min + x_max) // 2),
                         "y": ((y_min + y_max) // 2),
                     }
-
+        _LOGGER.debug("Rooms data extracted!")
         return room_properties
 
     async def get_image_from_json(
@@ -404,10 +404,12 @@ class MapImageHandler(object):
     def get_json_id(self):
         return self.json_id
 
-    def get_rooms_attributes(self):
+    async def get_rooms_attributes(self):
         if self.json_data:
             _LOGGER.debug("Checking for rooms data..")
             self.room_propriety = MapImageHandler.extract_room_properties(self.json_data)
+            if self.room_propriety:
+                _LOGGER.debug("Got Rooms Attributes.")
         return self.room_propriety
 
     def get_calibration_data(self, rotation_angle):

@@ -1,4 +1,7 @@
-"""Camera Version 1.4.5"""
+"""Camera Version 1.4.6
+- Testing rooms attributes.
+"""
+
 from __future__ import annotations
 import logging
 import os
@@ -437,7 +440,7 @@ class ValetudoCamera(Camera):
                 parsed_json = await self._mqtt.update_data(self._image_grab)
                 #########################################################
                 # parsed_json = await self.load_test_json(
-                #     "custom_components/valetudo_vacuum_camera/snapshots/json_v2.json")
+                #     "custom_components/valetudo_vacuum_camera/snapshots/test.json")
                 # self._vac_json_data = "Success"
             except ValueError:
                 self._vac_json_data = "Error"
@@ -445,7 +448,6 @@ class ValetudoCamera(Camera):
             else:
                 # Just in case, let's check that the data is available
                 if parsed_json is not None:
-                    self._map_rooms = self._map_handler.get_rooms_attributes()
                     pil_img = await self._map_handler.get_image_from_json(
                         m_json=parsed_json,
                         robot_state=self._vacuum_state,
@@ -460,6 +462,12 @@ class ValetudoCamera(Camera):
                         file_name=self.file_name,
                     )
                     if pil_img is not None:
+                        if self._map_rooms is None:
+                            self._map_rooms = await self._map_handler.get_rooms_attributes()
+                            if self._map_rooms:
+                                _LOGGER.debug(
+                                    "State attributes update: %s",
+                                    self._map_rooms)
                         _LOGGER.debug(
                             "Applied " + self.file_name + " image rotation: %s",
                             {self._image_rotate},
