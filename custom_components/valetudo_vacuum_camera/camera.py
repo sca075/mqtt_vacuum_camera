@@ -326,7 +326,7 @@ class ValetudoCamera(Camera):
             attrs["snapshot_path"] = "/local/snapshot_" + self.file_name + ".png"
         else:
             attrs["snapshot"] = False
-        if self._map_rooms is not None:
+        if (self._map_rooms is not None) and (self._map_rooms != {}):
             attrs["rooms"] = self._map_rooms
         return attrs
 
@@ -466,7 +466,7 @@ class ValetudoCamera(Camera):
                             self._map_rooms = await self._map_handler.get_rooms_attributes()
                             if self._map_rooms:
                                 _LOGGER.debug(
-                                    "State attributes update: %s",
+                                    "State attributes rooms update: %s",
                                     self._map_rooms)
                         _LOGGER.debug(
                             "Applied " + self.file_name + " image rotation: %s",
@@ -501,9 +501,10 @@ class ValetudoCamera(Camera):
                         self._base = self._map_handler.get_charger_position()
                         self._current = self._map_handler.get_robot_position()
                         self._vac_img_data = self._map_handler.get_img_size()
-                        self._attr_calibration_points = (
-                            self._map_handler.get_calibration_data(self._image_rotate)
-                        )
+                        if self._attr_calibration_points is None:
+                            self._attr_calibration_points = (
+                                self._map_handler.get_calibration_data(self._image_rotate)
+                            )
                     else:
                         # if no image was processed empty or last snapshot/frame
                         pil_img = self.empty_if_no_data()
