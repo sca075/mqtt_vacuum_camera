@@ -1,5 +1,5 @@
-"""Camera Version 1.4.6
-- Testing rooms attributes.
+"""Camera Version 1.5.0 Beta 1
+Valetudo Re Test image.
 """
 
 from __future__ import annotations
@@ -29,6 +29,9 @@ from custom_components.valetudo_vacuum_camera.valetudo.connector import (
 )
 from .valetudo.image_handler import (
     MapImageHandler,
+)
+from .valetudo.valetudore.image_handler import (
+    ReImageHandler,
 )
 from .utils.colors_man import (
     add_alpha_to_rgb,
@@ -171,6 +174,7 @@ class ValetudoCamera(Camera):
         self._image_h = None
         self._should_poll = False
         self._map_handler = MapImageHandler()
+        self._re_handler = ReImageHandler()
         self._map_rooms = None
         self._vacuum_shared = Vacuum()
         self._vacuum_state = None
@@ -201,6 +205,7 @@ class ValetudoCamera(Camera):
         self._last_image = None
         self._image_grab = True
         self._frame_nuber = 0
+        self._rrm_data = False  # Temp. check for rrm data
         self.throttled_camera_image = Throttle(timedelta(seconds=4))(self.camera_image)
         try:
             self.user_colors = [
@@ -438,6 +443,11 @@ class ValetudoCamera(Camera):
                 # bypassed code is for debug purpose only
                 #########################################################
                 parsed_json = await self._mqtt.update_data(self._image_grab)
+                if parsed_json[1]:
+                    self._rrm_data = parsed_json[0]
+                else:
+                    parsed_json = parsed_json[0]
+                    self._rrm_data = None
                 #########################################################
                 # parsed_json = await self.load_test_json(
                 #     "custom_components/valetudo_vacuum_camera/snapshots/test.json")
@@ -448,19 +458,36 @@ class ValetudoCamera(Camera):
             else:
                 # Just in case, let's check that the data is available
                 if parsed_json is not None:
-                    pil_img = await self._map_handler.get_image_from_json(
-                        m_json=parsed_json,
-                        robot_state=self._vacuum_state,
-                        crop=self._image_crop,
-                        img_rotation=self._image_rotate,
-                        trim_u=self._trim_up,
-                        trim_b=self._trim_down,
-                        trim_r=self._trim_right,
-                        trim_l=self._trim_left,
-                        user_colors=self._vacuum_shared.get_user_colors(),
-                        rooms_colors=self._vacuum_shared.get_rooms_colors(),
-                        file_name=self.file_name,
-                    )
+                    pil_img = None
+                    if self._rrm_data:
+                        _LOGGER.info("Veletudo RE user, please report any error on rendering.")
+                        pil_img = await self._re_handler.get_image_from_rrm(
+                            m_json=self._rrm_data,
+                            robot_state=self._vacuum_state,
+                            crop=self._image_crop,
+                            img_rotation=self._image_rotate,
+                            trim_u=self._trim_up,
+                            trim_b=self._trim_down,
+                            trim_r=self._trim_right,
+                            trim_l=self._trim_left,
+                            user_colors=self._vacuum_shared.get_user_colors(),
+                            rooms_colors=self._vacuum_shared.get_rooms_colors(),
+                            file_name=self.file_name,
+                        )
+                    else:
+                        pil_img = await self._map_handler.get_image_from_json(
+                            m_json=parsed_json,
+                            robot_state=self._vacuum_state,
+                            crop=self._image_crop,
+                            img_rotation=self._image_rotate,
+                            trim_u=self._trim_up,
+                            trim_b=self._trim_down,
+                            trim_r=self._trim_right,
+                            trim_l=self._trim_left,
+                            user_colors=self._vacuum_shared.get_user_colors(),
+                            rooms_colors=self._vacuum_shared.get_rooms_colors(),
+                            file_name=self.file_name,
+                        )
                     if pil_img is not None:
                         if self._map_rooms is None:
                             self._map_rooms = await self._map_handler.get_rooms_attributes()
@@ -497,14 +524,23 @@ class ValetudoCamera(Camera):
                                 )
                                 # take a snapshot
                                 await self.take_snapshot(parsed_json, pil_img)
-                        self._vac_json_id = self._map_handler.get_json_id()
-                        self._base = self._map_handler.get_charger_position()
-                        self._current = self._map_handler.get_robot_position()
-                        self._vac_img_data = self._map_handler.get_img_size()
                         if self._attr_calibration_points is None:
-                            self._attr_calibration_points = (
-                                self._map_handler.get_calibration_data(self._image_rotate)
-                            )
+                            if self._rrm_data is None:
+                                self._vac_json_id = self._map_handler.get_json_id()
+                                self._base = self._map_handler.get_charger_position()
+                                self._current = self._map_handler.get_robot_position()
+                                self._vac_img_data = self._map_handler.get_img_size()
+                                self._attr_calibration_points = (
+                                    self._map_handler.get_calibration_data(self._image_rotate)
+                                )
+                            else:
+                                self._vac_json_id = self._re_handler.get_json_id()
+                                self._base = self._re_handler.get_charger_position()
+                                self._current = self._re_handler.get_robot_position()
+                                self._vac_img_data = self._re_handler.get_img_size()
+                                self._attr_calibration_points = (
+                                    self._re_handler.get_calibration_data(self._image_rotate)
+                                )
                     else:
                         # if no image was processed empty or last snapshot/frame
                         pil_img = self.empty_if_no_data()

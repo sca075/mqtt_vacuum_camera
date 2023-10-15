@@ -3,7 +3,7 @@ Collections of Json and List routines
 ImageData is part of the Image_Handler
 used functions to search data in the json
 provided for the creation of the new camera frame
-Last changes on Version: 1.4.5
+Last changes on Version: 1.5.0 beta 1
 """
 
 import logging
@@ -101,23 +101,145 @@ class ImageData:
                 ImageData.find_zone_entities(item, entity_dict)
         return entity_dict
 
+    """ 
+    Added below in order to support Valetudo Re.
+    This functions read directly the data from the json created
+    from the parser for Valetudo Re. They allow to use the 
+    fuctions to draw the image without changes.
+    """
+
     @staticmethod
-    def from_rrm_to_compressed_pixels(pixel_data, image_width, image_height):
+    def from_rrm_to_compressed_pixels(pixel_data, image_width=0, image_height=0, image_top=0, image_left=0):
         compressed_pixels = []
 
+        tot_pixels = 0
         current_x, current_y, count = None, None, 0
-
         for index in pixel_data:
-            x = index % image_width
-            y = index // image_width
+            x = (index % image_width)+image_left
+            y = ((image_height-1) - (index // image_width)) + image_top
+
             if current_x == x and current_y == y:
                 count += 1
             else:
                 if current_x is not None:
                     compressed_pixels.append([current_x, current_y, count])
                 current_x, current_y, count = x, y, 1
-
+            tot_pixels += 1
         if current_x is not None:
             compressed_pixels.append([current_x, current_y, count])
-
         return compressed_pixels
+
+    @staticmethod
+    def calculate_max_x_y(coord_array):
+        max_x = -float('inf')
+        max_y = -float('inf')
+
+        for x, y, count in coord_array:
+            max_x = max(max_x, x)
+            max_y = max(max_y, y)
+
+        max_x = max_x * 6
+        max_y = max_y * 6
+        return max_x, max_y
+
+    @staticmethod
+    def rrm_coordinates_to_valetudo(points):
+        transformed_points = []
+        dimension_mm = 50 * 1024
+        for i, p in enumerate(points):
+            if i % 2 == 0:
+                transformed_points.append(round(p / 10))
+            else:
+                transformed_points.append(round((dimension_mm-p) / 10))
+        return transformed_points
+
+    @staticmethod
+    def rrm_valetudo_path_array(points):
+        transformed_points = []
+        for point in points:
+            transformed_x = round(point[0] / 10)
+            transformed_y = round(point[1] / 10)
+            transformed_points.extend([[transformed_x, transformed_y]])
+        return transformed_points
+
+    @staticmethod
+    def get_rrm_image(json_data):
+        return json_data.get("image", {})
+
+    @staticmethod
+    def get_rrm_path(json_data):
+        return json_data.get("path", {})
+
+    @staticmethod
+    def get_rrm_goto_predicted_path(json_data):
+        return json_data.get("goto_predicted_path", {})
+
+    @staticmethod
+    def get_rrm_charger_position(json_data):
+        return json_data.get("charger", {})
+
+    @staticmethod
+    def get_rrm_robot_position(json_data):
+        return json_data.get("robot", {})
+
+    @staticmethod
+    def get_rrm_robot_angle(json_data):
+        angle = (json_data.get("robot_angle", 0) + 450) % 360
+        return angle, json_data.get("robot_angle", 0)
+
+    @staticmethod
+    def get_rrm_goto_target(json_data):
+        return json_data.get("goto_target", {})
+
+    @staticmethod
+    def get_rrm_currently_cleaned_zones(json_data):
+        return json_data.get("currently_cleaned_zones", [])
+
+    @staticmethod
+    def get_rrm_forbidden_zones(json_data):
+        return json_data.get("forbidden_zones", [])
+
+    @staticmethod
+    def get_rrm_virtual_walls(json_data):
+        return json_data.get("virtual_walls", [])
+
+    @staticmethod
+    def get_rrm_currently_cleaned_blocks(json_data):
+        return json_data.get("currently_cleaned_blocks", [])
+
+    @staticmethod
+    def get_rrm_forbidden_mop_zones(json_data):
+        return json_data.get("forbidden_mop_zones", [])
+
+    @staticmethod
+    def get_rrm_image_size(json_data):
+        image = ImageData.get_rrm_image(json_data)
+        dimensions = image.get("dimensions", {})
+        return dimensions.get("width", 0), dimensions.get("height", 0)
+
+    @staticmethod
+    def get_rrm_image_position(json_data):
+        image = ImageData.get_rrm_image(json_data)
+        position = image.get("position", {})
+        return position.get("top", 0), position.get("left", 0)
+
+    @staticmethod
+    def get_rrm_floor(json_data):
+        img = ImageData.get_rrm_image(json_data)
+        return img.get("pixels", {}).get("floor", [])
+
+    @staticmethod
+    def get_rrm_walls(json_data):
+        img = ImageData.get_rrm_image(json_data)
+        return img.get("pixels", {}).get("walls", [])
+
+    @staticmethod
+    def get_rrm_segments(json_data):
+        img = ImageData.get_rrm_image(json_data)
+        segments = img.get("pixels", {}).get("segments", [])
+        segment_count = img.get("segments", {}).get("count", 0)
+
+        if segment_count > 0:
+            return segments
+        else:
+            return []

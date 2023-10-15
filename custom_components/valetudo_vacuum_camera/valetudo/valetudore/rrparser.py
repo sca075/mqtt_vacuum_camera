@@ -1,5 +1,5 @@
 """
-Version 1.4.5
+Version 1.5.0-beta.1
 - This parser is the python version of @rand256 valetudo_mapper.
 - This class is extracting the vacuum map_data.
 - Additional functions are to get in our image_handler the images datas.
@@ -7,6 +7,7 @@ Version 1.4.5
 
 import struct
 import math
+from homeassistant.core import callback
 
 
 class RRMapParser:
@@ -46,8 +47,8 @@ class RRMapParser:
         if type_ == RRMapParser.TYPES["ROBOT_POSITION"] or type_ == RRMapParser.TYPES["CHARGER_LOCATION"]:
             result[type_] = {
                 "position": [
-                    struct.unpack("<H", buf[0x08 + offset:0x0A + offset])[0],
-                    struct.unpack("<H", buf[0x0A + offset:0x0C + offset])[0]
+                    int.from_bytes(buf[0x08 + offset:0x0A + offset], byteorder="little"),  # Convert to uint16
+                    int.from_bytes(buf[0x0C + offset:0x0E + offset], byteorder="little"),  # Convert to uint16
                 ],
                 "angle": struct.unpack("<i", buf[0x10 + offset:0x14 + offset])[0] if length >= 12 else 0
             }
@@ -73,10 +74,16 @@ class RRMapParser:
                     "segments": []
                 }
             }
-            parameters["position"]["top"] = RRMapParser.TOOLS["DIMENSION_PIXELS"] - parameters["position"]["top"] - parameters["dimensions"]["height"]
+            parameters["position"]["top"] = (RRMapParser.TOOLS["DIMENSION_PIXELS"] - parameters["position"]["top"]
+                                             - parameters["dimensions"]["height"])
             if parameters["dimensions"]["height"] > 0 and parameters["dimensions"]["width"] > 0:
                 for i in range(length):
-                    segment_type = struct.unpack("<B", buf[0x18 + g3offset + offset + i:0x19 + g3offset + offset + i])[0] & 0x07
+                    segment_type = struct.unpack("<B", buf[0x18 +
+                                                           g3offset +
+                                                           offset +
+                                                           i:0x19 +
+                                                           g3offset +
+                                                           offset + i])[0] & 0x07
                     if segment_type == 0:
                         continue
                     elif segment_type == 1:
@@ -85,14 +92,16 @@ class RRMapParser:
                     else:
                         if pixels:
                             parameters["pixels"]["floor"].append(i)
-                        s = (struct.unpack("<B", buf[0x18 + g3offset + offset + i:0x19 + g3offset + offset + i])[0] & 248) >> 3
-                        if s != 0:
+                        s = (struct.unpack("<B", buf[0x18 + g3offset + offset + i:0x19 + g3offset + offset + i])[0] &
+                             248) >> 3
+                        if s != 31:
                             if s not in parameters["segments"]["id"]:
                                 parameters["segments"]["id"].append(s)
                             if pixels:
                                 parameters["pixels"]["segments"].append(i | (s << 21))
             result[type_] = parameters
-        elif type_ in [RRMapParser.TYPES["PATH"], RRMapParser.TYPES["GOTO_PATH"], RRMapParser.TYPES["GOTO_PREDICTED_PATH"]]:
+        elif type_ in [RRMapParser.TYPES["PATH"], RRMapParser.TYPES["GOTO_PATH"],
+                       RRMapParser.TYPES["GOTO_PREDICTED_PATH"]]:
             points = []
             for i in range(0, length, 4):
                 points.append([
@@ -140,8 +149,8 @@ class RRMapParser:
                 result[type_] = forbiddenZones
         return RRMapParser.parseBlock(buf, offset + length + hlength, result)
 
-    @staticmethod
-    def PARSE(mapBuf):
+    @callback
+    def PARSE(self, mapBuf):
         if mapBuf[0x00] == 0x72 and mapBuf[0x01] == 0x72:
             parsedMapData = {
                 "header_length": struct.unpack("<H", mapBuf[0x02:0x04])[0],
@@ -157,13 +166,15 @@ class RRMapParser:
         else:
             return {}
 
-    @staticmethod
-    async def PARSEDATA(mapBuf, pixels=False):
-        if not RRMapParser.PARSE(mapBuf)["map_index"]:
+    @callback
+    def PARSEDATA(self, mapBuf, pixels=False):
+
+        #rrm_header = await self.PARSE(mapBuf)
+        if not self.PARSE(mapBuf)["map_index"]:
             return None
         else:
             parsedMapData = {}
-            blocks = RRMapParser.parseBlock(mapBuf, 0x14, None, pixels)
+            blocks = self.parseBlock(mapBuf, 0x14, None, pixels)
 
         if blocks[RRMapParser.TYPES["IMAGE"]]:
             parsedMapData["image"] = blocks[RRMapParser.TYPES["IMAGE"]]
@@ -197,8 +208,8 @@ class RRMapParser:
                 if RRMapParser.TYPES["ROBOT_POSITION"] in blocks:
                     robot = blocks[RRMapParser.TYPES["ROBOT_POSITION"]]["position"]
                     rob_angle = blocks[RRMapParser.TYPES["ROBOT_POSITION"]]["angle"]
-                    robot[0] = RRMapParser.TOOLS["DIMENSION_MM"] - robot[0]
-                    robot[1] = RRMapParser.TOOLS["DIMENSION_MM"] - robot[1]
+                    robot[0] = (RRMapParser.TOOLS["DIMENSION_MM"] - robot[0])
+                    robot[1] = (RRMapParser.TOOLS["DIMENSION_MM"] - robot[1])
                     parsedMapData["robot"] = robot
                     parsedMapData["robot_angle"] = rob_angle if "robot" in parsedMapData else \
                         parsedMapData["path"]["current_angle"] if "path" in parsedMapData else 0
@@ -236,8 +247,9 @@ class RRMapParser:
 
             return parsedMapData
 
-    async def parse_data(self, payload, pixels=False):
-        self.map_data = await self.PARSEDATA(payload, pixels)
+    def parse_data(self, payload=None, pixels=False):
+        self.map_data = self.PARSE(payload)
+        self.map_data.update(self.PARSEDATA(payload, pixels))
         return self.map_data
 
     def get_image(self):
@@ -246,10 +258,8 @@ class RRMapParser:
     def get_path(self):
         return self.map_data.get("path", {})
 
-
     def get_goto_predicted_path(self):
         return self.map_data.get("goto_predicted_path", {})
-
 
     def get_charger_position(self):
         return self.map_data.get("charger", {})
@@ -258,7 +268,8 @@ class RRMapParser:
         return self.map_data.get("robot", {})
 
     def get_robot_angle(self):
-        return self.map_data.get("robot_angle", 0)
+        angle = (self.map_data.get("robot_angle", 0) + 450) % 360
+        return angle, self.map_data.get("robot_angle", 0)
 
     def get_goto_target(self):
         return self.map_data.get("goto_target", {})
@@ -285,6 +296,13 @@ class RRMapParser:
             return dimensions.get("width", 0), dimensions.get("height", 0)
         return 0, 0
 
+    def get_image_position(self):
+        image = self.get_image()
+        if image:
+            dimensions = image.get("position", {})
+            return dimensions.get("top", 0), dimensions.get("left", 0)
+        return 0, 0
+
     def get_floor(self):
         img = self.get_image()
         return img.get("pixels", {}).get("floor", [])
@@ -303,3 +321,11 @@ class RRMapParser:
             return segments
         else:
             return []
+
+    @staticmethod
+    def get_int32(data: bytes, address: int) -> int:
+        return \
+                ((data[address + 0] << 0) & 0xFF) | \
+                ((data[address + 1] << 8) & 0xFFFF) | \
+                ((data[address + 2] << 16) & 0xFFFFFF) | \
+                ((data[address + 3] << 24) & 0xFFFFFFFF)

@@ -1,5 +1,5 @@
 """
-Version 1.4.5
+Version 1.5.0 Beta 1
 - Removed the PNG decode, the json is extracted from map-data instead of map-data hass.
 - Valetudo Re vacuum payload is going to be save on the WWW folder file "mqtt_valetudo_re.raw".
 - Tested no influence on the camera performance.
@@ -28,10 +28,13 @@ class ValetudoConnector:
         self._mqtt_vac_stat = None
         self._mqtt_vac_err = None
         self._data_in = False
-        self._rnd_payload = None  # Payload from Valetudo Re
-        self._rand_data = RRMapParser
+        # Payload and data from Valetudo Re
+        self._rrm_json = None
+        self._rrm_payload = None
+        self._rrm_data = RRMapParser()
 
     async def update_data(self, process: bool = True):
+        is_rrm = None
         if self._img_payload:
             if process:
                 _LOGGER.debug("Processing " + self._mqtt_topic + " data from MQTT")
@@ -39,11 +42,22 @@ class ValetudoConnector:
                 result = json.loads(json_data)
                 _LOGGER.debug(self._mqtt_topic + ": Extracting JSON Complete")
                 self._data_in = False
-                return result
+                is_rrm = False
+                return result, is_rrm
             else:
                 _LOGGER.debug("No data from " + self._mqtt_topic + " or vacuum docked")
                 self._data_in = False
-                return None
+                is_rrm = False
+                return None, is_rrm
+        if self._rrm_payload:
+            if process:
+                _LOGGER.debug("Processing RRM" + self._mqtt_topic + " data from MQTT")
+                # parse the topic
+                self._rrm_json = self._rrm_data.parse_data(payload=self._rrm_payload, pixels=True)
+            is_rrm = True
+            self._data_in = False
+            _LOGGER.debug("got RRM payload: %s", is_rrm)
+            return self._rrm_json, is_rrm
 
     async def get_vacuum_status(self):
         return self._mqtt_vac_stat
@@ -57,12 +71,12 @@ class ValetudoConnector:
     async def save_payload(self, file_name):
         # save payload when available.
         if (self._img_payload and (self._data_in is True)) or \
-                (self._rnd_payload is not None):
+                (self._rrm_payload is not None):
             file_data = "No data"
             if self._img_payload:
                 file_data = self._img_payload
-            elif self._rnd_payload:
-                file_data = self._rnd_payload
+            elif self._rrm_payload:
+                file_data = self._rrm_payload
             with open(
                     str(os.getcwd())
                     + "/www/"
@@ -76,13 +90,11 @@ class ValetudoConnector:
     @callback
     async def async_message_received(self, msg):
         self._rcv_topic = msg.topic
-        if self._rcv_topic == (self._mqtt_topic + "/map_data"):  # Attempt get ValetudoRe data.
-            self._rnd_payload = msg.payload  # Save the received payload
-            await self.save_payload("valetudo_re")
-            tmp_json = self._rand_data.PARSE(self._rnd_payload)  # parse the topic
-            tmp_json.update(await self._rand_data.PARSEDATA(self._rnd_payload))
-            _LOGGER.debug("got RAND payload: %s", tmp_json)
-
+        if self._rcv_topic == (self._mqtt_topic + "/map_data"):  #
+            _LOGGER.debug("Received RRM " + self._mqtt_topic + " image data from MQTT")
+            self._rrm_payload = msg.payload  # Image data update the received payload
+            #await self.save_payload("valetudo_re")
+            self._data_in = True
         if self._rcv_topic == self._mqtt_topic + "/MapData/map-data":
             _LOGGER.debug("Received " + self._mqtt_topic + " image data from MQTT")
             self._img_payload = msg.payload
