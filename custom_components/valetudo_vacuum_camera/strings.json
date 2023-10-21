@@ -143,7 +143,7 @@
           "color_zone_clean": "[255, 255, 255]",
           "color_background": "[0, 125, 255]",
           "color_text": "[255, 255, 255]",
-          "add_base_alpha": "Configure Transparency level:"
+          "add_base_alpha": "Configure Transparency:"
         },
         "data_description": {
           "color_charger": "Charger color.",
@@ -192,7 +192,7 @@
           "color_room_13": "[245, 176, 65]",
           "color_room_14": "[82, 190, 128]",
           "color_room_15": "[72, 201, 176]",
-          "add_room_alpha": "Configure Transparency level:"
+          "add_room_alpha": "Configure Transparency:",
         },
         "data_description": {
           "color_room_0": "Room 1, floor color.",

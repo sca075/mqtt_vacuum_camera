@@ -1,5 +1,5 @@
 """Constants for the valetudo_vacuum_camera integration."""
-"""Version 1.4.5"""
+"""Version 1.4.7"""
 
 """Required in Config_Flow"""
 PLATFORMS = ["camera"]
@@ -26,6 +26,8 @@ NAME = "Valetudo Vacuum Camera"
 """App Constants"""
 IDLE_SCAN_INTERVAL = 120
 CLEANING_SCAN_INTERVAL = 5
+IS_ALPHA = "add_base_alpha"
+IS_ALPHA_R = "add_room_alpha"
 
 """Base Colours RGB"""
 COLOR_CHARGER = "color_charger"

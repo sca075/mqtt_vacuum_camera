@@ -143,7 +143,7 @@
           "color_zone_clean": "[255, 255, 255]",
           "color_background": "[0, 125, 255]",
           "color_text": "[255, 255, 255]",
-          "add_base_alpha": "Configure Transparency level:"
+          "add_base_alpha": "Configure Transparency:"
         },
         "data_description": {
           "color_charger": "Charger color.",
@@ -210,7 +210,8 @@
           "color_room_12": "Room 13",
           "color_room_13": "Room 14",
           "color_room_14": "Room 15",
-          "color_room_15": "Room 16"
+          "color_room_15": "Room 16",
+          "add_room_alpha": "Configure Transparency level:"
         },
         "description": "Camera Options. Part 3/3",
         "title": "Rooms Colours"

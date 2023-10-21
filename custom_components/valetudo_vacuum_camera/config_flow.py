@@ -1,4 +1,9 @@
-"""config_flow ver.1.4.5"""
+"""config_flow ver.1.4.7
+IMPORTANT: When adding new options to the camera
+it will be mandatory to update const.py update_options.
+Format of the new constants must be CONST_NAME = "const_name" update also
+sting.json and en.json please.
+"""
 import voluptuous as vol
 import logging
 from typing import Any, Dict, Optional
@@ -54,6 +59,7 @@ from .const import (
     COLOR_ROOM_13,
     COLOR_ROOM_14,
     COLOR_ROOM_15,
+    IS_ALPHA, IS_ALPHA_R,
     ALPHA_BACKGROUND,
     ALPHA_CHARGER,
     ALPHA_MOVE,
@@ -85,6 +91,7 @@ from .common import (
     get_device_info,
     get_vacuum_mqtt_topic,
     get_vacuum_unique_id_from_mqtt_topic,
+    update_options
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -312,10 +319,11 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         self.config_entry = config_entry
         self.unique_id = self.config_entry.unique_id
         self.options = {}
+        self.bk_options = self.config_entry.options
+        self._check_alpha = False
         _LOGGER.debug(
             "Options edit in progress.. options before edit: ",
-            list(self.config_entry.options.values()),
-        )
+            self.bk_options)
         options_values = list(self.config_entry.options.values())
         if len(options_values) > 0:
             config_dict: NumberSelectorConfig = {
@@ -386,6 +394,9 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Optional(
                         COLOR_TEXT, default=config_entry.options.get("color_text")
                     ): ColorRGBSelector(),
+                    vol.Optional(
+                        IS_ALPHA, default=self._check_alpha
+                    ): BooleanSelector(),
                 }
             )
             _LOGGER.debug("Defined Color 1 Schema")
@@ -473,6 +484,9 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Optional(
                         COLOR_ROOM_15, default=config_entry.options.get("color_room_15")
                     ): ColorRGBSelector(),
+                    vol.Optional(
+                        IS_ALPHA_R, default=self._check_alpha
+                    ): BooleanSelector(),
                 }
             )
             _LOGGER.debug("Defined Color 2 Schema")
@@ -570,7 +584,14 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     "color_text": user_input.get(COLOR_TEXT),
                 }
             )
-            return await self.async_step_alpha_1()
+            self._check_alpha = user_input.get(IS_ALPHA)
+
+            if self._check_alpha:
+                self._check_alpha = False
+                return await self.async_step_alpha_1()
+            else:
+                return await self.async_step_init_3()
+
         _LOGGER.debug("self.data before show form: %s", self.options)
         return self.async_show_form(
             step_id="init_2",
@@ -624,7 +645,18 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 }
             )
 
-            return await self.async_step_alpha_2()
+            self._check_alpha = user_input.get(IS_ALPHA_R)
+
+            if self._check_alpha:
+                self._check_alpha = False
+                return await self.async_step_alpha_2()
+            else:
+                opt_update = await update_options(self.bk_options, self.options)
+                _LOGGER.debug("updated options:", opt_update)
+                return self.async_create_entry(
+                    title="",
+                    data=opt_update,
+                )
 
         return self.async_show_form(
             step_id="init_3",
@@ -654,14 +686,14 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     "alpha_room_15": user_input.get(ALPHA_ROOM_15),
                 }
             )
-
-            _LOGGER.debug("Options data after update: %s", self.options)
             _, vacuum_device = get_device_info(
                 self.config_entry.data.get(CONF_VACUUM_CONFIG_ENTRY_ID), self.hass
             )
+            opt_update = await update_options(self.bk_options, self.options)
+            _LOGGER.debug("updated options:", opt_update)
             return self.async_create_entry(
                 title="",
-                data=self.options,
+                data=opt_update,
             )
 
         return self.async_show_form(

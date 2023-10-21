@@ -66,7 +66,7 @@ Via [HACS](https://hacs.xyz//setup/download) please follow the instructions in [
  - **Rooms colors**, Room 1 is acrually also the Floor color (for vacuum that do not supports rooms).
  - From v1.3.2 is possible to [**Trim the images**](./docs/croping_trimming.md) as desidered.
  - It is possible to **display on the image the vacuum staus**.
- - We also added the **transparency level custom setup for all elements and rooms** from v1.4.2.  
+ - We also added the **[transparency level custom setup](./docs/transparency.md) for all elements and rooms** from v1.4.2.  
 5) This integration make possible to **integrate multiple vacuums** as per each camera will be named with the vacuum name (example: vacuum.robot1 = camera.robot1.. vacuum.robotx = camera.robotx)
 6) The camera as all cameras in HA **supports the ON/OFF service**, it is possible to *suspend and resume the camera streem as desired*.
 

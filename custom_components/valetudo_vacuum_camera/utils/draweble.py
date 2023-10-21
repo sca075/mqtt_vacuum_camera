@@ -3,7 +3,7 @@ Collections of Drawing Utility
 Drawable is part of the Image_Handler
 used functions to draw the elements on the Numpy Array
 that is actually our camera frame.
-Last changes on Version: 1.4.5
+Last changes on Version: 1.4.7
 """
 
 import logging
@@ -206,7 +206,7 @@ class Drawable:
         return layer
 
     @staticmethod
-    def lines(arr, coords, width, color):
+    async def lines(arr, coords, width, color):
         """
         it joins the coordinates creating a continues line.
         the result is our path.
@@ -320,7 +320,7 @@ class Drawable:
         return arr
 
     @staticmethod
-    def zones(layers, coordinates, color):
+    async def zones(layers, coordinates, color):
         dot_radius = 1  # number of pixels the dot should be
         dot_spacing = 4  # space between dots.
         # Iterate over zones

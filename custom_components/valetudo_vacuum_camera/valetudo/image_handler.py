@@ -2,7 +2,7 @@
 Image Handler Module.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Last Changed on Version: 1.4.5
+Last Changed on Version: 1.4.7
 """
 from __future__ import annotations
 
@@ -257,33 +257,37 @@ class MapImageHandler(object):
 
                 robot_position_angle = None
                 robot_position = None
+                robot_pos = None
                 if entity_dict:
-                    robot_pos = entity_dict.get("robot_position")
-                    if robot_pos:
-                        robot_position = robot_pos[0]["points"]
-                        robot_position_angle = robot_pos[0]["metaData"]["angle"]
-                        _LOGGER.debug("robot position: %s", robot_pos)
-                        self.robot_pos = {
-                            "x": robot_position[0],
-                            "y": robot_position[1],
-                            "angle": robot_position_angle,
-                        }
+                    try:
+                        robot_pos = entity_dict.get("robot_position")
+                    except KeyError:
+                        _LOGGER.warning("No robot position found.")
+                    else:
+                        if robot_pos:
+                            robot_position = robot_pos[0]["points"]
+                            robot_position_angle = robot_pos[0]["metaData"]["angle"]
+                            self.robot_pos = {
+                                "x": robot_position[0],
+                                "y": robot_position[1],
+                                "angle": robot_position_angle,
+                            }
+                            _LOGGER.debug("robot position: %s",  list(self.robot_pos.items()))
 
                 charger_pos = None
                 if entity_dict:
-                    _LOGGER.debug(entity_dict)
                     try:
                         charger_pos = entity_dict.get("charger_location")
                     except KeyError:
                         _LOGGER.warning("No charger position found.")
                     else:
-                        _LOGGER.debug("charger position: %s", charger_pos)
                         if charger_pos:
                             charger_pos = charger_pos[0]["points"]
                             self.charger_pos = {
                                 "x": charger_pos[0],
                                 "y": charger_pos[1],
                             }
+                        _LOGGER.debug("charger position: %s", list(self.charger_pos.items()))
 
                 go_to = entity_dict.get("go_to_target")
                 pixel_size = int(m_json["pixelSize"])
@@ -306,34 +310,15 @@ class MapImageHandler(object):
                             else:
                                 room_id = 0
                         elif layer_type == "wall":
-                            if zone_clean:
-                                try:
-                                    zones_clean = zone_clean.get("active_zone")
-                                except KeyError:
-                                    zones_clean = None
-                                    _LOGGER.debug(file_name + ": No Zone Clean.")
-                                try:
-                                    no_go_zones = zone_clean.get("no_go_area")
-                                except KeyError:
-                                    no_go_zones = None
-                                    _LOGGER.debug(file_name + ": No Go area not found.")
-                                if zones_clean:
-                                    img_np_array = self.draw.zones(
-                                        img_np_array, zones_clean, color_zone_clean
-                                    )
-                                if no_go_zones:
-                                    img_np_array = self.draw.zones(
-                                        img_np_array, no_go_zones, color_no_go
-                                    )
                             # Drawing walls.
                             img_np_array = await self.draw.from_json_to_image(
                                 img_np_array, pixels, pixel_size, color_wall
                             )
                 _LOGGER.info(file_name + ": Completed base Layers")
-
-                img_np_array = self.draw.battery_charger(
-                    img_np_array, charger_pos[0], charger_pos[1], color_charger
-                )
+                if charger_pos:
+                    img_np_array = self.draw.battery_charger(
+                        img_np_array, charger_pos[0], charger_pos[1], color_charger
+                    )
                 # self.img_base_layer = img_np_array
                 self.frame_number += 1
                 # img_np_array = self.img_base_layer
@@ -343,6 +328,25 @@ class MapImageHandler(object):
                 if self.frame_number > 5:
                     self.frame_number = 0
                 # All below will be drawn each time
+                if zone_clean:
+                    try:
+                        zones_clean = zone_clean.get("active_zone")
+                    except KeyError:
+                        zones_clean = None
+                        _LOGGER.debug(file_name + ": No Zone Clean.")
+                    try:
+                        no_go_zones = zone_clean.get("no_go_area")
+                    except KeyError:
+                        no_go_zones = None
+                        _LOGGER.debug(file_name + ": No Go area not found.")
+                    if zones_clean:
+                        img_np_array = await self.draw.zones(
+                            img_np_array, zones_clean, color_zone_clean
+                        )
+                    if no_go_zones:
+                        img_np_array = await self.draw.zones(
+                            img_np_array, no_go_zones, color_no_go
+                        )
                 if virtual_walls:
                     img_np_array = await self.draw.draw_virtual_walls(
                         img_np_array, virtual_walls, color_no_go
@@ -355,7 +359,7 @@ class MapImageHandler(object):
                         color_go_to,
                     )
                 if predicted_pat2:
-                    img_np_array = self.draw.lines(
+                    img_np_array = await self.draw.lines(
                         img_np_array, predicted_pat2, 2, color_grey
                     )
                 # draw path
@@ -365,19 +369,20 @@ class MapImageHandler(object):
                         points = path.get("points", [])
                         sublists = self.data.sublist(points, 2)
                         path_pixel2 = self.data.sublist_join(sublists, 2)
-                        img_np_array = self.draw.lines(
+                        img_np_array = await self.draw.lines(
                             img_np_array, path_pixel2, 5, color_move
                         )
                 if robot_state == "docked":
                     robot_position_angle = robot_position_angle - 180
-                img_np_array = self.draw.robot(
-                    img_np_array,
-                    robot_position[0],
-                    robot_position[1],
-                    robot_position_angle,
-                    color_robot,
-                    file_name,
-                )
+                if robot_pos:
+                    img_np_array = self.draw.robot(
+                        img_np_array,
+                        robot_position[0],
+                        robot_position[1],
+                        robot_position_angle,
+                        color_robot,
+                        file_name,
+                    )
                 _LOGGER.debug(file_name + " Image Cropping:" + str(crop) + " Image Rotate:" + str(img_rotation))
                 img_np_array = await self.crop_and_trim_array(
                     img_np_array,
