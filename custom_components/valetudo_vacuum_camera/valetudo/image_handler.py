@@ -325,15 +325,10 @@ class MapImageHandler(object):
                                     img_np_array = self.draw.zones(
                                         img_np_array, no_go_zones, color_no_go
                                     )
-
                             # Drawing walls.
                             img_np_array = await self.draw.from_json_to_image(
                                 img_np_array, pixels, pixel_size, color_wall
                             )
-                            if virtual_walls:
-                                img_np_array = self.draw.draw_virtual_walls(
-                                    img_np_array, virtual_walls, color_no_go
-                                )
                 _LOGGER.info(file_name + ": Completed base Layers")
 
                 img_np_array = self.draw.battery_charger(
@@ -348,6 +343,10 @@ class MapImageHandler(object):
                 if self.frame_number > 5:
                     self.frame_number = 0
                 # All below will be drawn each time
+                if virtual_walls:
+                    img_np_array = await self.draw.draw_virtual_walls(
+                        img_np_array, virtual_walls, color_no_go
+                    )
                 if go_to:
                     img_np_array = self.draw.go_to_flag(
                         img_np_array,

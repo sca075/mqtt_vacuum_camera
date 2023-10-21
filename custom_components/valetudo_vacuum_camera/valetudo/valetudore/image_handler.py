@@ -9,7 +9,6 @@ from __future__ import annotations
 import logging
 import numpy as np
 from PIL import Image
-# from custom_components.valetudo_vacuum_camera.valetudo.valetudore.rrparser import RRMapParser
 # from custom_components.valetudo_vacuum_camera.utils.colors_man import color_grey
 from custom_components.valetudo_vacuum_camera.types import Color, Colors
 from custom_components.valetudo_vacuum_camera.utils.img_data import ImageData
@@ -37,7 +36,6 @@ class ReImageHandler(object):
         self.room_propriety = None
         self.data = ImageData
         self.draw = Drawable
-        # self.rrm = RRMapParser()
 
     async def crop_and_trim_array(
             self,
@@ -281,7 +279,6 @@ class ReImageHandler(object):
                 )
                 # self.img_base_layer = img_np_array
                 self.frame_number += 1
-                # img_np_array = self.img_base_layer
                 # If there is a zone clean we draw it now.
                 _LOGGER.debug(file_name + ": Frame number %s", self.frame_number)
                 self.frame_number += 1

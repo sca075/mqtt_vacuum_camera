@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import json
 
 from homeassistant.core import HomeAssistant
 from homeassistant.components import mqtt
@@ -76,3 +77,27 @@ def get_vacuum_unique_id_from_mqtt_topic(vacuum_mqtt_topic: str) -> str:
     Returns the unique_id computed from the mqtt_topic for the vacuum.
     """
     return vacuum_mqtt_topic.split("/")[1] + "_camera"
+
+
+def update_options(bk_options, new_options):
+    """
+    Keep track of the modified options.
+    Returns updated options after edit in Config_Flow.
+    """
+    current_options = json.loads(new_options)
+    backup_options = json.loads(bk_options)
+    keys_to_update = ['rotate_image', 'crop_image', 'trim_top', 'trim_bottom', 'trim_left', 'trim_right',
+                      'show_vac_status', 'enable_www_snapshots', 'color_charger', 'color_move', 'color_wall',
+                      'color_robot', 'color_go_to', 'color_no_go', 'color_zone_clean', 'color_background',
+                      'color_text']
+    for key in keys_to_update:
+        if key in current_options:
+            backup_options[key] = current_options[key]
+    alpha_keys = [f'alpha_{obj}' for obj in keys_to_update]
+    for alpha_key in alpha_keys:
+        if alpha_key in current_options:
+            backup_options[alpha_key] = current_options[alpha_key]
+
+    updated_bk_options = json.dumps(backup_options)
+
+    return updated_bk_options
