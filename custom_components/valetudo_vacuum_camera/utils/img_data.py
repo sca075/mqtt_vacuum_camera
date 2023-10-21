@@ -101,6 +101,25 @@ class ImageData:
                 ImageData.find_zone_entities(item, entity_dict)
         return entity_dict
 
+    @staticmethod
+    def find_virtual_walls(json_obj):
+        virtual_walls = []
+
+        def find_virtual_walls_recursive(obj):
+            if isinstance(obj, dict):
+                if obj.get("__class") == "LineMapEntity":
+                    entity_type = obj.get("type")
+                    if entity_type == "virtual_wall":
+                        virtual_walls.append(obj["points"])
+                for value in obj.values():
+                    find_virtual_walls_recursive(value)
+            elif isinstance(obj, list):
+                for item in obj:
+                    find_virtual_walls_recursive(item)
+
+        find_virtual_walls_recursive(json_obj)
+        return virtual_walls
+
     """ 
     Added below in order to support Valetudo Re.
     This functions read directly the data from the json created

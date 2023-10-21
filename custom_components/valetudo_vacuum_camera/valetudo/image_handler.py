@@ -25,7 +25,6 @@ class MapImageHandler(object):
         self.crop_area = None
         self.crop_img_size = None
         self.img_base_layer = None
-
         self.frame_number = 0
         self.path_pixels = None
         self.robot_pos = None
@@ -37,7 +36,6 @@ class MapImageHandler(object):
         self.room_propriety = None
         self.data = ImageData
         self.draw = Drawable
-        # self.img_base_robot = Drawable.robot(np.zeros((52, 52, 4)),25,25,0,(255,255,255,255))
 
     async def crop_and_trim_array(
             self,
@@ -216,7 +214,6 @@ class MapImageHandler(object):
                 predicted_path = None
                 path_pixels = None
                 predicted_pat2 = None
-                path_pixel2 = None
 
                 try:
                     paths_data = self.data.find_paths_entities(m_json, None)
@@ -235,10 +232,18 @@ class MapImageHandler(object):
                 try:
                     zone_clean = self.data.find_zone_entities(m_json, None)
                 except (ValueError, KeyError) as e:
-                    _LOGGER.info(file_name + ": No zone clean: %s", str(e))
+                    _LOGGER.info(file_name + ": No zones: %s", str(e))
                     zone_clean = None
                 else:
-                    _LOGGER.debug(file_name + ": Got zone clean: %s", zone_clean)
+                    _LOGGER.debug(file_name + ": Got zones: %s", zone_clean)
+
+                try:
+                    virtual_walls = self.data.find_virtual_walls(m_json)
+                except (ValueError, KeyError) as e:
+                    _LOGGER.info(file_name + ": No virtual walls: %s", str(e))
+                    virtual_walls = None
+                else:
+                    _LOGGER.debug(file_name + ": Got virtual walls: %s", virtual_walls)
 
                 try:
                     entity_dict = self.data.find_points_entities(m_json, None)
@@ -266,6 +271,7 @@ class MapImageHandler(object):
 
                 charger_pos = None
                 if entity_dict:
+                    _LOGGER.debug(entity_dict)
                     try:
                         charger_pos = entity_dict.get("charger_location")
                     except KeyError:
@@ -319,10 +325,15 @@ class MapImageHandler(object):
                                     img_np_array = self.draw.zones(
                                         img_np_array, no_go_zones, color_no_go
                                     )
+
                             # Drawing walls.
                             img_np_array = await self.draw.from_json_to_image(
                                 img_np_array, pixels, pixel_size, color_wall
                             )
+                            if virtual_walls:
+                                img_np_array = self.draw.draw_virtual_walls(
+                                    img_np_array, virtual_walls, color_no_go
+                                )
                 _LOGGER.info(file_name + ": Completed base Layers")
 
                 img_np_array = self.draw.battery_charger(
@@ -350,13 +361,9 @@ class MapImageHandler(object):
                     )
                 # draw path
                 if path_pixels:
-                    all_path_points = []  # Initialize an empty list to collect all path points
-
                     for path in path_pixels:
                         # Get the points from the current path and extend the all_path_points list
                         points = path.get("points", [])
-                        #all_path_points.extend(points)
-
                         sublists = self.data.sublist(points, 2)
                         path_pixel2 = self.data.sublist_join(sublists, 2)
                         img_np_array = self.draw.lines(

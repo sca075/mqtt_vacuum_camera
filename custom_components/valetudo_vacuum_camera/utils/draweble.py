@@ -197,6 +197,15 @@ class Drawable:
         return layer
 
     @staticmethod
+    def draw_virtual_walls(layer, virtual_walls, color):
+        for wall in virtual_walls:
+            for i in range(0, len(wall), 4):
+                x1, y1, x2, y2 = wall[i:i + 4]
+                # Draw the virtual wall as a line with a fixed width of 6 pixels
+                Drawable._line(layer, x1, y1, x2, y2, color, width=6)
+        return layer
+
+    @staticmethod
     def lines(arr, coords, width, color):
         """
         it joins the coordinates creating a continues line.
