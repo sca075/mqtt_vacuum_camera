@@ -192,7 +192,7 @@
           "color_room_13": "[245, 176, 65]",
           "color_room_14": "[82, 190, 128]",
           "color_room_15": "[72, 201, 176]",
-          "add_room_alpha": "Configure Transparency:",
+          "add_room_alpha": "Configure Transparency:"
         },
         "data_description": {
           "color_room_0": "Room 1, floor color.",

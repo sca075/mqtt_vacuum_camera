@@ -211,7 +211,7 @@
           "color_room_13": "Room 14",
           "color_room_14": "Room 15",
           "color_room_15": "Room 16",
-          "add_room_alpha": "Configure Transparency level:"
+          "add_room_alpha": "Configure Transparency:"
         },
         "description": "Camera Options. Part 3/3",
         "title": "Rooms Colours"
