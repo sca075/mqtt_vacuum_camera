@@ -8,10 +8,12 @@
 ![img_1](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/78752c27-1754-4d1f-9109-3003b36a1900)
 
 **About:**
-Extract the maps for rooted Vacuum Cleaners with Hypfer Valetudo Firmware to Home Assistant via MQTT, [easy setup](./docs/install.md) thanks to [HACS](https://hacs.xyz/)  and guided configuration via Home Assistant GUI.
+Extract the maps for rooted Vacuum Cleaners with Hypfer Valetudo Firmware connected to Home Assistant via MQTT, [easy setup](./docs/install.md) thanks to [HACS](https://hacs.xyz/)  and guided Home Assistant GUI configuration.
 
 **What it is:**
-Recently designed successor of ICantBelieveItsNotValetudo is [ValetudoPNG](https://github.com/erkexzcx/valetudopng) that can be used as alternative, althought we wanted to simplify the setup of a camera that decode the vacuum maps and render it to Home Assistant, therefore, when you want also to control your vacuum you will need to also install the:
+Recently designed successor of ICantBelieveItsNotValetudo is [ValetudoPNG](https://github.com/erkexzcx/valetudopng) that can be used as alternative. 
+This custom component anyhow is simple to set-up, decode and render the vacuum maps to Home Assistant in few clicks. 
+When you want also to control your vacuum you will need to also install the:
 [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card) from HACS as well.
 
 Configuration of the card (thanks to [@PiotrMachowski](https://github.com/PiotrMachowski)) once the camera is installed requires:
@@ -37,14 +39,13 @@ internal_variables:
   ```
 
 **Known Supported Vacuums:**
-- Dreame D9
-- Dreame Z10 Pro
+- Dreame D9 / Z10 Pro
 - Mi Robot Vacuum-Mop P
-- Roborock.S5
-- Roborock.S50
-- Roborock.V1
+- Roborock.S5 / S50 / S55 (Gen.2)
+- Roborock.V1 (Gen.1)
 - Xiaomi C1
-- Give us feedback please ;) (waiting for your vacuum to be add to the list as in general it works with all flashed Valetudo vacuums)
+- In general, **it works with all flashed Valetudo Hypfer vacuums** . Please let us know if your vacuum can be added to the list.
+If there is any problem with rendering, do not hesitate to let us know, we will get it working as faster we can.
 
 ![Screenshot 2023-09-12 at 22 53 29](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/4f5981e3-39f2-449a-8a43-39870631e9a1)
 

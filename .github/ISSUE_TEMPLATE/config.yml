@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Ask a question/open a discussion
+    url: https://github.com/sca075/valetudo_vacuum_camera/discussions
+    about: To ask a question or open a discussion please use a dedicated section.
+  - name: Report a bug in the map card (Lovelace Vacuum Map card)
+    url: https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card/issues
+    about: This is the issue tracker for the Valetudo Camera. Please report issues with the card in its repository.
