@@ -7,12 +7,14 @@
 
 ![img_1](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/78752c27-1754-4d1f-9109-3003b36a1900)
 
+#### [Please take few minutes and give us feedback by clicking here](https://docs.google.com/forms/d/e/1FAIpQLSfdWAIEmwDAAE7b6rHatnyGFNw_f0Osnai4ouT2cZNnwP26KQ/viewform)
+
 **About:**
 Extract the maps for rooted Vacuum Cleaners with Hypfer Valetudo Firmware connected to Home Assistant via MQTT, [easy setup](./docs/install.md) thanks to [HACS](https://hacs.xyz/)  and guided Home Assistant GUI configuration.
 
 **What it is:**
 Recently designed successor of ICantBelieveItsNotValetudo is [ValetudoPNG](https://github.com/erkexzcx/valetudopng) that can be used as alternative. 
-This custom component anyhow is simple to set-up, decode and render the vacuum maps to Home Assistant in few clicks. 
+This custom component anyhow is simple to install and setup, decode and render the vacuum maps to Home Assistant in few clicks. 
 When you want also to control your vacuum you will need to also install the:
 [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card) from HACS as well.
 
@@ -24,7 +26,7 @@ calibration_source:
   camera: true 
 ```
 
-The below pass automatically the data to use the card please do not forget to use the **internal_variables** *your topic can be retrived also from the camera attribe vacuum_topic.* 
+The below pass automatically the data to use the card please do not forget to use the **internal_variables** *your topic can be obtained also from the camera attributes vacuum_topic.* 
 
 ```
 type: custom:xiaomi-vacuum-map-card
@@ -44,7 +46,7 @@ internal_variables:
 - Roborock.S5 / S50 / S55 (Gen.2)
 - Roborock.V1 (Gen.1)
 - Xiaomi C1
-- In general, **it works with all flashed Valetudo Hypfer vacuums** . Please let us know if your vacuum can be added to the list.
+- In general, **it works with all flashed Valetudo Hypfer vacuums** . Please [let us know](https://docs.google.com/forms/d/e/1FAIpQLSfdWAIEmwDAAE7b6rHatnyGFNw_f0Osnai4ouT2cZNnwP26KQ/viewform) if your vacuum can be added to the list.
 If there is any problem with rendering, do not hesitate to let us know, we will get it working as faster we can.
 
 ![Screenshot 2023-09-12 at 22 53 29](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/4f5981e3-39f2-449a-8a43-39870631e9a1)
@@ -78,7 +80,8 @@ Via [HACS](https://hacs.xyz//setup/download) please follow the instructions in [
 
 ## Notes:
 - This integration is developed and tested using a PI4 with Home Assistant OS fully updated [to the last version](https://www.home-assistant.io/faq/release/), this allows us to confirm that the component is working properly with Home Assistant. Tested also on Docker Supervised "production" enviroment (fully setup home installation).
-   
+
+#### [Please take few minutes and give us feedback by clicking here](https://docs.google.com/forms/d/e/1FAIpQLSfdWAIEmwDAAE7b6rHatnyGFNw_f0Osnai4ouT2cZNnwP26KQ/viewform)
 
 ### Tanks to:
 - [@PiotrMachowski](https://github.com/PiotrMachowski) inspiring this integration and his amazing work.
