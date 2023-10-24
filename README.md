@@ -2,12 +2,11 @@
 [latest_release]: https://github.com/sca075/valetudo_vacuum_camera/releases/latest
 
 # Valetudo Vacuum Camera
-### Current Release: [![GitHub Latest Release][releases_shield]][latest_release]
 
 
 ![img_1](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/78752c27-1754-4d1f-9109-3003b36a1900)
 
-
+### Current Release: [![GitHub Latest Release][releases_shield]][latest_release]
 ## Valetudo Vacuums maps in Home Assistant was never so easy.
 
 **About:**
@@ -30,7 +29,7 @@ calibration_source:
 The below pass automatically the data to use the card please **do not forget to use the internal_variables** .
 *Your topic can be obtained also from the camera attributes vacuum_topic.* 
 
-
+![Screenshot 2023-10-24 at 18 25 59](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/080b7bcb-19f1-4415-870f-2285329e7ce9)
 
 
 ```
