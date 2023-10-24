@@ -7,6 +7,7 @@
 ![img_1](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/78752c27-1754-4d1f-9109-3003b36a1900)
 
 ### Current Release: [![GitHub Latest Release][releases_shield]][latest_release]
+
 ## Valetudo Vacuums maps in Home Assistant was never so easy.
 
 **About:**
