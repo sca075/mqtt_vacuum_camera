@@ -2,12 +2,13 @@
 [latest_release]: https://github.com/sca075/valetudo_vacuum_camera/releases/latest
 
 # Valetudo Vacuum Camera
-## Integration for Valetudo Vacuums to Home Assistant
+### Current Release: [![GitHub Latest Release][releases_shield]][latest_release]
 
 
 ![img_1](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/78752c27-1754-4d1f-9109-3003b36a1900)
 
-#### [Please take few minutes and give us feedback by clicking here](https://docs.google.com/forms/d/e/1FAIpQLSfdWAIEmwDAAE7b6rHatnyGFNw_f0Osnai4ouT2cZNnwP26KQ/viewform)
+
+## Valetudo Vacuums maps in Home Assistant was never so easy.
 
 **About:**
 Extract the maps for rooted Vacuum Cleaners with Hypfer Valetudo Firmware connected to Home Assistant via MQTT, [easy setup](./docs/install.md) thanks to [HACS](https://hacs.xyz/)  and guided Home Assistant GUI configuration.
@@ -26,7 +27,11 @@ calibration_source:
   camera: true 
 ```
 
-The below pass automatically the data to use the card please do not forget to use the **internal_variables** *your topic can be obtained also from the camera attributes vacuum_topic.* 
+The below pass automatically the data to use the card please **do not forget to use the internal_variables** .
+*Your topic can be obtained also from the camera attributes vacuum_topic.* 
+
+
+
 
 ```
 type: custom:xiaomi-vacuum-map-card
@@ -40,48 +45,48 @@ internal_variables:
   topic: valetudo/your_topic  
   ```
 
-**Known Supported Vacuums:**
+
+### Known Supported Vacuums:
+***<details><summary> We here list, thanks to our users, the known working vacuums. </summary>***
 - Dreame D9 / Z10 Pro
 - Mi Robot Vacuum-Mop P
 - Roborock.S5 / S50 / S55 (Gen.2)
 - Roborock.V1 (Gen.1)
 - Xiaomi C1
-- In general, **it works with all flashed Valetudo Hypfer vacuums** . Please [let us know](https://docs.google.com/forms/d/e/1FAIpQLSfdWAIEmwDAAE7b6rHatnyGFNw_f0Osnai4ouT2cZNnwP26KQ/viewform) if your vacuum can be added to the list.
-If there is any problem with rendering, do not hesitate to let us know, we will get it working as faster we can.
+- In general, **it works with all flashed Valetudo Hypfer vacuums** . Please [let us know](https://docs.google.com/forms/d/e/1FAIpQLSfdWAIEmwDAAE7b6rHatnyGFNw_f0Osnai4ouT2cZNnwP26KQ/viewform) if your vacuum can be added to the list.</details>
 
 ![Screenshot 2023-09-12 at 22 53 29](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/4f5981e3-39f2-449a-8a43-39870631e9a1)
 
 
-
-### Current Release: [![GitHub Latest Release][releases_shield]][latest_release]
-
 ### How to install:
 Via [HACS](https://hacs.xyz//setup/download) please follow the instructions in [here](./docs/install.md). This detailed guide will help to set up the camera.
 
-## Features:
+### Features: 
+<details><summary> We here List what this camera offers as futures. </summary>
+
 1) **Automatically Generate the calibration points for the lovelace-xiaomi-vacuum-map-card** to ensure full compatibility to this user-friendly card.
 2) **Automatically Generate rooms based configuration when vacuum support this functionality**, this will allow you to configure the rooms quickly on the [lovelace-xiaomi-vacuum-map-card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
 3) **The camera take automatically [snapshots](./docs/snapshots.md) (when the vacuum idle/ error / docked)**
 4) **Change the image options** directly form the Home Assistant integration UI with a simple click on the integration configuration.
- - **Image Rotation**: 0, 90, 180, 270 (default is 0).
- - [*Cropping function*](./docs/croping_trimming.md) (default is 50% of the standard Valetudo size 5210x5210 = 2605x2605).
- - Base colors are the **colors for robot, charger, walls, background, zones etc**.
- - **Rooms colors**, Room 1 is acrually also the Floor color (for vacuum that do not supports rooms).
- - From v1.3.2 is possible to [**Trim the images**](./docs/croping_trimming.md) as desidered.
- - It is possible to **display on the image the vacuum staus**.
- - We also added the **[transparency level custom setup](./docs/transparency.md) for all elements and rooms** from v1.4.2.  
+   - **Image Rotation**: 0, 90, 180, 270 (default is 0).
+   - [*Cropping function*](./docs/croping_trimming.md) (default is 50% of the standard Valetudo size 5210x5210 = 2605x2605).
+   - Base colors are the **colors for robot, charger, walls, background, zones etc**.
+   - **Rooms colors**, Room 1 is acrually also the Floor color (for vacuum that do not supports rooms).
+   - From v1.3.2 is possible to [**Trim the images**](./docs/croping_trimming.md) as desidered.
+   - It is possible to **display on the image the vacuum staus**.
+   - We also added the **[transparency level custom setup](./docs/transparency.md) for all elements and rooms** from v1.4.2.  
 5) This integration make possible to **integrate multiple vacuums** as per each camera will be named with the vacuum name (example: vacuum.robot1 = camera.robot1.. vacuum.robotx = camera.robotx)
-6) The camera as all cameras in HA **supports the ON/OFF service**, it is possible to *suspend and resume the camera streem as desired*.
+6) The camera as all cameras in HA **supports the ON/OFF service**, it is possible to *suspend and resume the camera streem as desired*. 
+</details>
 
-## In plan:
-- Improving the rooms zones export to the card (at current it requires manual adjustments).
+## In implementation plan:
+- Reconfigure the camera more easily, and pre-crop and trim automatically the images.
+- Add the SVG export function with some options to split the images.
 - Add support for Valetudo RE firmware as well. So doing, we wish to expand the easy way to get integrated in home assistant all Valetudo Vacuums ;)
-
 
 ## Notes:
 - This integration is developed and tested using a PI4 with Home Assistant OS fully updated [to the last version](https://www.home-assistant.io/faq/release/), this allows us to confirm that the component is working properly with Home Assistant. Tested also on Docker Supervised "production" enviroment (fully setup home installation).
-
-#### [Please take few minutes and give us feedback by clicking here](https://docs.google.com/forms/d/e/1FAIpQLSfdWAIEmwDAAE7b6rHatnyGFNw_f0Osnai4ouT2cZNnwP26KQ/viewform)
+- #### [By clicking here you can give us feedback, this would be really nice from you (survey powered by Google) :)](https://docs.google.com/forms/d/e/1FAIpQLSfdWAIEmwDAAE7b6rHatnyGFNw_f0Osnai4ouT2cZNnwP26KQ/viewform)
 
 ### Tanks to:
 - [@PiotrMachowski](https://github.com/PiotrMachowski) inspiring this integration and his amazing work.
