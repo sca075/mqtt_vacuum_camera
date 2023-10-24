@@ -2,7 +2,6 @@
   <component name="FileTypeManager" version="18">
     <extensionMap>
       <mapping pattern=".coverage" type="PLAIN_TEXT" />
-      <mapping ext="raw" type="PLAIN_TEXT" />
     </extensionMap>
   </component>
 </application>
