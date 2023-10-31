@@ -294,7 +294,7 @@ class MapImageHandler(object):
                 layers = self.data.find_layers(m_json["layers"])
                 _LOGGER.debug(file_name + ": Layers to draw: %s", layers.keys())
                 _LOGGER.info(file_name + ": Empty image with background color")
-                img_np_array = self.draw.create_empty_image(size_x, size_y, color_background)
+                img_np_array = await self.draw.create_empty_image(size_x, size_y, color_background)
                 _LOGGER.info(file_name + ": Overlapping Layers")
                 for layer_type, compressed_pixels_list in layers.items():
                     room_id = 0
@@ -316,7 +316,7 @@ class MapImageHandler(object):
                             )
                 _LOGGER.info(file_name + ": Completed base Layers")
                 if charger_pos:
-                    img_np_array = self.draw.battery_charger(
+                    img_np_array = await self.draw.battery_charger(
                         img_np_array, charger_pos[0], charger_pos[1], color_charger
                     )
                 # self.img_base_layer = img_np_array
@@ -352,7 +352,7 @@ class MapImageHandler(object):
                         img_np_array, virtual_walls, color_no_go
                     )
                 if go_to:
-                    img_np_array = self.draw.go_to_flag(
+                    img_np_array = await self.draw.go_to_flag(
                         img_np_array,
                         (go_to[0]["points"][0], go_to[0]["points"][1]),
                         self.img_rotate,
@@ -375,7 +375,7 @@ class MapImageHandler(object):
                 if robot_state == "docked":
                     robot_position_angle = robot_position_angle - 180
                 if robot_pos:
-                    img_np_array = self.draw.robot(
+                    img_np_array = await self.draw.robot(
                         img_np_array,
                         robot_position[0],
                         robot_position[1],
@@ -428,6 +428,7 @@ class MapImageHandler(object):
         self.img_rotate = rotation_angle
         _LOGGER.info("Getting Calibrations points")
         # Calculate the calibration points in the vacuum coordinate system
+
         vacuum_points = [
             {"x": self.crop_area[0], "y": self.crop_area[1]},  # Top-left corner 0
             {"x": self.crop_area[2], "y": self.crop_area[1]},  # Top-right corner 1

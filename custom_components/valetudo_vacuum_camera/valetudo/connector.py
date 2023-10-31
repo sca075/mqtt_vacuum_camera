@@ -1,13 +1,14 @@
 """
-Version 1.5.0 Beta 1
+Version 1.4.8
 - Removed the PNG decode, the json is extracted from map-data instead of map-data hass.
-- Valetudo Re vacuum payload is going to be saved on the WWW folder file "mqtt_valetudo_re.raw".
 - Tested no influence on the camera performance.
+- Added gzip library used in Valetudo RE data compression.
 """
 import logging
 import os
 import json
 import zlib
+import gzip
 from homeassistant.core import callback
 from homeassistant.components import mqtt
 
@@ -40,24 +41,30 @@ class ValetudoConnector:
                 _LOGGER.debug("Processing " + self._mqtt_topic + " data from MQTT")
                 json_data = zlib.decompress(self._img_payload).decode("utf-8")
                 result = json.loads(json_data)
-                _LOGGER.debug(self._mqtt_topic + ": Extracting JSON Complete")
+                _LOGGER.info(self._mqtt_topic + ": Extracting JSON Complete")
                 self._data_in = False
                 self._is_rrm = False
                 return result, self._is_rrm
             else:
-                # _LOGGER.debug("No data from " + self._mqtt_topic + " or vacuum docked")
+                _LOGGER.info("No data from " + self._mqtt_topic + " or vacuum docked")
                 self._data_in = False
                 self._is_rrm = False
                 return None, self._is_rrm
         if self._rrm_payload:
             if process:
-                _LOGGER.debug("Processing RRM" + self._mqtt_topic + " data from MQTT")
-                # parse the topic
-                self._rrm_json = self._rrm_data.parse_data(payload=self._rrm_payload, pixels=True)
-            self._is_rrm = True
-            self._data_in = False
-            _LOGGER.debug("got RRM payload: %s", self._is_rrm)
-            return self._rrm_json, self._is_rrm
+                _LOGGER.debug("Processing RRM " + self._mqtt_topic + " data from MQTT")
+                # parse the RRM topic
+                payload_decompressed = gzip.decompress(self._rrm_payload)  # fix issue with the RE payload.
+                self._rrm_json = self._rrm_data.parse_data(payload=payload_decompressed, pixels=True)
+                self._is_rrm = True
+                self._data_in = False
+                _LOGGER.info("got RRM payload: %s", self._is_rrm)
+                return self._rrm_json, self._is_rrm
+            else:
+                _LOGGER.info("No data from " + self._mqtt_topic + " or vacuum docked")
+                self._data_in = False
+                self._is_rrm = False
+                return None, self._is_rrm
 
     async def get_vacuum_status(self):
         return self._mqtt_vac_stat
@@ -91,18 +98,18 @@ class ValetudoConnector:
     async def async_message_received(self, msg):
         self._rcv_topic = msg.topic
         if self._rcv_topic == (self._mqtt_topic + "/map_data"):
-            _LOGGER.debug("Received RRM " + self._mqtt_topic + " image data from MQTT")
-            self._rrm_payload = msg.payload  # Image data update the received payload
+            _LOGGER.info("Received RRM " + self._mqtt_topic + " image data from MQTT")
+            self._rrm_payload = msg.payload  # RRM Image data update the received payload
             self._data_in = True
         if self._rcv_topic == self._mqtt_topic + "/MapData/map-data":
-            _LOGGER.debug("Received " + self._mqtt_topic + " image data from MQTT")
+            _LOGGER.info("Received " + self._mqtt_topic + " image data from MQTT")
             self._img_payload = msg.payload
             self._data_in = True
         elif self._rcv_topic == (self._mqtt_topic + "/StatusStateAttribute/status"):
             self._payload = msg.payload
             if self._payload:
                 self._mqtt_vac_stat = bytes.decode(self._payload, "utf-8")
-                _LOGGER.debug(
+                _LOGGER.info(
                     self._mqtt_topic
                     + ": Received vacuum "
                     + self._mqtt_vac_stat
@@ -114,7 +121,7 @@ class ValetudoConnector:
             if self._payload:
                 tmp_data = json.loads(self._payload)
                 self._mqtt_vac_stat = tmp_data.get("state", None)
-                _LOGGER.debug(
+                _LOGGER.info(
                     self._mqtt_topic
                     + ": Received vacuum "
                     + self._mqtt_vac_stat
@@ -126,7 +133,7 @@ class ValetudoConnector:
         ):
             self._payload = msg.payload
             self._mqtt_vac_err = bytes.decode(msg.payload, "utf-8")
-            _LOGGER.debug(
+            _LOGGER.info(
                 self._mqtt_topic
                 + ": Received vacuum "
                 + self._mqtt_vac_err

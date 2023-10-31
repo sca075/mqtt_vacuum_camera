@@ -81,8 +81,7 @@ class RRMapParser:
                     segment_type = struct.unpack("<B", buf[0x18 +
                                                            g3offset +
                                                            offset +
-                                                           i:0x19 +
-                                                           g3offset +
+                                                           i:0x19 + g3offset +
                                                            offset + i])[0] & 0x07
                     if segment_type == 0:
                         continue
@@ -169,7 +168,6 @@ class RRMapParser:
     @callback
     def PARSEDATA(self, mapBuf, pixels=False):
 
-        #rrm_header = await self.PARSE(mapBuf)
         if not self.PARSE(mapBuf)["map_index"]:
             return None
         else:

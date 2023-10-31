@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging
 import numpy as np
 from PIL import Image
-# from custom_components.valetudo_vacuum_camera.utils.colors_man import color_grey
+from custom_components.valetudo_vacuum_camera.utils.colors_man import color_grey
 from custom_components.valetudo_vacuum_camera.types import Color, Colors
 from custom_components.valetudo_vacuum_camera.utils.img_data import ImageData
 from custom_components.valetudo_vacuum_camera.utils.draweble import Drawable
@@ -187,7 +187,7 @@ class ReImageHandler(object):
 
         color_wall: Color = user_colors[0]
         # color_no_go: Color = user_colors[6]
-        # color_go_to: Color = user_colors[7]
+        color_go_to: Color = user_colors[7]
         color_robot: Color = user_colors[2]
         color_charger: Color = user_colors[5]
         color_move: Color = user_colors[4]
@@ -216,23 +216,29 @@ class ReImageHandler(object):
                 floor_data = self.data.get_rrm_floor(m_json)
                 walls_data = self.data.get_rrm_walls(m_json)
                 robot_pos = self.data.get_rrm_robot_position(m_json)
+                go_to = self.data.get_rrm_goto_target(m_json)
                 charger_pos = self.data.rrm_coordinates_to_valetudo(self.data.get_rrm_charger_position(m_json))
-                robot_position = None
-                robot_position_angle = None
 
                 path_pixel = self.data.get_rrm_path(m_json)
-                _LOGGER.debug(path_pixel)
-                path_pixel2 = self.data.sublist_join(self.data.rrm_valetudo_path_array(path_pixel["points"]), 2)
-                _LOGGER.debug(path_pixel2)
+                path_pixel2 = self.data.sublist_join(
+                    self.data.rrm_valetudo_path_array(path_pixel["points"]), 2)
+
+                robot_position = None
+                robot_position_angle = None
                 robot_pos = self.data.rrm_coordinates_to_valetudo(robot_pos)
                 if robot_pos:
                     robot_position = robot_pos
                     angle = self.data.get_rrm_robot_angle(m_json)
-                    if angle[1] == 0:
-                        robot_position_angle = (int(path_pixel['current_angle']) + 450) % 360
+                    if angle[0] == 0:
+                        robot_position_angle = self.data.convert_negative_angle(
+                            path_pixel['current_angle']
+                        )
+                        # ((int(path_pixel['current_angle']) + 450) % 360)
                     else:
-                        robot_position_angle = angle
+                        robot_position_angle = angle[0]
+                        # ((int(angle[1]) + 450) % 360)
                     _LOGGER.debug("robot position: %s", robot_pos)
+                    _LOGGER.debug("robot angle: %s", robot_position_angle)
                     self.robot_pos = {
                         "x": robot_position[0],
                         "y": robot_position[1],
@@ -250,7 +256,7 @@ class ReImageHandler(object):
                 # layers = self.data.find_layers(m_json["layers"])
                 # _LOGGER.debug(file_name + ": Layers to draw: %s", layers.keys())
                 _LOGGER.info(file_name + ": Empty image with background color")
-                img_np_array = self.draw.create_empty_image(5120, 5120, color_background)
+                img_np_array = await self.draw.create_empty_image(5120, 5120, color_background)
                 _LOGGER.info(file_name + ": Overlapping Layers")
                 pixels = self.data.from_rrm_to_compressed_pixels(floor_data,
                                                                  image_width=size_x,
@@ -260,23 +266,26 @@ class ReImageHandler(object):
 
                 room_id = 0
                 room_color = rooms_colors[room_id]
-                img_np_array = await self.draw.from_json_to_image(
-                    img_np_array, pixels, pixel_size, room_color
-                )
+                if pixels:
+                    img_np_array = await self.draw.from_json_to_image(
+                        img_np_array, pixels, pixel_size, room_color
+                    )
+                    _LOGGER.info(file_name + ": Completed floor Layers")
                 # Drawing walls.
-                pixels = self.data.from_rrm_to_compressed_pixels(walls_data,
-                                                                 image_width=size_x,
-                                                                 image_height=size_y,
-                                                                 image_left=pos_left,
-                                                                 image_top=pos_top)
-                img_np_array = await self.draw.from_json_to_image(
-                    img_np_array, pixels, pixel_size, color_wall
-                )
-                _LOGGER.info(file_name + ": Completed base Layers")
-
-                img_np_array = self.draw.battery_charger(
-                    img_np_array, charger_pos[0], charger_pos[1], color_charger
-                )
+                walls = self.data.from_rrm_to_compressed_pixels(walls_data,
+                                                                image_width=size_x,
+                                                                image_height=size_y,
+                                                                image_left=pos_left,
+                                                                image_top=pos_top)
+                if walls:
+                    img_np_array = await self.draw.from_json_to_image(
+                        img_np_array, walls, pixel_size, color_wall
+                    )
+                    _LOGGER.info(file_name + ": Completed base Layers")
+                if charger_pos:
+                    img_np_array = await self.draw.battery_charger(
+                        img_np_array, charger_pos[0], charger_pos[1], color_charger
+                    )
                 # self.img_base_layer = img_np_array
                 self.frame_number += 1
                 # If there is a zone clean we draw it now.
@@ -285,20 +294,37 @@ class ReImageHandler(object):
                 if self.frame_number > 5:
                     self.frame_number = 0
                 # draw path
-                if path_pixel:
-                    img_np_array = self.draw.lines(
+                if path_pixel2:
+                    img_np_array = await self.draw.lines(
                         img_np_array, path_pixel2, 5, color_move
                     )
+
+                if go_to:
+                    img_np_array = await self.draw.go_to_flag(
+                        img_np_array,
+                        (go_to[0], go_to[1]),
+                        self.img_rotate,
+                        color_go_to,
+                    )
+                    predicted_path = self.data.get_rrm_goto_predicted_path(m_json)
+                    img_np_array = await self.draw.lines(
+                        img_np_array,
+                        predicted_path,
+                        3,
+                        color_grey
+                    )
+
                 if robot_state == "docked":
-                    robot_position_angle = robot_position_angle - 180
-                img_np_array = self.draw.robot(
-                    img_np_array,
-                    robot_position[0],
-                    robot_position[1],
-                    robot_position_angle,
-                    color_robot,
-                    file_name,
-                )
+                    robot_position_angle = robot_position_angle - 180  # rotation offset
+                if robot_position and robot_position_angle:
+                    img_np_array = await self.draw.robot(
+                        img_np_array,
+                        robot_position[0],
+                        robot_position[1],
+                        robot_position_angle,
+                        color_robot,
+                        file_name,
+                    )
                 _LOGGER.debug(file_name + " Image Cropping:" + str(crop) + " Image Rotate:" + str(img_rotation))
                 img_np_array = await self.crop_and_trim_array(
                     img_np_array,
@@ -312,6 +338,7 @@ class ReImageHandler(object):
                 pil_img = Image.fromarray(img_np_array, mode="RGBA")
                 del img_np_array
                 return pil_img
+
         except Exception as e:
             _LOGGER.warning(file_name + ": Error in get_image_from_json: %s", str(e))
             return None
@@ -344,13 +371,15 @@ class ReImageHandler(object):
         self.img_rotate = rotation_angle
         _LOGGER.info("Getting Calibrations points %s", self.crop_area)
         # Calculate the calibration points in the vacuum coordinate system
+        # Valetudo Re version need corrections of the coordinates and are implemented with *10
+
         vacuum_points = [
-            {"x": self.crop_area[0], "y": self.crop_area[1]},  # Top-left corner 0
-            {"x": self.crop_area[2], "y": self.crop_area[1]},  # Top-right corner 1
-            {"x": self.crop_area[2], "y": self.crop_area[3]},  # Bottom-right corner 2
+            {"x": (self.crop_area[0]*10), "y": (self.crop_area[1]*10)},  # Top-left corner 0
+            {"x": (self.crop_area[2]*10), "y": (self.crop_area[1]*10)},  # Top-right corner 1
+            {"x": (self.crop_area[2]*10), "y": (self.crop_area[3]*10)},  # Bottom-right corner 2
             {
-                "x": self.crop_area[0],
-                "y": self.crop_area[3],
+                "x": (self.crop_area[0]*10),
+                "y": (self.crop_area[3]*10),
             },  # Bottom-left corner (optional)3
         ]
 

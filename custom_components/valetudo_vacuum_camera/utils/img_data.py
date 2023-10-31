@@ -18,14 +18,14 @@ class ImageData:
     @staticmethod
     def sublist(lst, n):
         """ Sub lists of specific n number of elements """
-        return [lst[i : i + n] for i in range(0, len(lst), n)]
+        return [lst[i: i + n] for i in range(0, len(lst), n)]
 
     @staticmethod
     def sublist_join(lst, n):
         """ Join the lists in a unique list of n elements """
         arr = np.array(lst)
         num_windows = len(lst) - n + 1
-        result = [arr[i : i + n].tolist() for i in range(num_windows)]
+        result = [arr[i: i + n].tolist() for i in range(num_windows)]
         return result
 
     """ 
@@ -191,7 +191,16 @@ class ImageData:
 
     @staticmethod
     def get_rrm_goto_predicted_path(json_data):
-        return json_data.get("goto_predicted_path", {})
+        try:
+            predicted_path = json_data.get("goto_predicted_path", {})
+            points = predicted_path['points']
+        except Exception:
+            return None
+        else:
+            predicted_path = ImageData.sublist_join(
+                ImageData.rrm_valetudo_path_array(points), 2)
+            _LOGGER.debug(predicted_path)
+        return predicted_path
 
     @staticmethod
     def get_rrm_charger_position(json_data):
@@ -203,12 +212,22 @@ class ImageData:
 
     @staticmethod
     def get_rrm_robot_angle(json_data):
-        angle = (json_data.get("robot_angle", 0) + 450) % 360
+        # todo robot angle require debug.
+        angle = (json_data.get("robot_angle", 0) + 90) % 360
         return angle, json_data.get("robot_angle", 0)
 
     @staticmethod
     def get_rrm_goto_target(json_data):
-        return json_data.get("goto_target", {})
+        try:
+            path_data = json_data.get("goto_target", {})
+        except Exception:
+            return None
+        else:
+            if path_data is not []:
+                path_data = ImageData.rrm_coordinates_to_valetudo(path_data)
+                return path_data
+            else:
+                return None
 
     @staticmethod
     def get_rrm_currently_cleaned_zones(json_data):
@@ -262,3 +281,11 @@ class ImageData:
             return segments
         else:
             return []
+
+    @staticmethod
+    def convert_negative_angle(angle):
+        angle = angle % 360  # Ensure angle is within 0-359
+        if angle < 0:
+            angle += 360  # Convert negative angle to positive
+        angle = angle + 180  # add offset
+        return angle

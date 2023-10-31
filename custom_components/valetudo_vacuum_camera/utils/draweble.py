@@ -17,7 +17,7 @@ _LOGGER = logging.getLogger(__name__)
 class Drawable:
 
     @staticmethod
-    def create_empty_image(width, height, background_color):
+    async def create_empty_image(width, height, background_color):
         # Create the empty background image numpy array
         image_array = np.full((height, width, 4), background_color, dtype=np.uint8)
         return image_array
@@ -36,7 +36,7 @@ class Drawable:
         return image_array
 
     @staticmethod
-    def battery_charger(layers, x, y, color):
+    async def battery_charger(layers, x, y, color):
         # Draw Battery Charger (it is filled a rectangle)
         charger_width = 10
         charger_height = 20
@@ -50,7 +50,7 @@ class Drawable:
         return layers
 
     @staticmethod
-    def go_to_flag(layer, center, rotation_angle, flag_color):
+    async def go_to_flag(layer, center, rotation_angle, flag_color):
         """
         It is draw a flag on centered at specified coordinates on
         the input layer. It uses the rotation angle of the image
@@ -339,7 +339,7 @@ class Drawable:
         return layers
 
     @staticmethod
-    def robot(layers, x, y, angle, fill, log=""):
+    async def robot(layers, x, y, angle, fill, log=""):
         """
         We Draw the robot with in a smaller array
         this helps numpy to work faster and at lower
