@@ -1,8 +1,8 @@
 """
-Image Handler Module.
+Image Handler Module dor Valetudo Re Vacuums.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Last Changed on Version: 1.5.0 beta 1
+Last Changed on Version: 1.4.8
 """
 from __future__ import annotations
 
@@ -186,13 +186,13 @@ class ReImageHandler(object):
     ):
 
         color_wall: Color = user_colors[0]
-        # color_no_go: Color = user_colors[6]
+        color_no_go: Color = user_colors[6]
         color_go_to: Color = user_colors[7]
         color_robot: Color = user_colors[2]
         color_charger: Color = user_colors[5]
         color_move: Color = user_colors[4]
         color_background: Color = user_colors[3]
-        # color_zone_clean: Color = user_colors[1]
+        color_zone_clean: Color = user_colors[1]
 
         try:
             if m_json is not None:
@@ -218,6 +218,9 @@ class ReImageHandler(object):
                 robot_pos = self.data.get_rrm_robot_position(m_json)
                 go_to = self.data.get_rrm_goto_target(m_json)
                 charger_pos = self.data.rrm_coordinates_to_valetudo(self.data.get_rrm_charger_position(m_json))
+                zone_clean = self.data.get_rrm_currently_cleaned_zones(m_json)
+                no_go_area = self.data.get_rrm_forbidden_zones(m_json)
+                virtual_walls = self.data.get_rrm_virtual_walls(m_json)
 
                 path_pixel = self.data.get_rrm_path(m_json)
                 path_pixel2 = self.data.sublist_join(
@@ -251,9 +254,8 @@ class ReImageHandler(object):
                         "y": charger_pos[1],
                     }
 
-                # go_to = entity_dict.get("go_to_target")
                 pixel_size = 5
-                # layers = self.data.find_layers(m_json["layers"])
+                # layers = self.data.find_layers(m_json["layers"]
                 # _LOGGER.debug(file_name + ": Layers to draw: %s", layers.keys())
                 _LOGGER.info(file_name + ": Empty image with background color")
                 img_np_array = await self.draw.create_empty_image(5120, 5120, color_background)
@@ -263,14 +265,25 @@ class ReImageHandler(object):
                                                                  image_height=size_y,
                                                                  image_top=pos_top,
                                                                  image_left=pos_left)
+                segments = self.data.get_rrm_segments(m_json, size_x, size_y, pos_top, pos_left)
+                if (segments and pixels) or pixels:
+                    room_id = 0
+                    room_color = rooms_colors[room_id]
+                    if pixels:
+                        img_np_array = await self.draw.from_json_to_image(
+                            img_np_array, pixels, pixel_size, room_color
+                        )
+                    if segments:
+                        for pixels in segments:
+                            room_id += 1
+                            if room_id > 15:
+                                room_id = 0
+                            room_color = rooms_colors[room_id]
+                            img_np_array = await self.draw.from_json_to_image(
+                                img_np_array, pixels, pixel_size, room_color
+                            )
 
-                room_id = 0
-                room_color = rooms_colors[room_id]
-                if pixels:
-                    img_np_array = await self.draw.from_json_to_image(
-                        img_np_array, pixels, pixel_size, room_color
-                    )
-                    _LOGGER.info(file_name + ": Completed floor Layers")
+                _LOGGER.info(file_name + ": Completed floor Layers")
                 # Drawing walls.
                 walls = self.data.from_rrm_to_compressed_pixels(walls_data,
                                                                 image_width=size_x,
@@ -293,6 +306,23 @@ class ReImageHandler(object):
                 self.frame_number += 1
                 if self.frame_number > 5:
                     self.frame_number = 0
+                # zone clean
+                if zone_clean:
+                    img_np_array = await self.draw.zones(
+                        img_np_array,
+                        zone_clean,
+                        color_zone_clean
+                    )
+                if no_go_area:
+                    img_np_array = await self.draw.zones(
+                        img_np_array,
+                        no_go_area,
+                        color_no_go
+                    )
+                if virtual_walls:
+                    img_np_array = await self.draw.draw_virtual_walls(
+                        img_np_array, virtual_walls, color_no_go
+                    )
                 # draw path
                 if path_pixel2:
                     img_np_array = await self.draw.lines(
@@ -307,12 +337,13 @@ class ReImageHandler(object):
                         color_go_to,
                     )
                     predicted_path = self.data.get_rrm_goto_predicted_path(m_json)
-                    img_np_array = await self.draw.lines(
-                        img_np_array,
-                        predicted_path,
-                        3,
-                        color_grey
-                    )
+                    if predicted_path:
+                        img_np_array = await self.draw.lines(
+                            img_np_array,
+                            predicted_path,
+                            3,
+                            color_grey
+                        )
 
                 if robot_state == "docked":
                     robot_position_angle = robot_position_angle - 180  # rotation offset

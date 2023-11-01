@@ -1,5 +1,5 @@
 """
-Version 1.5.0-beta.1
+Version 1.4.8
 - This parser is the python version of @rand256 valetudo_mapper.
 - This class is extracting the vacuum map_data.
 - Additional functions are to get in our image_handler the images datas.
@@ -71,7 +71,7 @@ class RRMapParser:
                 "pixels": {
                     "floor": [],
                     "walls": [],
-                    "segments": []
+                    "segments": {}
                 }
             }
             parameters["position"]["top"] = (RRMapParser.TOOLS["DIMENSION_PIXELS"] - parameters["position"]["top"]
@@ -81,8 +81,9 @@ class RRMapParser:
                     segment_type = struct.unpack("<B", buf[0x18 +
                                                            g3offset +
                                                            offset +
-                                                           i:0x19 + g3offset +
-                                                           offset + i])[0] & 0x07
+                                                           i:0x19 +
+                                                             g3offset +
+                                                             offset + i])[0] & 0x07
                     if segment_type == 0:
                         continue
                     elif segment_type == 1:
@@ -90,14 +91,16 @@ class RRMapParser:
                             parameters["pixels"]["walls"].append(i)
                     else:
                         if pixels:
-                            parameters["pixels"]["floor"].append(i)
-                        s = (struct.unpack("<B", buf[0x18 + g3offset + offset + i:0x19 + g3offset + offset + i])[0] &
-                             248) >> 3
-                        if s != 31:
-                            if s not in parameters["segments"]["id"]:
-                                parameters["segments"]["id"].append(s)
-                            if pixels:
-                                parameters["pixels"]["segments"].append(i | (s << 21))
+                            s = (struct.unpack("<B", buf[0x18 + g3offset + offset + i:0x19 + g3offset + offset + i])[0] &
+                                 248) >> 3
+                            if s == 0:
+                                parameters["pixels"]["floor"].append(i)
+                            if s != 0:
+                                if s not in parameters["segments"]["id"]:
+                                    parameters["segments"]["id"].append(s)
+                                    parameters["segments"]["pixels_seg_"+str(s)] = []
+                                if pixels:
+                                    parameters["segments"]["pixels_seg_"+str(s)].append(i)
             result[type_] = parameters
         elif type_ in [RRMapParser.TYPES["PATH"], RRMapParser.TYPES["GOTO_PATH"],
                        RRMapParser.TYPES["GOTO_PREDICTED_PATH"]]:
@@ -130,7 +133,9 @@ class RRMapParser:
                         struct.unpack("<H", buf[0x12 + offset + i:0x14 + offset + i])[0]
                     ])
                 result[type_] = zones
-        elif type_ in [RRMapParser.TYPES["FORBIDDEN_ZONES"], RRMapParser.TYPES["FORBIDDEN_MOP_ZONES"]]:
+
+        elif type_ in [RRMapParser.TYPES["FORBIDDEN_ZONES"], RRMapParser.TYPES["FORBIDDEN_MOP_ZONES"],
+                       RRMapParser.TYPES["VIRTUAL_WALLS"]]:
             forbiddenZoneCount = struct.unpack("<I", buf[0x08 + offset:0x0C + offset])[0]
             forbiddenZones = []
             if forbiddenZoneCount > 0:

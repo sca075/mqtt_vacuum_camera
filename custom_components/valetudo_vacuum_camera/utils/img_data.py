@@ -3,7 +3,7 @@ Collections of Json and List routines
 ImageData is part of the Image_Handler
 used functions to search data in the json
 provided for the creation of the new camera frame
-Last changes on Version: 1.4.7
+Last changes on Version: 1.4.8
 """
 
 import logging
@@ -134,7 +134,7 @@ class ImageData:
         tot_pixels = 0
         current_x, current_y, count = None, None, 0
         for index in pixel_data:
-            x = (index % image_width)+image_left
+            x = (index % image_width) + image_left
             y = ((image_height-1) - (index // image_width)) + image_top
 
             if current_x == x and current_y == y:
@@ -194,7 +194,7 @@ class ImageData:
         try:
             predicted_path = json_data.get("goto_predicted_path", {})
             points = predicted_path['points']
-        except Exception:
+        except KeyError:
             return None
         else:
             predicted_path = ImageData.sublist_join(
@@ -220,7 +220,7 @@ class ImageData:
     def get_rrm_goto_target(json_data):
         try:
             path_data = json_data.get("goto_target", {})
-        except Exception:
+        except KeyError:
             return None
         else:
             if path_data is not []:
@@ -231,15 +231,77 @@ class ImageData:
 
     @staticmethod
     def get_rrm_currently_cleaned_zones(json_data):
-        return json_data.get("currently_cleaned_zones", [])
+        re_zones = json_data.get("currently_cleaned_zones", [])
+        formatted_zones = ImageData.rrm_valetudo_format_zone(re_zones)
+        return formatted_zones
 
     @staticmethod
     def get_rrm_forbidden_zones(json_data):
-        return json_data.get("forbidden_zones", [])
+        re_zones = json_data.get("forbidden_zones", [])
+        formatted_zones = ImageData.rrm_valetudo_format_zone(re_zones)
+        return formatted_zones
+
+    @staticmethod
+    def rrm_valetudo_format_zone(coordinates):
+        formatted_zones = []
+        for zone_data in coordinates:
+            if len(zone_data) == 4:  # This is a zone_clean (4 coordinates)
+                formatted_zone = {
+                    "__class": "PolygonMapEntity",
+                    "metaData": {},
+                    "points": [
+                        zone_data[0] // 10,
+                        zone_data[1] // 10,
+                        zone_data[2] // 10,
+                        zone_data[1] // 10,
+                        zone_data[2] // 10,
+                        zone_data[3] // 10,
+                        zone_data[0] // 10,
+                        zone_data[3] // 10,
+                        ],
+                    "type": "zone_clean",
+                }
+                formatted_zones.append(formatted_zone)
+            elif len(zone_data) == 8:  # This is a no_go_area (8 coordinates)
+                formatted_zone = {
+                    "__class": "PolygonMapEntity",
+                    "metaData": {},
+                    "points": [
+                        zone_data[0] // 10,
+                        zone_data[1] // 10,
+                        zone_data[2] // 10,
+                        zone_data[3] // 10,
+                        zone_data[4] // 10,
+                        zone_data[5] // 10,
+                        zone_data[6] // 10,
+                        zone_data[7] // 10,
+                        ],
+                    "type": "no_go_area",
+                }
+                formatted_zones.append(formatted_zone)
+
+        return formatted_zones
+
+    @staticmethod
+    def rrm_valetudo_lines(coordinates):
+        formatted_lines = []
+        for lines in coordinates:
+            line = [lines[0] // 10,
+                    lines[1] // 10,
+                    lines[2] // 10,
+                    lines[3] // 10
+                    ]
+            formatted_lines.append(line)
+        return formatted_lines
 
     @staticmethod
     def get_rrm_virtual_walls(json_data):
-        return json_data.get("virtual_walls", [])
+        try:
+            tmp_data = json_data.get("virtual_walls", [])
+        except KeyError:
+            return None
+        virtual_walls = ImageData.rrm_valetudo_lines(tmp_data)
+        return virtual_walls
 
     @staticmethod
     def get_rrm_currently_cleaned_blocks(json_data):
@@ -272,12 +334,23 @@ class ImageData:
         return img.get("pixels", {}).get("walls", [])
 
     @staticmethod
-    def get_rrm_segments(json_data):
+    def get_rrm_segments(json_data, size_x, size_y, pos_top, pos_left):
         img = ImageData.get_rrm_image(json_data)
-        segments = img.get("pixels", {}).get("segments", [])
-        segment_count = img.get("segments", {}).get("count", 0)
-
-        if segment_count > 0:
+        seg_data = img.get("segments", [])
+        seg_ids = seg_data.get("id")
+        print(seg_ids)
+        segments = []
+        count_seg = 0
+        for id_seg in seg_ids:
+            tmp_data = seg_data.get("pixels_seg_"+str(id_seg))
+            segments.append(
+                ImageData.from_rrm_to_compressed_pixels(tmp_data,
+                                                        image_width=size_x,
+                                                        image_height=size_y,
+                                                        image_top=pos_top,
+                                                        image_left=pos_left))
+            count_seg += 1
+        if count_seg > 0:
             return segments
         else:
             return []
