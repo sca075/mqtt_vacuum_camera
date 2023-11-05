@@ -3,15 +3,12 @@
 
 # Valetudo Vacuum Camera
 
-
-![img_1](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/78752c27-1754-4d1f-9109-3003b36a1900)
-
 ### Current Release: [![GitHub Latest Release][releases_shield]][latest_release]
 
 ## Valetudo Vacuums maps in Home Assistant was never so easy.
 
 **About:**
-Extract the maps for rooted Vacuum Cleaners with Hypfer Valetudo Firmware connected to Home Assistant via MQTT, [easy setup](./docs/install.md) thanks to [HACS](https://hacs.xyz/)  and guided Home Assistant GUI configuration.
+Extract the maps for rooted Vacuum Cleaners with Valetudo [Hypfer](https://valetudo.cloud/) or [RE(rand256)](https://github.com/rand256/valetudo) Firmware connected to Home Assistant via MQTT, [easy setup](./docs/install.md) thanks to [HACS](https://hacs.xyz/)  and guided Home Assistant GUI configuration.
 
 **What it is:**
 Recently designed successor of ICantBelieveItsNotValetudo is [ValetudoPNG](https://github.com/erkexzcx/valetudopng) that can be used as alternative. 
@@ -82,7 +79,6 @@ Via [HACS](https://hacs.xyz//setup/download) please follow the instructions in [
 ## In implementation plan:
 - Reconfigure the camera more easily, and pre-crop and trim automatically the images.
 - Add the SVG export function with some options to split the images.
-- Add support for Valetudo RE firmware as well. So doing, we wish to expand the easy way to get integrated in home assistant all Valetudo Vacuums ;)
 
 ## Notes:
 - This integration is developed and tested using a PI4 with Home Assistant OS fully updated [to the last version](https://www.home-assistant.io/faq/release/), this allows us to confirm that the component is working properly with Home Assistant. Tested also on Docker Supervised "production" enviroment (fully setup home installation).
