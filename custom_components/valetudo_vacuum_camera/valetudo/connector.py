@@ -1,5 +1,5 @@
 """
-Version 1.4.8
+Version 1.4.9
 - Removed the PNG decode, the json is extracted from map-data instead of map-data hass.
 - Tested no influence on the camera performance.
 - Added gzip library used in Valetudo RE data compression.
@@ -22,6 +22,7 @@ class ValetudoConnector:
     def __init__(self, mqtt_topic, hass):
         self._hass = hass
         self._mqtt_topic = mqtt_topic
+        _LOGGER.debug(">>>>>>>>>>>", mqtt_topic)
         self._unsubscribe_handlers = []
         self._rcv_topic = None
         self._payload = None
@@ -30,9 +31,11 @@ class ValetudoConnector:
         self._mqtt_vac_err = None
         self._data_in = False
         # Payload and data from Valetudo Re
+        self._do_it_once = True
         self._is_rrm = None
         self._rrm_json = None
         self._rrm_payload = None
+        self._rrm_destinations = None
         self._rrm_data = RRMapParser()
 
     async def update_data(self, process: bool = True):
@@ -44,21 +47,23 @@ class ValetudoConnector:
                 _LOGGER.info(self._mqtt_topic + ": Extracting JSON Complete")
                 self._data_in = False
                 self._is_rrm = False
+                self._img_payload = None
                 return result, self._is_rrm
             else:
                 _LOGGER.info("No data from " + self._mqtt_topic + " or vacuum docked")
                 self._data_in = False
                 self._is_rrm = False
                 return None, self._is_rrm
-        if self._rrm_payload:
+        elif self._rrm_payload:
             if process:
-                _LOGGER.debug("Processing RRM " + self._mqtt_topic + " data from MQTT")
+                _LOGGER.debug("Processing " + self._mqtt_topic + " raw data from MQTT")
                 # parse the RRM topic
                 payload_decompressed = gzip.decompress(self._rrm_payload)  # fix issue with the RE payload.
                 self._rrm_json = self._rrm_data.parse_data(payload=payload_decompressed, pixels=True)
                 self._is_rrm = True
                 self._data_in = False
-                _LOGGER.info("got RRM payload: %s", self._is_rrm)
+                self._rrm_payload = None
+                _LOGGER.info("got Valetudo RE image payload: %s", self._is_rrm)
                 return self._rrm_json, self._is_rrm
             else:
                 _LOGGER.info("No data from " + self._mqtt_topic + " or vacuum docked")
@@ -74,6 +79,9 @@ class ValetudoConnector:
 
     async def is_data_available(self):
         return self._data_in
+
+    async def get_destinations(self):
+        return self._rrm_destinations
 
     async def save_payload(self, file_name):
         # save payload when available.
@@ -98,13 +106,19 @@ class ValetudoConnector:
     async def async_message_received(self, msg):
         self._rcv_topic = msg.topic
         if self._rcv_topic == (self._mqtt_topic + "/map_data"):
-            _LOGGER.info("Received RRM " + self._mqtt_topic + " image data from MQTT")
+            _LOGGER.info("Received Valetudo RE " + self._mqtt_topic + " image data from MQTT")
             self._rrm_payload = msg.payload  # RRM Image data update the received payload
             self._data_in = True
-        if self._rcv_topic == self._mqtt_topic + "/MapData/map-data":
+            self._is_rrm = True
+            if self._do_it_once:
+                _LOGGER.debug("Do it once.. request destinations to: %s", self._mqtt_topic)
+                await self.rrm_publish_destinations()
+                self._do_it_once = False
+        elif self._rcv_topic == self._mqtt_topic + "/MapData/map-data":
             _LOGGER.info("Received " + self._mqtt_topic + " image data from MQTT")
             self._img_payload = msg.payload
             self._data_in = True
+            self._is_rrm = False
         elif self._rcv_topic == (self._mqtt_topic + "/StatusStateAttribute/status"):
             self._payload = msg.payload
             if self._payload:
@@ -113,8 +127,7 @@ class ValetudoConnector:
                     self._mqtt_topic
                     + ": Received vacuum "
                     + self._mqtt_vac_stat
-                    + " status from MQTT:"
-                    + self._rcv_topic
+                    + " status."
                 )
         elif self._rcv_topic == (self._mqtt_topic + "/state"):  # for ValetudoRe
             self._payload = msg.payload
@@ -125,8 +138,7 @@ class ValetudoConnector:
                     self._mqtt_topic
                     + ": Received vacuum "
                     + self._mqtt_vac_stat
-                    + " status from MQTT:"
-                    + self._rcv_topic
+                    + " status."
                 )
         elif self._rcv_topic == (
                 self._mqtt_topic + "/StatusStateAttribute/error_description"
@@ -135,9 +147,19 @@ class ValetudoConnector:
             self._mqtt_vac_err = bytes.decode(msg.payload, "utf-8")
             _LOGGER.info(
                 self._mqtt_topic
-                + ": Received vacuum "
+                + ": Received vacuum Error: "
                 + self._mqtt_vac_err
-                + " from MQTT"
+            )
+        elif self._rcv_topic == (
+            self._mqtt_topic + "/destinations"
+        ):
+            self._payload = msg.payload
+            tmp_data = bytes.decode(msg.payload, "utf-8")
+            self._rrm_destinations = tmp_data
+            _LOGGER.info(
+                self._mqtt_topic
+                + ": Received vacuum destinations. "
+                + self._rrm_destinations
             )
 
     async def async_subscribe_to_topics(self):
@@ -148,6 +170,7 @@ class ValetudoConnector:
                 self._mqtt_topic + "/StatusStateAttribute/error_description",
                 self._mqtt_topic + "/map_data",  # added for ValetudoRe
                 self._mqtt_topic + "/state",  # added for ValetudoRe
+                self._mqtt_topic + "/destinations",  # added for ValetudoRe
             ]:
                 self._unsubscribe_handlers.append(
                     await mqtt.async_subscribe(
@@ -155,7 +178,21 @@ class ValetudoConnector:
                     )
                 )
 
+    async def rrm_publish_destinations(self):
+        cust_payload = {
+            "command": "get_destinations"
+        }
+        cust_payload = json.dumps(cust_payload)
+        await mqtt.async_publish(
+            self._hass,
+            self._mqtt_topic + "/custom_command",
+            cust_payload,
+            _QOS,
+            encoding='utf-8'
+        )
+
     async def async_unsubscribe_from_topics(self):
+        _LOGGER.debug("Unsubscribing topics!!!")
         map(lambda x: x(), self._unsubscribe_handlers)
 
     @staticmethod

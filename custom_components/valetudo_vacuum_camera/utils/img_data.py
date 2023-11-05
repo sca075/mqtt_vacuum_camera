@@ -3,7 +3,7 @@ Collections of Json and List routines
 ImageData is part of the Image_Handler
 used functions to search data in the json
 provided for the creation of the new camera frame
-Last changes on Version: 1.4.8
+Last changes on Version: 1.4.9
 """
 
 import logging
@@ -199,7 +199,6 @@ class ImageData:
         else:
             predicted_path = ImageData.sublist_join(
                 ImageData.rrm_valetudo_path_array(points), 2)
-            _LOGGER.debug(predicted_path)
         return predicted_path
 
     @staticmethod
@@ -213,7 +212,12 @@ class ImageData:
     @staticmethod
     def get_rrm_robot_angle(json_data):
         # todo robot angle require debug.
-        angle = (json_data.get("robot_angle", 0) + 90) % 360
+        # angle = (round(json_data.get("robot_angle", 0) * 3.14) % 360) + 90
+        angle = round(json_data.get("robot_angle", 0))
+        if angle < 0:
+            angle = (360 - angle) + 90
+        else:
+            angle = (angle + 360) - 90
         return angle, json_data.get("robot_angle", 0)
 
     @staticmethod
@@ -334,12 +338,12 @@ class ImageData:
         return img.get("pixels", {}).get("walls", [])
 
     @staticmethod
-    def get_rrm_segments(json_data, size_x, size_y, pos_top, pos_left):
+    def get_rrm_segments(json_data, size_x, size_y, pos_top, pos_left, out_lines: bool = False):
         img = ImageData.get_rrm_image(json_data)
         seg_data = img.get("segments", [])
         seg_ids = seg_data.get("id")
-        print(seg_ids)
         segments = []
+        outlines = []
         count_seg = 0
         for id_seg in seg_ids:
             tmp_data = seg_data.get("pixels_seg_"+str(id_seg))
@@ -348,12 +352,45 @@ class ImageData:
                                                         image_width=size_x,
                                                         image_height=size_y,
                                                         image_top=pos_top,
-                                                        image_left=pos_left))
+                                                        image_left=pos_left)
+            )
+            if out_lines:
+                outlines.append(ImageData.get_rrm_max_min_rooms_coordinates(segments[count_seg]))
             count_seg += 1
         if count_seg > 0:
-            return segments
+            if out_lines:
+                return segments, outlines
+            else:
+                return segments
         else:
             return []
+
+    @staticmethod
+    def get_rrm_segments_ids(json_data):
+        try:
+            img = ImageData.get_rrm_image(json_data)
+            seg_ids = img.get("segments", {}).get("id", [])
+        except KeyError:
+            return None
+        return seg_ids
+
+    @staticmethod
+    def get_rrm_max_min_rooms_coordinates(data):
+        # we need to consider that pixel size those coordinates
+        # are only to draw on the map the room area.
+        if not data:
+            return None  # Return None if the input list is empty
+        # Initialize variables to store max and min coordinates
+        max_x, max_y = data[0][0], data[0][1]
+        min_x, min_y = data[0][0], data[0][1]
+        # Iterate through the data list to find max and min coordinates
+        for entry in data:
+            x, y, _ = entry  # Extract x and y coordinates
+            max_x = max(max_x, x)  # Update max x coordinate
+            max_y = max(max_y, y)  # Update max y coordinate
+            min_x = min(min_x, x)  # Update min x coordinate
+            min_y = min(min_y, y)  # Update min y coordinate
+        return (((max_x * 5)*10), ((max_y * 5)*10)), (((min_x * 5)*10), ((min_y * 5)*10))
 
     @staticmethod
     def convert_negative_angle(angle):

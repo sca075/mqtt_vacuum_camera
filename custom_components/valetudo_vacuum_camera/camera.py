@@ -1,4 +1,4 @@
-"""Camera Version 1.5.0 Beta 1
+"""Camera Version 1.4.9
 Valetudo Re Test image.
 """
 
@@ -460,7 +460,6 @@ class ValetudoCamera(Camera):
                 if parsed_json is not None:
                     pil_img = None
                     if self._rrm_data:
-                        _LOGGER.info("Veletudo RE user, please report any error on rendering.")
                         pil_img = await self._re_handler.get_image_from_rrm(
                             m_json=self._rrm_data,
                             robot_state=self._vacuum_state,
@@ -490,11 +489,16 @@ class ValetudoCamera(Camera):
                         )
                     if pil_img is not None:
                         if self._map_rooms is None:
-                            self._map_rooms = await self._map_handler.get_rooms_attributes()
-                            if self._map_rooms:
-                                _LOGGER.debug(
-                                    "State attributes rooms update: %s",
-                                    self._map_rooms)
+                            if self._rrm_data is None:
+                                self._map_rooms = await self._map_handler.get_rooms_attributes()
+                            else:
+                                destinations = await self._mqtt.get_destinations()
+                                if destinations is not None:
+                                    self._map_rooms = await self._re_handler.get_rooms_attributes(destinations)
+                        if self._map_rooms:
+                            _LOGGER.debug(
+                                "State attributes rooms update: %s",
+                                self._map_rooms)
                         _LOGGER.debug(
                             "Applied " + self.file_name + " image rotation: %s",
                             {self._image_rotate},
@@ -512,10 +516,20 @@ class ValetudoCamera(Camera):
                                 or self._vacuum_state == "error"
                         ):
                             # suspend image processing if we are at the next frame.
-                            if (
-                                    self._frame_nuber
-                                    is not self._map_handler.get_frame_number()
-                            ):
+                            if not self._rrm_data:
+                                if (
+                                        self._frame_nuber
+                                        is not self._map_handler.get_frame_number()
+                                ):
+                                    self._image_grab = False
+                                    _LOGGER.info(
+                                        "Suspended the camera data processing for: "
+                                        + self.file_name
+                                        + "."
+                                    )
+                                    # take a snapshot
+                                    await self.take_snapshot(parsed_json, pil_img)
+                            else:
                                 self._image_grab = False
                                 _LOGGER.info(
                                     "Suspended the camera data processing for: "
@@ -523,7 +537,8 @@ class ValetudoCamera(Camera):
                                     + "."
                                 )
                                 # take a snapshot
-                                await self.take_snapshot(parsed_json, pil_img)
+                                await self.take_snapshot(self._rrm_data, pil_img)
+
                         if self._attr_calibration_points is None:
                             if self._rrm_data is None:
                                 self._vac_json_id = self._map_handler.get_json_id()

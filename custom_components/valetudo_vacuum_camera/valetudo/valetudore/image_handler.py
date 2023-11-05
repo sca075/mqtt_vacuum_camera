@@ -2,11 +2,13 @@
 Image Handler Module dor Valetudo Re Vacuums.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Last Changed on Version: 1.4.8
+Last Changed on Version: 1.4.9
 """
 from __future__ import annotations
 
 import logging
+import uuid
+import json
 import numpy as np
 from PIL import Image
 from custom_components.valetudo_vacuum_camera.utils.colors_man import color_grey
@@ -142,31 +144,41 @@ class ReImageHandler(object):
             return image_array
 
     @staticmethod
-    def extract_room_properties(json_data):
+    def extract_room_properties(json_data, destinations):
+        unsorted_id = ImageData.get_rrm_segments_ids(json_data)
+        _LOGGER.debug(unsorted_id)
+        size_x, size_y = ImageData.get_rrm_image_size(json_data)
+        top, left = ImageData.get_rrm_image_position(json_data)
+        dummy_segments, outlines = ImageData.get_rrm_segments(json_data,
+                                                              size_x,
+                                                              size_y,
+                                                              top,
+                                                              left,
+                                                              True)
+
+        del dummy_segments
+        _LOGGER.debug(outlines)
+        dest_json = json.loads(destinations)
+        room_data = dict(dest_json).get("rooms", [])
+        room_id_to_data = {room["id"]: room for room in room_data}
         room_properties = {}
-        pixel_size = json_data.get("pixelSize", [])
-
-        for layer in json_data.get("layers", []):
-            if layer["__class"] == "MapLayer":
-                meta_data = layer.get("metaData", {})
-                segment_id = meta_data.get("segmentId")
-
-                if segment_id is not None:
-                    name = meta_data.get("name")
-                    # Calculate x and y min/max from compressed pixels
-                    x_min = min(layer["compressedPixels"][::3]) * pixel_size
-                    x_max = max(layer["compressedPixels"][::3]) * pixel_size
-                    y_min = min(layer["compressedPixels"][1::3]) * pixel_size
-                    y_max = max(layer["compressedPixels"][1::3]) * pixel_size
-                    corners = [(x_min, y_min), (x_max, y_min), (x_max, y_max), (x_min, y_max)]
-                    room_name = str(segment_id)
-                    room_properties[room_name] = {
-                        "number": segment_id,
-                        "outline": corners,
-                        "name": name,
-                        "x": ((x_min + x_max) // 2),
-                        "y": ((y_min + y_max) // 2),
-                    }
+        for id_x, room_id in enumerate(unsorted_id):
+            if room_id in room_id_to_data:
+                room_info = room_id_to_data[room_id]
+                name = room_info.get("name")
+                # Calculate x and y min/max from outlines
+                x_min = outlines[id_x][0][0]
+                x_max = outlines[id_x][1][0]
+                y_min = outlines[id_x][0][1]
+                y_max = outlines[id_x][1][1]
+                corners = [(x_min, y_min), (x_max, y_min), (x_max, y_max), (x_min, y_max)]
+                room_properties[room_id] = {
+                    "number": int(room_id),
+                    "outline": corners,
+                    "name": name,
+                    "x": (x_min + x_max) // 2,
+                    "y": (y_min + y_max) // 2,
+                }
         _LOGGER.debug("Rooms data extracted!")
         return room_properties
 
@@ -210,8 +222,9 @@ class ReImageHandler(object):
                     "centre": [(5120 // 2), (5120 // 2)],
                 }
                 ###########################
-                self.json_id = "Not Generated"
-                _LOGGER.info("Vacuum JSon ID: %s", self.json_id)
+                self.json_id = str(uuid.uuid4())  # image id
+                _LOGGER.info("Vacuum Data ID: %s", self.json_id)
+                # grab data from the json data
                 pos_top, pos_left = self.data.get_rrm_image_position(m_json)
                 floor_data = self.data.get_rrm_floor(m_json)
                 walls_data = self.data.get_rrm_walls(m_json)
@@ -221,25 +234,22 @@ class ReImageHandler(object):
                 zone_clean = self.data.get_rrm_currently_cleaned_zones(m_json)
                 no_go_area = self.data.get_rrm_forbidden_zones(m_json)
                 virtual_walls = self.data.get_rrm_virtual_walls(m_json)
-
                 path_pixel = self.data.get_rrm_path(m_json)
                 path_pixel2 = self.data.sublist_join(
                     self.data.rrm_valetudo_path_array(path_pixel["points"]), 2)
-
                 robot_position = None
                 robot_position_angle = None
+                # convert the data to reuse the current drawing library
                 robot_pos = self.data.rrm_coordinates_to_valetudo(robot_pos)
                 if robot_pos:
                     robot_position = robot_pos
                     angle = self.data.get_rrm_robot_angle(m_json)
-                    if angle[0] == 0:
-                        robot_position_angle = self.data.convert_negative_angle(
-                            path_pixel['current_angle']
-                        )
-                        # ((int(path_pixel['current_angle']) + 450) % 360)
-                    else:
-                        robot_position_angle = angle[0]
-                        # ((int(angle[1]) + 450) % 360)
+                    # if angle[0] == 0:
+                    #     robot_position_angle = self.data.convert_negative_angle(
+                    #         path_pixel['current_angle']
+                    #     )
+                    # else:
+                    robot_position_angle = angle[0]
                     _LOGGER.debug("robot position: %s", robot_pos)
                     _LOGGER.debug("robot angle: %s", robot_position_angle)
                     self.robot_pos = {
@@ -255,24 +265,26 @@ class ReImageHandler(object):
                     }
 
                 pixel_size = 5
-                # layers = self.data.find_layers(m_json["layers"]
-                # _LOGGER.debug(file_name + ": Layers to draw: %s", layers.keys())
                 _LOGGER.info(file_name + ": Empty image with background color")
                 img_np_array = await self.draw.create_empty_image(5120, 5120, color_background)
                 _LOGGER.info(file_name + ": Overlapping Layers")
+                # this below are floor data
                 pixels = self.data.from_rrm_to_compressed_pixels(floor_data,
                                                                  image_width=size_x,
                                                                  image_height=size_y,
                                                                  image_top=pos_top,
                                                                  image_left=pos_left)
+                # checking if there are segments too (sorted pixels in the raw data).
                 segments = self.data.get_rrm_segments(m_json, size_x, size_y, pos_top, pos_left)
                 if (segments and pixels) or pixels:
                     room_id = 0
                     room_color = rooms_colors[room_id]
+                    # drawing floor
                     if pixels:
                         img_np_array = await self.draw.from_json_to_image(
                             img_np_array, pixels, pixel_size, room_color
                         )
+                    # drawing segments floor
                     if segments:
                         for pixels in segments:
                             room_id += 1
@@ -295,15 +307,14 @@ class ReImageHandler(object):
                         img_np_array, walls, pixel_size, color_wall
                     )
                     _LOGGER.info(file_name + ": Completed base Layers")
+                # charger
                 if charger_pos:
                     img_np_array = await self.draw.battery_charger(
                         img_np_array, charger_pos[0], charger_pos[1], color_charger
                     )
-                # self.img_base_layer = img_np_array
-                self.frame_number += 1
                 # If there is a zone clean we draw it now.
-                _LOGGER.debug(file_name + ": Frame number %s", self.frame_number)
                 self.frame_number += 1
+                _LOGGER.debug(file_name + ": Frame number %s", self.frame_number)
                 if self.frame_number > 5:
                     self.frame_number = 0
                 # zone clean
@@ -313,12 +324,14 @@ class ReImageHandler(object):
                         zone_clean,
                         color_zone_clean
                     )
+                # no-go zones
                 if no_go_area:
                     img_np_array = await self.draw.zones(
                         img_np_array,
                         no_go_area,
                         color_no_go
                     )
+                # virtual walls
                 if virtual_walls:
                     img_np_array = await self.draw.draw_virtual_walls(
                         img_np_array, virtual_walls, color_no_go
@@ -328,7 +341,7 @@ class ReImageHandler(object):
                     img_np_array = await self.draw.lines(
                         img_np_array, path_pixel2, 5, color_move
                     )
-
+                # go to flag and predicted path
                 if go_to:
                     img_np_array = await self.draw.go_to_flag(
                         img_np_array,
@@ -344,9 +357,10 @@ class ReImageHandler(object):
                             3,
                             color_grey
                         )
-
+                # rotate the robot if docked
                 if robot_state == "docked":
                     robot_position_angle = robot_position_angle - 180  # rotation offset
+                # draw the robot
                 if robot_position and robot_position_angle:
                     img_np_array = await self.draw.robot(
                         img_np_array,
@@ -367,7 +381,7 @@ class ReImageHandler(object):
                     int(img_rotation),
                 )
                 pil_img = Image.fromarray(img_np_array, mode="RGBA")
-                del img_np_array
+                del img_np_array  # unload memory
                 return pil_img
 
         except Exception as e:
@@ -389,10 +403,10 @@ class ReImageHandler(object):
     def get_json_id(self):
         return self.json_id
 
-    async def get_rooms_attributes(self):
-        if self.json_data:
+    async def get_rooms_attributes(self, destinations):
+        if self.json_data and destinations:
             _LOGGER.debug("Checking for rooms data..")
-            self.room_propriety = ReImageHandler.extract_room_properties(self.json_data)
+            self.room_propriety = ReImageHandler.extract_room_properties(self.json_data, destinations)
             if self.room_propriety:
                 _LOGGER.debug("Got Rooms Attributes.")
         return self.room_propriety
