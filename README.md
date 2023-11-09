@@ -48,6 +48,7 @@ internal_variables:
 - Dreame D9 / Z10 Pro
 - Mi Robot Vacuum-Mop P
 - Roborock.S5 / S50 / S55 (Gen.2)
+- Roborock.S7
 - Roborock.V1 (Gen.1)
 - Xiaomi C1
 - In general, **it works with all flashed Valetudo Hypfer or RE(rand256) vacuums** . Please [let us know](https://docs.google.com/forms/d/e/1FAIpQLSfdWAIEmwDAAE7b6rHatnyGFNw_f0Osnai4ouT2cZNnwP26KQ/viewform) if your vacuum can be added to the list.</details>
