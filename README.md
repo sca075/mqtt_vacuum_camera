@@ -45,7 +45,9 @@ internal_variables:
 
 ### Known Supported Vacuums:
 ***<details><summary> We here list, thanks to our users, the known working vacuums. </summary>***
-- Dreame D9 / Z10 Pro
+- Dreame D9
+- Dreame Z10 Pro
+- Dreame L10s Ultra
 - Mi Robot Vacuum-Mop P
 - Roborock.S5 / S50 / S55 (Gen.2)
 - Roborock.S7
