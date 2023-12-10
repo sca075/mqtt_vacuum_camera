@@ -55,7 +55,7 @@ Those settings will be automatically setup in the card as soon the vacuum and ca
 - Roborock.S7
 - Roborock.V1 (Gen.1)
 - Xiaomi C1
-- In general, **it works with all flashed Valetudo Hypfer or RE(rand256) vacuums** . Please [let us know](https://docs.google.com/forms/d/e/1FAIpQLSfdWAIEmwDAAE7b6rHatnyGFNw_f0Osnai4ouT2cZNnwP26KQ/viewform) if your vacuum can be added to the list.</details>
+- In general, **it works with all flashed Valetudo Hypfer or RE(rand256) vacuums**.
 
 ![Screenshot 2023-09-12 at 22 53 29](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/4f5981e3-39f2-449a-8a43-39870631e9a1)
 
@@ -64,7 +64,7 @@ Those settings will be automatically setup in the card as soon the vacuum and ca
 Via [HACS](https://hacs.xyz//setup/download) please follow. The instructions in [here](./docs/install.md) show detailed steps and will help to set up the camera also without HACS (manual setup).
 
 ### Features: 
-<details><summary> We here List what this camera offers as futures. </summary>
+<details><summary> We here List what this camera offers as futures.</summary>
 
 1) **Automatically Generate the calibration points for the lovelace-xiaomi-vacuum-map-card** to ensure full compatibility to this user-friendly card.
 2) **Automatically Generate rooms based configuration when vacuum support this functionality**, this will allow you to configure the rooms quickly on the [lovelace-xiaomi-vacuum-map-card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card). Both firmwares are now supported.
