@@ -2,7 +2,7 @@
 Image Handler Module.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Last Changed on Version: 1.4.7
+Last Changed on Version: 1.5.0
 """
 from __future__ import annotations
 
@@ -26,6 +26,12 @@ class MapImageHandler(object):
         self.crop_img_size = None
         self.img_base_layer = None
         self.frame_number = 0
+        self.calibration_data = None
+        self.trim_up = None
+        self.trim_down = None
+        self.trim_right = None
+        self.trim_left = None
+        self.new_crop = None
         self.path_pixels = None
         self.robot_pos = None
         self.charger_pos = None
@@ -64,7 +70,7 @@ class MapImageHandler(object):
             )
 
             # Crop the image based on the initial crop box
-            cropped = image_array[cropbox[1] : cropbox[3], cropbox[0] : cropbox[2]]
+            cropped = image_array[cropbox[1]: cropbox[3], cropbox[0]: cropbox[2]]
 
             # Rotate the cropped image based on the given angle
             if rotate == 90:
@@ -98,8 +104,8 @@ class MapImageHandler(object):
             else:
                 # Apply the trim values to the rotated image
                 trimmed = rotated[
-                          trim_u : rotated.shape[0] - trim_b,
-                          trim_l : rotated.shape[1] - trim_r,
+                          trim_u: rotated.shape[0] - trim_b,
+                          trim_l: rotated.shape[1] - trim_r,
                           ]
                 # Calculate the crop area in the original image_array
                 if rotate == 90:
@@ -141,6 +147,127 @@ class MapImageHandler(object):
             self.crop_img_size = (image_array.shape[1], image_array.shape[0])
             return image_array
 
+    async def auto_crop_and_trim_array(
+            self,
+            image_array,
+            detect_colour,
+            crop_percentage,
+            margin_size: int = 150,
+            rotate: int = 0,
+    ):
+        """
+        Automatically crops and trims a numpy array and returns the processed image and scale factor.
+        """
+
+        _LOGGER.debug(f"Image original size: {image_array.shape[1]}, {image_array.shape[0]}")
+        center_x = image_array.shape[1] // 2
+        center_y = image_array.shape[0] // 2
+
+        if crop_percentage < 50:
+            crop_percentage = 50
+        # Calculate the crop size based on crop_percentage
+        crop_size = int(min(center_x, center_y) * crop_percentage / 100)
+        # Calculate the initial crop box at 0 degrees rotation
+        cropbox = (
+            center_x - crop_size,
+            center_y - crop_size,
+            center_x + crop_size,
+            center_y + crop_size,
+        )
+
+        # Crop the image based on the initial crop box
+        pre_cropped = image_array[cropbox[1]: cropbox[3], cropbox[0]: cropbox[2]]
+        _LOGGER.debug(f"Image size after first crop: {pre_cropped.shape[1]}, {pre_cropped.shape[0]}")
+        # Rotate the cropped image based on the given angle
+        if rotate == 90:
+            rotated = np.rot90(pre_cropped, 1)
+        elif rotate == 180:
+            rotated = np.rot90(pre_cropped, 2)
+        elif rotate == 270:
+            rotated = np.rot90(pre_cropped, 3)
+        else:
+            rotated = pre_cropped
+
+        if not self.new_crop:
+            # Find the coordinates of the first occurrence of a non-background color
+            nonzero_coords = np.column_stack(np.where(rotated != list(detect_colour)))
+
+            # Calculate the crop box based on the first and last occurrences
+            min_y, min_x, dummy = np.min(nonzero_coords, axis=0)
+            max_y, max_x, dummy = np.max(nonzero_coords, axis=0)
+            _LOGGER.debug("crop max and min values (y,x) ({}, {}) ({},{})...".format(
+                int(max_y), int(max_x), int(min_y), int(min_x)))
+
+            # Calculate the trims values.
+            if rotate == 90:
+                self.trim_left = int(min_x) - margin_size
+                self.trim_up = int(min_y) - margin_size
+                self.trim_right = rotated.shape[0] - int(max_x) - margin_size
+                self.trim_down = rotated.shape[1] - int(max_y) - margin_size
+                self.new_crop = (
+                    cropbox[0] + self.trim_down,
+                    cropbox[1] + self.trim_left,
+                    cropbox[2] - self.trim_up,
+                    cropbox[3] - self.trim_right,
+                )
+            elif rotate == 180:
+                self.trim_left = int(min_x) - margin_size
+                self.trim_up = int(min_y) - margin_size
+                self.trim_right = rotated.shape[1] - int(max_x) - margin_size
+                self.trim_down = rotated.shape[0] - int(max_y) - margin_size
+                self.new_crop = (
+                    cropbox[0] + self.trim_right,
+                    cropbox[1] + self.trim_down,
+                    cropbox[2] - self.trim_left,
+                    cropbox[3] - self.trim_up,
+                )
+            elif rotate == 270:
+                self.trim_left = int(min_x) - margin_size
+                self.trim_up = int(min_y) - margin_size
+                self.trim_right = rotated.shape[0] - int(max_x) - margin_size
+                self.trim_down = rotated.shape[1] - int(max_y) - margin_size
+                self.new_crop = (
+                    cropbox[0] + self.trim_up,
+                    cropbox[1] + self.trim_right,
+                    cropbox[2] - self.trim_down,
+                    cropbox[3] - self.trim_left,
+                )
+            else:
+                self.trim_left = int(min_x) - margin_size
+                self.trim_up = int(min_y) - margin_size
+                self.trim_right = rotated.shape[0] - int(max_x) - margin_size
+                self.trim_down = rotated.shape[1] - int(max_y) - margin_size
+                self.new_crop = (
+                    cropbox[0] + self.trim_left,
+                    cropbox[1] + self.trim_up,
+                    cropbox[2] - self.trim_right,
+                    cropbox[3] - self.trim_down,
+                )
+
+            _LOGGER.debug("Calculated trims right {}, bottom {}, left {}, up {} ".format(
+                self.trim_right, self.trim_down, self.trim_left, self.trim_up))
+            # Calculate the dimensions after trimming using min/max values
+            if self.trim_left < self.trim_right:
+                trimmed_width = self.trim_right - self.trim_left
+            else:
+                trimmed_width = self.trim_left + self.trim_right
+            if self.trim_up < self.trim_down:
+                trimmed_height = self.trim_down - self.trim_up
+            else:
+                trimmed_height = self.trim_up + self.trim_down
+            _LOGGER.debug("Calculated trim width {} and trim height {}".format(trimmed_width, trimmed_height))
+        # Apply the auto-calculated trims to the rotated image
+        trimmed = rotated[
+                  self.trim_up: rotated.shape[0] - self.trim_down,
+                  self.trim_left: rotated.shape[1] - self.trim_right,
+                  ]
+        # Calculate the crop area in the original image_array
+        self.crop_area = self.new_crop
+        _LOGGER.debug("Auto Crop and Trim Box data: %s", self.crop_area)
+        self.crop_img_size = (trimmed.shape[1], trimmed.shape[0])
+        _LOGGER.debug("Auto Crop and Trim image size: %s", self.crop_img_size)
+        return trimmed
+
     @staticmethod
     def extract_room_properties(json_data):
         room_properties = {}
@@ -158,7 +285,7 @@ class MapImageHandler(object):
                     x_max = max(layer["compressedPixels"][::3]) * pixel_size
                     y_min = min(layer["compressedPixels"][1::3]) * pixel_size
                     y_max = max(layer["compressedPixels"][1::3]) * pixel_size
-                    corners = [(x_min, y_min),(x_max, y_min),(x_max, y_max),(x_min, y_max)]
+                    corners = [(x_min, y_min), (x_max, y_min), (x_max, y_max), (x_min, y_max)]
                     room_name = str(segment_id)
                     room_properties[room_name] = {
                         "number": segment_id,
@@ -167,7 +294,10 @@ class MapImageHandler(object):
                         "x": ((x_min + x_max) // 2),
                         "y": ((y_min + y_max) // 2),
                     }
-        _LOGGER.debug("Rooms data extracted!")
+        if room_properties != {}:
+            _LOGGER.debug("Rooms data extracted!")
+        else:
+            _LOGGER.debug("Rooms data not available!")
         return room_properties
 
     async def get_image_from_json(
@@ -176,10 +306,7 @@ class MapImageHandler(object):
             robot_state,
             img_rotation: int = 0,
             crop: int = 50,
-            trim_u: int = 0,
-            trim_b: int = 0,
-            trim_l: int = 0,
-            trim_r: int = 0,
+            margins: int = 0,
             user_colors: Colors = None,
             rooms_colors: Color = None,
             file_name: "" = None,
@@ -384,13 +511,11 @@ class MapImageHandler(object):
                         file_name,
                     )
                 _LOGGER.debug(file_name + " Image Cropping:" + str(crop) + " Image Rotate:" + str(img_rotation))
-                img_np_array = await self.crop_and_trim_array(
+                img_np_array = await self.auto_crop_and_trim_array(
                     img_np_array,
+                    color_background,
                     crop,
-                    int(trim_u),
-                    int(trim_b),
-                    int(trim_l),
-                    int(trim_r),
+                    int(margins),
                     int(img_rotation),
                 )
                 pil_img = Image.fromarray(img_np_array, mode="RGBA")

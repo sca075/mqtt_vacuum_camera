@@ -2,7 +2,7 @@
 Image Handler Module dor Valetudo Re Vacuums.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Last Changed on Version: 1.4.9
+Last Changed on Version: 1.5.0
 """
 from __future__ import annotations
 
@@ -28,6 +28,12 @@ class ReImageHandler(object):
         self.crop_img_size = None
         self.img_base_layer = None
         self.frame_number = 0
+        self.calibration_data = None
+        self.trim_up = None
+        self.trim_down = None
+        self.trim_right = None
+        self.trim_left = None
+        self.new_crop = None
         self.path_pixels = None
         self.robot_pos = None
         self.charger_pos = None
@@ -39,114 +45,130 @@ class ReImageHandler(object):
         self.data = ImageData
         self.draw = Drawable
 
-    async def crop_and_trim_array(
+    async def auto_crop_and_trim_array(
             self,
             image_array,
+            detect_colour,
             crop_percentage,
-            trim_u=0,
-            trim_b=0,
-            trim_l=0,
-            trim_r=0,
+            margin_size: int = 150,
             rotate: int = 0,
     ):
-        """Crops and trims a numpy array and returns the processed image and scale factor."""
+        """
+        Automatically crops and trims a numpy array and returns the processed image and scale factor.
+        """
+
+        _LOGGER.debug(f"Image original size: {image_array.shape[1]}, {image_array.shape[0]}")
         center_x = image_array.shape[1] // 2
         center_y = image_array.shape[0] // 2
 
-        if crop_percentage > 10:
-            # Calculate the crop size based on crop_percentage
-            crop_size = int(min(center_x, center_y) * crop_percentage / 100)
+        if crop_percentage < 50:
+            crop_percentage = 50
+        # Calculate the crop size based on crop_percentage
+        crop_size = int(min(center_x, center_y) * crop_percentage / 100)
+        # Calculate the initial crop box at 0 degrees rotation
+        cropbox = (
+            center_x - crop_size,
+            center_y - crop_size,
+            center_x + crop_size,
+            center_y + crop_size,
+        )
 
-            # Calculate the initial crop box at 0 degrees rotation
-            cropbox = (
-                center_x - crop_size,
-                center_y - crop_size,
-                center_x + crop_size,
-                center_y + crop_size,
-            )
-
-            # Crop the image based on the initial crop box
-            cropped = image_array[cropbox[1]:cropbox[3], cropbox[0]:cropbox[2]]
-
-            # Rotate the cropped image based on the given angle
-            if rotate == 90:
-                rotated = np.rot90(cropped, 1)
-            elif rotate == 180:
-                rotated = np.rot90(cropped, 2)
-            elif rotate == 270:
-                rotated = np.rot90(cropped, 3)
-            else:
-                rotated = cropped
-
-            if crop_percentage == 100:
-                _LOGGER.warning(
-                    "Returning Vacuum Map at 100%! This can affect HA performance!!"
-                )
-                self.crop_area = cropbox
-                self.crop_img_size = (cropped.shape[1], cropped.shape[0])
-                return cropped
-
-            # Calculate the dimensions after trimming
-            trimmed_width = cropbox[2] - cropbox[0] - trim_l - trim_r
-            trimmed_height = cropbox[3] - cropbox[1] - trim_u - trim_b
-
-            if trimmed_width <= 99 or trimmed_height <= 99:
-                _LOGGER.warning(
-                    "Invalid trim values result in an improperly sized image, returning un-trimmed image!"
-                )
-                self.crop_area = cropbox
-                self.crop_img_size = (cropped.shape[1], cropped.shape[0])
-                return cropped
-            else:
-                # Apply the trim values to the rotated image
-                trimmed = rotated[
-                          trim_u:rotated.shape[0] - trim_b,
-                          trim_l:rotated.shape[1] - trim_r,
-                          ]
-                # Calculate the crop area in the original image_array
-                if rotate == 90:
-                    new_cropbox = (
-                        cropbox[0] + trim_b,
-                        cropbox[1] + trim_l,
-                        cropbox[2] - trim_u,
-                        cropbox[3] - trim_r,
-                    )
-                elif rotate == 180:
-                    new_cropbox = (
-                        cropbox[0] + trim_r,
-                        cropbox[1] + trim_b,
-                        cropbox[2] - trim_l,
-                        cropbox[3] - trim_u,
-                    )
-                elif rotate == 270:
-                    new_cropbox = (
-                        cropbox[0] + trim_u,
-                        cropbox[1] + trim_r,
-                        cropbox[2] - trim_b,
-                        cropbox[3] - trim_l,
-                    )
-                else:
-                    new_cropbox = (
-                        cropbox[0] + trim_l,
-                        cropbox[1] + trim_u,
-                        cropbox[2] - trim_r,
-                        cropbox[3] - trim_b,
-                    )
-
-                self.crop_area = new_cropbox
-                _LOGGER.debug("Crop and Trim Box data: %s", self.crop_area)
-                self.crop_img_size = (trimmed.shape[1], trimmed.shape[0])
-                _LOGGER.debug("Crop and Trim image size: %s", self.crop_img_size)
-                return trimmed
+        # Crop the image based on the initial crop box
+        pre_cropped = image_array[cropbox[1]: cropbox[3], cropbox[0]: cropbox[2]]
+        _LOGGER.debug(f"Image size after first crop: {pre_cropped.shape[1]}, {pre_cropped.shape[0]}")
+        # Rotate the cropped image based on the given angle
+        if rotate == 90:
+            rotated = np.rot90(pre_cropped, 1)
+        elif rotate == 180:
+            rotated = np.rot90(pre_cropped, 2)
+        elif rotate == 270:
+            rotated = np.rot90(pre_cropped, 3)
         else:
-            _LOGGER.warning("Cropping value is below 10%. Returning un-cropped image!")
-            self.crop_img_size = (image_array.shape[1], image_array.shape[0])
-            return image_array
+            rotated = pre_cropped
+
+        if not self.new_crop:
+            # Find the coordinates of the first occurrence of a non-background color
+            nonzero_coords = np.column_stack(np.where(rotated != list(detect_colour)))
+
+            # Calculate the crop box based on the first and last occurrences
+            min_y, min_x, dummy = np.min(nonzero_coords, axis=0)
+            max_y, max_x, dummy = np.max(nonzero_coords, axis=0)
+            _LOGGER.debug("crop max and min values (y,x) ({}, {}) ({},{})...".format(
+                int(max_y), int(max_x), int(min_y), int(min_x)))
+
+            # Calculate the trims values.
+            if rotate == 90:
+                self.trim_left = int(min_x) - margin_size
+                self.trim_up = int(min_y) - margin_size
+                self.trim_right = rotated.shape[0] - int(max_x) - margin_size
+                self.trim_down = rotated.shape[1] - int(max_y) - margin_size
+                self.new_crop = (
+                    cropbox[0] + self.trim_down,
+                    cropbox[1] + self.trim_left,
+                    cropbox[2] - self.trim_up,
+                    cropbox[3] - self.trim_right,
+                )
+            elif rotate == 180:
+                self.trim_left = int(min_x) - margin_size
+                self.trim_up = int(min_y) - margin_size
+                self.trim_right = rotated.shape[1] - int(max_x) - margin_size
+                self.trim_down = rotated.shape[0] - int(max_y) - margin_size
+                self.new_crop = (
+                    cropbox[0] + self.trim_right,
+                    cropbox[1] + self.trim_down,
+                    cropbox[2] - self.trim_left,
+                    cropbox[3] - self.trim_up,
+                )
+            elif rotate == 270:
+                self.trim_left = int(min_x) - margin_size
+                self.trim_up = int(min_y) - margin_size
+                self.trim_right = rotated.shape[0] - int(max_x) - margin_size
+                self.trim_down = rotated.shape[1] - int(max_y) - margin_size
+                self.new_crop = (
+                    cropbox[0] + self.trim_up,
+                    cropbox[1] + self.trim_right,
+                    cropbox[2] - self.trim_down,
+                    cropbox[3] - self.trim_left,
+                )
+            else:
+                self.trim_left = int(min_x) - margin_size
+                self.trim_up = int(min_y) - margin_size
+                self.trim_right = rotated.shape[0] - int(max_x) - margin_size
+                self.trim_down = rotated.shape[1] - int(max_y) - margin_size
+                self.new_crop = (
+                    cropbox[0] + self.trim_left,
+                    cropbox[1] + self.trim_up,
+                    cropbox[2] - self.trim_right,
+                    cropbox[3] - self.trim_down,
+                )
+
+            _LOGGER.debug("Calculated trims right {}, bottom {}, left {}, up {} ".format(
+                self.trim_right, self.trim_down, self.trim_left, self.trim_up))
+            # Calculate the dimensions after trimming using min/max values
+            if self.trim_left < self.trim_right:
+                trimmed_width = self.trim_right - self.trim_left
+            else:
+                trimmed_width = self.trim_left + self.trim_right
+            if self.trim_up < self.trim_down:
+                trimmed_height = self.trim_down - self.trim_up
+            else:
+                trimmed_height = self.trim_up + self.trim_down
+            _LOGGER.debug("Calculated trim width {} and trim height {}".format(trimmed_width, trimmed_height))
+        # Apply the auto-calculated trims to the rotated image
+        trimmed = rotated[
+                  self.trim_up: rotated.shape[0] - self.trim_down,
+                  self.trim_left: rotated.shape[1] - self.trim_right,
+                  ]
+        # Calculate the crop area in the original image_array
+        self.crop_area = self.new_crop
+        _LOGGER.debug("Auto Crop and Trim Box data: %s", self.crop_area)
+        self.crop_img_size = (trimmed.shape[1], trimmed.shape[0])
+        _LOGGER.debug("Auto Crop and Trim image size: %s", self.crop_img_size)
+        return trimmed
 
     @staticmethod
     def extract_room_properties(json_data, destinations):
         unsorted_id = ImageData.get_rrm_segments_ids(json_data)
-        _LOGGER.debug(unsorted_id)
         size_x, size_y = ImageData.get_rrm_image_size(json_data)
         top, left = ImageData.get_rrm_image_position(json_data)
         dummy_segments, outlines = ImageData.get_rrm_segments(json_data,
@@ -155,13 +177,17 @@ class ReImageHandler(object):
                                                               top,
                                                               left,
                                                               True)
-
-        del dummy_segments
-        _LOGGER.debug(outlines)
+        del dummy_segments  # free memory
         dest_json = json.loads(destinations)
         room_data = dict(dest_json).get("rooms", [])
+        zones_data = dict(dest_json).get("zones", [])
+        points_data = dict(dest_json).get("spots", [])
         room_id_to_data = {room["id"]: room for room in room_data}
+        zone_data = {zone["name"]: zone for zone in zones_data}
+        _LOGGER.debug(zone_data)
         room_properties = {}
+        zone_properties = {}
+        point_properties = {}
         for id_x, room_id in enumerate(unsorted_id):
             if room_id in room_id_to_data:
                 room_info = room_id_to_data[room_id]
@@ -172,15 +198,53 @@ class ReImageHandler(object):
                 y_min = outlines[id_x][0][1]
                 y_max = outlines[id_x][1][1]
                 corners = [(x_min, y_min), (x_max, y_min), (x_max, y_max), (x_min, y_max)]
-                room_properties[room_id] = {
+                # rand256 vacuums accept int(room_id) or str(name)
+                # the card will soon support int(room_id) but the camera will send name
+                # this avoids the manual change of the values in the card.
+                room_properties[int(room_id)] = {
                     "number": int(room_id),
                     "outline": corners,
                     "name": name,
                     "x": (x_min + x_max) // 2,
                     "y": (y_min + y_max) // 2,
                 }
-        _LOGGER.debug("Rooms data extracted!")
-        return room_properties
+        id_count = 1
+        for zone in zones_data:
+            zone_name = zone.get("name")
+            coordinates = zone.get("coordinates")
+            coordinates[0].pop()
+            x1, y1, x2, y2 = coordinates[0]
+            if coordinates:
+                zone_properties[zone_name] = {
+                    "zones": coordinates,
+                    "name": zone_name,
+                    "x": ((x1 + x2) // 2),
+                    "y": ((y1 + y2) // 2),
+                }
+                id_count += 1
+        id_count = 1
+        for point in points_data:
+            point_name = point.get("name")
+            coordinates = point.get("coordinates")
+            x1, y1 = coordinates
+            if coordinates:
+                point_properties[id_count] = {
+                    "position": coordinates,
+                    "name": point_name,
+                    "x": x1,
+                    "y": y1,
+                }
+                id_count += 1
+        if room_properties != {}:
+            if zone_properties != {}:
+                _LOGGER.debug("Rooms and Zones, data extracted!")
+            else:
+                _LOGGER.debug("Rooms, data extracted!")
+        elif zone_properties != {}:
+            _LOGGER.debug("Zones, data extracted!")
+        else:
+            _LOGGER.debug("Rooms and Zones data not available!")
+        return room_properties, zone_properties, point_properties
 
     async def get_image_from_rrm(
             self,
@@ -188,10 +252,7 @@ class ReImageHandler(object):
             robot_state,
             img_rotation: int = 0,
             crop: int = 50,
-            trim_u: int = 0,
-            trim_b: int = 0,
-            trim_l: int = 0,
-            trim_r: int = 0,
+            margins: int = 150,
             user_colors: Colors = None,
             rooms_colors: Color = None,
             file_name: "" = None,
@@ -214,7 +275,6 @@ class ReImageHandler(object):
                 if self.room_propriety:
                     _LOGGER.info(file_name + ": Supporting Rooms Cleaning!")
                 size_x, size_y = self.data.get_rrm_image_size(m_json)
-                _LOGGER.debug("image size %s", [size_x, size_y])
                 ##########################
                 self.img_size = {
                     "x": 5120,
@@ -244,14 +304,8 @@ class ReImageHandler(object):
                 if robot_pos:
                     robot_position = robot_pos
                     angle = self.data.get_rrm_robot_angle(m_json)
-                    # if angle[0] == 0:
-                    #     robot_position_angle = self.data.convert_negative_angle(
-                    #         path_pixel['current_angle']
-                    #     )
-                    # else:
-                    robot_position_angle = angle[0]
-                    _LOGGER.debug("robot position: %s", robot_pos)
-                    _LOGGER.debug("robot angle: %s", robot_position_angle)
+                    robot_position_angle = round(angle[0], 0)
+                    _LOGGER.debug(f"robot position: {robot_pos}, robot angle: {robot_position_angle}")
                     self.robot_pos = {
                         "x": robot_position[0],
                         "y": robot_position[1],
@@ -371,13 +425,11 @@ class ReImageHandler(object):
                         file_name,
                     )
                 _LOGGER.debug(file_name + " Image Cropping:" + str(crop) + " Image Rotate:" + str(img_rotation))
-                img_np_array = await self.crop_and_trim_array(
+                img_np_array = await self.auto_crop_and_trim_array(
                     img_np_array,
-                    crop,
-                    int(trim_u),
-                    int(trim_b),
-                    int(trim_l),
-                    int(trim_r),
+                    color_background,
+                    int(crop),
+                    int(margins),
                     int(img_rotation),
                 )
                 pil_img = Image.fromarray(img_np_array, mode="RGBA")
@@ -412,59 +464,62 @@ class ReImageHandler(object):
         return self.room_propriety
 
     def get_calibration_data(self, rotation_angle):
-        calibration_data = []
-        self.img_rotate = rotation_angle
-        _LOGGER.info("Getting Calibrations points %s", self.crop_area)
-        # Calculate the calibration points in the vacuum coordinate system
-        # Valetudo Re version need corrections of the coordinates and are implemented with *10
+        if not self.calibration_data:
+            self.calibration_data = []
+            self.img_rotate = rotation_angle
+            _LOGGER.info("Getting Calibrations points %s", self.crop_area)
+            # Calculate the calibration points in the vacuum coordinate system
+            # Valetudo Re version need corrections of the coordinates and are implemented with *10
 
-        vacuum_points = [
-            {"x": (self.crop_area[0]*10), "y": (self.crop_area[1]*10)},  # Top-left corner 0
-            {"x": (self.crop_area[2]*10), "y": (self.crop_area[1]*10)},  # Top-right corner 1
-            {"x": (self.crop_area[2]*10), "y": (self.crop_area[3]*10)},  # Bottom-right corner 2
-            {
-                "x": (self.crop_area[0]*10),
-                "y": (self.crop_area[3]*10),
-            },  # Bottom-left corner (optional)3
-        ]
-
-        # Define the map points (fixed)
-        map_points = [
-            {"x": 0, "y": 0},  # Top-left corner 0
-            {"x": self.crop_img_size[0], "y": 0},  # Top-right corner 1
-            {
-                "x": self.crop_img_size[0],
-                "y": self.crop_img_size[1],
-            },  # Bottom-right corner 2
-            {"x": 0, "y": self.crop_img_size[1]},  # Bottom-left corner (optional) 3
-        ]
-
-        # Rotate the vacuum points based on the rotation angle
-        if rotation_angle == 90:
             vacuum_points = [
-                vacuum_points[1],
-                vacuum_points[2],
-                vacuum_points[3],
-                vacuum_points[0],
-            ]
-        elif rotation_angle == 180:
-            vacuum_points = [
-                vacuum_points[2],
-                vacuum_points[3],
-                vacuum_points[0],
-                vacuum_points[1],
-            ]
-        elif rotation_angle == 270:
-            vacuum_points = [
-                vacuum_points[3],
-                vacuum_points[0],
-                vacuum_points[1],
-                vacuum_points[2],
+                {"x": (self.crop_area[0]*10), "y": (self.crop_area[1]*10)},  # Top-left corner 0
+                {"x": (self.crop_area[2]*10), "y": (self.crop_area[1]*10)},  # Top-right corner 1
+                {"x": (self.crop_area[2]*10), "y": (self.crop_area[3]*10)},  # Bottom-right corner 2
+                {
+                    "x": (self.crop_area[0]*10),
+                    "y": (self.crop_area[3]*10),
+                },  # Bottom-left corner (optional)3
             ]
 
-        # Create the calibration data for each point
-        for vacuum_point, map_point in zip(vacuum_points, map_points):
-            calibration_point = {"vacuum": vacuum_point, "map": map_point}
-            calibration_data.append(calibration_point)
+            # Define the map points (fixed)
+            map_points = [
+                {"x": 0, "y": 0},  # Top-left corner 0
+                {"x": self.crop_img_size[0], "y": 0},  # Top-right corner 1
+                {
+                    "x": self.crop_img_size[0],
+                    "y": self.crop_img_size[1],
+                },  # Bottom-right corner 2
+                {"x": 0, "y": self.crop_img_size[1]},  # Bottom-left corner (optional) 3
+            ]
 
-        return calibration_data
+            # Rotate the vacuum points based on the rotation angle
+            if rotation_angle == 90:
+                vacuum_points = [
+                    vacuum_points[1],
+                    vacuum_points[2],
+                    vacuum_points[3],
+                    vacuum_points[0],
+                ]
+            elif rotation_angle == 180:
+                vacuum_points = [
+                    vacuum_points[2],
+                    vacuum_points[3],
+                    vacuum_points[0],
+                    vacuum_points[1],
+                ]
+            elif rotation_angle == 270:
+                vacuum_points = [
+                    vacuum_points[3],
+                    vacuum_points[0],
+                    vacuum_points[1],
+                    vacuum_points[2],
+                ]
+
+            # Create the calibration data for each point
+            for vacuum_point, map_point in zip(vacuum_points, map_points):
+                calibration_point = {"vacuum": vacuum_point, "map": map_point}
+                self.calibration_data.append(calibration_point)
+
+            return self.calibration_data
+        else:
+            return self.calibration_data

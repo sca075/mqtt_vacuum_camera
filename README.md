@@ -42,6 +42,8 @@ internal_variables:
   topic: valetudo/your_topic  
   ```
 
+We did work also a little to help the author of the card, we guess soon a new version of the card will be released.
+Those settings will be automatically setup in the card as soon the vacuum and camera will be setup.
 
 ### Known Supported Vacuums:
 ***<details><summary> We here list, thanks to our users, the known working vacuums. </summary>***
@@ -56,7 +58,7 @@ internal_variables:
 
 
 ### How to install:
-Via [HACS](https://hacs.xyz//setup/download) please follow the instructions in [here](./docs/install.md). This detailed guide will help to set up the camera.
+Via [HACS](https://hacs.xyz//setup/download) please follow. The instructions in [here](./docs/install.md) show detailed steps and will help to set up the camera also without HACS (manual setup).
 
 ### Features: 
 <details><summary> We here List what this camera offers as futures. </summary>
@@ -69,16 +71,16 @@ Via [HACS](https://hacs.xyz//setup/download) please follow the instructions in [
    - [*Cropping function*](./docs/croping_trimming.md) (default is 50% of the standard Valetudo size 5210x5210 = 2605x2605).
    - Base colors are the **colors for robot, charger, walls, background, zones etc**.
    - **Rooms colors**, Room 1 is acrually also the Floor color (for vacuum that do not supports rooms).
-   - From v1.3.2 is possible to [**Trim the images**](./docs/croping_trimming.md) as desidered.
+   - From v1.5.0 the camera [**Trim automatically the images**](./docs/croping_trimming.md). From the first image you will get the images already without the need to trim them.
    - It is possible to **display on the image the vacuum staus**.
    - We also added the **[transparency level custom setup](./docs/transparency.md) for all elements and rooms** from v1.4.2.  
-5) This integration make possible to **integrate multiple vacuums** as per each camera will be named with the vacuum name (example: vacuum.robot1 = camera.robot1.. vacuum.robotx = camera.robotx)
+5) This integration make possible to **integrate multiple vacuums** as per each camera will be named with the vacuum name (example: vacuum.robot1 = camera.robot1_camera.. vacuum.robotx = camera.robotx_camera)
 6) The camera as all cameras in HA **supports the ON/OFF service**, it is possible to *suspend and resume the camera streem as desired*. 
 </details>
 
 ## In implementation plan:
-- Reconfigure the camera more easily, and pre-crop and trim automatically the images.
 - Add the SVG export function with some options to split the images.
+- Create the scripts to use Assist (not sure if this is necessary).
 
 ## Notes:
 - This integration is developed and tested using a PI4 with Home Assistant OS fully updated [to the last version](https://www.home-assistant.io/faq/release/), this allows us to confirm that the component is working properly with Home Assistant. Tested also on Docker Supervised "production" enviroment (fully setup home installation).

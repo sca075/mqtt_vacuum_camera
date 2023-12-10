@@ -3,7 +3,7 @@ Collections of Json and List routines
 ImageData is part of the Image_Handler
 used functions to search data in the json
 provided for the creation of the new camera frame
-Last changes on Version: 1.4.9
+Last changes on Version: 1.5.0
 """
 
 import logging
@@ -217,7 +217,7 @@ class ImageData:
         if angle < 0:
             angle = (360 - angle) + 90
         else:
-            angle = (angle + 360) - 90
+            angle = angle - 90
         return angle, json_data.get("robot_angle", 0)
 
     @staticmethod

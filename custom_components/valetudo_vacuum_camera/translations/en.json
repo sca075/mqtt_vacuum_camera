@@ -15,124 +15,39 @@
         "description": "Camera Setup.",
         "title": "Valetudo Camera Setup"
       },
-      "options_1": {
-        "data": {
-          "rotate_image": "Rotate",
-          "crop_image": "50",
-          "trim_top": "0",
-          "trim_bottom": "0",
-          "trim_left": "0",
-          "trim_right": "0",
-          "show_vac_status": "Show Vacuum Status.",
-          "enable_www_snapshots": "Export PNG snapshots in /www/ directory."
-        },
-        "data_description": {
-          "rotate_image": "Degree 0, 90, 180, 270",
-          "crop_image": "Crop the image in %",
-          "trim_top": "Trim Crop Top Area. Pixels amount.",
-          "trim_bottom": "Trim Crop Bottom Area. Pixels amount.",
-          "trim_left": "Trim Crop Left Area. Pixels amount.",
-          "trim_right": "Trim Crop Right Area. Pixels amount."
-        },
-        "description": "Camera Options. Part 1/3",
-        "title": "Image Options"
-      },
-      "options_2": {
-        "data": {
-          "color_charger": "[255, 128, 0]",
-          "color_move": "[238, 247, 255]",
-          "color_wall": "[255, 255, 0]",
-          "color_robot": "[255, 255, 204]",
-          "color_go_to": "[0, 255, 0]",
-          "color_no_go": "[255, 0, 0]",
-          "color_zone_clean": "[255, 255, 255]",
-          "color_background": "[0, 125, 255]",
-          "color_text": "[255, 255, 255]"
-        },
-        "data_description": {
-          "color_charger": "Charger color.",
-          "color_move": "Move color.",
-          "color_wall": "Wall color.",
-          "color_robot": "Robot color.",
-          "color_go_to": "Go-to color.",
-          "color_no_go": "No-go color.",
-          "color_zone_clean": "Zone clean color.",
-          "color_background": "Background color.",
-          "color_text": "Vacuum Status Text color."
-        },
-        "description": "Camera Options. Part 2/3",
-        "title": "Base Colours Setup."
-      },
-      "options_3": {
-        "data": {
-          "color_room_0": "[135, 206, 250]",
-          "color_room_1": "[176, 226, 255]",
-          "color_room_2": "[255, 255, 0]",
-          "color_room_3": "[164, 211, 238]",
-          "color_room_4": "[141, 182, 205]",
-          "color_room_5": "[96, 123, 139]",
-          "color_room_6": "[224, 255, 255]",
-          "color_room_7": "[209, 238, 238]",
-          "color_room_8": "[180, 205, 205]",
-          "color_room_9": "[122, 139, 139]",
-          "color_room_10": "[175, 238, 238]",
-          "color_room_11": "[84, 153, 199]",
-          "color_room_12": "[133, 193, 233]",
-          "color_room_13": "[245, 176, 65]",
-          "color_room_14": "[82, 190, 128]",
-          "color_room_15": "[72, 201, 176]"
-        },
-        "data_description": {
-          "color_room_0": "Room 1, floor color.",
-          "color_room_1": "Room 2",
-          "color_room_2": "Room 3",
-          "color_room_3": "Room 4",
-          "color_room_4": "Room 5",
-          "color_room_5": "Room 6",
-          "color_room_6": "Room 7",
-          "color_room_7": "Room 8",
-          "color_room_8": "Room 9",
-          "color_room_9": "Room 10",
-          "color_room_10": "Room 11",
-          "color_room_11": "Room 12",
-          "color_room_12": "Room 13",
-          "color_room_13": "Room 14",
-          "color_room_14": "Room 15",
-          "color_room_15": "Room 16"
-        },
-        "description": "Camera Options. Part 3/3",
-        "title": "Rooms Colours Setup."
+      "abort": {
+        "already_configured": "Only one instance per vacuum can be configured."
       }
-    },
-    "abort": {
-      "already_configured": "Only one instance per vacuum can be configured."
     }
   },
   "options": {
     "step": {
       "init": {
         "data": {
+          "camera_config_action": "Action"
+        },
+        "description": "Possible Changes:",
+        "title": "Valetudo Camera Options"
+      },
+      "image_opt": {
+        "data": {
           "rotate_image": "Rotate",
           "crop_image": "50",
-          "trim_top": "0",
-          "trim_bottom": "0",
-          "trim_left": "0",
-          "trim_right": "0",
+          "margins": "150",
           "show_vac_status": "Show Vacuum Status.",
+          "color_text": "[255, 255, 255]",
           "enable_www_snapshots": "Export PNG snapshots."
         },
         "data_description": {
           "rotate_image": "Degree 0, 90, 180, 270",
           "crop_image": "Crop the image in %",
-          "trim_top": "Trim Crop Top Area. Pixels amount.",
-          "trim_bottom": "Trim Crop Bottom Area. Pixels amount.",
-          "trim_left": "Trim Crop Left Area. Pixels amount.",
-          "trim_right": "Trim Crop Right Area. Pixels amount."
+          "margins": "Margins pixels.",
+          "color_text": "Vacuum Status Text colour."
         },
-        "description": "Camera Options. Part 1/3",
+        "description": "Camera Image Options",
         "title": "Image Options"
       },
-      "init_2": {
+      "base_colours": {
         "data": {
           "color_charger": "[255, 128, 0]",
           "color_move": "[238, 247, 255]",
@@ -142,7 +57,6 @@
           "color_no_go": "[255, 0, 0]",
           "color_zone_clean": "[255, 255, 255]",
           "color_background": "[0, 125, 255]",
-          "color_text": "[255, 255, 255]",
           "add_base_alpha": "Configure Transparency:"
         },
         "data_description": {
@@ -153,10 +67,9 @@
           "color_go_to": "Go-to color.",
           "color_no_go": "No-go color.",
           "color_zone_clean": "Zone clean color.",
-          "color_background": "Background color.",
-          "color_text": "Vacuum Status Text color."
+          "color_background": "Background color."
         },
-        "description": "Camera Options. Part 2/3",
+        "description": "Camera Colours Options.",
         "title": "Base Colours Setup"
       },
       "alpha_1": {
@@ -171,10 +84,10 @@
           "alpha_background": "Background Alpha",
           "alpha_text": "Text Alpha      "
         },
-        "description": "Camera Options. Part 2/3",
+        "description": "Camera Options. Alpha 1",
         "title": "Alpha Chanel Base Colours"
       },
-      "init_3": {
+      "rooms_colours_1": {
         "data": {
           "color_room_0": "[135, 206, 250]",
           "color_room_1": "[176, 226, 255]",
@@ -184,15 +97,7 @@
           "color_room_5": "[96, 123, 139]",
           "color_room_6": "[224, 255, 255]",
           "color_room_7": "[209, 238, 238]",
-          "color_room_8": "[180, 205, 205]",
-          "color_room_9": "[122, 139, 139]",
-          "color_room_10": "[175, 238, 238]",
-          "color_room_11": "[84, 153, 199]",
-          "color_room_12": "[133, 193, 233]",
-          "color_room_13": "[245, 176, 65]",
-          "color_room_14": "[82, 190, 128]",
-          "color_room_15": "[72, 201, 176]",
-          "add_room_alpha": "Configure Transparency level:"
+          "add_room_1_alpha": "Configure Transparency:"
         },
         "data_description": {
           "color_room_0": "Room 1, floor color.",
@@ -202,7 +107,24 @@
           "color_room_4": "Room 5",
           "color_room_5": "Room 6",
           "color_room_6": "Room 7",
-          "color_room_7": "Room 8",
+          "color_room_7": "Room 8"
+        },
+        "description": "Camera Colours Options.",
+        "title": "Rooms 1 to 8 Colours"
+      },
+      "rooms_colours_2": {
+        "data": {
+          "color_room_8": "[180, 205, 205]",
+          "color_room_9": "[122, 139, 139]",
+          "color_room_10": "[175, 238, 238]",
+          "color_room_11": "[84, 153, 199]",
+          "color_room_12": "[133, 193, 233]",
+          "color_room_13": "[245, 176, 65]",
+          "color_room_14": "[82, 190, 128]",
+          "color_room_15": "[72, 201, 176]",
+          "add_room_2_alpha": "Configure Transparency:"
+        },
+        "data_description": {
           "color_room_8": "Room 9",
           "color_room_9": "Room 10",
           "color_room_10": "Room 11",
@@ -210,11 +132,10 @@
           "color_room_12": "Room 13",
           "color_room_13": "Room 14",
           "color_room_14": "Room 15",
-          "color_room_15": "Room 16",
-          "add_room_alpha": "Configure Transparency:"
+          "color_room_15": "Room 16"
         },
-        "description": "Camera Options. Part 3/3",
-        "title": "Rooms Colours"
+        "description": "Camera Colours Options.",
+        "title": "Rooms 9 to 15 Colours"
       },
       "alpha_2": {
         "data": {
@@ -225,7 +146,13 @@
           "alpha_room_4": "Room 5",
           "alpha_room_5": "Room 6",
           "alpha_room_6": "Room 7",
-          "alpha_room_7": "Room 8",
+          "alpha_room_7": "Room 8"
+        },
+        "description": "Camera Options. Alpha 2",
+        "title": "Alpha Chanel Rooms Colours"
+      },
+      "alpha_3": {
+        "data": {
           "alpha_room_8": "Room 9",
           "alpha_room_9": "Room 10",
           "alpha_room_10": "Room 11",
@@ -235,7 +162,7 @@
           "alpha_room_14": "Room 15",
           "alpha_room_15": "Room 16"
         },
-        "description": "Camera Options. Part 2/3",
+        "description": "Camera Options. Alpha 3",
         "title": "Alpha Chanel Rooms Colours"
       }
     }

@@ -1,10 +1,12 @@
-"""Camera Version 1.4.9
+"""Camera Version 1.5.0
 Valetudo Re Test image.
 """
 
 from __future__ import annotations
+
 import logging
 import os
+import psutil_home_assistant as proc_insp
 import json
 from io import BytesIO
 from datetime import datetime
@@ -24,7 +26,7 @@ from homeassistant.helpers.typing import (
     HomeAssistantType,
 )
 from homeassistant.util import Throttle
-from custom_components.valetudo_vacuum_camera.valetudo.connector import (
+from custom_components.valetudo_vacuum_camera.valetudo.MQTT.connector import (
     ValetudoConnector,
 )
 from .valetudo.image_handler import (
@@ -49,6 +51,7 @@ from .const import (
     PLATFORMS,
     ATTR_ROTATE,
     ATTR_CROP,
+    ATTR_MARGINS,
     ATTR_TRIM_TOP,
     ATTR_TRIM_BOTTOM,
     ATTR_TRIM_LEFT,
@@ -170,12 +173,15 @@ class ValetudoCamera(Camera):
         self._mqtt = ValetudoConnector(self._mqtt_listen_topic, self.hass)
         self._identifiers = device_info.get(CONF_VACUUM_IDENTIFIERS)
         self._image = None
+        self._processing = False
         self._image_w = None
         self._image_h = None
         self._should_poll = False
         self._map_handler = MapImageHandler()
         self._re_handler = ReImageHandler()
         self._map_rooms = None
+        self._map_pred_zones = None
+        self._map_pred_points = None
         self._vacuum_shared = Vacuum()
         self._vacuum_state = None
         self._frame_interval = 1
@@ -187,6 +193,7 @@ class ValetudoCamera(Camera):
         self._current = None
         self._image_rotate = int(device_info.get(ATTR_ROTATE, 0))
         self._image_crop = int(device_info.get(ATTR_CROP, 0))
+        self._margins = int(device_info.get(ATTR_MARGINS, 150))
         self._trim_up = int(device_info.get(ATTR_TRIM_TOP, 0))
         self._trim_down = int(device_info.get(ATTR_TRIM_BOTTOM, 0))
         self._trim_left = int(device_info.get(ATTR_TRIM_LEFT, 0))
@@ -206,7 +213,7 @@ class ValetudoCamera(Camera):
         self._image_grab = True
         self._frame_nuber = 0
         self._rrm_data = False  # Temp. check for rrm data
-        self.throttled_camera_image = Throttle(timedelta(seconds=4))(self.camera_image)
+        self.throttled_camera_image = Throttle(timedelta(seconds=6))(self.camera_image)
         try:
             self.user_colors = [
                 device_info.get(COLOR_WALL),
@@ -333,6 +340,10 @@ class ValetudoCamera(Camera):
             attrs["snapshot"] = False
         if (self._map_rooms is not None) and (self._map_rooms != {}):
             attrs["rooms"] = self._map_rooms
+        if (self._map_pred_zones is not None) and (self._map_pred_zones != {}):
+            attrs["zones"] = self._map_pred_zones
+        if (self._map_pred_points is not None) and (self._map_pred_points != {}):
+            attrs["points"] = self._map_pred_points
         return attrs
 
     @property
@@ -391,7 +402,7 @@ class ValetudoCamera(Camera):
             _LOGGER.warning(
                 "Error Saving"
                 + self.file_name
-                + ": Snapshot, no snapshot available till restart."
+                + ": Snapshot, will not be available till restart."
             )
         else:
             _LOGGER.debug(
@@ -416,11 +427,12 @@ class ValetudoCamera(Camera):
         """Camera Frame Update"""
         # check and update the vacuum reported state
         if not self._mqtt:
-            return
+            return self.empty_if_no_data()
         # If we have data from MQTT, we process the image
         self._vacuum_state = await self._mqtt.get_vacuum_status()
-        process_data = await self._mqtt.is_data_available()
+        process_data = await self._mqtt.is_data_available(self._processing)
         if process_data:
+            self._processing = True
             # if the vacuum is working, or it is the first image.
             if (
                     self._vacuum_state == "cleaning"
@@ -434,8 +446,7 @@ class ValetudoCamera(Camera):
                 # take the snapshot.
                 self._snapshot_taken = False
                 _LOGGER.info(
-                    self.file_name + ": Camera image data update available: %s",
-                    process_data,
+                    f"{self.file_name}: Camera image data update available: {process_data}"
                     )
             # calculate the cycle time for frame adjustment
             start_time = datetime.now()
@@ -458,17 +469,13 @@ class ValetudoCamera(Camera):
             else:
                 # Just in case, let's check that the data is available
                 if parsed_json is not None:
-                    pil_img = None
                     if self._rrm_data:
                         pil_img = await self._re_handler.get_image_from_rrm(
                             m_json=self._rrm_data,
                             robot_state=self._vacuum_state,
                             crop=self._image_crop,
                             img_rotation=self._image_rotate,
-                            trim_u=self._trim_up,
-                            trim_b=self._trim_down,
-                            trim_r=self._trim_right,
-                            trim_l=self._trim_left,
+                            margins=self._margins,
                             user_colors=self._vacuum_shared.get_user_colors(),
                             rooms_colors=self._vacuum_shared.get_rooms_colors(),
                             file_name=self.file_name,
@@ -479,10 +486,7 @@ class ValetudoCamera(Camera):
                             robot_state=self._vacuum_state,
                             crop=self._image_crop,
                             img_rotation=self._image_rotate,
-                            trim_u=self._trim_up,
-                            trim_b=self._trim_down,
-                            trim_r=self._trim_right,
-                            trim_l=self._trim_left,
+                            margins=self._margins,
                             user_colors=self._vacuum_shared.get_user_colors(),
                             rooms_colors=self._vacuum_shared.get_rooms_colors(),
                             file_name=self.file_name,
@@ -491,17 +495,18 @@ class ValetudoCamera(Camera):
                         if self._map_rooms is None:
                             if self._rrm_data is None:
                                 self._map_rooms = await self._map_handler.get_rooms_attributes()
-                            else:
+                            elif (self._map_rooms is None) and (self._rrm_data is not None):
                                 destinations = await self._mqtt.get_destinations()
                                 if destinations is not None:
-                                    self._map_rooms = await self._re_handler.get_rooms_attributes(destinations)
-                        if self._map_rooms:
-                            _LOGGER.debug(
-                                "State attributes rooms update: %s",
-                                self._map_rooms)
+                                    self._map_rooms, self._map_pred_zones, self._map_pred_points = \
+                                        await self._re_handler.get_rooms_attributes(destinations)
+                            if self._map_rooms:
+                                _LOGGER.debug(
+                                    f"State attributes rooms update: {self._map_rooms}"
+                                )
                         _LOGGER.debug(
-                            "Applied " + self.file_name + " image rotation: %s",
-                            {self._image_rotate},
+                            f"Applied  {self.file_name} "
+                            f"image rotation: {self._image_rotate}"
                             )
                         if self._show_vacuum_state:
                             self._map_handler.draw.status_text(
@@ -523,18 +528,14 @@ class ValetudoCamera(Camera):
                                 ):
                                     self._image_grab = False
                                     _LOGGER.info(
-                                        "Suspended the camera data processing for: "
-                                        + self.file_name
-                                        + "."
+                                        f"Suspended the camera data processing for: {self.file_name}."
                                     )
                                     # take a snapshot
                                     await self.take_snapshot(parsed_json, pil_img)
                             else:
                                 self._image_grab = False
                                 _LOGGER.info(
-                                    "Suspended the camera data processing for: "
-                                    + self.file_name
-                                    + "."
+                                    f"Suspended the camera data processing for: {self.file_name}."
                                 )
                                 # take a snapshot
                                 await self.take_snapshot(self._rrm_data, pil_img)
@@ -564,9 +565,15 @@ class ValetudoCamera(Camera):
                     # On Py4 HA OS is not possible to install the openCV library.
                     buffered = BytesIO()
                     # backup the image
-                    self._last_image = pil_img
-                    self._image_w = pil_img.width
-                    self._image_h = pil_img.height
+                    if pil_img:
+                        self._last_image = pil_img
+                        self._image_w = pil_img.width
+                        self._image_h = pil_img.height
+                    else:
+                        pil_img = self.empty_if_no_data()
+                        self._last_image = None
+                        self._image_w = pil_img.width
+                        self._image_h = pil_img.height
                     pil_img.save(buffered, format="PNG")
                     bytes_data = buffered.getvalue()
                     self._image = bytes_data
@@ -575,10 +582,8 @@ class ValetudoCamera(Camera):
                     _LOGGER.info(self.file_name + ": Image update complete")
                     processing_time = (datetime.now() - start_time).total_seconds()
                     self._frame_interval = max(0.1, processing_time)
-                    _LOGGER.debug(
-                        "Adjusted " + self.file_name + ": Frame interval: %s",
-                        self._frame_interval,
-                        )
+                    _LOGGER.debug(f"Adjusted {self.file_name}: Frame interval: {self._frame_interval}")
+
                 else:
                     _LOGGER.info(
                         self.file_name
@@ -586,4 +591,11 @@ class ValetudoCamera(Camera):
                     )
                     self._frame_interval = 0.1
                 self.camera_image(self._image_w, self._image_h)
+                # HA supervised memory and CUP usage report.
+                _LOGGER.debug(
+                    f"{self.file_name} Camera CPU usage %: "
+                    f"{proc_insp.PsutilWrapper().psutil.cpu_percent(interval=self.frame_interval)}")
+                _LOGGER.debug(f"{self.file_name} Camera Virtual Memory usage %: "
+                              f"{proc_insp.PsutilWrapper().psutil.virtual_memory().percent}")
+                self._processing = False
                 return self._image

@@ -18,7 +18,6 @@ def get_device_info(config_entry_id: str, hass: HomeAssistant) -> tuple[str, Dev
     entity registry and device registry.
     """
     vacuum_entity_id = er.async_resolve_entity_id(er.async_get(hass), config_entry_id)
-
     if not vacuum_entity_id:
         _LOGGER.error("Unable to lookup vacuum's entity ID. Was it removed?")
         return None
@@ -86,7 +85,7 @@ async def update_options(bk_options, new_options):
     # Initialize updated_options as an empty dictionary
     updated_options = {}
 
-    keys_to_update = ['rotate_image', 'crop_image', 'trim_top', 'trim_bottom', 'trim_left', 'trim_right',
+    keys_to_update = ['rotate_image', 'crop_image', 'margins', 'trim_top', 'trim_bottom', 'trim_left', 'trim_right',
                       'show_vac_status', 'enable_www_snapshots', 'color_charger', 'color_move', 'color_wall',
                       'color_robot', 'color_go_to', 'color_no_go', 'color_zone_clean', 'color_background',
                       'color_text', 'alpha_charger', 'alpha_move', 'alpha_wall', 'alpha_robot', 'alpha_go_to',

@@ -19,6 +19,7 @@ from custom_components.valetudo_vacuum_camera.common import (
     get_device_info,
     get_vacuum_mqtt_topic,
     get_vacuum_unique_id_from_mqtt_topic,
+    update_options,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -35,52 +36,9 @@ async def options_update_listener(
 
 async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
     mqtt_topic_base = ""
+
     """Migrate old entry."""
     _LOGGER.debug("Migrating config entry from version %s", config_entry.version)
-
-    if config_entry.version == 1.2:
-        new_data = {**config_entry.data}
-        _LOGGER.debug(new_data)
-        new_data.update({"trim_top": "0"})
-        new_data.update({"trim_bottom": "0"})
-        new_data.update({"trim_left": "0"})
-        new_data.update({"trim_right": "0"})
-        new_data.update({"show_vac_status": False})
-        new_data.update({"color_text": [255, 255, 255]})
-        _LOGGER.debug(new_data)
-        new_options = {**config_entry.options}
-        _LOGGER.debug(new_options)
-        if new_options or len(new_options) > 0:
-            new_options.update({"trim_top": "0"})
-            new_options.update({"trim_bottom": "0"})
-            new_options.update({"trim_left": "0"})
-            new_options.update({"trim_right": "0"})
-            new_options.update({"show_vac_status": False})
-            new_options.update({"color_text": [255, 255, 255]})
-        else:
-            new_options = new_data
-        _LOGGER.debug(new_options)
-
-        config_entry.version = 1.3
-        hass.config_entries.async_update_entry(config_entry, data=new_data)
-        hass.config_entries.async_update_entry(config_entry, options=new_options)
-
-    if config_entry.version == 1.3:
-        new_data = {**config_entry.data}
-        _LOGGER.debug(new_data)
-        new_data.update({"broker_host": "core-mosquitto"})
-        _LOGGER.debug(new_data)
-        new_options = {**config_entry.options}
-        _LOGGER.debug(new_options)
-        if new_options or len(new_options) > 0:
-            new_options.update({"broker_host": "core-mosquitto"})
-        else:
-            new_options = new_data
-        _LOGGER.debug(new_options)
-
-        config_entry.version = 1.4
-        hass.config_entries.async_update_entry(config_entry, data=new_data)
-        hass.config_entries.async_update_entry(config_entry, options=new_options)
 
     if config_entry.version <= 2.0:
         new_data = {**config_entry.data}
@@ -200,6 +158,23 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
         hass.config_entries.async_update_entry(
             config_entry, data=new_data, options=new_options
         )
+
+    if config_entry.version == 2.1:
+        old_data = {**config_entry.data}
+        new_data = {'vacuum_config_entry': old_data['vacuum_config_entry']}
+        _LOGGER.debug(dict(new_data))
+        old_options = {**config_entry.options}
+        if len(old_options) is not 0:
+            tmp_option = {"margins": "150"}
+            new_options = await update_options(old_options, tmp_option)
+            _LOGGER.debug(dict(new_options))
+            config_entry.version = 2.2
+            hass.config_entries.async_update_entry(
+                config_entry, data=new_data, options=new_options
+            )
+        else:
+            _LOGGER.error("Please REMOVE and SETUP the Camera again. Error in migration process!!")
+            return False
 
     _LOGGER.info(
         "Migration to config entry version %s successful", config_entry.version

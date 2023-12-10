@@ -1,5 +1,5 @@
 """
-Version 1.4.9
+Version 1.5.0
 - Removed the PNG decode, the json is extracted from map-data instead of map-data hass.
 - Tested no influence on the camera performance.
 - Added gzip library used in Valetudo RE data compression.
@@ -22,7 +22,6 @@ class ValetudoConnector:
     def __init__(self, mqtt_topic, hass):
         self._hass = hass
         self._mqtt_topic = mqtt_topic
-        _LOGGER.debug(">>>>>>>>>>>", mqtt_topic)
         self._unsubscribe_handlers = []
         self._rcv_topic = None
         self._payload = None
@@ -77,8 +76,11 @@ class ValetudoConnector:
     async def get_vacuum_error(self):
         return self._mqtt_vac_err
 
-    async def is_data_available(self):
-        return self._data_in
+    async def is_data_available(self, process):
+        if not process:
+            return self._data_in
+        else:
+            return False
 
     async def get_destinations(self):
         return self._rrm_destinations
@@ -106,19 +108,21 @@ class ValetudoConnector:
     async def async_message_received(self, msg):
         self._rcv_topic = msg.topic
         if self._rcv_topic == (self._mqtt_topic + "/map_data"):
-            _LOGGER.info("Received Valetudo RE " + self._mqtt_topic + " image data from MQTT")
-            self._rrm_payload = msg.payload  # RRM Image data update the received payload
-            self._data_in = True
-            self._is_rrm = True
-            if self._do_it_once:
-                _LOGGER.debug("Do it once.. request destinations to: %s", self._mqtt_topic)
-                await self.rrm_publish_destinations()
-                self._do_it_once = False
+            if not self._data_in:
+                _LOGGER.info("Received Valetudo RE " + self._mqtt_topic + " image data from MQTT")
+                self._rrm_payload = msg.payload  # RRM Image data update the received payload
+                self._data_in = True
+                self._is_rrm = True
+                if self._do_it_once:
+                    _LOGGER.debug("Do it once.. request destinations to: %s", self._mqtt_topic)
+                    await self.rrm_publish_destinations()
+                    self._do_it_once = False
         elif self._rcv_topic == self._mqtt_topic + "/MapData/map-data":
-            _LOGGER.info("Received " + self._mqtt_topic + " image data from MQTT")
-            self._img_payload = msg.payload
-            self._data_in = True
-            self._is_rrm = False
+            if not self._data_in:
+                _LOGGER.info("Received " + self._mqtt_topic + " image data from MQTT")
+                self._img_payload = msg.payload
+                self._data_in = True
+                self._is_rrm = False
         elif self._rcv_topic == (self._mqtt_topic + "/StatusStateAttribute/status"):
             self._payload = msg.payload
             if self._payload:

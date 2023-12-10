@@ -1,5 +1,5 @@
 """Constants for the valetudo_vacuum_camera integration."""
-"""Version 1.4.7"""
+"""Version 1.5.0"""
 
 """Required in Config_Flow"""
 PLATFORMS = ["camera"]
@@ -7,6 +7,7 @@ DOMAIN = "valetudo_vacuum_camera"
 DEFAULT_NAME = "valetudo vacuum camera"
 ATTR_ROTATE = "rotate_image"
 ATTR_CROP = "crop_image"
+ATTR_MARGINS = "margins"
 ATTR_TRIM_TOP = "trim_top"
 ATTR_TRIM_BOTTOM = "trim_bottom"
 ATTR_TRIM_LEFT = "trim_left"
@@ -27,7 +28,8 @@ NAME = "Valetudo Vacuum Camera"
 IDLE_SCAN_INTERVAL = 120
 CLEANING_SCAN_INTERVAL = 5
 IS_ALPHA = "add_base_alpha"
-IS_ALPHA_R = "add_room_alpha"
+IS_ALPHA_R1 = "add_room_1_alpha"
+IS_ALPHA_R2 = "add_room_2_alpha"
 
 """Base Colours RGB"""
 COLOR_CHARGER = "color_charger"
