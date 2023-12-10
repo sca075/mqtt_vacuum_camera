@@ -47,12 +47,15 @@ Those settings will be automatically setup in the card as soon the vacuum and ca
 
 ### Known Supported Vacuums:
 ***<details><summary> We here list, thanks to our users, the known working vacuums. </summary>***
-- Dreame D9 / Z10 Pro
+- Dreame D9
+- Dreame Z10 Pro
+- Dreame L10s Ultra
 - Mi Robot Vacuum-Mop P
 - Roborock.S5 / S50 / S55 (Gen.2)
+- Roborock.S7
 - Roborock.V1 (Gen.1)
 - Xiaomi C1
-- In general, **it works with all flashed Valetudo Hypfer vacuums** . Please [let us know](https://docs.google.com/forms/d/e/1FAIpQLSfdWAIEmwDAAE7b6rHatnyGFNw_f0Osnai4ouT2cZNnwP26KQ/viewform) if your vacuum can be added to the list.</details>
+- In general, **it works with all flashed Valetudo Hypfer or RE(rand256) vacuums** . Please [let us know](https://docs.google.com/forms/d/e/1FAIpQLSfdWAIEmwDAAE7b6rHatnyGFNw_f0Osnai4ouT2cZNnwP26KQ/viewform) if your vacuum can be added to the list.</details>
 
 ![Screenshot 2023-09-12 at 22 53 29](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/4f5981e3-39f2-449a-8a43-39870631e9a1)
 
@@ -64,7 +67,7 @@ Via [HACS](https://hacs.xyz//setup/download) please follow. The instructions in 
 <details><summary> We here List what this camera offers as futures. </summary>
 
 1) **Automatically Generate the calibration points for the lovelace-xiaomi-vacuum-map-card** to ensure full compatibility to this user-friendly card.
-2) **Automatically Generate rooms based configuration when vacuum support this functionality**, this will allow you to configure the rooms quickly on the [lovelace-xiaomi-vacuum-map-card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
+2) **Automatically Generate rooms based configuration when vacuum support this functionality**, this will allow you to configure the rooms quickly on the [lovelace-xiaomi-vacuum-map-card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card). Both firmwares are now supported.
 3) **The camera take automatically [snapshots](./docs/snapshots.md) (when the vacuum idle/ error / docked)**
 4) **Change the image options** directly form the Home Assistant integration UI with a simple click on the integration configuration.
    - **Image Rotation**: 0, 90, 180, 270 (default is 0).
@@ -84,7 +87,6 @@ Via [HACS](https://hacs.xyz//setup/download) please follow. The instructions in 
 
 ## Notes:
 - This integration is developed and tested using a PI4 with Home Assistant OS fully updated [to the last version](https://www.home-assistant.io/faq/release/), this allows us to confirm that the component is working properly with Home Assistant. Tested also on Docker Supervised "production" enviroment (fully setup home installation).
-- #### [By clicking here you can give us feedback, this would be really nice from you (survey powered by Google) :)](https://docs.google.com/forms/d/e/1FAIpQLSfdWAIEmwDAAE7b6rHatnyGFNw_f0Osnai4ouT2cZNnwP26KQ/viewform)
 
 ### Tanks to:
 - [@PiotrMachowski](https://github.com/PiotrMachowski) inspiring this integration and his amazing work.
