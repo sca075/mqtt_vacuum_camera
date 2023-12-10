@@ -14,9 +14,6 @@
         },
         "description": "Camera Setup.",
         "title": "Valetudo Camera Setup"
-      },
-      "abort": {
-        "already_configured": "Only one instance per vacuum can be configured."
       }
     }
   },
