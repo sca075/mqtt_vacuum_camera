@@ -56,6 +56,7 @@ Those settings will be automatically setup in the card as soon the vacuum and ca
 - Roborock.V1 (Gen.1)
 - Xiaomi C1
 - In general, **it works with all flashed Valetudo Hypfer or RE(rand256) vacuums**.
+  </details>
 
 ![Screenshot 2023-09-12 at 22 53 29](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/4f5981e3-39f2-449a-8a43-39870631e9a1)
 
