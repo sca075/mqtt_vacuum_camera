@@ -1,4 +1,4 @@
-"""Camera Version 1.5.0
+"""Camera Version 1.5.1
 Valetudo Re Test image.
 """
 
@@ -191,6 +191,7 @@ class ValetudoCamera(Camera):
         self._attr_calibration_points = None
         self._base = None
         self._current = None
+        self._attr_cpu_percent = None
         self._image_rotate = int(device_info.get(ATTR_ROTATE, 0))
         self._image_crop = int(device_info.get(ATTR_CROP, 0))
         self._margins = int(device_info.get(ATTR_MARGINS, 150))
@@ -592,9 +593,9 @@ class ValetudoCamera(Camera):
                     self._frame_interval = 0.1
                 self.camera_image(self._image_w, self._image_h)
                 # HA supervised memory and CUP usage report.
-                _LOGGER.debug(
-                    f"{self.file_name} Camera CPU usage %: "
-                    f"{proc_insp.PsutilWrapper().psutil.cpu_percent(interval=self.frame_interval)}")
+                proc = proc_insp.PsutilWrapper().psutil.Process()
+                self._attr_cpu_percent = proc.cpu_percent() / proc_insp.PsutilWrapper().psutil.cpu_count()
+                _LOGGER.debug(f"{self.file_name} Camera CPU usage %: {self._attr_cpu_percent}")
                 _LOGGER.debug(f"{self.file_name} Camera Virtual Memory usage %: "
                               f"{proc_insp.PsutilWrapper().psutil.virtual_memory().percent}")
                 self._processing = False

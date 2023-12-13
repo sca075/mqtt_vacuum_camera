@@ -60,7 +60,8 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
             config_entry_id = get_entity_identifier_from_mqtt(mqtt_identifier, hass)
             if not config_entry_id:
                 _LOGGER.error(
-                    "Unable to migrate to config entry version 2.0. Could not find a device for %s. Please recreate this entry.",
+                    "Unable to migrate to config entry version 2.0. Could not find a device for %s." +
+                    " Please recreate this entry.",
                     mqtt_topic_base,
                 )
                 return False
@@ -164,7 +165,7 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
         new_data = {'vacuum_config_entry': old_data['vacuum_config_entry']}
         _LOGGER.debug(dict(new_data))
         old_options = {**config_entry.options}
-        if len(old_options) is not 0:
+        if len(old_options) != 0:
             tmp_option = {"margins": "150"}
             new_options = await update_options(old_options, tmp_option)
             _LOGGER.debug(dict(new_options))

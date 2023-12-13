@@ -2,7 +2,7 @@
 Image Handler Module dor Valetudo Re Vacuums.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Last Changed on Version: 1.5.0
+Last Changed on Version: 1.5.1
 """
 from __future__ import annotations
 
@@ -49,122 +49,82 @@ class ReImageHandler(object):
             self,
             image_array,
             detect_colour,
-            crop_percentage,
-            margin_size: int = 150,
+            margin_size: int = 0,
             rotate: int = 0,
     ):
         """
-        Automatically crops and trims a numpy array and returns the processed image and scale factor.
+        Automatically crops and trims a numpy array and returns the processed image.
         """
-
         _LOGGER.debug(f"Image original size: {image_array.shape[1]}, {image_array.shape[0]}")
-        center_x = image_array.shape[1] // 2
-        center_y = image_array.shape[0] // 2
-
-        if crop_percentage < 50:
-            crop_percentage = 50
-        # Calculate the crop size based on crop_percentage
-        crop_size = int(min(center_x, center_y) * crop_percentage / 100)
-        # Calculate the initial crop box at 0 degrees rotation
-        cropbox = (
-            center_x - crop_size,
-            center_y - crop_size,
-            center_x + crop_size,
-            center_y + crop_size,
-        )
-
-        # Crop the image based on the initial crop box
-        pre_cropped = image_array[cropbox[1]: cropbox[3], cropbox[0]: cropbox[2]]
-        _LOGGER.debug(f"Image size after first crop: {pre_cropped.shape[1]}, {pre_cropped.shape[0]}")
-        # Rotate the cropped image based on the given angle
-        if rotate == 90:
-            rotated = np.rot90(pre_cropped, 1)
-        elif rotate == 180:
-            rotated = np.rot90(pre_cropped, 2)
-        elif rotate == 270:
-            rotated = np.rot90(pre_cropped, 3)
-        else:
-            rotated = pre_cropped
 
         if not self.new_crop:
             # Find the coordinates of the first occurrence of a non-background color
-            nonzero_coords = np.column_stack(np.where(rotated != list(detect_colour)))
-
+            nonzero_coords = np.column_stack(np.where(image_array != list(detect_colour)))
             # Calculate the crop box based on the first and last occurrences
             min_y, min_x, dummy = np.min(nonzero_coords, axis=0)
             max_y, max_x, dummy = np.max(nonzero_coords, axis=0)
-            _LOGGER.debug("crop max and min values (y,x) ({}, {}) ({},{})...".format(
+            del dummy
+            _LOGGER.debug("Crop max and min values (y,x) ({}, {}) ({},{})...".format(
                 int(max_y), int(max_x), int(min_y), int(min_x)))
-
-            # Calculate the trims values.
-            if rotate == 90:
-                self.trim_left = int(min_x) - margin_size
-                self.trim_up = int(min_y) - margin_size
-                self.trim_right = rotated.shape[0] - int(max_x) - margin_size
-                self.trim_down = rotated.shape[1] - int(max_y) - margin_size
-                self.new_crop = (
-                    cropbox[0] + self.trim_down,
-                    cropbox[1] + self.trim_left,
-                    cropbox[2] - self.trim_up,
-                    cropbox[3] - self.trim_right,
-                )
-            elif rotate == 180:
-                self.trim_left = int(min_x) - margin_size
-                self.trim_up = int(min_y) - margin_size
-                self.trim_right = rotated.shape[1] - int(max_x) - margin_size
-                self.trim_down = rotated.shape[0] - int(max_y) - margin_size
-                self.new_crop = (
-                    cropbox[0] + self.trim_right,
-                    cropbox[1] + self.trim_down,
-                    cropbox[2] - self.trim_left,
-                    cropbox[3] - self.trim_up,
-                )
-            elif rotate == 270:
-                self.trim_left = int(min_x) - margin_size
-                self.trim_up = int(min_y) - margin_size
-                self.trim_right = rotated.shape[0] - int(max_x) - margin_size
-                self.trim_down = rotated.shape[1] - int(max_y) - margin_size
-                self.new_crop = (
-                    cropbox[0] + self.trim_up,
-                    cropbox[1] + self.trim_right,
-                    cropbox[2] - self.trim_down,
-                    cropbox[3] - self.trim_left,
-                )
-            else:
-                self.trim_left = int(min_x) - margin_size
-                self.trim_up = int(min_y) - margin_size
-                self.trim_right = rotated.shape[0] - int(max_x) - margin_size
-                self.trim_down = rotated.shape[1] - int(max_y) - margin_size
-                self.new_crop = (
-                    cropbox[0] + self.trim_left,
-                    cropbox[1] + self.trim_up,
-                    cropbox[2] - self.trim_right,
-                    cropbox[3] - self.trim_down,
-                )
-
+            # Calculate the trims values
+            self.trim_left = int(min_x) - margin_size
+            self.trim_up = int(min_y) - margin_size
+            self.trim_right = int(max_x) + margin_size
+            self.trim_down = int(max_y) + margin_size
             _LOGGER.debug("Calculated trims right {}, bottom {}, left {}, up {} ".format(
                 self.trim_right, self.trim_down, self.trim_left, self.trim_up))
             # Calculate the dimensions after trimming using min/max values
-            if self.trim_left < self.trim_right:
-                trimmed_width = self.trim_right - self.trim_left
-            else:
-                trimmed_width = self.trim_left + self.trim_right
-            if self.trim_up < self.trim_down:
-                trimmed_height = self.trim_down - self.trim_up
-            else:
-                trimmed_height = self.trim_up + self.trim_down
+            trimmed_width = max(0,  self.trim_right - self.trim_left)
+            trimmed_height = max(0, self.trim_down - self.trim_up)
             _LOGGER.debug("Calculated trim width {} and trim height {}".format(trimmed_width, trimmed_height))
+            # Test if the trims are okay or not
+            if trimmed_height <= margin_size or trimmed_width <= margin_size:
+                _LOGGER.warning(f"Background colour not detected at rotation {rotate}.")
+                self.crop_area = (0, 0, image_array.size[1], image_array.size[0])
+                self.img_size = (image_array.shape[1], image_array.shape[0])
+                return image_array
+            # Calculate the crop area in the original image_array
+            self.new_crop = (
+                self.trim_left,
+                self.trim_up,
+                self.trim_right,
+                self.trim_down,
+            )
         # Apply the auto-calculated trims to the rotated image
-        trimmed = rotated[
-                  self.trim_up: rotated.shape[0] - self.trim_down,
-                  self.trim_left: rotated.shape[1] - self.trim_right,
+        trimmed = image_array[
+                  self.new_crop[1]: self.new_crop[3],
+                  self.new_crop[0]: self.new_crop[2]
                   ]
-        # Calculate the crop area in the original image_array
-        self.crop_area = self.new_crop
+
+        # Rotate the cropped image based on the given angle
+        if rotate == 90:
+            rotated = np.rot90(trimmed, 1)
+            self.crop_area = (
+                self.trim_left,
+                self.trim_up,
+                self.trim_right,
+                self.trim_down
+            )
+        elif rotate == 180:
+            rotated = np.rot90(trimmed, 2)
+            self.crop_area = self.new_crop
+        elif rotate == 270:
+            rotated = np.rot90(trimmed, 3)
+            self.crop_area = (
+                self.trim_left,
+                self.trim_up,
+                self.trim_right,
+                self.trim_down
+            )
+        else:
+            rotated = trimmed
+            self.crop_area = self.new_crop
+
         _LOGGER.debug("Auto Crop and Trim Box data: %s", self.crop_area)
-        self.crop_img_size = (trimmed.shape[1], trimmed.shape[0])
+        self.crop_img_size = (rotated.shape[1], rotated.shape[0])
         _LOGGER.debug("Auto Crop and Trim image size: %s", self.crop_img_size)
-        return trimmed
+
+        return rotated
 
     @staticmethod
     def extract_room_properties(json_data, destinations):
@@ -428,7 +388,6 @@ class ReImageHandler(object):
                 img_np_array = await self.auto_crop_and_trim_array(
                     img_np_array,
                     color_background,
-                    int(crop),
                     int(margins),
                     int(img_rotation),
                 )
