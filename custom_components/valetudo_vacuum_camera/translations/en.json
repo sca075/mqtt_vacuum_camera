@@ -29,7 +29,6 @@
       "image_opt": {
         "data": {
           "rotate_image": "Rotate",
-          "crop_image": "50",
           "margins": "150",
           "show_vac_status": "Show Vacuum Status.",
           "color_text": "[255, 255, 255]",
@@ -37,8 +36,7 @@
         },
         "data_description": {
           "rotate_image": "Degree 0, 90, 180, 270",
-          "crop_image": "Crop the image in %",
-          "margins": "Margins pixels.",
+          "margins": "Auto Crop Margins in pixels.",
           "color_text": "Vacuum Status Text colour."
         },
         "description": "Camera Image Options",

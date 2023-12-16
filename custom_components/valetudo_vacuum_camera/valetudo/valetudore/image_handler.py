@@ -2,7 +2,7 @@
 Image Handler Module dor Valetudo Re Vacuums.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Last Changed on Version: 1.5.1
+Last Changed on Version: 1.5.2
 """
 from __future__ import annotations
 
@@ -23,27 +23,29 @@ _LOGGER = logging.getLogger(__name__)
 # noinspection PyTypeChecker
 class ReImageHandler(object):
     def __init__(self):
-        self.img_size = None
+        self.auto_crop = None
+        self.calibration_data = None
+        self.charger_pos = None
         self.crop_area = None
         self.crop_img_size = None
-        self.img_base_layer = None
-        self.frame_number = 0
-        self.calibration_data = None
-        self.trim_up = None
-        self.trim_down = None
-        self.trim_right = None
-        self.trim_left = None
-        self.new_crop = None
-        self.path_pixels = None
-        self.robot_pos = None
-        self.charger_pos = None
-        self.json_id = None
-        self.json_data = None
-        self.go_to = None
-        self.img_rotate = 0
-        self.room_propriety = None
         self.data = ImageData
         self.draw = Drawable
+        self.frame_number = 0
+        self.go_to = None
+        self.img_base_layer = None
+        self.img_rotate = 0
+        self.img_size = None
+        self.json_data = None
+        self.json_id = None
+        self.path_pixels = None
+        self.robot_in_room = None
+        self.robot_pos = None
+        self.room_propriety = None
+        self.rooms_pos = None
+        self.trim_down = None
+        self.trim_left = None
+        self.trim_right = None
+        self.trim_up = None
 
     async def auto_crop_and_trim_array(
             self,
@@ -55,36 +57,54 @@ class ReImageHandler(object):
         """
         Automatically crops and trims a numpy array and returns the processed image.
         """
-        _LOGGER.debug(f"Image original size: {image_array.shape[1]}, {image_array.shape[0]}")
-
-        if not self.new_crop:
+        if not self.auto_crop:
+            _LOGGER.debug(f"Image original size: {image_array.shape[1]}, {image_array.shape[0]}")
+            center_x = image_array.shape[1] // 2
+            center_y = image_array.shape[0] // 2
             # Find the coordinates of the first occurrence of a non-background color
             nonzero_coords = np.column_stack(np.where(image_array != list(detect_colour)))
             # Calculate the crop box based on the first and last occurrences
             min_y, min_x, dummy = np.min(nonzero_coords, axis=0)
             max_y, max_x, dummy = np.max(nonzero_coords, axis=0)
-            del dummy
-            _LOGGER.debug("Crop max and min values (y,x) ({}, {}) ({},{})...".format(
+            del dummy, nonzero_coords
+            _LOGGER.debug("Found crop max and min values (y,x) ({}, {}) ({},{})...".format(
                 int(max_y), int(max_x), int(min_y), int(min_x)))
-            # Calculate the trims values
+            # Calculate and store the trims coordinates with margins
             self.trim_left = int(min_x) - margin_size
             self.trim_up = int(min_y) - margin_size
             self.trim_right = int(max_x) + margin_size
             self.trim_down = int(max_y) + margin_size
-            _LOGGER.debug("Calculated trims right {}, bottom {}, left {}, up {} ".format(
+            del min_y, min_x, max_x, max_y
+            _LOGGER.debug("Calculated trims coordinates right {}, bottom {}, left {}, up {} ".format(
                 self.trim_right, self.trim_down, self.trim_left, self.trim_up))
             # Calculate the dimensions after trimming using min/max values
             trimmed_width = max(0,  self.trim_right - self.trim_left)
             trimmed_height = max(0, self.trim_down - self.trim_up)
+            trim_r = image_array.shape[1] - self.trim_right
+            trim_d = image_array.shape[0] - self.trim_down
+            trim_l = image_array.shape[1] - self.trim_left
+            trim_u = image_array.shape[0] - self.trim_up
+            _LOGGER.debug("Calculated trims values for right {}, bottom {}, left {} and up {}.".format(
+                trim_r, trim_d, trim_l, trim_u))
             _LOGGER.debug("Calculated trim width {} and trim height {}".format(trimmed_width, trimmed_height))
             # Test if the trims are okay or not
             if trimmed_height <= margin_size or trimmed_width <= margin_size:
-                _LOGGER.warning(f"Background colour not detected at rotation {rotate}.")
-                self.crop_area = (0, 0, image_array.size[1], image_array.size[0])
+                _LOGGER.debug(f"Background colour not detected at rotation {rotate}.")
+                pos_0 = 0
+                self.crop_area = (pos_0, pos_0, image_array.shape[1], image_array.shape[0])
+                _LOGGER.debug(self.crop_area)
                 self.img_size = (image_array.shape[1], image_array.shape[0])
+                del trimmed_width, trimmed_height
                 return image_array
-            # Calculate the crop area in the original image_array
-            self.new_crop = (
+            # Calculate the cropping sizes after that the trim is apply
+            crop_area = trimmed_height * trimmed_width
+            origin_area = image_array.shape[1] * image_array.shape[0]
+            crop_percentage = (100 - round((origin_area / crop_area), 2))
+            crop_size = (int(min(center_x, center_y) * crop_percentage) / 100) / 100
+            _LOGGER.debug("Calculated image reduction of {:.2f}% with crop size {:.2f}%".format(crop_percentage,
+                                                                                                crop_size))
+            # Store Crop area of the original image_array we will use from the next frame.
+            self.auto_crop = (
                 self.trim_left,
                 self.trim_up,
                 self.trim_right,
@@ -92,8 +112,8 @@ class ReImageHandler(object):
             )
         # Apply the auto-calculated trims to the rotated image
         trimmed = image_array[
-                  self.new_crop[1]: self.new_crop[3],
-                  self.new_crop[0]: self.new_crop[2]
+                  self.auto_crop[1]: self.auto_crop[3],
+                  self.auto_crop[0]: self.auto_crop[2]
                   ]
 
         # Rotate the cropped image based on the given angle
@@ -107,7 +127,7 @@ class ReImageHandler(object):
             )
         elif rotate == 180:
             rotated = np.rot90(trimmed, 2)
-            self.crop_area = self.new_crop
+            self.crop_area = self.auto_crop
         elif rotate == 270:
             rotated = np.rot90(trimmed, 3)
             self.crop_area = (
@@ -118,16 +138,14 @@ class ReImageHandler(object):
             )
         else:
             rotated = trimmed
-            self.crop_area = self.new_crop
+            self.crop_area = self.auto_crop
 
         _LOGGER.debug("Auto Crop and Trim Box data: %s", self.crop_area)
         self.crop_img_size = (rotated.shape[1], rotated.shape[0])
         _LOGGER.debug("Auto Crop and Trim image size: %s", self.crop_img_size)
-
         return rotated
 
-    @staticmethod
-    def extract_room_properties(json_data, destinations):
+    def extract_room_properties(self, json_data, destinations):
         unsorted_id = ImageData.get_rrm_segments_ids(json_data)
         size_x, size_y = ImageData.get_rrm_image_size(json_data)
         top, left = ImageData.get_rrm_image_position(json_data)
@@ -143,8 +161,7 @@ class ReImageHandler(object):
         zones_data = dict(dest_json).get("zones", [])
         points_data = dict(dest_json).get("spots", [])
         room_id_to_data = {room["id"]: room for room in room_data}
-        zone_data = {zone["name"]: zone for zone in zones_data}
-        _LOGGER.debug(zone_data)
+        self.rooms_pos = []
         room_properties = {}
         zone_properties = {}
         point_properties = {}
@@ -161,6 +178,12 @@ class ReImageHandler(object):
                 # rand256 vacuums accept int(room_id) or str(name)
                 # the card will soon support int(room_id) but the camera will send name
                 # this avoids the manual change of the values in the card.
+                self.rooms_pos.append(
+                    {
+                        "name": name,
+                        "corners": corners
+                    }
+                )
                 room_properties[int(room_id)] = {
                     "number": int(room_id),
                     "outline": corners,
@@ -203,6 +226,7 @@ class ReImageHandler(object):
         elif zone_properties != {}:
             _LOGGER.debug("Zones, data extracted!")
         else:
+            self.rooms_pos = None
             _LOGGER.debug("Rooms and Zones data not available!")
         return room_properties, zone_properties, point_properties
 
@@ -211,11 +235,11 @@ class ReImageHandler(object):
             m_json,
             robot_state,
             img_rotation: int = 0,
-            crop: int = 50,
             margins: int = 150,
             user_colors: Colors = None,
             rooms_colors: Color = None,
             file_name: "" = None,
+            destinations: None = None,
     ):
 
         color_wall: Color = user_colors[0]
@@ -266,11 +290,17 @@ class ReImageHandler(object):
                     angle = self.data.get_rrm_robot_angle(m_json)
                     robot_position_angle = round(angle[0], 0)
                     _LOGGER.debug(f"robot position: {robot_pos}, robot angle: {robot_position_angle}")
-                    self.robot_pos = {
-                        "x": robot_position[0],
-                        "y": robot_position[1],
-                        "angle": robot_position_angle,
-                    }
+                    if self.rooms_pos is None:
+                        self.robot_pos = {
+                            "x": robot_position[0] * 10,
+                            "y": robot_position[1] * 10,
+                            "angle": robot_position_angle,
+                        }
+                    else:
+                        self.robot_pos = await self.get_robot_in_room(
+                            (robot_position[0] * 10),
+                            (robot_position[1] * 10),
+                            robot_position_angle)
                 _LOGGER.debug("charger position: %s", charger_pos)
                 if charger_pos:
                     self.charger_pos = {
@@ -290,8 +320,8 @@ class ReImageHandler(object):
                                                                  image_left=pos_left)
                 # checking if there are segments too (sorted pixels in the raw data).
                 segments = self.data.get_rrm_segments(m_json, size_x, size_y, pos_top, pos_left)
+                room_id = 0
                 if (segments and pixels) or pixels:
-                    room_id = 0
                     room_color = rooms_colors[room_id]
                     # drawing floor
                     if pixels:
@@ -321,6 +351,14 @@ class ReImageHandler(object):
                         img_np_array, walls, pixel_size, color_wall
                     )
                     _LOGGER.info(file_name + ": Completed base Layers")
+
+                if (room_id > 0) and not self.room_propriety:
+                    _LOGGER.debug("we have rooms..")
+                    self.room_propriety = await self.get_rooms_attributes(destinations)
+                    self.robot_pos = await self.get_robot_in_room(
+                        (robot_position[0] * 10),
+                        (robot_position[1] * 10),
+                        robot_position_angle)
                 # charger
                 if charger_pos:
                     img_np_array = await self.draw.battery_charger(
@@ -384,7 +422,7 @@ class ReImageHandler(object):
                         color_robot,
                         file_name,
                     )
-                _LOGGER.debug(file_name + " Image Cropping:" + str(crop) + " Image Rotate:" + str(img_rotation))
+                _LOGGER.debug(file_name + " Auto cropping the image with rotation: %s", int(img_rotation))
                 img_np_array = await self.auto_crop_and_trim_array(
                     img_np_array,
                     color_background,
@@ -414,13 +452,60 @@ class ReImageHandler(object):
     def get_json_id(self):
         return self.json_id
 
-    async def get_rooms_attributes(self, destinations):
+    async def get_rooms_attributes(self, destinations: None):
+        if self.room_propriety:
+            return self.room_propriety
         if self.json_data and destinations:
             _LOGGER.debug("Checking for rooms data..")
-            self.room_propriety = ReImageHandler.extract_room_properties(self.json_data, destinations)
+            self.room_propriety = self.extract_room_properties(self.json_data, destinations)
             if self.room_propriety:
                 _LOGGER.debug("Got Rooms Attributes.")
         return self.room_propriety
+
+    async def get_robot_in_room(self, robot_x, robot_y, angle):
+        # do we know where we are?
+        if self.robot_in_room:
+            if (
+                    ((self.robot_in_room["left"] >= robot_x) and (self.robot_in_room["right"] <= robot_x))
+                    and ((self.robot_in_room["up"] >= robot_y) and (self.robot_in_room["down"] <= robot_y))
+            ):
+                temp = {
+                    "x": robot_x,
+                    "y": robot_y,
+                    "angle": angle,
+                    "in_room": self.robot_in_room["room"],
+                }
+                return temp
+        # else we need to search and use the async method.
+        _LOGGER.debug("The robot changed room.. searching..")
+        for room in self.rooms_pos:
+            corners = room["corners"]
+            self.robot_in_room = {
+                "left": corners[0][0],
+                "right": corners[2][0],
+                "up": corners[0][1],
+                "down": corners[2][1],
+                "room": room["name"],
+            }
+            # Check if the robot coordinates are inside the room's corners
+            if (
+                    ((self.robot_in_room["left"] >= robot_x) and (self.robot_in_room["right"] <= robot_x))
+                    and ((self.robot_in_room["up"] >= robot_y) and (self.robot_in_room["down"] <= robot_y))
+            ):
+                temp = {
+                    "x": robot_x,
+                    "y": robot_y,
+                    "angle": angle,
+                    "in_room": self.robot_in_room["room"],
+                }
+                _LOGGER.debug("Robot is inside %s", self.robot_in_room['room'])
+                del room, corners, robot_x, robot_y  # free memory.
+                return temp
+        del room, corners, robot_x, robot_y  # free memory.
+        _LOGGER.debug("Robot is not inside any room")
+        self.robot_in_room = None
+        # If the robot is not inside any room, return None or a default value
+        return self.robot_in_room
 
     def get_calibration_data(self, rotation_angle):
         if not self.calibration_data:

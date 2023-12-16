@@ -6,26 +6,27 @@ from __future__ import annotations
 
 import logging
 import os
-import psutil_home_assistant as proc_insp
 import json
+import psutil_home_assistant as proc_insp
 from io import BytesIO
-from datetime import datetime
+from datetime import datetime, timedelta
 from PIL import Image
-from datetime import timedelta
 from typing import Optional
 import voluptuous as vol
+
 from homeassistant.components.camera import Camera, PLATFORM_SCHEMA, SUPPORT_ON_OFF
 from homeassistant.const import CONF_NAME, CONF_UNIQUE_ID
 from homeassistant import core, config_entries
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.reload import async_setup_reload_service
+from homeassistant.helpers.storage import STORAGE_DIR
 from homeassistant.helpers.typing import (
     ConfigType,
     DiscoveryInfoType,
     HomeAssistantType,
 )
-from homeassistant.util import Throttle
+
 from custom_components.valetudo_vacuum_camera.valetudo.MQTT.connector import (
     ValetudoConnector,
 )
@@ -41,70 +42,23 @@ from .utils.colors_man import (
 from .snapshots.snapshot import Snapshots
 from .valetudo.vacuum import Vacuum
 from .const import (
-    CONF_VACUUM_CONNECTION_STRING,
-    CONF_VACUUM_ENTITY_ID,
-    CONF_VACUUM_IDENTIFIERS,
-    CONF_VAC_STAT,
-    CONF_SNAPSHOTS_ENABLE,
-    DEFAULT_NAME,
-    DOMAIN,
-    PLATFORMS,
-    ATTR_ROTATE,
-    ATTR_CROP,
-    ATTR_MARGINS,
-    ATTR_TRIM_TOP,
-    ATTR_TRIM_BOTTOM,
-    ATTR_TRIM_LEFT,
-    ATTR_TRIM_RIGHT,
-    COLOR_WALL,
-    COLOR_ZONE_CLEAN,
-    COLOR_ROBOT,
-    COLOR_BACKGROUND,
-    COLOR_MOVE,
-    COLOR_CHARGER,
-    COLOR_TEXT,
-    COLOR_NO_GO,
-    COLOR_GO_TO,
-    COLOR_ROOM_0,
-    COLOR_ROOM_1,
-    COLOR_ROOM_2,
-    COLOR_ROOM_3,
-    COLOR_ROOM_4,
-    COLOR_ROOM_5,
-    COLOR_ROOM_6,
-    COLOR_ROOM_7,
-    COLOR_ROOM_8,
-    COLOR_ROOM_9,
-    COLOR_ROOM_10,
-    COLOR_ROOM_11,
-    COLOR_ROOM_12,
-    COLOR_ROOM_13,
-    COLOR_ROOM_14,
+    CONF_VACUUM_CONNECTION_STRING, CONF_VACUUM_ENTITY_ID, CONF_VACUUM_IDENTIFIERS,
+    CONF_VAC_STAT, CONF_SNAPSHOTS_ENABLE,
+    DEFAULT_NAME, DOMAIN, PLATFORMS,
+    ATTR_ROTATE, ATTR_MARGINS,
+    COLOR_WALL, COLOR_ZONE_CLEAN, COLOR_ROBOT, COLOR_BACKGROUND,
+    COLOR_MOVE, COLOR_CHARGER, COLOR_TEXT, COLOR_NO_GO,
+    COLOR_GO_TO, COLOR_ROOM_0, COLOR_ROOM_1, COLOR_ROOM_2,
+    COLOR_ROOM_3, COLOR_ROOM_4, COLOR_ROOM_5, COLOR_ROOM_6,
+    COLOR_ROOM_7, COLOR_ROOM_8, COLOR_ROOM_9, COLOR_ROOM_10,
+    COLOR_ROOM_11, COLOR_ROOM_12, COLOR_ROOM_13, COLOR_ROOM_14,
     COLOR_ROOM_15,
-    ALPHA_WALL,
-    ALPHA_ZONE_CLEAN,
-    ALPHA_ROBOT,
-    ALPHA_BACKGROUND,
-    ALPHA_MOVE,
-    ALPHA_CHARGER,
-    ALPHA_TEXT,
-    ALPHA_NO_GO,
-    ALPHA_GO_TO,
-    ALPHA_ROOM_0,
-    ALPHA_ROOM_1,
-    ALPHA_ROOM_2,
-    ALPHA_ROOM_3,
-    ALPHA_ROOM_4,
-    ALPHA_ROOM_5,
-    ALPHA_ROOM_6,
-    ALPHA_ROOM_7,
-    ALPHA_ROOM_8,
-    ALPHA_ROOM_9,
-    ALPHA_ROOM_10,
-    ALPHA_ROOM_11,
-    ALPHA_ROOM_12,
-    ALPHA_ROOM_13,
-    ALPHA_ROOM_14,
+    ALPHA_WALL, ALPHA_ZONE_CLEAN, ALPHA_ROBOT, ALPHA_BACKGROUND,
+    ALPHA_MOVE, ALPHA_CHARGER, ALPHA_TEXT, ALPHA_NO_GO,
+    ALPHA_GO_TO, ALPHA_ROOM_0, ALPHA_ROOM_1, ALPHA_ROOM_2,
+    ALPHA_ROOM_3, ALPHA_ROOM_4, ALPHA_ROOM_5, ALPHA_ROOM_6,
+    ALPHA_ROOM_7, ALPHA_ROOM_8, ALPHA_ROOM_9, ALPHA_ROOM_10,
+    ALPHA_ROOM_11, ALPHA_ROOM_12, ALPHA_ROOM_13, ALPHA_ROOM_14,
     ALPHA_ROOM_15,
 )
 from custom_components.valetudo_vacuum_camera.common import get_vacuum_unique_id_from_mqtt_topic
@@ -114,7 +68,6 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
         vol.Required(CONF_VACUUM_CONNECTION_STRING): cv.string,
         vol.Required(CONF_VACUUM_ENTITY_ID): cv.string,
         vol.Required(ATTR_ROTATE, default="0"): cv.string,
-        vol.Required(ATTR_CROP, default="50"): cv.string,
         vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.entity_id,
     }
 )
@@ -156,6 +109,8 @@ class ValetudoCamera(Camera):
         self.hass = hass
         self._attr_name = "Camera"
         self._directory_path = os.getcwd()  # get Home Assistant path
+        _LOGGER.debug(STORAGE_DIR)
+        _LOGGER.debug(self._directory_path)
         self._snapshots = Snapshots(self._directory_path + "/www/")
         self._mqtt_listen_topic = device_info.get(CONF_VACUUM_CONNECTION_STRING)
         self.file_name = ""
@@ -191,14 +146,10 @@ class ValetudoCamera(Camera):
         self._attr_calibration_points = None
         self._base = None
         self._current = None
-        self._attr_cpu_percent = None
+        self._cpu_percent = None
+        self._memory_percent = None
         self._image_rotate = int(device_info.get(ATTR_ROTATE, 0))
-        self._image_crop = int(device_info.get(ATTR_CROP, 0))
         self._margins = int(device_info.get(ATTR_MARGINS, 150))
-        self._trim_up = int(device_info.get(ATTR_TRIM_TOP, 0))
-        self._trim_down = int(device_info.get(ATTR_TRIM_BOTTOM, 0))
-        self._trim_left = int(device_info.get(ATTR_TRIM_LEFT, 0))
-        self._trim_right = int(device_info.get(ATTR_TRIM_RIGHT, 0))
         self._snapshot_taken = False
         self._show_vacuum_state = device_info.get(CONF_VAC_STAT)
         if not self._show_vacuum_state:
@@ -207,14 +158,13 @@ class ValetudoCamera(Camera):
         self._enable_snapshots = device_info.get(CONF_SNAPSHOTS_ENABLE)
         if self._enable_snapshots is None:
             self._enable_snapshots = True
-        # If snapshots are disbled, delete stale data
+        # If snapshots are disabled, delete stale data
         if not self._enable_snapshots and self.snapshot_img and os.path.isfile(self.snapshot_img):
             os.remove(self.snapshot_img)
         self._last_image = None
         self._image_grab = True
         self._frame_nuber = 0
         self._rrm_data = False  # Temp. check for rrm data
-        self.throttled_camera_image = Throttle(timedelta(seconds=6))(self.camera_image)
         try:
             self.user_colors = [
                 device_info.get(COLOR_WALL),
@@ -413,7 +363,7 @@ class ValetudoCamera(Camera):
                 )
 
     async def load_test_json(self, file_path=None):
-        # Load a test json
+        # Load a test json debug function
         if file_path:
             json_file = file_path
             with open(json_file, "rb") as j_file:
@@ -452,18 +402,18 @@ class ValetudoCamera(Camera):
             # calculate the cycle time for frame adjustment
             start_time = datetime.now()
             try:
-                # bypassed code is for debug purpose only
-                #########################################################
                 parsed_json = await self._mqtt.update_data(self._image_grab)
                 if parsed_json[1]:
                     self._rrm_data = parsed_json[0]
                 else:
                     parsed_json = parsed_json[0]
                     self._rrm_data = None
+                # Below bypassed code is for debug purpose only
                 #########################################################
                 # parsed_json = await self.load_test_json(
                 #     "custom_components/valetudo_vacuum_camera/snapshots/test.json")
-                # self._vac_json_data = "Success"
+                ##########################################################
+                self._vac_json_data = "Success"
             except ValueError:
                 self._vac_json_data = "Error"
                 pass
@@ -471,21 +421,21 @@ class ValetudoCamera(Camera):
                 # Just in case, let's check that the data is available
                 if parsed_json is not None:
                     if self._rrm_data:
+                        destinations = await self._mqtt.get_destinations()
                         pil_img = await self._re_handler.get_image_from_rrm(
                             m_json=self._rrm_data,
                             robot_state=self._vacuum_state,
-                            crop=self._image_crop,
                             img_rotation=self._image_rotate,
                             margins=self._margins,
                             user_colors=self._vacuum_shared.get_user_colors(),
                             rooms_colors=self._vacuum_shared.get_rooms_colors(),
                             file_name=self.file_name,
+                            destinations=destinations,
                         )
                     else:
                         pil_img = await self._map_handler.get_image_from_json(
                             m_json=parsed_json,
                             robot_state=self._vacuum_state,
-                            crop=self._image_crop,
                             img_rotation=self._image_rotate,
                             margins=self._margins,
                             user_colors=self._vacuum_shared.get_user_colors(),
@@ -497,6 +447,7 @@ class ValetudoCamera(Camera):
                             if self._rrm_data is None:
                                 self._map_rooms = await self._map_handler.get_rooms_attributes()
                             elif (self._map_rooms is None) and (self._rrm_data is not None):
+                                # we need to check for the destination topic to get the rooms name.
                                 destinations = await self._mqtt.get_destinations()
                                 if destinations is not None:
                                     self._map_rooms, self._map_pred_zones, self._map_pred_points = \
@@ -505,10 +456,6 @@ class ValetudoCamera(Camera):
                                 _LOGGER.debug(
                                     f"State attributes rooms update: {self._map_rooms}"
                                 )
-                        _LOGGER.debug(
-                            f"Applied  {self.file_name} "
-                            f"image rotation: {self._image_rotate}"
-                            )
                         if self._show_vacuum_state:
                             self._map_handler.draw.status_text(
                                 pil_img,
@@ -516,6 +463,32 @@ class ValetudoCamera(Camera):
                                 self._vacuum_shared.user_colors[8],
                                 self.file_name + ": " + self._vacuum_state,
                                 )
+                        if self._attr_calibration_points is None:
+                            if self._rrm_data is None:
+                                self._attr_calibration_points = (
+                                    self._map_handler.get_calibration_data(self._image_rotate)
+                                )
+                            else:
+                                self._attr_calibration_points = (
+                                    self._re_handler.get_calibration_data(self._image_rotate)
+                                )
+
+                        if self._rrm_data is None:
+                            self._vac_json_id = self._map_handler.get_json_id()
+                            if not self._base:
+                                self._base = self._map_handler.get_charger_position()
+                            self._current = self._map_handler.get_robot_position()
+                            if not self._vac_img_data:
+                                self._vac_img_data = self._map_handler.get_img_size()
+
+                        else:
+                            self._vac_json_id = self._re_handler.get_json_id()
+                            if not self._base:
+                                self._base = self._re_handler.get_charger_position()
+                            self._current = self._re_handler.get_robot_position()
+                            if not self._vac_img_data:
+                                self._vac_img_data = self._re_handler.get_img_size()
+
                         if not self._snapshot_taken and (
                                 self._vacuum_state == "idle"
                                 or self._vacuum_state == "docked"
@@ -534,30 +507,12 @@ class ValetudoCamera(Camera):
                                     # take a snapshot
                                     await self.take_snapshot(parsed_json, pil_img)
                             else:
-                                self._image_grab = False
                                 _LOGGER.info(
                                     f"Suspended the camera data processing for: {self.file_name}."
                                 )
                                 # take a snapshot
                                 await self.take_snapshot(self._rrm_data, pil_img)
-
-                        if self._attr_calibration_points is None:
-                            if self._rrm_data is None:
-                                self._vac_json_id = self._map_handler.get_json_id()
-                                self._base = self._map_handler.get_charger_position()
-                                self._current = self._map_handler.get_robot_position()
-                                self._vac_img_data = self._map_handler.get_img_size()
-                                self._attr_calibration_points = (
-                                    self._map_handler.get_calibration_data(self._image_rotate)
-                                )
-                            else:
-                                self._vac_json_id = self._re_handler.get_json_id()
-                                self._base = self._re_handler.get_charger_position()
-                                self._current = self._re_handler.get_robot_position()
-                                self._vac_img_data = self._re_handler.get_img_size()
-                                self._attr_calibration_points = (
-                                    self._re_handler.get_calibration_data(self._image_rotate)
-                                )
+                                self._image_grab = False
                     else:
                         # if no image was processed empty or last snapshot/frame
                         pil_img = self.empty_if_no_data()
@@ -572,7 +527,7 @@ class ValetudoCamera(Camera):
                         self._image_h = pil_img.height
                     else:
                         pil_img = self.empty_if_no_data()
-                        self._last_image = None
+                        self._last_image = None  # pil_img
                         self._image_w = pil_img.width
                         self._image_h = pil_img.height
                     pil_img.save(buffered, format="PNG")
@@ -593,10 +548,15 @@ class ValetudoCamera(Camera):
                     self._frame_interval = 0.1
                 self.camera_image(self._image_w, self._image_h)
                 # HA supervised memory and CUP usage report.
-                proc = proc_insp.PsutilWrapper().psutil.Process()
-                self._attr_cpu_percent = proc.cpu_percent() / proc_insp.PsutilWrapper().psutil.cpu_count()
-                _LOGGER.debug(f"{self.file_name} Camera CPU usage %: {self._attr_cpu_percent}")
-                _LOGGER.debug(f"{self.file_name} Camera Virtual Memory usage %: "
-                              f"{proc_insp.PsutilWrapper().psutil.virtual_memory().percent}")
+                pid = os.getpid()
+                proc = proc_insp.PsutilWrapper().psutil.Process(pid)
+                self._cpu_percent = proc_insp.PsutilWrapper().psutil.cpu_percent(interval=None, percpu=False)
+                self._memory_percent = round(
+                    ((proc.memory_info()[0]/2.**30) / (proc_insp.PsutilWrapper().psutil.virtual_memory().total/2.**30))
+                    * 100, 2)
+                _LOGGER.debug(f"{self.file_name} Camera CPU usage %: {self._cpu_percent}")
+                _LOGGER.debug(f"{self.file_name} Camera Memory usage in GB: "
+                              f"{round(proc.memory_info()[0]/2.**30, 2)}, "
+                              f"{self._memory_percent}% of Total.")
                 self._processing = False
                 return self._image

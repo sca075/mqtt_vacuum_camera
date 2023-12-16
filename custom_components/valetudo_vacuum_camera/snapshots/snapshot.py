@@ -9,6 +9,7 @@ import logging
 
 _LOGGER = logging.getLogger(__name__)  # Create a logger instance
 
+
 class Snapshots:
     def __init__(self, storage_path):
         self.storage_path = storage_path

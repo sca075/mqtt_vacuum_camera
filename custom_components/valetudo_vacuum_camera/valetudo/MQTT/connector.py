@@ -27,6 +27,7 @@ class ValetudoConnector:
         self._payload = None
         self._img_payload = None
         self._mqtt_vac_stat = None
+        self._mqtt_vac_re_stat = None
         self._mqtt_vac_err = None
         self._data_in = False
         # Payload and data from Valetudo Re
@@ -71,7 +72,10 @@ class ValetudoConnector:
                 return None, self._is_rrm
 
     async def get_vacuum_status(self):
-        return self._mqtt_vac_stat
+        if self._mqtt_vac_stat:
+            return self._mqtt_vac_stat
+        if self._mqtt_vac_re_stat:
+            return self._mqtt_vac_re_stat
 
     async def get_vacuum_error(self):
         return self._mqtt_vac_err
@@ -137,11 +141,11 @@ class ValetudoConnector:
             self._payload = msg.payload
             if self._payload:
                 tmp_data = json.loads(self._payload)
-                self._mqtt_vac_stat = tmp_data.get("state", None)
+                self._mqtt_vac_re_stat = tmp_data.get("state", None)
                 _LOGGER.info(
                     self._mqtt_topic
                     + ": Received vacuum "
-                    + self._mqtt_vac_stat
+                    + self._mqtt_vac_re_stat
                     + " status."
                 )
         elif self._rcv_topic == (

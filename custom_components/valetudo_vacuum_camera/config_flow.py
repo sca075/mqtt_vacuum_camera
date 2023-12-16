@@ -8,10 +8,11 @@ sting.json and en.json please.
 import voluptuous as vol
 import logging
 from typing import Any, Dict, Optional
-from homeassistant import config_entries
+import urllib.request as download
+
 
 from homeassistant.components.vacuum import DOMAIN as ZONE_VACUUM
-
+from homeassistant import config_entries
 from homeassistant.const import CONF_UNIQUE_ID
 from homeassistant.core import callback
 import homeassistant.helpers.config_validation as cv
@@ -28,12 +29,7 @@ from homeassistant.helpers import entity_registry as er
 from .const import (
     DOMAIN,
     ATTR_ROTATE,
-    ATTR_CROP,
     ATTR_MARGINS,
-    # ATTR_TRIM_LEFT,
-    # ATTR_TRIM_RIGHT,
-    # ATTR_TRIM_TOP,
-    # ATTR_TRIM_BOTTOM,
     CONF_VAC_STAT,
     CONF_SNAPSHOTS_ENABLE,
     CONF_VACUUM_CONFIG_ENTRY_ID,
@@ -256,9 +252,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Required(
                         ATTR_ROTATE, default=config_entry.options.get("rotate_image")
                     ): vol.In(["0", "90", "180", "270"]),
-                    vol.Required(
-                        ATTR_CROP, default=config_entry.options.get("crop_image")
-                    ): cv.string,
                     vol.Optional(
                         ATTR_MARGINS, default=config_entry.options.get("margins")
                     ): cv.string,
@@ -479,6 +472,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     return await self.async_step_rooms_colours_1()
                 elif next_action == "Configure Rooms Colours 2/2":
                     return await self.async_step_rooms_colours_2()
+                # elif next_action == "Download saved Logs":
+                #     return await self.async_download_logs()
                 elif next_action == "More Options":
                     # TODO
                     """
@@ -515,7 +510,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             self.options.update(
                 {
                     "rotate_image": user_input.get(ATTR_ROTATE),
-                    "crop_image": user_input.get(ATTR_CROP),
                     "margins": user_input.get(ATTR_MARGINS),
                     "show_vac_status": user_input.get(CONF_VAC_STAT),
                     "color_text": user_input.get(COLOR_TEXT),
@@ -691,6 +685,13 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             data_schema=self.ALPHA_3_SCHEMA,
             description_placeholders=self.options,
         )
+
+    async def async_download_logs(self):
+        user_input = None
+        if user_input is None:
+            download.urlopen("file:///config/www/rockrobo_s5.zip", "zip.zip")
+            _LOGGER.debug("donload test end")
+            return await self.async_step_init()
 
     async def async_step_opt_save(self):
         _LOGGER.info("Storing Updated Camera Options")
