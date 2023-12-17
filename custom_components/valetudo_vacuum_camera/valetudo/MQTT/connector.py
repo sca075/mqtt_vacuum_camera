@@ -1,5 +1,5 @@
 """
-Version 1.5.0
+Version 1.5.2
 - Removed the PNG decode, the json is extracted from map-data instead of map-data hass.
 - Tested no influence on the camera performance.
 - Added gzip library used in Valetudo RE data compression.
@@ -27,7 +27,6 @@ class ValetudoConnector:
         self._payload = None
         self._img_payload = None
         self._mqtt_vac_stat = None
-        self._mqtt_vac_re_stat = None
         self._mqtt_vac_err = None
         self._data_in = False
         # Payload and data from Valetudo Re
@@ -36,6 +35,7 @@ class ValetudoConnector:
         self._rrm_json = None
         self._rrm_payload = None
         self._rrm_destinations = None
+        self._mqtt_vac_re_stat = None
         self._rrm_data = RRMapParser()
 
     async def update_data(self, process: bool = True):

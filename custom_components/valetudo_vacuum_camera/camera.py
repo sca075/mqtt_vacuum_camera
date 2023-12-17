@@ -1,4 +1,4 @@
-"""Camera Version 1.5.1
+"""Camera Version 1.5.2
 Valetudo Re Test image.
 """
 
@@ -109,8 +109,7 @@ class ValetudoCamera(Camera):
         self.hass = hass
         self._attr_name = "Camera"
         self._directory_path = os.getcwd()  # get Home Assistant path
-        _LOGGER.debug(STORAGE_DIR)
-        _LOGGER.debug(self._directory_path)
+        _LOGGER.debug(f"Storage dir will be implemented soon.. {self._directory_path}/{STORAGE_DIR}")
         self._snapshots = Snapshots(self._directory_path + "/www/")
         self._mqtt_listen_topic = device_info.get(CONF_VACUUM_CONNECTION_STRING)
         self.file_name = ""
@@ -147,7 +146,6 @@ class ValetudoCamera(Camera):
         self._base = None
         self._current = None
         self._cpu_percent = None
-        self._memory_percent = None
         self._image_rotate = int(device_info.get(ATTR_ROTATE, 0))
         self._margins = int(device_info.get(ATTR_MARGINS, 150))
         self._snapshot_taken = False
@@ -363,7 +361,7 @@ class ValetudoCamera(Camera):
                 )
 
     async def load_test_json(self, file_path=None):
-        # Load a test json debug function
+        # Load a test json
         if file_path:
             json_file = file_path
             with open(json_file, "rb") as j_file:
@@ -398,9 +396,12 @@ class ValetudoCamera(Camera):
                 self._snapshot_taken = False
                 _LOGGER.info(
                     f"{self.file_name}: Camera image data update available: {process_data}"
-                    )
+                )
             # calculate the cycle time for frame adjustment
             start_time = datetime.now()
+            pid = os.getpid()  # Start to log the CPU usage of this PID.
+            proc = proc_insp.PsutilWrapper().psutil.Process(pid)  # Get the process PID.
+            self._cpu_percent = round((proc.cpu_percent() / proc_insp.PsutilWrapper().psutil.cpu_count()) / 2, 2)
             try:
                 parsed_json = await self._mqtt.update_data(self._image_grab)
                 if parsed_json[1]:
@@ -419,18 +420,24 @@ class ValetudoCamera(Camera):
                 pass
             else:
                 # Just in case, let's check that the data is available
+                pid = os.getpid()  # Start to log the CPU usage of this PID.
+                proc = proc_insp.PsutilWrapper().psutil.Process(pid)  # Get the process PID.
+                self._cpu_percent = round((proc.cpu_percent() / proc_insp.PsutilWrapper().psutil.cpu_count()) / 2, 2)
                 if parsed_json is not None:
                     if self._rrm_data:
                         destinations = await self._mqtt.get_destinations()
+                        self._cpu_percent = round((proc.cpu_percent() / proc_insp.PsutilWrapper().psutil.cpu_count())
+                                                  / 2, 2)
+                        _LOGGER.debug(f"{self.file_name} System CPU usage stat (1/2): {self._cpu_percent}%")
                         pil_img = await self._re_handler.get_image_from_rrm(
                             m_json=self._rrm_data,
-                            robot_state=self._vacuum_state,
                             img_rotation=self._image_rotate,
                             margins=self._margins,
                             user_colors=self._vacuum_shared.get_user_colors(),
                             rooms_colors=self._vacuum_shared.get_rooms_colors(),
                             file_name=self.file_name,
                             destinations=destinations,
+                            drawing_limit=self._cpu_percent
                         )
                     else:
                         pil_img = await self._map_handler.get_image_from_json(
@@ -447,7 +454,6 @@ class ValetudoCamera(Camera):
                             if self._rrm_data is None:
                                 self._map_rooms = await self._map_handler.get_rooms_attributes()
                             elif (self._map_rooms is None) and (self._rrm_data is not None):
-                                # we need to check for the destination topic to get the rooms name.
                                 destinations = await self._mqtt.get_destinations()
                                 if destinations is not None:
                                     self._map_rooms, self._map_pred_zones, self._map_pred_points = \
@@ -548,15 +554,15 @@ class ValetudoCamera(Camera):
                     self._frame_interval = 0.1
                 self.camera_image(self._image_w, self._image_h)
                 # HA supervised memory and CUP usage report.
-                pid = os.getpid()
-                proc = proc_insp.PsutilWrapper().psutil.Process(pid)
-                self._cpu_percent = proc_insp.PsutilWrapper().psutil.cpu_percent(interval=None, percpu=False)
-                self._memory_percent = round(
+                self._cpu_percent = round(((self._cpu_percent + proc.cpu_percent())
+                                           / proc_insp.PsutilWrapper().psutil.cpu_count()) / 2, 2)
+                memory_percent = round(
                     ((proc.memory_info()[0]/2.**30) / (proc_insp.PsutilWrapper().psutil.virtual_memory().total/2.**30))
                     * 100, 2)
-                _LOGGER.debug(f"{self.file_name} Camera CPU usage %: {self._cpu_percent}")
+                _LOGGER.debug(f"{self.file_name} System CPU usage stat (2/2): {self._cpu_percent}%")
                 _LOGGER.debug(f"{self.file_name} Camera Memory usage in GB: "
                               f"{round(proc.memory_info()[0]/2.**30, 2)}, "
-                              f"{self._memory_percent}% of Total.")
+                              f"{memory_percent}% of Total.")
+                self._cpu_percent = proc.cpu_percent() / proc_insp.PsutilWrapper().psutil.cpu_count()
                 self._processing = False
                 return self._image

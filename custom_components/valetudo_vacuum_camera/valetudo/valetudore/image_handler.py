@@ -11,6 +11,7 @@ import uuid
 import json
 import numpy as np
 from PIL import Image
+
 from custom_components.valetudo_vacuum_camera.utils.colors_man import color_grey
 from custom_components.valetudo_vacuum_camera.types import Color, Colors
 from custom_components.valetudo_vacuum_camera.utils.img_data import ImageData
@@ -103,6 +104,8 @@ class ReImageHandler(object):
             crop_size = (int(min(center_x, center_y) * crop_percentage) / 100) / 100
             _LOGGER.debug("Calculated image reduction of {:.2f}% with crop size {:.2f}%".format(crop_percentage,
                                                                                                 crop_size))
+            del crop_size, crop_percentage, origin_area, crop_area, trimmed_width, trimmed_height
+            del center_x, center_y, trim_d, trim_u, trim_l, trim_r
             # Store Crop area of the original image_array we will use from the next frame.
             self.auto_crop = (
                 self.trim_left,
@@ -115,7 +118,7 @@ class ReImageHandler(object):
                   self.auto_crop[1]: self.auto_crop[3],
                   self.auto_crop[0]: self.auto_crop[2]
                   ]
-
+        del image_array
         # Rotate the cropped image based on the given angle
         if rotate == 90:
             rotated = np.rot90(trimmed, 1)
@@ -139,7 +142,7 @@ class ReImageHandler(object):
         else:
             rotated = trimmed
             self.crop_area = self.auto_crop
-
+        del trimmed
         _LOGGER.debug("Auto Crop and Trim Box data: %s", self.crop_area)
         self.crop_img_size = (rotated.shape[1], rotated.shape[0])
         _LOGGER.debug("Auto Crop and Trim image size: %s", self.crop_img_size)
@@ -233,13 +236,13 @@ class ReImageHandler(object):
     async def get_image_from_rrm(
             self,
             m_json,
-            robot_state,
             img_rotation: int = 0,
             margins: int = 150,
             user_colors: Colors = None,
             rooms_colors: Color = None,
             file_name: "" = None,
             destinations: None = None,
+            drawing_limit: float = 0.0,
     ):
 
         color_wall: Color = user_colors[0]
@@ -309,66 +312,71 @@ class ReImageHandler(object):
                     }
 
                 pixel_size = 5
-                _LOGGER.info(file_name + ": Empty image with background color")
-                img_np_array = await self.draw.create_empty_image(5120, 5120, color_background)
-                _LOGGER.info(file_name + ": Overlapping Layers")
-                # this below are floor data
-                pixels = self.data.from_rrm_to_compressed_pixels(floor_data,
-                                                                 image_width=size_x,
-                                                                 image_height=size_y,
-                                                                 image_top=pos_top,
-                                                                 image_left=pos_left)
-                # checking if there are segments too (sorted pixels in the raw data).
-                segments = self.data.get_rrm_segments(m_json, size_x, size_y, pos_top, pos_left)
                 room_id = 0
-                if (segments and pixels) or pixels:
-                    room_color = rooms_colors[room_id]
-                    # drawing floor
-                    if pixels:
-                        img_np_array = await self.draw.from_json_to_image(
-                            img_np_array, pixels, pixel_size, room_color
-                        )
-                    # drawing segments floor
-                    if segments:
-                        for pixels in segments:
-                            room_id += 1
-                            if room_id > 15:
-                                room_id = 0
-                            room_color = rooms_colors[room_id]
+                if self.frame_number == 0:
+                    _LOGGER.info(file_name + ": Empty image with background color")
+                    img_np_array = await self.draw.create_empty_image(5120, 5120, color_background)
+                    _LOGGER.info(file_name + ": Overlapping Layers")
+                    # this below are floor data
+                    pixels = self.data.from_rrm_to_compressed_pixels(floor_data,
+                                                                     image_width=size_x,
+                                                                     image_height=size_y,
+                                                                     image_top=pos_top,
+                                                                     image_left=pos_left)
+                    # checking if there are segments too (sorted pixels in the raw data).
+                    segments = self.data.get_rrm_segments(m_json, size_x, size_y, pos_top, pos_left)
+                    if (segments and pixels) or pixels:
+                        room_color = rooms_colors[room_id]
+                        # drawing floor
+                        if pixels:
                             img_np_array = await self.draw.from_json_to_image(
                                 img_np_array, pixels, pixel_size, room_color
                             )
+                        # drawing segments floor
+                        if segments:
+                            for pixels in segments:
+                                room_id += 1
+                                if room_id > 15:
+                                    room_id = 0
+                                room_color = rooms_colors[room_id]
+                                img_np_array = await self.draw.from_json_to_image(
+                                    img_np_array, pixels, pixel_size, room_color
+                                )
 
-                _LOGGER.info(file_name + ": Completed floor Layers")
-                # Drawing walls.
-                walls = self.data.from_rrm_to_compressed_pixels(walls_data,
-                                                                image_width=size_x,
-                                                                image_height=size_y,
-                                                                image_left=pos_left,
-                                                                image_top=pos_top)
-                if walls:
-                    img_np_array = await self.draw.from_json_to_image(
-                        img_np_array, walls, pixel_size, color_wall
-                    )
-                    _LOGGER.info(file_name + ": Completed base Layers")
+                    _LOGGER.info(file_name + ": Completed floor Layers")
+                    # Drawing walls.
+                    walls = self.data.from_rrm_to_compressed_pixels(walls_data,
+                                                                    image_width=size_x,
+                                                                    image_height=size_y,
+                                                                    image_left=pos_left,
+                                                                    image_top=pos_top)
+                    if walls:
+                        img_np_array = await self.draw.from_json_to_image(
+                            img_np_array, walls, pixel_size, color_wall
+                        )
+                        _LOGGER.info(file_name + ": Completed base Layers")
+                    if (room_id > 0) and not self.room_propriety:
+                        _LOGGER.debug("we have rooms..")
+                        self.room_propriety = await self.get_rooms_attributes(destinations)
+                        if self.rooms_pos:
+                            self.robot_pos = await self.get_robot_in_room(
+                                (robot_position[0] * 10),
+                                (robot_position[1] * 10),
+                                robot_position_angle)
+                    self.img_base_layer = await self.async_copy_array(img_np_array)
 
-                if (room_id > 0) and not self.room_propriety:
-                    _LOGGER.debug("we have rooms..")
-                    self.room_propriety = await self.get_rooms_attributes(destinations)
-                    self.robot_pos = await self.get_robot_in_room(
-                        (robot_position[0] * 10),
-                        (robot_position[1] * 10),
-                        robot_position_angle)
+                # If there is a zone clean we draw it now.
+                self.frame_number += 1
+                img_np_array = await self.async_copy_array(self.img_base_layer)
+                _LOGGER.debug(file_name + ": Frame number %s", self.frame_number)
+                if self.frame_number > 5:
+                    self.frame_number = 0
+                # All below will be drawn each time
                 # charger
                 if charger_pos:
                     img_np_array = await self.draw.battery_charger(
                         img_np_array, charger_pos[0], charger_pos[1], color_charger
                     )
-                # If there is a zone clean we draw it now.
-                self.frame_number += 1
-                _LOGGER.debug(file_name + ": Frame number %s", self.frame_number)
-                if self.frame_number > 5:
-                    self.frame_number = 0
                 # zone clean
                 if zone_clean:
                     img_np_array = await self.draw.zones(
@@ -409,9 +417,6 @@ class ReImageHandler(object):
                             3,
                             color_grey
                         )
-                # rotate the robot if docked
-                if robot_state == "docked":
-                    robot_position_angle = robot_position_angle - 180  # rotation offset
                 # draw the robot
                 if robot_position and robot_position_angle:
                     img_np_array = await self.draw.robot(
@@ -567,3 +572,8 @@ class ReImageHandler(object):
             return self.calibration_data
         else:
             return self.calibration_data
+
+
+    async def async_copy_array(self, original_array):
+        copied_array = np.copy(original_array)
+        return copied_array

@@ -1,4 +1,4 @@
-"""config_flow ver.1.5.0
+"""config_flow ver.1.5.2
 IMPORTANT: When adding new options to the camera
 it will be mandatory to update const.py update_options.
 Format of the new constants must be CONST_NAME = "const_name" update also

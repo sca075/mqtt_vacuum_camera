@@ -9,6 +9,7 @@ from __future__ import annotations
 import logging
 import numpy as np
 from PIL import Image
+
 from custom_components.valetudo_vacuum_camera.utils.colors_man import color_grey
 from custom_components.valetudo_vacuum_camera.types import Color, Colors
 from custom_components.valetudo_vacuum_camera.utils.img_data import ImageData
@@ -101,6 +102,8 @@ class MapImageHandler(object):
             crop_size = (int(min(center_x, center_y) * crop_percentage) / 100) / 100
             _LOGGER.debug("Calculated image reduction of {:.2f}% with crop size {:.2f}%".format(crop_percentage,
                                                                                                 crop_size))
+            del crop_size, crop_percentage, origin_area, crop_area, trimmed_width, trimmed_height
+            del center_x, center_y, trim_d, trim_u, trim_l, trim_r
             # Store Crop area of the original image_array we will use from the next frame.
             self.auto_crop = (
                 self.trim_left,
@@ -113,7 +116,7 @@ class MapImageHandler(object):
                   self.auto_crop[1]: self.auto_crop[3],
                   self.auto_crop[0]: self.auto_crop[2]
                   ]
-
+        del image_array
         # Rotate the cropped image based on the given angle
         if rotate == 90:
             rotated = np.rot90(trimmed, 1)
@@ -137,7 +140,7 @@ class MapImageHandler(object):
         else:
             rotated = trimmed
             self.crop_area = self.auto_crop
-
+        del trimmed
         _LOGGER.debug("Auto Crop and Trim Box data: %s", self.crop_area)
         self.crop_img_size = (rotated.shape[1], rotated.shape[0])
         _LOGGER.debug("Auto Crop and Trim image size: %s", self.crop_img_size)
@@ -191,6 +194,7 @@ class MapImageHandler(object):
             user_colors: Colors = None,
             rooms_colors: Color = None,
             file_name: "" = None,
+            drawing_limit: float = 0.0,
     ):
 
         color_wall: Color = user_colors[0]
@@ -283,8 +287,8 @@ class MapImageHandler(object):
                                 }
                             else:
                                 self.robot_pos = await self.get_robot_in_room(
-                                    (robot_position[0] * 10),
-                                    (robot_position[1] * 10),
+                                    (robot_position[0]),
+                                    (robot_position[1]),
                                     robot_position_angle)
 
                             _LOGGER.debug("robot position: %s",  list(self.robot_pos.items()))
@@ -306,52 +310,53 @@ class MapImageHandler(object):
 
                 go_to = entity_dict.get("go_to_target")
                 pixel_size = int(m_json["pixelSize"])
-                layers = self.data.find_layers(m_json["layers"])
-                _LOGGER.debug(file_name + ": Layers to draw: %s", layers.keys())
-                _LOGGER.info(file_name + ": Empty image with background color")
-                img_np_array = await self.draw.create_empty_image(size_x, size_y, color_background)
-                _LOGGER.info(file_name + ": Overlapping Layers")
-                room_id = 0
-                for layer_type, compressed_pixels_list in layers.items():
-                    for compressed_pixels in compressed_pixels_list:
-                        pixels = self.data.sublist(compressed_pixels, 3)
-                        if layer_type == "segment" or layer_type == "floor":
-                            room_color = rooms_colors[room_id]
-                            img_np_array = await self.draw.from_json_to_image(
-                                img_np_array, pixels, pixel_size, room_color
-                            )
-                            if room_id < 15:
-                                room_id += 1
-                            else:
-                                room_id = 0
-                        elif layer_type == "wall":
-                            # Drawing walls.
-                            img_np_array = await self.draw.from_json_to_image(
-                                img_np_array, pixels, pixel_size, color_wall
-                            )
+                if self.frame_number == 0:
+                    layers = self.data.find_layers(m_json["layers"])
+                    _LOGGER.debug(file_name + ": Layers to draw: %s", layers.keys())
+                    _LOGGER.info(file_name + ": Empty image with background color")
+                    img_np_array = await self.draw.create_empty_image(size_x, size_y, color_background)
+                    _LOGGER.info(file_name + ": Overlapping Layers")
+                    room_id = 0
+                    for layer_type, compressed_pixels_list in layers.items():
+                        for compressed_pixels in compressed_pixels_list:
+                            pixels = self.data.sublist(compressed_pixels, 3)
+                            if layer_type == "segment" or layer_type == "floor":
+                                room_color = rooms_colors[room_id]
+                                img_np_array = await self.draw.from_json_to_image(
+                                    img_np_array, pixels, pixel_size, room_color
+                                )
+                                if room_id < 15:
+                                    room_id += 1
+                                else:
+                                    room_id = 0
+                            elif layer_type == "wall":
+                                # Drawing walls.
+                                img_np_array = await self.draw.from_json_to_image(
+                                    img_np_array, pixels, pixel_size, color_wall
+                                )
 
-                if (room_id > 0) and not self.room_propriety:
-                    _LOGGER.debug("we have rooms..")
-                    self.room_propriety = await self.get_rooms_attributes()
-                    self.robot_pos = await self.get_robot_in_room(
-                        (robot_position[0] * 10),
-                        (robot_position[1] * 10),
-                        robot_position_angle)
+                    if (room_id > 0) and not self.room_propriety:
+                        self.room_propriety = await self.get_rooms_attributes()
+                        if self.rooms_pos:
+                            self.robot_pos = await self.get_robot_in_room(
+                                (robot_position[0]),
+                                (robot_position[1]),
+                                robot_position_angle)
 
-                _LOGGER.info(file_name + ": Completed base Layers")
+                    _LOGGER.info(file_name + ": Completed base Layers")
+                    self.img_base_layer = await self.async_copy_array(img_np_array)
+                self.frame_number += 1
+                # If there is a zone clean we draw it now.
+                _LOGGER.debug(file_name + ": Frame number %s", self.frame_number)
+                img_np_array = await self.async_copy_array(self.img_base_layer)
+                if self.frame_number > 5:
+                    self.frame_number = 0
+                # All below will be drawn each time
+                # charger
                 if charger_pos:
                     img_np_array = await self.draw.battery_charger(
                         img_np_array, charger_pos[0], charger_pos[1], color_charger
                     )
-                # self.img_base_layer = img_np_array
-                self.frame_number += 1
-                # img_np_array = self.img_base_layer
-                # If there is a zone clean we draw it now.
-                _LOGGER.debug(file_name + ": Frame number %s", self.frame_number)
-                self.frame_number += 1
-                if self.frame_number > 5:
-                    self.frame_number = 0
-                # All below will be drawn each time
                 if zone_clean:
                     try:
                         zones_clean = zone_clean.get("active_zone")
@@ -547,3 +552,7 @@ class MapImageHandler(object):
             calibration_data.append(calibration_point)
 
         return calibration_data
+
+    async def async_copy_array(self, original_array):
+        copied_array = np.copy(original_array)
+        return copied_array
