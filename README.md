@@ -82,9 +82,6 @@ Via [HACS](https://hacs.xyz//setup/download) please follow. The instructions in 
 6) The camera as all cameras in HA **supports the ON/OFF service**, it is possible to *suspend and resume the camera streem as desired*. 
 </details>
 
-## In implementation plan:
-- Add the SVG export function with some options to split the images.
-- Create the scripts to use Assist (not sure if this is necessary).
 
 ## Notes:
 - This integration is developed and tested using a PI4 with Home Assistant OS fully updated [to the last version](https://www.home-assistant.io/faq/release/), this allows us to confirm that the component is working properly with Home Assistant. Tested also on Docker Supervised "production" enviroment (fully setup home installation).
