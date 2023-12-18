@@ -47,20 +47,24 @@ rm valetudo_vacuum_camera_v1.5.0.zip
 
 The Options menu since V1.5.0 was redesigned in order to feet as much is possible a mobile phone.
 
+![Screenshot 2023-12-11 at 12 12 02](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/e0466d11-a803-4f56-ba29-5ef761c859f5)
 
 
 By selecting the option to be configured (submitting the operation to do) is possible to:
 - Set up the Image Options.
 
+![Screenshot 2023-12-18 at 23 32 57](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/91f7bdbd-0354-4f65-8229-a5e64df824c8)
 
 
 - Change the Base Colours.
 
+![Screenshot 2023-12-18 at 23 33 42](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/e301ecba-2608-499f-92c5-197b62400d70)
 
 
 - Change the Rooms Colours (in total 16 colours) if you use a vacuum that do not support the segments (rooms) the Room 1
 is the floor colour. 
 
+![Screenshot 2023-12-18 at 23 34 05](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/24fbad4d-3cef-474f-9a27-9ada411ad6d3)
 
 
 - It is possible to set up the [transparency](./docs/transparency.md) for each colour at the end of the page by clicking on submit.
