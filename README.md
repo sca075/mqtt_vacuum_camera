@@ -72,19 +72,16 @@ Via [HACS](https://hacs.xyz//setup/download) please follow. The instructions in 
 3) **The camera take automatically [snapshots](./docs/snapshots.md) (when the vacuum idle/ error / docked)**
 4) **Change the image options** directly form the Home Assistant integration UI with a simple click on the integration configuration.
    - **Image Rotation**: 0, 90, 180, 270 (default is 0).
-   - [*Cropping function*](./docs/croping_trimming.md) (default is 50% of the standard Valetudo size 5210x5210 = 2605x2605).
+   - [*Cropping function*](./docs/croping_trimming.md) (At boot the camera automatically trims and reduces the imges sizes. The standard Valetudo images size 5210x5210 or more).
    - Base colors are the **colors for robot, charger, walls, background, zones etc**.
    - **Rooms colors**, Room 1 is acrually also the Floor color (for vacuum that do not supports rooms).
    - From v1.5.0 the camera [**Trim automatically the images**](./docs/croping_trimming.md). From the first image you will get the images already without the need to trim them.
    - It is possible to **display on the image the vacuum staus**.
    - We also added the **[transparency level custom setup](./docs/transparency.md) for all elements and rooms** from v1.4.2.  
-5) This integration make possible to **integrate multiple vacuums** as per each camera will be named with the vacuum name (example: vacuum.robot1 = camera.robot1_camera.. vacuum.robotx = camera.robotx_camera)
+5) This integration make possible to **render multiple vacuums** as per each camera will be named with the vacuum name (example: vacuum.robot1 = camera.robot1_camera.. vacuum.robotx = camera.robotx_camera)
 6) The camera as all cameras in HA **supports the ON/OFF service**, it is possible to *suspend and resume the camera streem as desired*. 
 </details>
 
-## In implementation plan:
-- Add the SVG export function with some options to split the images.
-- Create the scripts to use Assist (not sure if this is necessary).
 
 ## Notes:
 - This integration is developed and tested using a PI4 with Home Assistant OS fully updated [to the last version](https://www.home-assistant.io/faq/release/), this allows us to confirm that the component is working properly with Home Assistant. Tested also on Docker Supervised "production" enviroment (fully setup home installation).
