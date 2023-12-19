@@ -67,4 +67,4 @@ is the floor colour.
 ![Screenshot 2023-12-18 at 23 34 05](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/24fbad4d-3cef-474f-9a27-9ada411ad6d3)
 
 
-- It is possible to set up the [transparency](./docs/transparency.md) for each colour at the end of the page by clicking on submit.
+- It is possible to set up the [transparency](./transparency.md) for each colour at the end of the page by clicking on submit.

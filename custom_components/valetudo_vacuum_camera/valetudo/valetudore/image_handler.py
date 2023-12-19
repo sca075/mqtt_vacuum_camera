@@ -184,7 +184,7 @@ class ReImageHandler(object):
                 self.rooms_pos.append(
                     {
                         "name": name,
-                        "corners": corners
+                        "corners": corners,
                     }
                 )
                 room_properties[int(room_id)] = {
@@ -307,8 +307,8 @@ class ReImageHandler(object):
                 _LOGGER.debug("charger position: %s", charger_pos)
                 if charger_pos:
                     self.charger_pos = {
-                        "x": charger_pos[0],
-                        "y": charger_pos[1],
+                        "x": (charger_pos[0] * 10),
+                        "y": (charger_pos[1] * 10),
                     }
 
                 pixel_size = 5
@@ -356,9 +356,9 @@ class ReImageHandler(object):
                         )
                         _LOGGER.info(file_name + ": Completed base Layers")
                     if (room_id > 0) and not self.room_propriety:
-                        _LOGGER.debug("we have rooms..")
                         self.room_propriety = await self.get_rooms_attributes(destinations)
                         if self.rooms_pos:
+                            _LOGGER.debug("we have rooms..")
                             self.robot_pos = await self.get_robot_in_room(
                                 (robot_position[0] * 10),
                                 (robot_position[1] * 10),
@@ -439,7 +439,7 @@ class ReImageHandler(object):
                 return pil_img
 
         except Exception as e:
-            _LOGGER.warning(file_name + ": Error in get_image_from_json: %s", str(e))
+            _LOGGER.warning(f"{file_name} : Error in get_image_from_json: {e}", exc_info=True)
             return None
 
     def get_frame_number(self):
@@ -572,7 +572,6 @@ class ReImageHandler(object):
             return self.calibration_data
         else:
             return self.calibration_data
-
 
     async def async_copy_array(self, original_array):
         copied_array = np.copy(original_array)

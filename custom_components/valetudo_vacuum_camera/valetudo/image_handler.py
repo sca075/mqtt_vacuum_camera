@@ -164,14 +164,14 @@ class MapImageHandler(object):
                     y_min = min(layer["compressedPixels"][1::3]) * pixel_size
                     y_max = max(layer["compressedPixels"][1::3]) * pixel_size
                     corners = [(x_min, y_min), (x_max, y_min), (x_max, y_max), (x_min, y_max)]
-                    room_name = str(segment_id)
+                    room_id = str(segment_id)
                     self.rooms_pos.append(
                         {
                             "name": name,
-                            "corners": corners
+                            "corners": corners,
                         }
                     )
-                    room_properties[room_name] = {
+                    room_properties[room_id] = {
                         "number": segment_id,
                         "outline": corners,
                         "name": name,
@@ -273,6 +273,7 @@ class MapImageHandler(object):
                 if entity_dict:
                     try:
                         robot_pos = entity_dict.get("robot_position")
+                        _LOGGER.debug(robot_pos)
                     except KeyError:
                         _LOGGER.warning("No robot position found.")
                     else:
@@ -287,8 +288,8 @@ class MapImageHandler(object):
                                 }
                             else:
                                 self.robot_pos = await self.get_robot_in_room(
-                                    (robot_position[0]),
                                     (robot_position[1]),
+                                    (robot_position[0]),
                                     robot_position_angle)
 
                             _LOGGER.debug("robot position: %s",  list(self.robot_pos.items()))
@@ -336,11 +337,12 @@ class MapImageHandler(object):
                                 )
 
                     if (room_id > 0) and not self.room_propriety:
-                        self.room_propriety = await self.get_rooms_attributes()
+                        self.room_propriety = self.extract_room_properties(self.json_data)
                         if self.rooms_pos:
+                            _LOGGER.debug("we have rooms..", robot_position)
                             self.robot_pos = await self.get_robot_in_room(
-                                (robot_position[0]),
                                 (robot_position[1]),
+                                (robot_position[0]),
                                 robot_position_angle)
 
                     _LOGGER.info(file_name + ": Completed base Layers")
@@ -423,7 +425,7 @@ class MapImageHandler(object):
                 del img_np_array
                 return pil_img
         except Exception as e:
-            _LOGGER.warning(file_name + ": Error in get_image_from_json: %s", str(e))
+            _LOGGER.warning(f"{file_name} : Error in get_image_from_json: {e}", exc_info=True)
             return None
 
     def get_frame_number(self):
@@ -451,12 +453,12 @@ class MapImageHandler(object):
                 _LOGGER.debug("Got Rooms Attributes.")
         return self.room_propriety
 
-    async def get_robot_in_room(self, robot_x, robot_y, angle):
+    async def get_robot_in_room(self, robot_y, robot_x, angle):
         # do we know where we are?
         if self.robot_in_room:
             if (
-                    ((self.robot_in_room["left"] >= robot_x) and (self.robot_in_room["right"] <= robot_x))
-                    and ((self.robot_in_room["up"] >= robot_y) and (self.robot_in_room["down"] <= robot_y))
+                    ((self.robot_in_room["right"] >= int(robot_x)) and (self.robot_in_room["left"] <= int(robot_x)))
+                    and ((self.robot_in_room["down"] >= int(robot_y)) and (self.robot_in_room["up"] <= int(robot_y)))
             ):
                 temp = {
                     "x": robot_x,
@@ -470,16 +472,16 @@ class MapImageHandler(object):
         for room in self.rooms_pos:
             corners = room["corners"]
             self.robot_in_room = {
-                "left": corners[0][0],
-                "right": corners[2][0],
-                "up": corners[0][1],
-                "down": corners[2][1],
+                "left": int(corners[0][0]),
+                "right": int(corners[2][0]),
+                "up": int(corners[0][1]),
+                "down": int(corners[2][1]),
                 "room": room["name"],
             }
             # Check if the robot coordinates are inside the room's corners
             if (
-                    ((self.robot_in_room["left"] >= robot_x) and (self.robot_in_room["right"] <= robot_x))
-                    and ((self.robot_in_room["up"] >= robot_y) and (self.robot_in_room["down"] <= robot_y))
+                    ((self.robot_in_room["right"] >= int(robot_x)) and (self.robot_in_room["left"] <= int(robot_x)))
+                    and ((self.robot_in_room["down"] >= int(robot_y)) and (self.robot_in_room["up"] <= int(robot_y)))
             ):
                 temp = {
                     "x": robot_x,
@@ -490,11 +492,16 @@ class MapImageHandler(object):
                 _LOGGER.debug("Robot is inside %s", self.robot_in_room['room'])
                 del room, corners, robot_x, robot_y  # free memory.
                 return temp
-        del room, corners, robot_x, robot_y  # free memory.
+        del room, corners  # free memory.
         _LOGGER.debug("Robot is not inside any room")
         self.robot_in_room = None
+        temp = {
+            "x": robot_x,
+            "y": robot_y,
+            "angle": angle,
+        }
         # If the robot is not inside any room, return None or a default value
-        return self.robot_in_room
+        return temp
 
     def get_calibration_data(self, rotation_angle):
         calibration_data = []
