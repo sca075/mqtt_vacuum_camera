@@ -1,14 +1,14 @@
 <application>
   <component name="FindSettings">
-    <option name="customScope" value="Project 'valetudo_vacuum_mapper'" />
-    <option name="defaultScopeName" value="Project 'valetudo_vacuum_mapper'" />
+    <option name="customScope" value="Project 'valetudo_vacuum_camera'" />
+    <option name="defaultScopeName" value="Project 'valetudo_vacuum_camera'" />
     <option name="localCaseSensitive" value="true" />
     <option name="localRegularExpressions" value="true" />
     <option name="localWholeWordsOnly" value="true" />
     <option name="LOCAL_CASE_SENSITIVE_SEARCH" value="true" />
     <option name="LOCAL_WHOLE_WORDS_ONLY" value="true" />
     <option name="LOCAL_REGULAR_EXPRESSIONS" value="true" />
-    <option name="SEARCH_SCOPE" value="Project 'valetudo_vacuum_mapper'" />
+    <option name="SEARCH_SCOPE" value="Project 'valetudo_vacuum_camera'" />
     <mask>*.css</mask>
     <mask>*.html</mask>
     <mask>*.xml</mask>
