@@ -1,4 +1,4 @@
-"""config_flow ver.1.5.2
+"""config_flow ver.1.5.3
 IMPORTANT: When adding new options to the camera
 it will be mandatory to update const.py update_options.
 Format of the new constants must be CONST_NAME = "const_name" update also
@@ -8,13 +8,15 @@ sting.json and en.json please.
 import voluptuous as vol
 import logging
 from typing import Any, Dict, Optional
-import urllib.request as download
+import os
+import shutil
 
 
 from homeassistant.components.vacuum import DOMAIN as ZONE_VACUUM
 from homeassistant import config_entries
 from homeassistant.const import CONF_UNIQUE_ID
 from homeassistant.core import callback
+from homeassistant.helpers.storage import STORAGE_DIR
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.selector import (
     ColorRGBSelector,
@@ -233,7 +235,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         """Initialize options flow."""
         self.config_entry = config_entry
         self.unique_id = self.config_entry.unique_id
-        _LOGGER.debug(self.unique_id)
         self.options = {}
         self.bk_options = self.config_entry.options
         self._check_alpha = False
@@ -472,8 +473,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     return await self.async_step_rooms_colours_1()
                 elif next_action == "Configure Rooms Colours 2/2":
                     return await self.async_step_rooms_colours_2()
-                # elif next_action == "Download saved Logs":
-                #     return await self.async_download_logs()
+                elif next_action == "Copy Camera Logs to www":
+                    return await self.async_download_logs()
                 elif next_action == "More Options":
                     # TODO
                     """
@@ -492,7 +493,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                             "Configure Image",
                             "Configure General Colours",
                             "Configure Rooms Colours 1/2",
-                            "Configure Rooms Colours 2/2"
+                            "Configure Rooms Colours 2/2",
+                            "Copy Camera Logs to www"
                         ],
                     }
                 }
@@ -547,7 +549,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             else:
                 return await self.async_step_opt_save()
 
-        _LOGGER.debug("self.data before show form: %s", self.options)
         return self.async_show_form(
             step_id="base_colours",
             data_schema=self.COLOR_BASE_SCHEMA,
@@ -570,7 +571,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     "alpha_text": user_input.get(ALPHA_TEXT),
                 }
             )
-            return await self.async_step_base_colours()
+            return await self.async_step_opt_save()
 
         return self.async_show_form(
             step_id="alpha_1",
@@ -654,7 +655,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 }
             )
 
-            return await self.async_step_rooms_colours_1()
+            return await self.async_step_opt_save()
 
         return self.async_show_form(
             step_id="alpha_2",
@@ -678,7 +679,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 }
             )
 
-            return await self.async_step_rooms_colours_2()
+            return await self.async_step_opt_save()
 
         return self.async_show_form(
             step_id="alpha_3",
@@ -688,10 +689,18 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_download_logs(self):
         user_input = None
+        ha_dir = os.getcwd()
+        ha_storage = STORAGE_DIR
+        camera_id = self.unique_id.split("_")
+        file_name = camera_id[0].lower() + ".zip"
+        source_path = ha_dir + "/" + ha_storage + "/" + file_name
+        destination_path = ha_dir + "/" + "www" + "/" + file_name
         if user_input is None:
-            download.urlopen("file:///config/www/rockrobo_s5.zip", "zip.zip")
-            _LOGGER.debug("donload test end")
+            shutil.copy(source_path, destination_path)
             return await self.async_step_init()
+        return self.async_show_form(
+            step_id="download"
+        )
 
     async def async_step_opt_save(self):
         _LOGGER.info("Storing Updated Camera Options")

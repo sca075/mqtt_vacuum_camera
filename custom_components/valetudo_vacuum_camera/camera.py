@@ -1,4 +1,4 @@
-"""Camera Version 1.5.2
+"""Camera Version 1.5.3
 Valetudo Re Test image.
 """
 
@@ -7,6 +7,7 @@ from __future__ import annotations
 import logging
 import os
 import json
+import threading
 import psutil_home_assistant as proc_insp
 from io import BytesIO
 from datetime import datetime, timedelta
@@ -109,8 +110,8 @@ class ValetudoCamera(Camera):
         self.hass = hass
         self._attr_name = "Camera"
         self._directory_path = os.getcwd()  # get Home Assistant path
-        _LOGGER.debug(f"Storage dir will be implemented soon.. {self._directory_path}/{STORAGE_DIR}")
-        self._snapshots = Snapshots(self._directory_path + "/www/")
+        _LOGGER.debug(f"Logs storage dir changed to.. {self._directory_path}/{STORAGE_DIR}")
+        self._snapshots = Snapshots(self._directory_path + "/" + STORAGE_DIR)
         self._mqtt_listen_topic = device_info.get(CONF_VACUUM_CONNECTION_STRING)
         self.file_name = ""
         if self._mqtt_listen_topic:
@@ -118,6 +119,9 @@ class ValetudoCamera(Camera):
             file_name = self._mqtt_listen_topic.split("/")
             self.snapshot_img = (
                     self._directory_path + "/www/snapshot_" + file_name[1].lower() + ".png"
+            )
+            self.log_file = (
+                    self._directory_path + "/www/" + file_name[1].lower() + ".zip"
             )
             self._attr_unique_id = device_info.get(
                 CONF_UNIQUE_ID,
@@ -159,6 +163,9 @@ class ValetudoCamera(Camera):
         # If snapshots are disabled, delete stale data
         if not self._enable_snapshots and self.snapshot_img and os.path.isfile(self.snapshot_img):
             os.remove(self.snapshot_img)
+        # If there is a log zip remove it
+        if os.path.isfile(self.log_file):
+            os.remove(self.log_file)
         self._last_image = None
         self._image_grab = True
         self._frame_nuber = 0
@@ -316,18 +323,18 @@ class ValetudoCamera(Camera):
     def empty_if_no_data(self):
         """Return an empty image if there are no data"""
         # Check if the snapshot file exists
-        _LOGGER.info(self.snapshot_img + ": searching Snapshot image")
+        _LOGGER.info(f"{self.snapshot_img}: searching Snapshot image")
         if os.path.isfile(self.snapshot_img) and (self._last_image is None):
             # Load the snapshot image
             self._last_image = Image.open(self.snapshot_img)
-            _LOGGER.info(self.file_name + ": Snapshot image loaded")
+            _LOGGER.debug(f"{self.file_name}: Snapshot image loaded")
             return self._last_image
         elif self._last_image is not None:
             return self._last_image
         else:
             # Create an empty image with a gray background
             empty_img = Image.new("RGB", (800, 600), "gray")
-            _LOGGER.info(self.file_name + ": Starting up ...")
+            _LOGGER.info(f"{self.file_name}: Starting up ...")
             return empty_img
 
     async def take_snapshot(self, json_data, image_data):
@@ -345,20 +352,12 @@ class ValetudoCamera(Camera):
             # Save image ready for snapshot.
             if self._enable_snapshots:
                 image_data.save(self.snapshot_img)
-                _LOGGER.info(self.file_name + ": Camera Snapshot Taken.")
+                _LOGGER.info(f"{self.file_name}: Camera Snapshot Taken.")
         except IOError:
             self._snapshot_taken = None
-            _LOGGER.warning(
-                "Error Saving"
-                + self.file_name
-                + ": Snapshot, will not be available till restart."
-            )
+            _LOGGER.warning(f"Error Saving{self.file_name}: Snapshot, will not be available till restart.")
         else:
-            _LOGGER.debug(
-                self.file_name + ": Snapshot acquired during %s",
-                {self._vacuum_state},
-                " Vacuum State.",
-                )
+            _LOGGER.debug(f"{self.file_name}: Snapshot acquired during {self._vacuum_state} Vacuum State.")
 
     async def load_test_json(self, file_path=None):
         # Load a test json
@@ -541,15 +540,14 @@ class ValetudoCamera(Camera):
                     self._image = bytes_data
                     # clean up
                     del buffered, pil_img, bytes_data
-                    _LOGGER.info(self.file_name + ": Image update complete")
+                    _LOGGER.debug(f"{self.file_name}: Image update complete")
                     processing_time = (datetime.now() - start_time).total_seconds()
                     self._frame_interval = max(0.1, processing_time)
                     _LOGGER.debug(f"Adjusted {self.file_name}: Frame interval: {self._frame_interval}")
 
                 else:
                     _LOGGER.info(
-                        self.file_name
-                        + ": Image not processed. Returning not updated image."
+                        f"{self.file_name}: Image not processed. Returning not updated image."
                     )
                     self._frame_interval = 0.1
                 self.camera_image(self._image_w, self._image_h)
@@ -565,4 +563,5 @@ class ValetudoCamera(Camera):
                               f"{memory_percent}% of Total.")
                 self._cpu_percent = proc.cpu_percent() / proc_insp.PsutilWrapper().psutil.cpu_count()
                 self._processing = False
+                threading.Thread(target=self.async_update).start()
                 return self._image

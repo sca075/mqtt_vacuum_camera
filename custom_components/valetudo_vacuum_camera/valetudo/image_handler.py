@@ -91,7 +91,6 @@ class MapImageHandler(object):
                 _LOGGER.debug(f"Background colour not detected at rotation {rotate}.")
                 pos_0 = 0
                 self.crop_area = (pos_0, pos_0, image_array.shape[1], image_array.shape[0])
-                _LOGGER.debug(self.crop_area)
                 self.img_size = (image_array.shape[1], image_array.shape[0])
                 del trimmed_width, trimmed_height
                 return image_array
@@ -141,9 +140,9 @@ class MapImageHandler(object):
             rotated = trimmed
             self.crop_area = self.auto_crop
         del trimmed
-        _LOGGER.debug("Auto Crop and Trim Box data: %s", self.crop_area)
+        _LOGGER.debug(f"Auto Crop and Trim Box data: {self.crop_area}")
         self.crop_img_size = (rotated.shape[1], rotated.shape[0])
-        _LOGGER.debug("Auto Crop and Trim image size: %s", self.crop_img_size)
+        _LOGGER.debug(f"Auto Crop and Trim image size: {self.crop_img_size}")
         return rotated
 
     def extract_room_properties(self, json_data):
@@ -208,12 +207,12 @@ class MapImageHandler(object):
 
         try:
             if m_json is not None:
-                _LOGGER.info(file_name + ":Composing the image for the camera.")
+                _LOGGER.info(f"{file_name}: Composing the image for the camera.")
                 # buffer json data
                 self.json_data = m_json
 
                 if self.room_propriety:
-                    _LOGGER.info(file_name + ": Supporting Rooms Cleaning!")
+                    _LOGGER.info(f"{file_name}:  Supporting Rooms Cleaning!")
                 size_x = int(m_json["size"]["x"])
                 size_y = int(m_json["size"]["y"])
                 self.img_size = {
@@ -222,7 +221,7 @@ class MapImageHandler(object):
                     "centre": [(size_x // 2), (size_y // 2)],
                 }
                 self.json_id = m_json["metaData"]["nonce"]
-                _LOGGER.info("Vacuum JSon ID: %s", self.json_id)
+                _LOGGER.info(f"Vacuum JSon ID: {self.json_id}")
                 predicted_path = None
                 path_pixels = None
                 predicted_pat2 = None
@@ -233,7 +232,7 @@ class MapImageHandler(object):
                     path_pixels = paths_data.get("path", [])
                 except KeyError as e:
                     _LOGGER.info(
-                        file_name + ": Error extracting paths data: %s", str(e)
+                        f"{file_name}: Error extracting paths data: {str(e)}"
                     )
 
                 if predicted_path:
@@ -244,27 +243,27 @@ class MapImageHandler(object):
                 try:
                     zone_clean = self.data.find_zone_entities(m_json, None)
                 except (ValueError, KeyError) as e:
-                    _LOGGER.info(file_name + ": No zones: %s", str(e))
+                    _LOGGER.info(f"{file_name}: No zones: {str(e)}")
                     zone_clean = None
                 else:
-                    _LOGGER.debug(file_name + ": Got zones: %s", zone_clean)
+                    _LOGGER.debug(f"{file_name}: Got zones: {zone_clean}")
 
                 try:
                     virtual_walls = self.data.find_virtual_walls(m_json)
                 except (ValueError, KeyError) as e:
-                    _LOGGER.info(file_name + ": No virtual walls: %s", str(e))
+                    _LOGGER.info(f"{file_name}: No virtual walls: {str(e)}")
                     virtual_walls = None
                 else:
-                    _LOGGER.debug(file_name + ": Got virtual walls: %s", virtual_walls)
+                    _LOGGER.debug(f"{file_name}: Got virtual walls: {virtual_walls}")
 
                 try:
                     entity_dict = self.data.find_points_entities(m_json, None)
                 except (ValueError, KeyError) as e:
-                    _LOGGER.warning(file_name + ": No points in json data: %s", str(e))
+                    _LOGGER.warning(f"{file_name}: No points in json data: {str(e)}")
                     entity_dict = None
                 else:
                     _LOGGER.debug(
-                        file_name + ": Got the points in the json: %s", entity_dict
+                        f"{file_name}: Got the points in the json: {entity_dict}"
                     )
 
                 robot_position_angle = None
@@ -273,7 +272,6 @@ class MapImageHandler(object):
                 if entity_dict:
                     try:
                         robot_pos = entity_dict.get("robot_position")
-                        _LOGGER.debug(robot_pos)
                     except KeyError:
                         _LOGGER.warning("No robot position found.")
                     else:
@@ -292,7 +290,7 @@ class MapImageHandler(object):
                                     (robot_position[0]),
                                     robot_position_angle)
 
-                            _LOGGER.debug("robot position: %s",  list(self.robot_pos.items()))
+                            _LOGGER.debug(f"Robot Position: {list(self.robot_pos.items())}")
 
                 charger_pos = None
                 if entity_dict:
@@ -307,16 +305,16 @@ class MapImageHandler(object):
                                 "x": charger_pos[0],
                                 "y": charger_pos[1],
                             }
-                        _LOGGER.debug("charger position: %s", list(self.charger_pos.items()))
+                        _LOGGER.debug(f"Charger Position: {list(self.charger_pos.items())}")
 
                 go_to = entity_dict.get("go_to_target")
                 pixel_size = int(m_json["pixelSize"])
                 if self.frame_number == 0:
                     layers = self.data.find_layers(m_json["layers"])
-                    _LOGGER.debug(file_name + ": Layers to draw: %s", layers.keys())
-                    _LOGGER.info(file_name + ": Empty image with background color")
+                    _LOGGER.debug(f"{file_name}: Layers to draw: {layers.keys()}")
+                    _LOGGER.info(f"{file_name}: Empty image with background color")
                     img_np_array = await self.draw.create_empty_image(size_x, size_y, color_background)
-                    _LOGGER.info(file_name + ": Overlapping Layers")
+                    _LOGGER.info(f"{file_name}: Overlapping Layers")
                     room_id = 0
                     for layer_type, compressed_pixels_list in layers.items():
                         for compressed_pixels in compressed_pixels_list:
@@ -339,17 +337,16 @@ class MapImageHandler(object):
                     if (room_id > 0) and not self.room_propriety:
                         self.room_propriety = self.extract_room_properties(self.json_data)
                         if self.rooms_pos:
-                            _LOGGER.debug("we have rooms..", robot_position)
                             self.robot_pos = await self.get_robot_in_room(
                                 (robot_position[1]),
                                 (robot_position[0]),
                                 robot_position_angle)
 
-                    _LOGGER.info(file_name + ": Completed base Layers")
+                    _LOGGER.info(f"{file_name}: Completed base Layers")
                     self.img_base_layer = await self.async_copy_array(img_np_array)
                 self.frame_number += 1
                 # If there is a zone clean we draw it now.
-                _LOGGER.debug(file_name + ": Frame number %s", self.frame_number)
+                _LOGGER.debug(f"{file_name}: Frame number %s", self.frame_number)
                 img_np_array = await self.async_copy_array(self.img_base_layer)
                 if self.frame_number > 5:
                     self.frame_number = 0
@@ -364,12 +361,12 @@ class MapImageHandler(object):
                         zones_clean = zone_clean.get("active_zone")
                     except KeyError:
                         zones_clean = None
-                        _LOGGER.debug(file_name + ": No Zone Clean.")
+                        _LOGGER.debug(f"{file_name}: No Zone Clean.")
                     try:
                         no_go_zones = zone_clean.get("no_go_area")
                     except KeyError:
                         no_go_zones = None
-                        _LOGGER.debug(file_name + ": No Go area not found.")
+                        _LOGGER.debug(f"{file_name}: No Go area not found.")
                     if zones_clean:
                         img_np_array = await self.draw.zones(
                             img_np_array, zones_clean, color_zone_clean
@@ -414,7 +411,7 @@ class MapImageHandler(object):
                         color_robot,
                         file_name,
                     )
-                _LOGGER.debug(file_name + " Auto cropping the image with rotation: %s", int(img_rotation))
+                _LOGGER.debug(f"{file_name}: Auto cropping the image with rotation: {int(img_rotation)}")
                 img_np_array = await self.auto_crop_and_trim_array(
                     img_np_array,
                     color_background,
@@ -447,7 +444,7 @@ class MapImageHandler(object):
         if self.room_propriety:
             return self.room_propriety
         if self.json_data:
-            _LOGGER.debug("Checking for rooms data..")
+            _LOGGER.debug("Checking for Rooms data..")
             self.room_propriety = self.extract_room_properties(self.json_data)
             if self.room_propriety:
                 _LOGGER.debug("Got Rooms Attributes.")
@@ -489,11 +486,11 @@ class MapImageHandler(object):
                     "angle": angle,
                     "in_room": self.robot_in_room["room"],
                 }
-                _LOGGER.debug("Robot is inside %s", self.robot_in_room['room'])
+                _LOGGER.debug(f"Robot is in {self.robot_in_room['room']}")
                 del room, corners, robot_x, robot_y  # free memory.
                 return temp
         del room, corners  # free memory.
-        _LOGGER.debug("Robot is not inside any room")
+        _LOGGER.debug("Robot not located in any Room")
         self.robot_in_room = None
         temp = {
             "x": robot_x,
