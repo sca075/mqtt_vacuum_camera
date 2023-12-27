@@ -135,6 +135,8 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             self.data.update(
                 {
                     CONF_VACUUM_CONFIG_ENTRY_ID: vacuum_entity.id,
+                    CONF_UNIQUE_ID: unique_id,
+                    "platform": "valetudo_vacuum_camera"
                 }
             )
 
@@ -151,6 +153,7 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     "trim_left": "0",
                     "trim_right": "0",
                     "show_vac_status": False,
+                    'enable_www_snapshots': False,
                     "color_charger": [255, 128, 0],
                     "color_move": [238, 247, 255],
                     "color_wall": [255, 255, 0],

@@ -74,7 +74,7 @@ def get_vacuum_unique_id_from_mqtt_topic(vacuum_mqtt_topic: str) -> str:
     """
     Returns the unique_id computed from the mqtt_topic for the vacuum.
     """
-    return vacuum_mqtt_topic.split("/")[1] + "_camera"
+    return vacuum_mqtt_topic.split("/")[1].lower() + "_camera"
 
 
 async def update_options(bk_options, new_options):

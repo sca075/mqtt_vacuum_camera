@@ -2,7 +2,7 @@
 Image Handler Module.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Last Changed on Version: 1.5.2
+Last Changed on Version: 1.5.3
 """
 from __future__ import annotations
 
@@ -211,8 +211,9 @@ class MapImageHandler(object):
                 # buffer json data
                 self.json_data = m_json
 
-                if self.room_propriety:
-                    _LOGGER.info(f"{file_name}:  Supporting Rooms Cleaning!")
+                if self.room_propriety and self.frame_number == 0:
+                    _LOGGER.info(f"{file_name}: Supporting Rooms Cleaning!")
+
                 size_x = int(m_json["size"]["x"])
                 size_y = int(m_json["size"]["y"])
                 self.img_size = {
@@ -220,12 +221,18 @@ class MapImageHandler(object):
                     "y": size_y,
                     "centre": [(size_x // 2), (size_y // 2)],
                 }
-                self.json_id = m_json["metaData"]["nonce"]
-                _LOGGER.info(f"Vacuum JSon ID: {self.json_id}")
+
+                try:
+                    self.json_id = m_json["metaData"]["nonce"]
+                except (ValueError, KeyError) as e:
+                    _LOGGER.debug(f"No JsonID provided: {e}")
+                    self.json_id = None
+                else:
+                    _LOGGER.info(f"Vacuum JSon ID: {self.json_id} at Frame {self.frame_number}.")
+
                 predicted_path = None
                 path_pixels = None
                 predicted_pat2 = None
-
                 try:
                     paths_data = self.data.find_paths_entities(m_json, None)
                     predicted_path = paths_data.get("predicted_path", [])
@@ -234,7 +241,6 @@ class MapImageHandler(object):
                     _LOGGER.info(
                         f"{file_name}: Error extracting paths data: {str(e)}"
                     )
-
                 if predicted_path:
                     predicted_path = predicted_path[0]["points"]
                     predicted_path = self.data.sublist(predicted_path, 2)
@@ -309,8 +315,10 @@ class MapImageHandler(object):
 
                 go_to = entity_dict.get("go_to_target")
                 pixel_size = int(m_json["pixelSize"])
+
                 if self.frame_number == 0:
-                    layers = self.data.find_layers(m_json["layers"])
+                    # The below is drawing the base layer that will be reused at the next frame.
+                    layers, active = self.data.find_layers(m_json["layers"])
                     _LOGGER.debug(f"{file_name}: Layers to draw: {layers.keys()}")
                     _LOGGER.info(f"{file_name}: Empty image with background color")
                     img_np_array = await self.draw.create_empty_image(size_x, size_y, color_background)
@@ -321,6 +329,17 @@ class MapImageHandler(object):
                             pixels = self.data.sublist(compressed_pixels, 3)
                             if layer_type == "segment" or layer_type == "floor":
                                 room_color = rooms_colors[room_id]
+                                if layer_type == "segment" or layer_type == "floor":
+                                    room_color = rooms_colors[room_id]
+                                if layer_type == "segment":
+                                    # Check if the room is active and set a modified color
+                                    if active and len(active) > room_id and active[room_id] == 1:
+                                        room_color = (
+                                            room_color[0],
+                                            room_color[1],
+                                            room_color[2],
+                                            room_color[3] == 50
+                                        )
                                 img_np_array = await self.draw.from_json_to_image(
                                     img_np_array, pixels, pixel_size, room_color
                                 )
@@ -333,6 +352,36 @@ class MapImageHandler(object):
                                 img_np_array = await self.draw.from_json_to_image(
                                     img_np_array, pixels, pixel_size, color_wall
                                 )
+                    if virtual_walls:
+                        img_np_array = await self.draw.draw_virtual_walls(
+                            img_np_array, virtual_walls, color_no_go
+                        )
+                    if zone_clean:
+                        try:
+                            no_go_zones = zone_clean.get("no_go_area")
+                        except KeyError:
+                            no_go_zones = None
+
+                        try:
+                            no_mop_zones = zone_clean.get("no_mop_area")
+                        except KeyError:
+                            no_mop_zones = None
+
+                        if no_go_zones:
+                            _LOGGER.info(f"{file_name}: Drawing No Go area.")
+                            img_np_array = await self.draw.zones(
+                                img_np_array, no_go_zones, color_no_go
+                            )
+                        if no_mop_zones:
+                            _LOGGER.info(f"{file_name}: Drawing No Mop area.")
+                            img_np_array = await self.draw.zones(
+                                img_np_array, no_mop_zones, color_no_go
+                            )
+                    # charger
+                    if charger_pos:
+                        img_np_array = await self.draw.battery_charger(
+                            img_np_array, charger_pos[0], charger_pos[1], color_charger
+                        )
 
                     if (room_id > 0) and not self.room_propriety:
                         self.room_propriety = self.extract_room_properties(self.json_data)
@@ -344,41 +393,26 @@ class MapImageHandler(object):
 
                     _LOGGER.info(f"{file_name}: Completed base Layers")
                     self.img_base_layer = await self.async_copy_array(img_np_array)
+
                 self.frame_number += 1
-                # If there is a zone clean we draw it now.
+                if self.frame_number > 14:
+                    self.frame_number = 0
+
                 _LOGGER.debug(f"{file_name}: Frame number %s", self.frame_number)
                 img_np_array = await self.async_copy_array(self.img_base_layer)
-                if self.frame_number > 5:
-                    self.frame_number = 0
                 # All below will be drawn each time
-                # charger
-                if charger_pos:
-                    img_np_array = await self.draw.battery_charger(
-                        img_np_array, charger_pos[0], charger_pos[1], color_charger
-                    )
+                # If there is a zone clean we draw it now.
                 if zone_clean:
                     try:
                         zones_clean = zone_clean.get("active_zone")
                     except KeyError:
                         zones_clean = None
-                        _LOGGER.debug(f"{file_name}: No Zone Clean.")
-                    try:
-                        no_go_zones = zone_clean.get("no_go_area")
-                    except KeyError:
-                        no_go_zones = None
-                        _LOGGER.debug(f"{file_name}: No Go area not found.")
                     if zones_clean:
+                        _LOGGER.info(f"{file_name}: Drawing Zone Clean.")
                         img_np_array = await self.draw.zones(
                             img_np_array, zones_clean, color_zone_clean
                         )
-                    if no_go_zones:
-                        img_np_array = await self.draw.zones(
-                            img_np_array, no_go_zones, color_no_go
-                        )
-                if virtual_walls:
-                    img_np_array = await self.draw.draw_virtual_walls(
-                        img_np_array, virtual_walls, color_no_go
-                    )
+
                 if go_to:
                     img_np_array = await self.draw.go_to_flag(
                         img_np_array,

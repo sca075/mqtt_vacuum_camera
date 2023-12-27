@@ -3,7 +3,7 @@ Collections of Json and List routines
 ImageData is part of the Image_Handler
 used functions to search data in the json
 provided for the creation of the new camera frame
-Last changes on Version: 1.5.0
+Last changes on Version: 1.5.3
 """
 
 import logging
@@ -36,22 +36,30 @@ class ImageData:
     """
 
     @staticmethod
-    def find_layers(json_obj, layer_dict=None):
+    def find_layers(json_obj, layer_dict=None, active_list=None):
         if layer_dict is None:
             layer_dict = {}
+        if active_list is None:
+            active_list = []
         if isinstance(json_obj, dict):
             if "__class" in json_obj and json_obj["__class"] == "MapLayer":
                 layer_type = json_obj.get("type")
+                active_type = json_obj.get("metaData")
                 if layer_type:
                     if layer_type not in layer_dict:
                         layer_dict[layer_type] = []
                     layer_dict[layer_type].append(json_obj.get("compressedPixels", []))
+                if layer_type == "floor":
+                    active_list.append(0)
+                if layer_type == "segment":
+                    active_list.append(int(active_type['active']))
+
             for value in json_obj.items():
-                ImageData.find_layers(value, layer_dict)
+                ImageData.find_layers(value, layer_dict, active_list)
         elif isinstance(json_obj, list):
             for item in json_obj:
-                ImageData.find_layers(item, layer_dict)
-        return layer_dict
+                ImageData.find_layers(item, layer_dict, active_list)
+        return layer_dict, active_list
 
     @staticmethod
     def find_points_entities(json_obj, entity_dict=None):

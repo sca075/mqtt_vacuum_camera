@@ -160,10 +160,10 @@ class ValetudoCamera(Camera):
         self._enable_snapshots = device_info.get(CONF_SNAPSHOTS_ENABLE)
         if self._enable_snapshots is None:
             self._enable_snapshots = True
-        # If snapshots are disabled, delete stale data
+        # If snapshots are disabled, delete www data
         if not self._enable_snapshots and self.snapshot_img and os.path.isfile(self.snapshot_img):
             os.remove(self.snapshot_img)
-        # If there is a log zip remove it
+        # If there is a log zip in www remove it
         if os.path.isfile(self.log_file):
             os.remove(self.log_file)
         self._last_image = None
@@ -389,7 +389,7 @@ class ValetudoCamera(Camera):
             ):
                 # grab the image
                 self._image_grab = True
-                self._frame_nuber = self._map_handler.get_frame_number()
+                self._frame_nuber = self._map_handler.get_frame_number() - 1
                 # when the vacuum goes / is in idle, error or docked
                 # take the snapshot.
                 self._snapshot_taken = False
