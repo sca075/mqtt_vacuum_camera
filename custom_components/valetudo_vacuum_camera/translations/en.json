@@ -161,5 +161,25 @@
         "title": "Alpha Chanel Rooms Colours"
       }
     }
+  },
+  "services": {
+    "turn_off": {
+      "name": "[%key:common::action::turn_off%]",
+      "description": "Turns off the camera."
+    },
+    "turn_on": {
+      "name": "[%key:common::action::turn_on%]",
+      "description": "Turns on the camera."
+    },
+    "snapshot": {
+      "name": "Take snapshot",
+      "description": "Takes a snapshot from a camera.",
+      "fields": {
+        "filename": {
+          "name": "Filename",
+          "description": "Template of a filename. Variable available is `entity_id`."
+        }
+      }
+    }
   }
 }
