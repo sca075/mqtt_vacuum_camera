@@ -2,3 +2,24 @@
 reload:
   name: Reload
   description: Reload all entities of Valetudo Map Extractor platform
+
+turn_off:
+  target:
+    entity:
+      domain: camera
+
+turn_on:
+  target:
+    entity:
+      domain: camera
+
+snapshot:
+  target:
+    entity:
+      domain: camera
+  fields:
+    filename:
+      required: true
+      example: "config/www/snapshot_.png"
+      selector:
+        text:

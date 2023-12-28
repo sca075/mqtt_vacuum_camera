@@ -1,4 +1,4 @@
-"""Camera Version 1.5.3
+"""Camera Version 1.5.4
 Valetudo Re Test image.
 """
 
@@ -15,7 +15,7 @@ from PIL import Image
 from typing import Optional
 import voluptuous as vol
 
-from homeassistant.components.camera import Camera, PLATFORM_SCHEMA, SUPPORT_ON_OFF
+from homeassistant.components.camera import Camera, PLATFORM_SCHEMA
 from homeassistant.const import CONF_NAME, CONF_UNIQUE_ID
 from homeassistant import core, config_entries
 from homeassistant.helpers import config_validation as cv
@@ -271,11 +271,6 @@ class ValetudoCamera(Camera):
 
     def turn_off(self):
         self._should_poll = False
-
-    @property
-    def supported_features(self) -> int:
-        """Camera ON OFF Future"""
-        return SUPPORT_ON_OFF
 
     @property
     def extra_state_attributes(self):
