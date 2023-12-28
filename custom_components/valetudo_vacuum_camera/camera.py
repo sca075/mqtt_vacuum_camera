@@ -7,7 +7,7 @@ from __future__ import annotations
 import logging
 import os
 import json
-import threading
+# import threading
 import psutil_home_assistant as proc_insp
 from io import BytesIO
 from datetime import datetime, timedelta
@@ -558,5 +558,5 @@ class ValetudoCamera(Camera):
                               f"{memory_percent}% of Total.")
                 self._cpu_percent = proc.cpu_percent() / proc_insp.PsutilWrapper().psutil.cpu_count()
                 self._processing = False
-                threading.Thread(target=self.async_update).start()
+                # threading.Thread(target=self.async_update).start()
                 return self._image
