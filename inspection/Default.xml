@@ -28,6 +28,7 @@
     <option name="ignoredIdentifiers">
       <list>
         <option value="custom_components.valetudo_vacuum_camera.common.DeviceEntry" />
+        <option value="int.__getitem__" />
       </list>
     </option>
   </inspection_tool>
