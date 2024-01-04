@@ -2,12 +2,14 @@
 Image Handler Module.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Last Changed on Version: 1.5.3
+Last Changed on Version: 1.5.5
 """
 from __future__ import annotations
 
 import logging
 import numpy as np
+import hashlib
+import json
 from PIL import Image
 
 from custom_components.valetudo_vacuum_camera.utils.colors_man import color_grey
@@ -19,7 +21,7 @@ from custom_components.valetudo_vacuum_camera.utils.draweble import Drawable
 _LOGGER = logging.getLogger(__name__)
 
 
-# noinspection PyTypeChecker
+# noinspection PyTypeChecker,PyUnboundLocalVariable
 class MapImageHandler(object):
     def __init__(self):
         self.auto_crop = None
@@ -31,6 +33,7 @@ class MapImageHandler(object):
         self.draw = Drawable
         self.frame_number = 0
         self.go_to = None
+        self.img_hash = None
         self.img_base_layer = None
         self.img_rotate = 0
         self.img_size = None
@@ -313,12 +316,32 @@ class MapImageHandler(object):
                             }
                         _LOGGER.debug(f"Charger Position: {list(self.charger_pos.items())}")
 
+                if entity_dict:
+                    try:
+                        obstacle_data = entity_dict.get("obstacle")
+                    except KeyError:
+                        _LOGGER.info("No obstacle found.")
+                    else:
+                        obstacle_positions = []
+                        if obstacle_data:
+                            for obstacle in obstacle_data:
+                                label = obstacle.get("metaData", {}).get("label")
+                                points = obstacle.get("points", [])
+
+                                if label and points:
+                                    obstacle_pos = {"label": label, "points": {"x": points[0], "y": points[1]}}
+                                    obstacle_positions.append(obstacle_pos)
+
+                        # List of dictionaries containing label and points for each obstacle
+                        _LOGGER.debug("All obstacle positions: %s", obstacle_positions)
+
                 go_to = entity_dict.get("go_to_target")
                 pixel_size = int(m_json["pixelSize"])
-
+                layers, active = self.data.find_layers(m_json["layers"])
+                new_frame_hash = await self.calculate_array_hash(layers, active)
                 if self.frame_number == 0:
+                    self.img_hash = await self.calculate_array_hash(layers, active)
                     # The below is drawing the base layer that will be reused at the next frame.
-                    layers, active = self.data.find_layers(m_json["layers"])
                     _LOGGER.debug(f"{file_name}: Layers to draw: {layers.keys()}")
                     _LOGGER.info(f"{file_name}: Empty image with background color")
                     img_np_array = await self.draw.create_empty_image(size_x, size_y, color_background)
@@ -335,10 +358,10 @@ class MapImageHandler(object):
                                     # Check if the room is active and set a modified color
                                     if active and len(active) > room_id and active[room_id] == 1:
                                         room_color = (
-                                            room_color[0],
-                                            room_color[1],
-                                            room_color[2],
-                                            room_color[3] == 50
+                                            ((2 * room_color[0]) + color_zone_clean[0]) // 3,
+                                            ((2 * room_color[1]) + color_zone_clean[1]) // 3,
+                                            ((2 * room_color[2]) + color_zone_clean[2]) // 3,
+                                            ((2 * room_color[3]) + color_zone_clean[3]) // 3
                                         )
                                 img_np_array = await self.draw.from_json_to_image(
                                     img_np_array, pixels, pixel_size, room_color
@@ -383,6 +406,11 @@ class MapImageHandler(object):
                             img_np_array, charger_pos[0], charger_pos[1], color_charger
                         )
 
+                    if obstacle_positions:
+                        self.draw.draw_obstacles(img_np_array,
+                                                 obstacle_positions,
+                                                 color_no_go)
+
                     if (room_id > 0) and not self.room_propriety:
                         self.room_propriety = self.extract_room_properties(self.json_data)
                         if self.rooms_pos:
@@ -395,7 +423,7 @@ class MapImageHandler(object):
                     self.img_base_layer = await self.async_copy_array(img_np_array)
 
                 self.frame_number += 1
-                if self.frame_number > 14:
+                if (self.frame_number > 1024) or (new_frame_hash != self.img_hash):
                     self.frame_number = 0
 
                 _LOGGER.debug(f"{file_name}: Frame number %s", self.frame_number)
@@ -593,4 +621,18 @@ class MapImageHandler(object):
 
     async def async_copy_array(self, original_array):
         copied_array = np.copy(original_array)
+
         return copied_array
+
+    # noinspection PyUnresolvedReferences
+    async def calculate_array_hash(self, layers: None, active: None):
+        if layers and active:
+            data_to_hash = {
+                'layers': len(layers["wall"][0]),
+                'active_segments': tuple(active),
+            }
+            data_json = json.dumps(data_to_hash, sort_keys=True)
+            hash_value = hashlib.sha256(data_json.encode()).hexdigest()
+        else:
+            hash_value = None
+        return hash_value

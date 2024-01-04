@@ -3,7 +3,7 @@ Collections of Drawing Utility
 Drawable is part of the Image_Handler
 used functions to draw the elements on the Numpy Array
 that is actually our camera frame.
-Last changes on Version: 1.4.7
+Last changes on Version: 1.5.5
 """
 
 import logging
@@ -403,6 +403,30 @@ class Drawable:
         # Overlay the robot on the background image
         background_image[top_left_y:bottom_right_y, top_left_x:bottom_right_x] = robot_image
         return background_image
+
+    @staticmethod
+    def draw_obstacles(image, obstacle_info_list, color):
+        """
+        Draw filled circles for obstacles on the image.
+
+        Parameters:
+        - image: NumPy array representing the image.
+        - obstacle_info_list: List of dictionaries containing obstacle information.
+
+        Returns:
+        - Modified image with filled circles for obstacles.
+        """
+        for obstacle_info in obstacle_info_list:
+            enter = obstacle_info.get("points", {})
+            label = obstacle_info.get("label", {})
+            center = (enter['x'], enter['y'])
+
+            radius = 6
+
+            # Draw filled circle
+            image = Drawable._filled_circle(image, center, radius, color)
+
+        return image
 
     @staticmethod
     def status_text(image, size, color, status):

@@ -1,5 +1,8 @@
-"""Camera Version 1.5.4
-Valetudo Re Test image.
+"""
+Camera Version 1.5.5
+Valetudo Firmwares Vacuums maps.
+for Valetudo Hypfer and rand256 maps.
+From PI4 up to all other Home Assistant supported platforms.
 """
 
 from __future__ import annotations
@@ -60,7 +63,7 @@ from .const import (
     ALPHA_ROOM_3, ALPHA_ROOM_4, ALPHA_ROOM_5, ALPHA_ROOM_6,
     ALPHA_ROOM_7, ALPHA_ROOM_8, ALPHA_ROOM_9, ALPHA_ROOM_10,
     ALPHA_ROOM_11, ALPHA_ROOM_12, ALPHA_ROOM_13, ALPHA_ROOM_14,
-    ALPHA_ROOM_15,
+    ALPHA_ROOM_15
 )
 from custom_components.valetudo_vacuum_camera.common import get_vacuum_unique_id_from_mqtt_topic
 
@@ -142,7 +145,7 @@ class ValetudoCamera(Camera):
         self._map_pred_points = None
         self._vacuum_shared = Vacuum()
         self._vacuum_state = None
-        self._frame_interval = 1
+        self._attr_frame_interval = 1
         self._vac_img_data = None
         self._vac_json_data = None
         self._vac_json_id = None
@@ -350,7 +353,7 @@ class ValetudoCamera(Camera):
                 _LOGGER.info(f"{self.file_name}: Camera Snapshot Taken.")
         except IOError:
             self._snapshot_taken = None
-            _LOGGER.warning(f"Error Saving{self.file_name}: Snapshot, will not be available till restart.")
+            _LOGGER.warning(f"Error Saving {self.file_name}: Snapshot, will not be available till restart.")
         else:
             _LOGGER.debug(f"{self.file_name}: Snapshot acquired during {self._vacuum_state} Vacuum State.")
 
@@ -417,102 +420,12 @@ class ValetudoCamera(Camera):
                 pid = os.getpid()  # Start to log the CPU usage of this PID.
                 proc = proc_insp.PsutilWrapper().psutil.Process(pid)  # Get the process PID.
                 self._cpu_percent = round((proc.cpu_percent() / proc_insp.PsutilWrapper().psutil.cpu_count()) / 2, 2)
+                _LOGGER.debug(f"{self.file_name} System CPU usage stat (1/2): {self._cpu_percent}%")
                 if parsed_json is not None:
                     if self._rrm_data:
-                        destinations = await self._mqtt.get_destinations()
-                        self._cpu_percent = round((proc.cpu_percent() / proc_insp.PsutilWrapper().psutil.cpu_count())
-                                                  / 2, 2)
-                        _LOGGER.debug(f"{self.file_name} System CPU usage stat (1/2): {self._cpu_percent}%")
-                        pil_img = await self._re_handler.get_image_from_rrm(
-                            m_json=self._rrm_data,
-                            img_rotation=self._image_rotate,
-                            margins=self._margins,
-                            user_colors=self._vacuum_shared.get_user_colors(),
-                            rooms_colors=self._vacuum_shared.get_rooms_colors(),
-                            file_name=self.file_name,
-                            destinations=destinations,
-                            drawing_limit=self._cpu_percent
-                        )
-                    else:
-                        pil_img = await self._map_handler.get_image_from_json(
-                            m_json=parsed_json,
-                            robot_state=self._vacuum_state,
-                            img_rotation=self._image_rotate,
-                            margins=self._margins,
-                            user_colors=self._vacuum_shared.get_user_colors(),
-                            rooms_colors=self._vacuum_shared.get_rooms_colors(),
-                            file_name=self.file_name,
-                        )
-                    if pil_img is not None:
-                        if self._map_rooms is None:
-                            if self._rrm_data is None:
-                                self._map_rooms = await self._map_handler.get_rooms_attributes()
-                            elif (self._map_rooms is None) and (self._rrm_data is not None):
-                                destinations = await self._mqtt.get_destinations()
-                                if destinations is not None:
-                                    self._map_rooms, self._map_pred_zones, self._map_pred_points = \
-                                        await self._re_handler.get_rooms_attributes(destinations)
-                            if self._map_rooms:
-                                _LOGGER.debug(
-                                    f"State attributes rooms update: {self._map_rooms}"
-                                )
-                        if self._show_vacuum_state:
-                            self._map_handler.draw.status_text(
-                                pil_img,
-                                50,
-                                self._vacuum_shared.user_colors[8],
-                                self.file_name + ": " + self._vacuum_state,
-                                )
-                        if self._attr_calibration_points is None:
-                            if self._rrm_data is None:
-                                self._attr_calibration_points = (
-                                    self._map_handler.get_calibration_data(self._image_rotate)
-                                )
-                            else:
-                                self._attr_calibration_points = (
-                                    self._re_handler.get_calibration_data(self._image_rotate)
-                                )
-
-                        if self._rrm_data is None:
-                            self._vac_json_id = self._map_handler.get_json_id()
-                            if not self._base:
-                                self._base = self._map_handler.get_charger_position()
-                            self._current = self._map_handler.get_robot_position()
-                            if not self._vac_img_data:
-                                self._vac_img_data = self._map_handler.get_img_size()
-
-                        else:
-                            self._vac_json_id = self._re_handler.get_json_id()
-                            if not self._base:
-                                self._base = self._re_handler.get_charger_position()
-                            self._current = self._re_handler.get_robot_position()
-                            if not self._vac_img_data:
-                                self._vac_img_data = self._re_handler.get_img_size()
-
-                        if not self._snapshot_taken and (
-                                self._vacuum_state == "idle"
-                                or self._vacuum_state == "docked"
-                                or self._vacuum_state == "error"
-                        ):
-                            # suspend image processing if we are at the next frame.
-                            if not self._rrm_data:
-                                if (
-                                        self._frame_nuber
-                                        is not self._map_handler.get_frame_number()
-                                ):
-                                    self._image_grab = False
-                                    _LOGGER.info(
-                                        f"Suspended the camera data processing for: {self.file_name}."
-                                    )
-                                    # take a snapshot
-                                    await self.take_snapshot(parsed_json, pil_img)
-                            else:
-                                _LOGGER.info(
-                                    f"Suspended the camera data processing for: {self.file_name}."
-                                )
-                                # take a snapshot
-                                await self.take_snapshot(self._rrm_data, pil_img)
-                                self._image_grab = False
+                        pil_img = await self.process_rand256_data(parsed_json)
+                    elif self._rrm_data is None:
+                        pil_img = await self.proces_valetudo_data(parsed_json)
                     else:
                         # if no image was processed empty or last snapshot/frame
                         pil_img = self.empty_if_no_data()
@@ -537,14 +450,14 @@ class ValetudoCamera(Camera):
                     del buffered, pil_img, bytes_data
                     _LOGGER.debug(f"{self.file_name}: Image update complete")
                     processing_time = (datetime.now() - start_time).total_seconds()
-                    self._frame_interval = max(0.1, processing_time)
-                    _LOGGER.debug(f"Adjusted {self.file_name}: Frame interval: {self._frame_interval}")
+                    self._attr_frame_interval = max(0.1, processing_time)
+                    _LOGGER.debug(f"Adjusted {self.file_name}: Frame interval: {self._attr_frame_interval}")
 
                 else:
                     _LOGGER.info(
                         f"{self.file_name}: Image not processed. Returning not updated image."
                     )
-                    self._frame_interval = 0.1
+                    self._attr_frame_interval = 0.1
                 self.camera_image(self._image_w, self._image_h)
                 # HA supervised memory and CUP usage report.
                 self._cpu_percent = round(((self._cpu_percent + proc.cpu_percent())
@@ -560,3 +473,121 @@ class ValetudoCamera(Camera):
                 self._processing = False
                 # threading.Thread(target=self.async_update).start()
                 return self._image
+
+    # let's separate the vacuums:
+    async def proces_valetudo_data(self, parsed_json):
+        if parsed_json is not None:
+            pil_img = await self._map_handler.get_image_from_json(
+                m_json=parsed_json,
+                robot_state=self._vacuum_state,
+                img_rotation=self._image_rotate,
+                margins=self._margins,
+                user_colors=self._vacuum_shared.get_user_colors(),
+                rooms_colors=self._vacuum_shared.get_rooms_colors(),
+                file_name=self.file_name,
+            )
+            if pil_img is not None:
+                if self._map_rooms is None:
+                    if self._rrm_data is None:
+                        self._map_rooms = await self._map_handler.get_rooms_attributes()
+                    if self._map_rooms:
+                        _LOGGER.debug(
+                            f"State attributes rooms update: {self._map_rooms}"
+                        )
+                if self._show_vacuum_state:
+                    self._map_handler.draw.status_text(
+                        pil_img,
+                        50,
+                        self._vacuum_shared.user_colors[8],
+                        self.file_name + ": " + self._vacuum_state,
+                        )
+
+                if self._attr_calibration_points is None:
+                    self._attr_calibration_points = (
+                        self._map_handler.get_calibration_data(self._image_rotate)
+                    )
+
+                self._vac_json_id = self._map_handler.get_json_id()
+                if not self._base:
+                    self._base = self._map_handler.get_charger_position()
+                self._current = self._map_handler.get_robot_position()
+                if not self._vac_img_data:
+                    self._vac_img_data = self._map_handler.get_img_size()
+
+                if not self._snapshot_taken and (
+                        self._vacuum_state == "idle"
+                        or self._vacuum_state == "docked"
+                        or self._vacuum_state == "error"
+                ):
+                    # suspend image processing if we are at the next frame.
+                    if (
+                            self._frame_nuber
+                            is not self._map_handler.get_frame_number()
+                    ):
+                        self._image_grab = False
+                        _LOGGER.info(
+                            f"Suspended the camera data processing for: {self.file_name}."
+                        )
+                        # take a snapshot
+                        await self.take_snapshot(parsed_json, pil_img)
+            return pil_img
+        return None
+
+    async def process_rand256_data(self, parsed_json):
+        if parsed_json is not None:
+            destinations = await self._mqtt.get_destinations()
+            pil_img = await self._re_handler.get_image_from_rrm(
+                m_json=self._rrm_data,
+                img_rotation=self._image_rotate,
+                margins=self._margins,
+                user_colors=self._vacuum_shared.get_user_colors(),
+                rooms_colors=self._vacuum_shared.get_rooms_colors(),
+                file_name=self.file_name,
+                destinations=destinations,
+                drawing_limit=self._cpu_percent
+            )
+
+            if pil_img is not None:
+                if self._map_rooms is None:
+                    destinations = await self._mqtt.get_destinations()
+                    if destinations is not None:
+                        self._map_rooms, self._map_pred_zones, self._map_pred_points = \
+                            await self._re_handler.get_rooms_attributes(destinations)
+                    if self._map_rooms:
+                        _LOGGER.debug(
+                            f"State attributes rooms update: {self._map_rooms}"
+                        )
+                if self._show_vacuum_state:
+                    self._map_handler.draw.status_text(
+                        pil_img,
+                        50,
+                        self._vacuum_shared.user_colors[8],
+                        self.file_name + ": " + self._vacuum_state,
+                        )
+
+                if self._attr_calibration_points is None:
+                    self._attr_calibration_points = (
+                        self._re_handler.get_calibration_data(self._image_rotate)
+                    )
+
+                self._vac_json_id = self._re_handler.get_json_id()
+                if not self._base:
+                    self._base = self._re_handler.get_charger_position()
+                self._current = self._re_handler.get_robot_position()
+                if not self._vac_img_data:
+                    self._vac_img_data = self._re_handler.get_img_size()
+
+                if not self._snapshot_taken and (
+                        self._vacuum_state == "idle"
+                        or self._vacuum_state == "docked"
+                        or self._vacuum_state == "error"
+                ):
+                    # suspend image processing if we are at the next frame.
+                    _LOGGER.info(
+                        f"Suspended the camera data processing for: {self.file_name}."
+                    )
+                    # take a snapshot
+                    await self.take_snapshot(self._rrm_data, pil_img)
+                    self._image_grab = False
+            return pil_img
+        return None
