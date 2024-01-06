@@ -10,6 +10,7 @@ from __future__ import annotations
 import logging
 import os
 import json
+
 # import threading
 import psutil_home_assistant as proc_insp
 from io import BytesIO
@@ -46,26 +47,70 @@ from .utils.colors_man import (
 from .snapshots.snapshot import Snapshots
 from .valetudo.vacuum import Vacuum
 from .const import (
-    CONF_VACUUM_CONNECTION_STRING, CONF_VACUUM_ENTITY_ID, CONF_VACUUM_IDENTIFIERS,
-    CONF_VAC_STAT, CONF_SNAPSHOTS_ENABLE,
-    DEFAULT_NAME, DOMAIN, PLATFORMS,
-    ATTR_ROTATE, ATTR_MARGINS,
-    COLOR_WALL, COLOR_ZONE_CLEAN, COLOR_ROBOT, COLOR_BACKGROUND,
-    COLOR_MOVE, COLOR_CHARGER, COLOR_TEXT, COLOR_NO_GO,
-    COLOR_GO_TO, COLOR_ROOM_0, COLOR_ROOM_1, COLOR_ROOM_2,
-    COLOR_ROOM_3, COLOR_ROOM_4, COLOR_ROOM_5, COLOR_ROOM_6,
-    COLOR_ROOM_7, COLOR_ROOM_8, COLOR_ROOM_9, COLOR_ROOM_10,
-    COLOR_ROOM_11, COLOR_ROOM_12, COLOR_ROOM_13, COLOR_ROOM_14,
+    CONF_VACUUM_CONNECTION_STRING,
+    CONF_VACUUM_ENTITY_ID,
+    CONF_VACUUM_IDENTIFIERS,
+    CONF_VAC_STAT,
+    CONF_SNAPSHOTS_ENABLE,
+    DEFAULT_NAME,
+    DOMAIN,
+    PLATFORMS,
+    ATTR_ROTATE,
+    ATTR_MARGINS,
+    COLOR_WALL,
+    COLOR_ZONE_CLEAN,
+    COLOR_ROBOT,
+    COLOR_BACKGROUND,
+    COLOR_MOVE,
+    COLOR_CHARGER,
+    COLOR_TEXT,
+    COLOR_NO_GO,
+    COLOR_GO_TO,
+    COLOR_ROOM_0,
+    COLOR_ROOM_1,
+    COLOR_ROOM_2,
+    COLOR_ROOM_3,
+    COLOR_ROOM_4,
+    COLOR_ROOM_5,
+    COLOR_ROOM_6,
+    COLOR_ROOM_7,
+    COLOR_ROOM_8,
+    COLOR_ROOM_9,
+    COLOR_ROOM_10,
+    COLOR_ROOM_11,
+    COLOR_ROOM_12,
+    COLOR_ROOM_13,
+    COLOR_ROOM_14,
     COLOR_ROOM_15,
-    ALPHA_WALL, ALPHA_ZONE_CLEAN, ALPHA_ROBOT, ALPHA_BACKGROUND,
-    ALPHA_MOVE, ALPHA_CHARGER, ALPHA_TEXT, ALPHA_NO_GO,
-    ALPHA_GO_TO, ALPHA_ROOM_0, ALPHA_ROOM_1, ALPHA_ROOM_2,
-    ALPHA_ROOM_3, ALPHA_ROOM_4, ALPHA_ROOM_5, ALPHA_ROOM_6,
-    ALPHA_ROOM_7, ALPHA_ROOM_8, ALPHA_ROOM_9, ALPHA_ROOM_10,
-    ALPHA_ROOM_11, ALPHA_ROOM_12, ALPHA_ROOM_13, ALPHA_ROOM_14,
-    ALPHA_ROOM_15
+    ALPHA_WALL,
+    ALPHA_ZONE_CLEAN,
+    ALPHA_ROBOT,
+    ALPHA_BACKGROUND,
+    ALPHA_MOVE,
+    ALPHA_CHARGER,
+    ALPHA_TEXT,
+    ALPHA_NO_GO,
+    ALPHA_GO_TO,
+    ALPHA_ROOM_0,
+    ALPHA_ROOM_1,
+    ALPHA_ROOM_2,
+    ALPHA_ROOM_3,
+    ALPHA_ROOM_4,
+    ALPHA_ROOM_5,
+    ALPHA_ROOM_6,
+    ALPHA_ROOM_7,
+    ALPHA_ROOM_8,
+    ALPHA_ROOM_9,
+    ALPHA_ROOM_10,
+    ALPHA_ROOM_11,
+    ALPHA_ROOM_12,
+    ALPHA_ROOM_13,
+    ALPHA_ROOM_14,
+    ALPHA_ROOM_15,
 )
-from custom_components.valetudo_vacuum_camera.common import get_vacuum_unique_id_from_mqtt_topic
+from custom_components.valetudo_vacuum_camera.common import (
+    get_vacuum_unique_id_from_mqtt_topic,
+)
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
@@ -80,9 +125,9 @@ _LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
-        hass: core.HomeAssistant,
-        config_entry: config_entries.ConfigEntry,
-        async_add_entities,
+    hass: core.HomeAssistant,
+    config_entry: config_entries.ConfigEntry,
+    async_add_entities,
 ) -> None:
     """Setup camera from a config entry created in the integrations UI."""
     config = hass.data[DOMAIN][config_entry.entry_id]
@@ -95,10 +140,10 @@ async def async_setup_entry(
 
 
 async def async_setup_platform(
-        hass: HomeAssistantType,
-        config: ConfigType,
-        async_add_entities: AddEntitiesCallback,
-        discovery_info: DiscoveryInfoType | None = None,
+    hass: HomeAssistantType,
+    config: ConfigType,
+    async_add_entities: AddEntitiesCallback,
+    discovery_info: DiscoveryInfoType | None = None,
 ):
     async_add_entities([ValetudoCamera(hass, config)])
     await async_setup_reload_service(hass, DOMAIN, PLATFORMS)
@@ -113,7 +158,9 @@ class ValetudoCamera(Camera):
         self.hass = hass
         self._attr_name = "Camera"
         self._directory_path = os.getcwd()  # get Home Assistant path
-        _LOGGER.debug(f"Logs storage dir changed to.. {self._directory_path}/{STORAGE_DIR}")
+        _LOGGER.debug(
+            f"Logs storage dir changed to.. {self._directory_path}/{STORAGE_DIR}"
+        )
         self._snapshots = Snapshots(self._directory_path + "/" + STORAGE_DIR)
         self._mqtt_listen_topic = device_info.get(CONF_VACUUM_CONNECTION_STRING)
         self.file_name = ""
@@ -121,10 +168,10 @@ class ValetudoCamera(Camera):
             self._mqtt_listen_topic = str(self._mqtt_listen_topic)
             file_name = self._mqtt_listen_topic.split("/")
             self.snapshot_img = (
-                    self._directory_path + "/www/snapshot_" + file_name[1].lower() + ".png"
+                self._directory_path + "/www/snapshot_" + file_name[1].lower() + ".png"
             )
             self.log_file = (
-                    self._directory_path + "/www/" + file_name[1].lower() + ".zip"
+                self._directory_path + "/www/" + file_name[1].lower() + ".zip"
             )
             self._attr_unique_id = device_info.get(
                 CONF_UNIQUE_ID,
@@ -164,7 +211,11 @@ class ValetudoCamera(Camera):
         if self._enable_snapshots is None:
             self._enable_snapshots = True
         # If snapshots are disabled, delete www data
-        if not self._enable_snapshots and self.snapshot_img and os.path.isfile(self.snapshot_img):
+        if (
+            not self._enable_snapshots
+            and self.snapshot_img
+            and os.path.isfile(self.snapshot_img)
+        ):
             os.remove(self.snapshot_img)
         # If there is a log zip in www remove it
         if os.path.isfile(self.log_file):
@@ -259,7 +310,7 @@ class ValetudoCamera(Camera):
         return 1
 
     def camera_image(
-            self, width: Optional[int] = None, height: Optional[int] = None
+        self, width: Optional[int] = None, height: Optional[int] = None
     ) -> Optional[bytes]:
         """Camera Image"""
         return self._image
@@ -340,8 +391,9 @@ class ValetudoCamera(Camera):
         try:
             self._snapshot_taken = True
             # When logger is active.
-            if ((_LOGGER.getEffectiveLevel() > 0) and
-                    (_LOGGER.getEffectiveLevel() != 30)):
+            if (_LOGGER.getEffectiveLevel() > 0) and (
+                _LOGGER.getEffectiveLevel() != 30
+            ):
                 # Save mqtt raw data file.
                 if self._mqtt is not None:
                     await self._mqtt.save_payload(self.file_name)
@@ -353,9 +405,13 @@ class ValetudoCamera(Camera):
                 _LOGGER.info(f"{self.file_name}: Camera Snapshot Taken.")
         except IOError:
             self._snapshot_taken = None
-            _LOGGER.warning(f"Error Saving {self.file_name}: Snapshot, will not be available till restart.")
+            _LOGGER.warning(
+                f"Error Saving {self.file_name}: Snapshot, will not be available till restart."
+            )
         else:
-            _LOGGER.debug(f"{self.file_name}: Snapshot acquired during {self._vacuum_state} Vacuum State.")
+            _LOGGER.debug(
+                f"{self.file_name}: Snapshot acquired during {self._vacuum_state} Vacuum State."
+            )
 
     async def load_test_json(self, file_path=None):
         # Load a test json
@@ -381,9 +437,9 @@ class ValetudoCamera(Camera):
             self._processing = True
             # if the vacuum is working, or it is the first image.
             if (
-                    self._vacuum_state == "cleaning"
-                    or self._vacuum_state == "moving"
-                    or self._vacuum_state == "returning"
+                self._vacuum_state == "cleaning"
+                or self._vacuum_state == "moving"
+                or self._vacuum_state == "returning"
             ):
                 # grab the image
                 self._image_grab = True
@@ -398,7 +454,10 @@ class ValetudoCamera(Camera):
             start_time = datetime.now()
             pid = os.getpid()  # Start to log the CPU usage of this PID.
             proc = proc_insp.PsutilWrapper().psutil.Process(pid)  # Get the process PID.
-            self._cpu_percent = round((proc.cpu_percent() / proc_insp.PsutilWrapper().psutil.cpu_count()) / 2, 2)
+            self._cpu_percent = round(
+                (proc.cpu_percent() / proc_insp.PsutilWrapper().psutil.cpu_count()) / 2,
+                2,
+            )
             try:
                 parsed_json = await self._mqtt.update_data(self._image_grab)
                 if parsed_json[1]:
@@ -418,9 +477,17 @@ class ValetudoCamera(Camera):
             else:
                 # Just in case, let's check that the data is available
                 pid = os.getpid()  # Start to log the CPU usage of this PID.
-                proc = proc_insp.PsutilWrapper().psutil.Process(pid)  # Get the process PID.
-                self._cpu_percent = round((proc.cpu_percent() / proc_insp.PsutilWrapper().psutil.cpu_count()) / 2, 2)
-                _LOGGER.debug(f"{self.file_name} System CPU usage stat (1/2): {self._cpu_percent}%")
+                proc = proc_insp.PsutilWrapper().psutil.Process(
+                    pid
+                )  # Get the process PID.
+                self._cpu_percent = round(
+                    (proc.cpu_percent() / proc_insp.PsutilWrapper().psutil.cpu_count())
+                    / 2,
+                    2,
+                )
+                _LOGGER.debug(
+                    f"{self.file_name} System CPU usage stat (1/2): {self._cpu_percent}%"
+                )
                 if parsed_json is not None:
                     if self._rrm_data:
                         pil_img = await self.process_rand256_data(parsed_json)
@@ -451,7 +518,9 @@ class ValetudoCamera(Camera):
                     _LOGGER.debug(f"{self.file_name}: Image update complete")
                     processing_time = (datetime.now() - start_time).total_seconds()
                     self._attr_frame_interval = max(0.1, processing_time)
-                    _LOGGER.debug(f"Adjusted {self.file_name}: Frame interval: {self._attr_frame_interval}")
+                    _LOGGER.debug(
+                        f"Adjusted {self.file_name}: Frame interval: {self._attr_frame_interval}"
+                    )
 
                 else:
                     _LOGGER.info(
@@ -460,16 +529,36 @@ class ValetudoCamera(Camera):
                     self._attr_frame_interval = 0.1
                 self.camera_image(self._image_w, self._image_h)
                 # HA supervised memory and CUP usage report.
-                self._cpu_percent = round(((self._cpu_percent + proc.cpu_percent())
-                                           / proc_insp.PsutilWrapper().psutil.cpu_count()) / 2, 2)
+                self._cpu_percent = round(
+                    (
+                        (self._cpu_percent + proc.cpu_percent())
+                        / proc_insp.PsutilWrapper().psutil.cpu_count()
+                    )
+                    / 2,
+                    2,
+                )
                 memory_percent = round(
-                    ((proc.memory_info()[0]/2.**30) / (proc_insp.PsutilWrapper().psutil.virtual_memory().total/2.**30))
-                    * 100, 2)
-                _LOGGER.debug(f"{self.file_name} System CPU usage stat (2/2): {self._cpu_percent}%")
-                _LOGGER.debug(f"{self.file_name} Camera Memory usage in GB: "
-                              f"{round(proc.memory_info()[0]/2.**30, 2)}, "
-                              f"{memory_percent}% of Total.")
-                self._cpu_percent = proc.cpu_percent() / proc_insp.PsutilWrapper().psutil.cpu_count()
+                    (
+                        (proc.memory_info()[0] / 2.0**30)
+                        / (
+                            proc_insp.PsutilWrapper().psutil.virtual_memory().total
+                            / 2.0**30
+                        )
+                    )
+                    * 100,
+                    2,
+                )
+                _LOGGER.debug(
+                    f"{self.file_name} System CPU usage stat (2/2): {self._cpu_percent}%"
+                )
+                _LOGGER.debug(
+                    f"{self.file_name} Camera Memory usage in GB: "
+                    f"{round(proc.memory_info()[0]/2.**30, 2)}, "
+                    f"{memory_percent}% of Total."
+                )
+                self._cpu_percent = (
+                    proc.cpu_percent() / proc_insp.PsutilWrapper().psutil.cpu_count()
+                )
                 self._processing = False
                 # threading.Thread(target=self.async_update).start()
                 return self._image
@@ -495,12 +584,23 @@ class ValetudoCamera(Camera):
                             f"State attributes rooms update: {self._map_rooms}"
                         )
                 if self._show_vacuum_state:
+                    status_text = self.file_name + ": " + self._vacuum_state
+                    text_size = 50
+                    if self._current:
+                        try:
+                            in_room = self._current.get("in_room", None)
+                        except ValueError or KeyError:
+                            text_size = 50
+                        else:
+                            if in_room:
+                                text_size = 45
+                                status_text = status_text + ", " + in_room
                     self._map_handler.draw.status_text(
                         pil_img,
-                        50,
+                        text_size,
                         self._vacuum_shared.user_colors[8],
-                        self.file_name + ": " + self._vacuum_state,
-                        )
+                        status_text,
+                    )
 
                 if self._attr_calibration_points is None:
                     self._attr_calibration_points = (
@@ -515,15 +615,12 @@ class ValetudoCamera(Camera):
                     self._vac_img_data = self._map_handler.get_img_size()
 
                 if not self._snapshot_taken and (
-                        self._vacuum_state == "idle"
-                        or self._vacuum_state == "docked"
-                        or self._vacuum_state == "error"
+                    self._vacuum_state == "idle"
+                    or self._vacuum_state == "docked"
+                    or self._vacuum_state == "error"
                 ):
                     # suspend image processing if we are at the next frame.
-                    if (
-                            self._frame_nuber
-                            is not self._map_handler.get_frame_number()
-                    ):
+                    if self._frame_nuber is not self._map_handler.get_frame_number():
                         self._image_grab = False
                         _LOGGER.info(
                             f"Suspended the camera data processing for: {self.file_name}."
@@ -544,15 +641,18 @@ class ValetudoCamera(Camera):
                 rooms_colors=self._vacuum_shared.get_rooms_colors(),
                 file_name=self.file_name,
                 destinations=destinations,
-                drawing_limit=self._cpu_percent
+                drawing_limit=self._cpu_percent,
             )
 
             if pil_img is not None:
                 if self._map_rooms is None:
                     destinations = await self._mqtt.get_destinations()
                     if destinations is not None:
-                        self._map_rooms, self._map_pred_zones, self._map_pred_points = \
-                            await self._re_handler.get_rooms_attributes(destinations)
+                        (
+                            self._map_rooms,
+                            self._map_pred_zones,
+                            self._map_pred_points,
+                        ) = await self._re_handler.get_rooms_attributes(destinations)
                     if self._map_rooms:
                         _LOGGER.debug(
                             f"State attributes rooms update: {self._map_rooms}"
@@ -563,7 +663,7 @@ class ValetudoCamera(Camera):
                         50,
                         self._vacuum_shared.user_colors[8],
                         self.file_name + ": " + self._vacuum_state,
-                        )
+                    )
 
                 if self._attr_calibration_points is None:
                     self._attr_calibration_points = (
@@ -578,9 +678,9 @@ class ValetudoCamera(Camera):
                     self._vac_img_data = self._re_handler.get_img_size()
 
                 if not self._snapshot_taken and (
-                        self._vacuum_state == "idle"
-                        or self._vacuum_state == "docked"
-                        or self._vacuum_state == "error"
+                    self._vacuum_state == "idle"
+                    or self._vacuum_state == "docked"
+                    or self._vacuum_state == "error"
                 ):
                     # suspend image processing if we are at the next frame.
                     _LOGGER.info(

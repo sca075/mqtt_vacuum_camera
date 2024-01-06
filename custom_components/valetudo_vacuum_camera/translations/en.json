@@ -9,9 +9,7 @@
           "vacuum_identifiers": "Vacuum MQTT id",
           "unique_id": ""
         },
-        "data_description": {
-          "vacuum_entity": "Vacuum Entity ID"
-        },
+        "data_description": {"vacuum_entity": "Vacuum Entity ID"},
         "description": "Camera Setup.",
         "title": "Valetudo Camera Setup"
       }
@@ -20,9 +18,7 @@
   "options": {
     "step": {
       "init": {
-        "data": {
-          "camera_config_action": "Action"
-        },
+        "data": {"camera_config_action": "Action"},
         "description": "Possible Changes:",
         "title": "Valetudo Camera Options"
       },

@@ -12,7 +12,9 @@ from homeassistant.helpers import entity_registry as er
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
-def get_device_info(config_entry_id: str, hass: HomeAssistant) -> tuple[str, DeviceEntry] | None:
+def get_device_info(
+    config_entry_id: str, hass: HomeAssistant
+) -> tuple[str, DeviceEntry] | None:
     """
     Fetches the vacuum's entity ID and Device from the
     entity registry and device registry.
@@ -36,7 +38,7 @@ def get_device_info(config_entry_id: str, hass: HomeAssistant) -> tuple[str, Dev
 
 
 def get_entity_identifier_from_mqtt(
-        mqtt_identifier: str, hass: HomeAssistant
+    mqtt_identifier: str, hass: HomeAssistant
 ) -> str | None:
     """
     Fetches the vacuum's entity_registry id from the mqtt topic identifier.
@@ -85,17 +87,67 @@ async def update_options(bk_options, new_options):
     # Initialize updated_options as an empty dictionary
     updated_options = {}
 
-    keys_to_update = ['rotate_image', 'crop_image', 'margins', 'trim_top', 'trim_bottom', 'trim_left', 'trim_right',
-                      'show_vac_status', 'enable_www_snapshots', 'color_charger', 'color_move', 'color_wall',
-                      'color_robot', 'color_go_to', 'color_no_go', 'color_zone_clean', 'color_background',
-                      'color_text', 'alpha_charger', 'alpha_move', 'alpha_wall', 'alpha_robot', 'alpha_go_to',
-                      'alpha_no_go', 'alpha_zone_clean', 'alpha_background', 'alpha_text', 'color_room_0',
-                      'color_room_1', 'color_room_2', 'color_room_3', 'color_room_4', 'color_room_5', 'color_room_6',
-                      'color_room_7', 'color_room_8', 'color_room_9', 'color_room_10', 'color_room_11', 'color_room_12',
-                      'color_room_13', 'color_room_14', 'color_room_15', 'alpha_room_0', 'alpha_room_1',
-                      'alpha_room_2', 'alpha_room_3', 'alpha_room_4', 'alpha_room_5', 'alpha_room_6', 'alpha_room_7',
-                      'alpha_room_8', 'alpha_room_9', 'alpha_room_10', 'alpha_room_11', 'alpha_room_12',
-                      'alpha_room_13', 'alpha_room_14', 'alpha_room_15']
+    keys_to_update = [
+        "rotate_image",
+        "crop_image",
+        "margins",
+        "trim_top",
+        "trim_bottom",
+        "trim_left",
+        "trim_right",
+        "show_vac_status",
+        "enable_www_snapshots",
+        "color_charger",
+        "color_move",
+        "color_wall",
+        "color_robot",
+        "color_go_to",
+        "color_no_go",
+        "color_zone_clean",
+        "color_background",
+        "color_text",
+        "alpha_charger",
+        "alpha_move",
+        "alpha_wall",
+        "alpha_robot",
+        "alpha_go_to",
+        "alpha_no_go",
+        "alpha_zone_clean",
+        "alpha_background",
+        "alpha_text",
+        "color_room_0",
+        "color_room_1",
+        "color_room_2",
+        "color_room_3",
+        "color_room_4",
+        "color_room_5",
+        "color_room_6",
+        "color_room_7",
+        "color_room_8",
+        "color_room_9",
+        "color_room_10",
+        "color_room_11",
+        "color_room_12",
+        "color_room_13",
+        "color_room_14",
+        "color_room_15",
+        "alpha_room_0",
+        "alpha_room_1",
+        "alpha_room_2",
+        "alpha_room_3",
+        "alpha_room_4",
+        "alpha_room_5",
+        "alpha_room_6",
+        "alpha_room_7",
+        "alpha_room_8",
+        "alpha_room_9",
+        "alpha_room_10",
+        "alpha_room_11",
+        "alpha_room_12",
+        "alpha_room_13",
+        "alpha_room_14",
+        "alpha_room_15",
+    ]
 
     for key in keys_to_update:
         if key in new_options:

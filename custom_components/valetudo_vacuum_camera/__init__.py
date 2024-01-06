@@ -28,7 +28,7 @@ PLATFORMS = [Platform.CAMERA]
 
 
 async def options_update_listener(
-        hass: core.HomeAssistant, config_entry: config_entries.ConfigEntry
+    hass: core.HomeAssistant, config_entry: config_entries.ConfigEntry
 ):
     """Handle options update."""
     await hass.config_entries.async_reload(config_entry.entry_id)
@@ -60,8 +60,8 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
             config_entry_id = get_entity_identifier_from_mqtt(mqtt_identifier, hass)
             if not config_entry_id:
                 _LOGGER.error(
-                    "Unable to migrate to config entry version 2.0. Could not find a device for %s." +
-                    " Please recreate this entry.",
+                    "Unable to migrate to config entry version 2.0. Could not find a device for %s."
+                    + " Please recreate this entry.",
                     mqtt_topic_base,
                 )
                 return False
@@ -162,7 +162,7 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
 
     if config_entry.version == 2.1:
         old_data = {**config_entry.data}
-        new_data = {'vacuum_config_entry': old_data['vacuum_config_entry']}
+        new_data = {"vacuum_config_entry": old_data["vacuum_config_entry"]}
         _LOGGER.debug(dict(new_data))
         old_options = {**config_entry.options}
         if len(old_options) != 0:
@@ -174,7 +174,9 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
                 config_entry, data=new_data, options=new_options
             )
         else:
-            _LOGGER.error("Please REMOVE and SETUP the Camera again. Error in migration process!!")
+            _LOGGER.error(
+                "Please REMOVE and SETUP the Camera again. Error in migration process!!"
+            )
             return False
 
     _LOGGER.info(
@@ -184,7 +186,7 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
 
 
 async def async_setup_entry(
-        hass: core.HomeAssistant, entry: config_entries.ConfigEntry
+    hass: core.HomeAssistant, entry: config_entries.ConfigEntry
 ) -> bool:
     """Set up platform from a ConfigEntry."""
     hass.data.setdefault(DOMAIN, {})
@@ -225,7 +227,7 @@ async def async_setup_entry(
 
 
 async def async_unload_entry(
-        hass: core.HomeAssistant, entry: config_entries.ConfigEntry
+    hass: core.HomeAssistant, entry: config_entries.ConfigEntry
 ) -> bool:
     """Unload a config entry."""
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
