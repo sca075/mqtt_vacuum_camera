@@ -1,0 +1,181 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "vacuum_entity": "Vakuum-Entitäts-ID",
+          "vacuum_config_entry": "Vakuumkonfigurationsdaten",
+          "vacuum_map": "Vakuumthema",
+          "vacuum_identifiers": "Vakuum-MQTT-ID",
+          "unique_id": ""
+        },
+        "data_description": {"vacuum_entity": "Vakuum-Entitäts-ID"},
+        "description": "Kamera-Setup.",
+        "title": "Valetudo-Kamera-Setup"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {"camera_config_action": "Aktion"},
+        "description": "Mögliche Änderungen:",
+        "title": "Valetudo-Kameraoptionen"
+      },
+      "image_opt": {
+        "data": {
+          "rotate_image": "Drehen",
+          "margins": "150",
+          "show_vac_status": "Vakuumstatus anzeigen.",
+          "color_text": "[255, 255, 255]",
+          "enable_www_snapshots": "Exportieren Sie PNG-Schnappschüsse."
+        },
+        "data_description": {
+          "rotate_image": "Grad 0, 90, 180, 270",
+          "margins": "Automatische Zuschneideränder in Pixeln.",
+          "color_text": "Vakuumstatus-Textfarbe."
+        },
+        "description": "Kamerabildoptionen",
+        "title": "Bildoptionen"
+      },
+      "base_colours": {
+        "data": {
+          "color_charger": "[255, 128, 0]",
+          "color_move": "[238, 247, 255]",
+          "color_wall": "[255, 255, 0]",
+          "color_robot": "[255, 255, 204]",
+          "color_go_to": "[0, 255, 0]",
+          "color_no_go": "[255, 0, 0]",
+          "color_zone_clean": "[255, 255, 255]",
+          "color_background": "[0, 125, 255]",
+          "add_base_alpha": "Transparenz konfigurieren:"
+        },
+        "data_description": {
+          "color_charger": "Farbe des Ladegeräts.",
+          "color_move": "Pfadfarbe.",
+          "color_wall": "Farbe der Wände.",
+          "color_robot": "Roboterfarbe.",
+          "color_go_to": "Go-to-Farbe.",
+          "color_no_go": "No-Go-Farbe.",
+          "color_zone_clean": "Zonensaubere Farbe.",
+          "color_background": "Hintergrundfarbe."
+        },
+        "description": "Optionen für Kamerafarben.",
+        "title": "Grundfarben-Setup"
+      },
+      "alpha_1": {
+        "data": {
+          "alpha_charger": "Ladegerät Alpha   ",
+          "alpha_move": "Pfad Alpha    ",
+          "alpha_wall": "Wände Alpha    ",
+          "alpha_robot": "Roboter Alpha     ",
+          "alpha_go_to": "Gehen Sie zum Bereich Alpha",
+          "alpha_no_go": "No Go Area Alpha",
+          "alpha_zone_clean": "Zonensaubere Alpha",
+          "alpha_background": "Hintergrund Alpha",
+          "alpha_text": "Text-Alpha      "
+        },
+        "description": "Kameraoptionen. Alpha 1",
+        "title": "Alpha Chanel-Grundfarben"
+      },
+      "rooms_colours_1": {
+        "data": {
+          "color_room_0": "[135, 206, 250]",
+          "color_room_1": "[176, 226, 255]",
+          "color_room_2": "[165, 105, 18]",
+          "color_room_3": "[164, 211, 238]",
+          "color_room_4": "[141, 182, 205]",
+          "color_room_5": "[96, 123, 139]",
+          "color_room_6": "[224, 255, 255]",
+          "color_room_7": "[209, 238, 238]",
+          "add_room_1_alpha": "Transparenz konfigurieren:"
+        },
+        "data_description": {
+          "color_room_0": "Zimmer 1, Bodenfarbe.",
+          "color_room_1": "Zimmer 2",
+          "color_room_2": "Zimmer 3",
+          "color_room_3": "Zimmer 4",
+          "color_room_4": "Zimmer 5",
+          "color_room_5": "Zimmer 6",
+          "color_room_6": "Zimmer 7",
+          "color_room_7": "Zimmer 8"
+        },
+        "description": "Optionen für Kamerafarben.",
+        "title": "Räume 1 bis 8 Farben"
+      },
+      "rooms_colours_2": {
+        "data": {
+          "color_room_8": "[180, 205, 205]",
+          "color_room_9": "[122, 139, 139]",
+          "color_room_10": "[175, 238, 238]",
+          "color_room_11": "[84, 153, 199]",
+          "color_room_12": "[133, 193, 233]",
+          "color_room_13": "[245, 176, 65]",
+          "color_room_14": "[82, 190, 128]",
+          "color_room_15": "[72, 201, 176]",
+          "add_room_2_alpha": "Transparenz konfigurieren:"
+        },
+        "data_description": {
+          "color_room_8": "Zimmer 9",
+          "color_room_9": "Zimmer 10",
+          "color_room_10": "Zimmer 11",
+          "color_room_11": "Zimmer 12",
+          "color_room_12": "Zimmer 13",
+          "color_room_13": "Zimmer 14",
+          "color_room_14": "Zimmer 15",
+          "color_room_15": "Zimmer 16"
+        },
+        "description": "Optionen für Kamerafarben.",
+        "title": "Räume 9 bis 15 Farben"
+      },
+      "alpha_2": {
+        "data": {
+          "alpha_room_0": "Zimmer 1, Bodenfarbe.",
+          "alpha_room_1": "Zimmer 2",
+          "alpha_room_2": "Zimmer 3",
+          "alpha_room_3": "Zimmer 4",
+          "alpha_room_4": "Zimmer 5",
+          "alpha_room_5": "Zimmer 6",
+          "alpha_room_6": "Zimmer 7",
+          "alpha_room_7": "Zimmer 8"
+        },
+        "description": "Kameraoptionen. Alpha 3",
+        "title": "Alpha Chanel Zimmerfarben"
+      },
+      "alpha_3": {
+        "data": {
+          "alpha_room_8": "Zimmer 9",
+          "alpha_room_9": "Zimmer 10",
+          "alpha_room_10": "Zimmer 11",
+          "alpha_room_11": "Zimmer 12",
+          "alpha_room_12": "Zimmer 13",
+          "alpha_room_13": "Zimmer 14",
+          "alpha_room_14": "Zimmer 15",
+          "alpha_room_15": "Zimmer 16"
+        },
+        "description": "Kameraoptionen. Alpha 3",
+        "title": "Alpha Chanel Zimmerfarben"
+      }
+    }
+  },
+  "services": {
+    "turn_off": {
+      "name": "[%key:common::action::turn_off%]",
+      "description": "Schaltet die Kamera aus."
+    },
+    "turn_on": {
+      "name": "[%key:common::action::turn_on%]",
+      "description": "Schaltet die Kamera ein."
+    },
+    "snapshot": {
+      "name": "Schnappschuss machen",
+      "description": "Macht einen Schnappschuss von einer Kamera.",
+      "fields": {
+        "filename": {
+          "name": "Dateiname",
+          "description": "Vorlage eines Dateinamens. Die verfügbare Variable ist „entity_id“."
+        }
+      }
+    }
+  }
+}

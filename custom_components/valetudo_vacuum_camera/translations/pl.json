@@ -1,0 +1,181 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "vacuum_entity": "Odkurzacz Entity ID",
+          "vacuum_config_entry": "Dane konfiguracyjne odkurzacza",
+          "vacuum_map": "Odkurzacz Topic",
+          "vacuum_identifiers": "Odkurzacz MQTT ID",
+          "unique_id": ""
+        },
+        "data_description": {"vacuum_entity": "Odkurzacz Entity ID"},
+        "description": "Konfiguracja Kamery.",
+        "title": "Valetudo Camera Setup"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {"camera_config_action": "Działanie"},
+        "description": "Możliwe zmiany:",
+        "title": "Opcje Kamery Valetudo"
+      },
+      "image_opt": {
+        "data": {
+          "rotate_image": "Obrócić Obraz",
+          "margins": "150",
+          "show_vac_status": "Pokaż stan odkurzacza.",
+          "color_text": "[255, 255, 255]",
+          "enable_www_snapshots": "Eksportuj migawki PNG."
+        },
+        "data_description": {
+          "rotate_image": "Stopień 0, 90, 180, 270",
+          "margins": "Marginesy automatycznego przycinania w pikselach.",
+          "color_text": "Kolor tekstu statusu odkurzacza."
+        },
+        "description": "Opcje obrazu z kamery",
+        "title": "Opcje obrazu"
+      },
+      "base_colours": {
+        "data": {
+          "color_charger": "[255, 128, 0]",
+          "color_move": "[238, 247, 255]",
+          "color_wall": "[255, 255, 0]",
+          "color_robot": "[255, 255, 204]",
+          "color_go_to": "[0, 255, 0]",
+          "color_no_go": "[255, 0, 0]",
+          "color_zone_clean": "[255, 255, 255]",
+          "color_background": "[0, 125, 255]",
+          "add_base_alpha": "Skonfiguruj przezroczystość:"
+        },
+        "data_description": {
+          "color_charger": "Kolor ładowarki.",
+          "color_move": "Kolor ścieżki.",
+          "color_wall": "Kolor ścian.",
+          "color_robot": "Kolor robota.",
+          "color_go_to": "Przejdź do koloru.",
+          "color_no_go": "Kolor nie do przejścia.",
+          "color_zone_clean": "Strefa czystego koloru.",
+          "color_background": "Kolor tła."
+        },
+        "description": "Opcje kolorów aparatu.",
+        "title": "Konfiguracja kolorów podstawowych."
+      },
+      "alpha_1": {
+        "data": {
+          "alpha_charger": "Ładowarka Alfa   ",
+          "alpha_move": "Ścieżka Alfa     ",
+          "alpha_wall": "Ściany Alfa    ",
+          "alpha_robot": "Robota Alpha     ",
+          "alpha_go_to": "Przejdź do obszaru Alpha",
+          "alpha_no_go": "Obszar zakazu wstępu Alpha",
+          "alpha_zone_clean": "Strefa Czysta Alpha",
+          "alpha_background": "Alfa w tle",
+          "alpha_text": "Tekst alfa      "
+        },
+        "description": "Opcje Aparatu. Alfa 1",
+        "title": "Kolory bazowe Alpha Chanel"
+      },
+      "rooms_colours_1": {
+        "data": {
+          "color_room_0": "[135, 206, 250]",
+          "color_room_1": "[176, 226, 255]",
+          "color_room_2": "[165, 105, 18]",
+          "color_room_3": "[164, 211, 238]",
+          "color_room_4": "[141, 182, 205]",
+          "color_room_5": "[96, 123, 139]",
+          "color_room_6": "[224, 255, 255]",
+          "color_room_7": "[209, 238, 238]",
+          "add_room_1_alpha": "Skonfiguruj przezroczystość:"
+        },
+        "data_description": {
+          "color_room_0": "Pokój nr 1, kolor podłogi.",
+          "color_room_1": "Pokój nr 2",
+          "color_room_2": "Pokój nr 3",
+          "color_room_3": "Pokój nr 4",
+          "color_room_4": "Pokój nr 5",
+          "color_room_5": "Pokój nr 6",
+          "color_room_6": "Pokój nr 7",
+          "color_room_7": "Pokój nr 8"
+        },
+        "description": "Opcje kolorów aparatu..",
+        "title": "Pokoje od 1 do 8 kolorów"
+      },
+      "rooms_colours_2": {
+        "data": {
+          "color_room_8": "[180, 205, 205]",
+          "color_room_9": "[122, 139, 139]",
+          "color_room_10": "[175, 238, 238]",
+          "color_room_11": "[84, 153, 199]",
+          "color_room_12": "[133, 193, 233]",
+          "color_room_13": "[245, 176, 65]",
+          "color_room_14": "[82, 190, 128]",
+          "color_room_15": "[72, 201, 176]",
+          "add_room_2_alpha": "Skonfiguruj przezroczystość:"
+        },
+        "data_description": {
+          "color_room_8": "Pokój nr 9",
+          "color_room_9": "Pokój nr 10",
+          "color_room_10": "Pokój nr 11",
+          "color_room_11": "Pokój nr 12",
+          "color_room_12": "Pokój nr 13",
+          "color_room_13": "Pokój nr 14",
+          "color_room_14": "Pokój nr 15",
+          "color_room_15": "Pokój nr 16"
+        },
+        "description": "Opcje kolorów aparatu.",
+        "title": "Pokoje od 9 do 15 kolorów"
+      },
+      "alpha_2": {
+        "data": {
+          "alpha_room_0": "Pokój nr 1, kolor podłogi",
+          "alpha_room_1": "Pokój nr 2",
+          "alpha_room_2": "Pokój nr 3",
+          "alpha_room_3": "Pokój nr 4",
+          "alpha_room_4": "Pokój nr 5",
+          "alpha_room_5": "Pokój nr 6",
+          "alpha_room_6": "Pokój nr 7",
+          "alpha_room_7": "Pokój nr 8"
+        },
+        "description": "Opcje aparatu. Alfa 2",
+        "title": "Kolory pokoi Alpha Chanel"
+      },
+      "alpha_3": {
+        "data": {
+          "alpha_room_8": "Pokój nr 9",
+          "alpha_room_9": "Pokój nr 10",
+          "alpha_room_10": "Pokój nr 11",
+          "alpha_room_11": "Pokój nr 12",
+          "alpha_room_12": "Pokój nr 13",
+          "alpha_room_13": "Pokój nr 14",
+          "alpha_room_14": "Pokój nr 15",
+          "alpha_room_15": "Pokój nr 16"
+        },
+        "description": "Opcje aparatu. Alfa 3",
+        "title": "Kolory pokoi Alpha Chanel"
+      }
+    }
+  },
+  "services": {
+    "turn_off": {
+      "name": "[%key:common::action::turn_off%]",
+      "description": "Wyłącza aparat."
+    },
+    "turn_on": {
+      "name": "[%key:common::action::turn_on%]",
+      "description": "Włącza aparat."
+    },
+    "snapshot": {
+      "name": "Zrób zdjęcie",
+      "description": "Robi zdjęcie z aparatu.",
+      "fields": {
+        "filename": {
+          "name": "Nazwa pliku",
+          "description": "Szablon nazwy pliku. Dostępna zmienna to `entity_id`."
+        }
+      }
+    }
+  }
+}
