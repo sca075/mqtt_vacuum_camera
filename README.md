@@ -40,7 +40,7 @@ internal_variables:
   topic: valetudo/your_topic  
 ```
 
-We did agree and work with the author of the card, we guess soon a new version of the card will be released.
+We did agree and work with the author of the card, we guess soon a [new version of the card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card/actions/runs/7005593157) will be released.
 Those settings for the internal_variables will be automatically setup in the card as soon the vacuum and camera will be setup in the card.
 
 In the wiki section of this project, there is a description of how the camera works. It contains also guidelines on how to contribute to this development. 
