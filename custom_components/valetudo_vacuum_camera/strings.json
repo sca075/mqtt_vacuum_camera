@@ -161,12 +161,12 @@
     "selector": {
         "camera_config_action": {
             "options": {
-                "Configure Image": "Configure Image",
-                "Configure General Colours": "Configure General Colours",
-                "Configure Rooms Colours 1/2": "Configure Rooms Colours 1/8",
-                "Configure Rooms Colours 2/2": "Configure Rooms Colours 8/16",
-                "Copy Camera Logs to www": "Copy Camera Logs to www"
-            }
+                    "opt_1": "Configure Image",
+                    "opt_2": "Configure General Colours",
+                    "opt_3": "Configure Rooms Colours 1/8",
+                    "opt_4": "Configure Rooms Colours 8/16",
+                    "opt_5": "Copy Camera Logs to www"
+                }
         }
     },
     "services": {
