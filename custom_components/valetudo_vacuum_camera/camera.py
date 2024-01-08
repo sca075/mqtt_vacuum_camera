@@ -1,7 +1,6 @@
 """
 Camera Version 1.5.5
-Valetudo Firmwares Vacuums maps.
-for Valetudo Hypfer and rand256 maps.
+Valetudo Hypfer and rand256 Firmwares Vacuums maps.
 From PI4 up to all other Home Assistant supported platforms.
 """
 
@@ -10,14 +9,11 @@ from __future__ import annotations
 import logging
 import os
 import json
-
-# import threading
-import psutil_home_assistant as proc_insp
+import voluptuous as vol
 from io import BytesIO
 from datetime import datetime, timedelta
 from PIL import Image
 from typing import Optional
-import voluptuous as vol
 
 from homeassistant.components.camera import Camera, PLATFORM_SCHEMA
 from homeassistant.const import CONF_NAME, CONF_UNIQUE_ID
@@ -31,6 +27,7 @@ from homeassistant.helpers.typing import (
     DiscoveryInfoType,
     HomeAssistantType,
 )
+import psutil_home_assistant as proc_insp
 
 from custom_components.valetudo_vacuum_camera.valetudo.MQTT.connector import (
     ValetudoConnector,

@@ -25,7 +25,8 @@ from homeassistant.helpers.selector import (
     NumberSelector,
     NumberSelectorConfig,
     BooleanSelector,
-    selector,
+    SelectSelectorConfig,
+    SelectSelector
 )
 from homeassistant.helpers import entity_registry as er
 from .const import (
@@ -88,7 +89,7 @@ from .const import (
     ALPHA_ROOM_12,
     ALPHA_ROOM_13,
     ALPHA_ROOM_14,
-    ALPHA_ROOM_15,
+    ALPHA_ROOM_15
 )
 from .common import (
     # get_entity_identifier_from_mqtt,
@@ -129,8 +130,8 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
             for existing_entity in self._async_current_entries():
                 if (
-                    existing_entity.data.get(CONF_VACUUM_ENTITY_ID) == vacuum_entity.id
-                    or existing_entity.data.get(CONF_UNIQUE_ID) == unique_id
+                        existing_entity.data.get(CONF_VACUUM_ENTITY_ID) == vacuum_entity.id
+                        or existing_entity.data.get(CONF_UNIQUE_ID) == unique_id
                 ):
                     return self.async_abort(reason="already_configured")
 
@@ -170,8 +171,8 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     "alpha_wall": 255.0,
                     "alpha_robot": 255.0,
                     "alpha_go_to": 255.0,
-                    "alpha_no_go": 127.5,
-                    "alpha_zone_clean": 25.0,
+                    "alpha_no_go": 125.0,
+                    "alpha_zone_clean": 125.0,
                     "alpha_background": 255.0,
                     "alpha_text": 255.0,
                     "color_room_0": [135, 206, 250],
@@ -229,7 +230,7 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(
-        config_entry: config_entries.ConfigEntry,
+            config_entry: config_entries.ConfigEntry,
     ) -> config_entries.OptionsFlow:
         """Create the options flow."""
         return OptionsFlowHandler(config_entry)
@@ -467,6 +468,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_init(self, user_input=None):
         errors = {}
+        language = self.hass.config.language
+        _LOGGER.debug(f">>>>>>>>>{language}")
         if user_input is not None:
             if "camera_config_action" in user_input:
                 next_action = user_input["camera_config_action"]
@@ -481,30 +484,24 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 elif next_action == "Copy Camera Logs to www":
                     return await self.async_download_logs()
                 elif next_action == "More Options":
-                    # TODO
                     """
                     From TAPO custom control component, this is,
                     a great idea of how to simply the configuration
-                    simple old style menu ;)
+                    simple old style menu ;).
                     """
                 else:
                     errors["base"] = "incorrect_options_action"
 
-        data_schema = {
-            "camera_config_action": selector(
-                {
-                    "select": {
-                        "options": [
-                            "Configure Image",
-                            "Configure General Colours",
-                            "Configure Rooms Colours 1/2",
-                            "Configure Rooms Colours 2/2",
-                            "Copy Camera Logs to www",
-                        ],
-                    }
-                }
-            )
-        }
+        translation_key = SelectSelectorConfig(options=[
+                    "Configure Image",
+                    "Configure General Colours",
+                    "Configure Rooms Colours 1/2",
+                    "Configure Rooms Colours 2/2",
+                    "Copy Camera Logs to www",
+                ])
+
+        data_schema = {"camera_config_action": SelectSelector(translation_key)}
+
         return self.async_show_form(
             step_id="init",
             data_schema=vol.Schema(data_schema),
@@ -533,7 +530,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         )
 
     async def async_step_base_colours(
-        self, user_input: Optional[Dict[str, Any]] = None
+            self, user_input: Optional[Dict[str, Any]] = None
     ):
         _LOGGER.debug("Base Colours Configuration Started")
         if user_input is not None:
@@ -587,7 +584,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         )
 
     async def async_step_rooms_colours_1(
-        self, user_input: Optional[Dict[str, Any]] = None
+            self, user_input: Optional[Dict[str, Any]] = None
     ):
         _LOGGER.debug("Rooms Colours Configuration Started")
         if user_input is not None:
@@ -619,7 +616,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         )
 
     async def async_step_rooms_colours_2(
-        self, user_input: Optional[Dict[str, Any]] = None
+            self, user_input: Optional[Dict[str, Any]] = None
     ):
         _LOGGER.debug("Rooms 2/2 Colours Configuration Started")
         if user_input is not None:

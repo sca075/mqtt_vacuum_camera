@@ -18,9 +18,9 @@
   "options": {
     "step": {
       "init": {
-        "data": {"camera_config_action": "Action"},
+        "title": "Valetudo Camera Options",
         "description": "Possible Changes:",
-        "title": "Valetudo Camera Options"
+        "data": {"camera_config_action": "Action"}
       },
       "image_opt": {
         "data": {
@@ -155,6 +155,17 @@
         },
         "description": "Camera Options. Alpha 3",
         "title": "Alpha Chanel Rooms Colours"
+      }
+    }
+  },
+  "selector": {
+    "camera_config_action": {
+      "options": {
+        "Configure Image": "Configure Image",
+        "Configure General Colours": "Configure General Colours",
+        "Configure Rooms Colours 1/2": "Configure Rooms Colours 1/8",
+        "Configure Rooms Colours 2/2": "Configure Rooms Colours 8/16",
+        "Copy Camera Logs to www": "Copy Camera Logs to www"
       }
     }
   },
