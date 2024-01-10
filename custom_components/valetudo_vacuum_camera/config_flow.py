@@ -26,7 +26,8 @@ from homeassistant.helpers.selector import (
     NumberSelectorConfig,
     BooleanSelector,
     SelectSelectorConfig,
-    SelectSelector
+    SelectSelector,
+    SelectSelectorMode,
 )
 from homeassistant.helpers import entity_registry as er
 from .const import (
@@ -473,15 +474,15 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             if "camera_config_action" in user_input:
                 next_action = user_input["camera_config_action"]
-                if next_action == "Configure Image":
+                if next_action == "opt_1":
                     return await self.async_step_image_opt()
-                elif next_action == "Configure General Colours":
+                elif next_action == "opt_2":
                     return await self.async_step_base_colours()
-                elif next_action == "Configure Rooms Colours 1/2":
+                elif next_action == "opt_3":
                     return await self.async_step_rooms_colours_1()
-                elif next_action == "Configure Rooms Colours 2/2":
+                elif next_action == "opt_4":
                     return await self.async_step_rooms_colours_2()
-                elif next_action == "Copy Camera Logs to www":
+                elif next_action == "opt_5":
                     return await self.async_download_logs()
                 elif next_action == "More Options":
                     """
@@ -492,15 +493,16 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 else:
                     errors["base"] = "incorrect_options_action"
 
-        translation_key = SelectSelectorConfig(options=[
-                    "Configure Image",
-                    "Configure General Colours",
-                    "Configure Rooms Colours 1/2",
-                    "Configure Rooms Colours 2/2",
-                    "Copy Camera Logs to www",
-                ])
+        menu_keys = SelectSelectorConfig(options=[
+            {"label": "configure_image", "value": "opt_1"},
+            {"label": "configure_general_colours", "value": "opt_2"},
+            {"label": "configure_rooms_colours_1", "value": "opt_3"},
+            {"label": "configure_rooms_colours_2", "value": "opt_4"},
+            {"label": "copy_camera_logs_to_www", "value": "opt_5"}],
+            mode=SelectSelectorMode.LIST,
+            translation_key="camera_config_action",)
 
-        data_schema = {"camera_config_action": SelectSelector(translation_key)}
+        data_schema = {"camera_config_action": SelectSelector(menu_keys)}
 
         return self.async_show_form(
             step_id="init",

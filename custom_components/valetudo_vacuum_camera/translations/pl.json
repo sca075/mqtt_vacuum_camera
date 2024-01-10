@@ -158,6 +158,17 @@
       }
     }
   },
+  "selector": {
+    "camera_config_action": {
+      "options": {
+        "opt_1": "Skonfiguruj Obraz",
+        "opt_2": "Konfiguruj kolory ogólne",
+        "opt_3": "Kolory pokoi od 1 do 8",
+        "opt_4": "Kolory pokoi od 9 do 15",
+        "opt_5": "Kopiuj dzienniki kamery do www"
+      }
+    }
+  },
   "services": {
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",
