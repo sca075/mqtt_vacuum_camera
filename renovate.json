@@ -6,10 +6,18 @@
   "major": {
     "dependencyDashboardApproval": true
   },
+  "pip_requirements": {
+    "fileMatch": ["my/specifically-named.file", "\\.requirements$"]
+  },
   "packageRules": [
     {
-      "matchPackagePatterns": ["^@somescope"],
-      "dependencyDashboardApproval": true
+      "automerge": true,
+      "matchCurrentVersion": ">= 1.0.0",
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ]
     }
   ]
 }
+
