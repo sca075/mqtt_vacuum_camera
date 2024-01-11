@@ -6,7 +6,7 @@
   "major": {
     "dependencyDashboardApproval": true
   }
- "packageRules": [
+  "packageRules": [
     {
       "matchPackagePatterns": ["^@somescope"],
       "dependencyDashboardApproval": true
