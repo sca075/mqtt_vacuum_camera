@@ -3,4 +3,13 @@
   "extends": [
     "config:recommended", ":dependencyDashboard"
   ]
+  "major": {
+    "dependencyDashboardApproval": true
+  }
+ "packageRules": [
+    {
+      "matchPackagePatterns": ["^@somescope"],
+      "dependencyDashboardApproval": true
+    }
+  ]
 }
