@@ -5,7 +5,7 @@
         "data": {
           "vacuum_entity": "Vakuum-Entitäts-ID",
           "vacuum_config_entry": "Vakuumkonfigurationsdaten",
-          "vacuum_map": "Vakuumthema",
+          "vacuum_map": "Vacuum Topic",
           "vacuum_identifiers": "Vakuum-MQTT-ID",
           "unique_id": ""
         },
@@ -28,7 +28,7 @@
           "margins": "150",
           "show_vac_status": "Vakuumstatus anzeigen.",
           "color_text": "[255, 255, 255]",
-          "enable_www_snapshots": "Exportieren Sie PNG-Schnappschüsse."
+          "enable_www_snapshots": "Exportieren PNG-Schnappschüsse."
         },
         "data_description": {
           "rotate_image": "Grad 0, 90, 180, 270",
@@ -164,7 +164,7 @@
         "opt_1": "Bild konfigurieren",
         "opt_2": "Allgemeine Farben konfigurieren",
         "opt_3": "Farben für Zimmer 1 bis 8",
-        "opt_4": "Farben für Zimmer 9 bis 15",
+        "opt_4": "Farben für Zimmer 9 bis 16",
         "opt_5": "Kameraprotokolle in www kopieren"
       }
     }

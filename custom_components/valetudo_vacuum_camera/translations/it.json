@@ -88,7 +88,7 @@
           "color_room_5": "[96, 123, 139]",
           "color_room_6": "[224, 255, 255]",
           "color_room_7": "[209, 238, 238]",
-          "add_room_1_alpha": "Configure Transparency:"
+          "add_room_1_alpha": "Configura Transparenza:"
         },
         "data_description": {
           "color_room_0": "Stanza 1, Colore Pavimento.",
@@ -161,11 +161,11 @@
   "selector": {
     "camera_config_action": {
       "options": {
-        "opt_1": "Configurazione della Immagine",
+        "opt_1": "Configurazione dell''' Immagine",
         "opt_2": "Colori Generali",
         "opt_3": "Colori Stanze da 1 a 8",
-        "opt_4": "Colori Stanze da 9 a 15",
-        "opt_5": "Copia i logs nel folder www"
+        "opt_4": "Colori Stanze da 9 a 16",
+        "opt_5": "Copia i logs nella cartella www"
       }
     }
   },

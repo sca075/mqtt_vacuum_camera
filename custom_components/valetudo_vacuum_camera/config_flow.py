@@ -469,8 +469,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_init(self, user_input=None):
         errors = {}
-        language = self.hass.config.language
-        _LOGGER.debug(f">>>>>>>>>{language}")
         if user_input is not None:
             if "camera_config_action" in user_input:
                 next_action = user_input["camera_config_action"]
