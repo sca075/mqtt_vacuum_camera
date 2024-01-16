@@ -5,8 +5,9 @@ Version 1.4.8
 - Additional functions are to get in our image_handler the images datas.
 """
 
-import struct
 import math
+import struct
+
 from homeassistant.core import callback
 
 

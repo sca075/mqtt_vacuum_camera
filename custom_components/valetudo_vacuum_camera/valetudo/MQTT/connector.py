@@ -4,15 +4,18 @@ Version 1.5.2
 - Tested no influence on the camera performance.
 - Added gzip library used in Valetudo RE data compression.
 """
+import gzip
+import json
 import logging
 import os
-import json
 import zlib
-import gzip
-from homeassistant.core import callback
-from homeassistant.components import mqtt
 
-from custom_components.valetudo_vacuum_camera.valetudo.valetudore.rrparser import RRMapParser
+from homeassistant.components import mqtt
+from homeassistant.core import callback
+
+from custom_components.valetudo_vacuum_camera.valetudo.valetudore.rrparser import (
+    RRMapParser,
+)
 
 _LOGGER = logging.getLogger(__name__)
 _QOS = 0
@@ -58,8 +61,12 @@ class ValetudoConnector:
             if process:
                 _LOGGER.debug("Processing " + self._mqtt_topic + " raw data from MQTT")
                 # parse the RRM topic
-                payload_decompressed = gzip.decompress(self._rrm_payload)  # fix issue with the RE payload.
-                self._rrm_json = self._rrm_data.parse_data(payload=payload_decompressed, pixels=True)
+                payload_decompressed = gzip.decompress(
+                    self._rrm_payload
+                )  # fix issue with the RE payload.
+                self._rrm_json = self._rrm_data.parse_data(
+                    payload=payload_decompressed, pixels=True
+                )
                 self._is_rrm = True
                 self._data_in = False
                 self._rrm_payload = None
@@ -91,19 +98,17 @@ class ValetudoConnector:
 
     async def save_payload(self, file_name):
         # save payload when available.
-        if (self._img_payload and (self._data_in is True)) or \
-                (self._rrm_payload is not None):
+        if (self._img_payload and (self._data_in is True)) or (
+            self._rrm_payload is not None
+        ):
             file_data = b"No data"
             if self._img_payload:
                 file_data = self._img_payload
             elif self._rrm_payload:
                 file_data = self._rrm_payload
             with open(
-                    str(os.getcwd())
-                    + "/www/"
-                    + file_name
-                    + ".raw",
-                    "wb",
+                str(os.getcwd()) + "/www/" + file_name + ".raw",
+                "wb",
             ) as file:
                 file.write(file_data)
             _LOGGER.info("Saved image data from MQTT in mqtt_" + file_name + ".raw!")
@@ -113,12 +118,18 @@ class ValetudoConnector:
         self._rcv_topic = msg.topic
         if self._rcv_topic == (self._mqtt_topic + "/map_data"):
             if not self._data_in:
-                _LOGGER.info("Received Valetudo RE " + self._mqtt_topic + " image data from MQTT")
-                self._rrm_payload = msg.payload  # RRM Image data update the received payload
+                _LOGGER.info(
+                    "Received Valetudo RE " + self._mqtt_topic + " image data from MQTT"
+                )
+                self._rrm_payload = (
+                    msg.payload
+                )  # RRM Image data update the received payload
                 self._data_in = True
                 self._is_rrm = True
                 if self._do_it_once:
-                    _LOGGER.debug("Do it once.. request destinations to: %s", self._mqtt_topic)
+                    _LOGGER.debug(
+                        "Do it once.. request destinations to: %s", self._mqtt_topic
+                    )
                     await self.rrm_publish_destinations()
                     self._do_it_once = False
         elif self._rcv_topic == self._mqtt_topic + "/MapData/map-data":
@@ -149,18 +160,14 @@ class ValetudoConnector:
                     + " status."
                 )
         elif self._rcv_topic == (
-                self._mqtt_topic + "/StatusStateAttribute/error_description"
+            self._mqtt_topic + "/StatusStateAttribute/error_description"
         ):
             self._payload = msg.payload
             self._mqtt_vac_err = bytes.decode(msg.payload, "utf-8")
             _LOGGER.info(
-                self._mqtt_topic
-                + ": Received vacuum Error: "
-                + self._mqtt_vac_err
+                self._mqtt_topic + ": Received vacuum Error: " + self._mqtt_vac_err
             )
-        elif self._rcv_topic == (
-            self._mqtt_topic + "/destinations"
-        ):
+        elif self._rcv_topic == (self._mqtt_topic + "/destinations"):
             self._payload = msg.payload
             tmp_data = bytes.decode(msg.payload, "utf-8")
             self._rrm_destinations = tmp_data
@@ -187,16 +194,14 @@ class ValetudoConnector:
                 )
 
     async def rrm_publish_destinations(self):
-        cust_payload = {
-            "command": "get_destinations"
-        }
+        cust_payload = {"command": "get_destinations"}
         cust_payload = json.dumps(cust_payload)
         await mqtt.async_publish(
             self._hass,
             self._mqtt_topic + "/custom_command",
             cust_payload,
             _QOS,
-            encoding='utf-8'
+            encoding="utf-8",
         )
 
     async def async_unsubscribe_from_topics(self):

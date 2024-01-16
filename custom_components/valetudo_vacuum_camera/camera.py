@@ -1,23 +1,22 @@
 """
-Camera Version 1.5.5
+Camera Version 1.5.6.1
 Valetudo Hypfer and rand256 Firmwares Vacuums maps.
 From PI4 up to all other Home Assistant supported platforms.
 """
 
 from __future__ import annotations
 
+from datetime import datetime, timedelta
+from io import BytesIO
+import json
 import logging
 import os
-import json
-import voluptuous as vol
-from io import BytesIO
-from datetime import datetime, timedelta
-from PIL import Image
 from typing import Optional
 
-from homeassistant.components.camera import Camera, PLATFORM_SCHEMA
+from PIL import Image
+from homeassistant import config_entries, core
+from homeassistant.components.camera import PLATFORM_SCHEMA, Camera
 from homeassistant.const import CONF_NAME, CONF_UNIQUE_ID
-from homeassistant import core, config_entries
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.reload import async_setup_reload_service
@@ -28,66 +27,22 @@ from homeassistant.helpers.typing import (
     HomeAssistantType,
 )
 import psutil_home_assistant as proc_insp
+import voluptuous as vol
 
+from custom_components.valetudo_vacuum_camera.common import (
+    get_vacuum_unique_id_from_mqtt_topic,
+)
 from custom_components.valetudo_vacuum_camera.valetudo.MQTT.connector import (
     ValetudoConnector,
 )
-from .valetudo.image_handler import (
-    MapImageHandler,
-)
-from .valetudo.valetudore.image_handler import (
-    ReImageHandler,
-)
-from .utils.colors_man import (
-    add_alpha_to_rgb,
-)
-from .snapshots.snapshot import Snapshots
-from .valetudo.vacuum import Vacuum
+
 from .const import (
-    CONF_VACUUM_CONNECTION_STRING,
-    CONF_VACUUM_ENTITY_ID,
-    CONF_VACUUM_IDENTIFIERS,
-    CONF_VAC_STAT,
-    CONF_SNAPSHOTS_ENABLE,
-    DEFAULT_NAME,
-    DOMAIN,
-    PLATFORMS,
-    ATTR_ROTATE,
-    ATTR_MARGINS,
-    COLOR_WALL,
-    COLOR_ZONE_CLEAN,
-    COLOR_ROBOT,
-    COLOR_BACKGROUND,
-    COLOR_MOVE,
-    COLOR_CHARGER,
-    COLOR_TEXT,
-    COLOR_NO_GO,
-    COLOR_GO_TO,
-    COLOR_ROOM_0,
-    COLOR_ROOM_1,
-    COLOR_ROOM_2,
-    COLOR_ROOM_3,
-    COLOR_ROOM_4,
-    COLOR_ROOM_5,
-    COLOR_ROOM_6,
-    COLOR_ROOM_7,
-    COLOR_ROOM_8,
-    COLOR_ROOM_9,
-    COLOR_ROOM_10,
-    COLOR_ROOM_11,
-    COLOR_ROOM_12,
-    COLOR_ROOM_13,
-    COLOR_ROOM_14,
-    COLOR_ROOM_15,
-    ALPHA_WALL,
-    ALPHA_ZONE_CLEAN,
-    ALPHA_ROBOT,
     ALPHA_BACKGROUND,
-    ALPHA_MOVE,
     ALPHA_CHARGER,
-    ALPHA_TEXT,
-    ALPHA_NO_GO,
     ALPHA_GO_TO,
+    ALPHA_MOVE,
+    ALPHA_NO_GO,
+    ALPHA_ROBOT,
     ALPHA_ROOM_0,
     ALPHA_ROOM_1,
     ALPHA_ROOM_2,
@@ -104,10 +59,51 @@ from .const import (
     ALPHA_ROOM_13,
     ALPHA_ROOM_14,
     ALPHA_ROOM_15,
+    ALPHA_TEXT,
+    ALPHA_WALL,
+    ALPHA_ZONE_CLEAN,
+    ATTR_MARGINS,
+    ATTR_ROTATE,
+    COLOR_BACKGROUND,
+    COLOR_CHARGER,
+    COLOR_GO_TO,
+    COLOR_MOVE,
+    COLOR_NO_GO,
+    COLOR_ROBOT,
+    COLOR_ROOM_0,
+    COLOR_ROOM_1,
+    COLOR_ROOM_2,
+    COLOR_ROOM_3,
+    COLOR_ROOM_4,
+    COLOR_ROOM_5,
+    COLOR_ROOM_6,
+    COLOR_ROOM_7,
+    COLOR_ROOM_8,
+    COLOR_ROOM_9,
+    COLOR_ROOM_10,
+    COLOR_ROOM_11,
+    COLOR_ROOM_12,
+    COLOR_ROOM_13,
+    COLOR_ROOM_14,
+    COLOR_ROOM_15,
+    COLOR_TEXT,
+    COLOR_WALL,
+    COLOR_ZONE_CLEAN,
+    CONF_SNAPSHOTS_ENABLE,
+    CONF_VAC_STAT,
+    CONF_VACUUM_CONNECTION_STRING,
+    CONF_VACUUM_ENTITY_ID,
+    CONF_VACUUM_IDENTIFIERS,
+    DEFAULT_NAME,
+    DOMAIN,
+    EXPORT_SVG,
+    PLATFORMS,
 )
-from custom_components.valetudo_vacuum_camera.common import (
-    get_vacuum_unique_id_from_mqtt_topic,
-)
+from .snapshots.snapshot import Snapshots
+from .utils.colors_man import add_alpha_to_rgb
+from .valetudo.image_handler import MapImageHandler
+from .valetudo.vacuum import Vacuum
+from .valetudo.valetudore.image_handler import ReImageHandler
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
@@ -156,7 +152,7 @@ class ValetudoCamera(Camera):
         self._attr_name = "Camera"
         self._directory_path = os.getcwd()  # get Home Assistant path
         _LOGGER.debug(
-            f"Logs storage dir changed to.. {self._directory_path}/{STORAGE_DIR}"
+            f"Camera Logs storage dir changed to.. {self._directory_path}/{STORAGE_DIR}"
         )
         self._snapshots = Snapshots(self._directory_path + "/" + STORAGE_DIR)
         self._mqtt_listen_topic = device_info.get(CONF_VACUUM_CONNECTION_STRING)
@@ -170,6 +166,9 @@ class ValetudoCamera(Camera):
             self.log_file = (
                 self._directory_path + "/www/" + file_name[1].lower() + ".zip"
             )
+            self.svg_file = (
+                self._directory_path + "/www/" + file_name[1].lower() + ".svg"
+            )
             self._attr_unique_id = device_info.get(
                 CONF_UNIQUE_ID,
                 get_vacuum_unique_id_from_mqtt_topic(self._mqtt_listen_topic),
@@ -179,6 +178,7 @@ class ValetudoCamera(Camera):
         self._identifiers = device_info.get(CONF_VACUUM_IDENTIFIERS)
         self._image = None
         self._processing = False
+        self._export_svg = device_info.get(EXPORT_SVG)
         self._image_w = None
         self._image_h = None
         self._should_poll = False
@@ -571,7 +571,10 @@ class ValetudoCamera(Camera):
                 user_colors=self._vacuum_shared.get_user_colors(),
                 rooms_colors=self._vacuum_shared.get_rooms_colors(),
                 file_name=self.file_name,
+                export_svg=self._export_svg,
             )
+            if self._export_svg:
+                self._export_svg = False
             if pil_img is not None:
                 if self._map_rooms is None:
                     if self._rrm_data is None:

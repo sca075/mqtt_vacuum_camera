@@ -2,26 +2,29 @@
 Image Handler Module.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Last Changed on Version: 1.5.5
+Last Changed on Version: 1.5.6.1
 """
 from __future__ import annotations
 
-import logging
-import numpy as np
 import hashlib
 import json
+import logging
+
 from PIL import Image
+import numpy as np
+import svgwrite
+# from multiprocessing import Process, Queue
+from svgwrite import shapes
 
-from custom_components.valetudo_vacuum_camera.utils.colors_man import color_grey
 from custom_components.valetudo_vacuum_camera.types import Color, Colors
-from custom_components.valetudo_vacuum_camera.utils.img_data import ImageData
+from custom_components.valetudo_vacuum_camera.utils.colors_man import color_grey
 from custom_components.valetudo_vacuum_camera.utils.draweble import Drawable
-
+from custom_components.valetudo_vacuum_camera.utils.img_data import ImageData
 
 _LOGGER = logging.getLogger(__name__)
 
 
-# noinspection PyTypeChecker,PyUnboundLocalVariable
+# noinspection PyTypeChecker,PyUnboundLocalVariable,PyUnresolvedReferences
 class MapImageHandler(object):
     def __init__(self):
         self.auto_crop = None
@@ -49,62 +52,113 @@ class MapImageHandler(object):
         self.trim_right = None
         self.trim_up = None
 
+    # async def process_image_multiprocessing(
+    #         self,
+    #         image_array,
+    #         detect_colour,
+    #         margin_size,
+    #         rotate,
+    #         result_queue):
+    #
+    #     try:
+    #         pil_img = await self.auto_crop_and_trim_array(
+    #             image_array,
+    #             detect_colour,
+    #             margin_size,
+    #             rotate
+    #         )
+    #         result_queue.put(pil_img)
+    #     except Exception as e:
+    #         result_queue.put(None)
+
     async def auto_crop_and_trim_array(
-            self,
-            image_array,
-            detect_colour,
-            margin_size: int = 0,
-            rotate: int = 0,
+        self,
+        image_array,
+        detect_colour,
+        margin_size: int = 0,
+        rotate: int = 0,
     ):
         """
         Automatically crops and trims a numpy array and returns the processed image.
         """
         if not self.auto_crop:
-            _LOGGER.debug(f"Image original size: {image_array.shape[1]}, {image_array.shape[0]}")
+            _LOGGER.debug(
+                f"Image original size: {image_array.shape[1]}, {image_array.shape[0]}"
+            )
             center_x = image_array.shape[1] // 2
             center_y = image_array.shape[0] // 2
             # Find the coordinates of the first occurrence of a non-background color
-            nonzero_coords = np.column_stack(np.where(image_array != list(detect_colour)))
+            nonzero_coords = np.column_stack(
+                np.where(image_array != list(detect_colour))
+            )
             # Calculate the crop box based on the first and last occurrences
             min_y, min_x, dummy = np.min(nonzero_coords, axis=0)
             max_y, max_x, dummy = np.max(nonzero_coords, axis=0)
             del dummy, nonzero_coords
-            _LOGGER.debug("Found crop max and min values (y,x) ({}, {}) ({},{})...".format(
-                int(max_y), int(max_x), int(min_y), int(min_x)))
+            _LOGGER.debug(
+                "Found crop max and min values (y,x) ({}, {}) ({},{})...".format(
+                    int(max_y), int(max_x), int(min_y), int(min_x)
+                )
+            )
             # Calculate and store the trims coordinates with margins
             self.trim_left = int(min_x) - margin_size
             self.trim_up = int(min_y) - margin_size
             self.trim_right = int(max_x) + margin_size
             self.trim_down = int(max_y) + margin_size
             del min_y, min_x, max_x, max_y
-            _LOGGER.debug("Calculated trims coordinates right {}, bottom {}, left {}, up {} ".format(
-                self.trim_right, self.trim_down, self.trim_left, self.trim_up))
+            _LOGGER.debug(
+                "Calculated trims coordinates right {}, bottom {}, left {}, up {} ".format(
+                    self.trim_right, self.trim_down, self.trim_left, self.trim_up
+                )
+            )
             # Calculate the dimensions after trimming using min/max values
-            trimmed_width = max(0,  self.trim_right - self.trim_left)
+            trimmed_width = max(0, self.trim_right - self.trim_left)
             trimmed_height = max(0, self.trim_down - self.trim_up)
             trim_r = image_array.shape[1] - self.trim_right
             trim_d = image_array.shape[0] - self.trim_down
             trim_l = image_array.shape[1] - self.trim_left
             trim_u = image_array.shape[0] - self.trim_up
-            _LOGGER.debug("Calculated trims values for right {}, bottom {}, left {} and up {}.".format(
-                trim_r, trim_d, trim_l, trim_u))
-            _LOGGER.debug("Calculated trim width {} and trim height {}".format(trimmed_width, trimmed_height))
+            _LOGGER.debug(
+                "Calculated trims values for right {}, bottom {}, left {} and up {}.".format(
+                    trim_r, trim_d, trim_l, trim_u
+                )
+            )
+            _LOGGER.debug(
+                "Calculated trim width {} and trim height {}".format(
+                    trimmed_width, trimmed_height
+                )
+            )
             # Test if the trims are okay or not
             if trimmed_height <= margin_size or trimmed_width <= margin_size:
                 _LOGGER.debug(f"Background colour not detected at rotation {rotate}.")
                 pos_0 = 0
-                self.crop_area = (pos_0, pos_0, image_array.shape[1], image_array.shape[0])
+                self.crop_area = (
+                    pos_0,
+                    pos_0,
+                    image_array.shape[1],
+                    image_array.shape[0],
+                )
                 self.img_size = (image_array.shape[1], image_array.shape[0])
                 del trimmed_width, trimmed_height
                 return image_array
             # Calculate the cropping sizes after that the trim is apply
             crop_area = trimmed_height * trimmed_width
             origin_area = image_array.shape[1] * image_array.shape[0]
-            crop_percentage = (100 - round((origin_area / crop_area), 2))
+            crop_percentage = 100 - round((origin_area / crop_area), 2)
             crop_size = (int(min(center_x, center_y) * crop_percentage) / 100) / 100
-            _LOGGER.debug("Calculated image reduction of {:.2f}% with crop size {:.2f}%".format(crop_percentage,
-                                                                                                crop_size))
-            del crop_size, crop_percentage, origin_area, crop_area, trimmed_width, trimmed_height
+            _LOGGER.debug(
+                "Calculated image reduction of {:.2f}% with crop size {:.2f}%".format(
+                    crop_percentage, crop_size
+                )
+            )
+            del (
+                crop_size,
+                crop_percentage,
+                origin_area,
+                crop_area,
+                trimmed_width,
+                trimmed_height,
+            )
             del center_x, center_y, trim_d, trim_u, trim_l, trim_r
             # Store Crop area of the original image_array we will use from the next frame.
             self.auto_crop = (
@@ -115,9 +169,8 @@ class MapImageHandler(object):
             )
         # Apply the auto-calculated trims to the rotated image
         trimmed = image_array[
-                  self.auto_crop[1]: self.auto_crop[3],
-                  self.auto_crop[0]: self.auto_crop[2]
-                  ]
+            self.auto_crop[1] : self.auto_crop[3], self.auto_crop[0] : self.auto_crop[2]
+        ]
         del image_array
         # Rotate the cropped image based on the given angle
         if rotate == 90:
@@ -126,7 +179,7 @@ class MapImageHandler(object):
                 self.trim_left,
                 self.trim_up,
                 self.trim_right,
-                self.trim_down
+                self.trim_down,
             )
         elif rotate == 180:
             rotated = np.rot90(trimmed, 2)
@@ -137,7 +190,7 @@ class MapImageHandler(object):
                 self.trim_left,
                 self.trim_up,
                 self.trim_right,
-                self.trim_down
+                self.trim_down,
             )
         else:
             rotated = trimmed
@@ -165,7 +218,12 @@ class MapImageHandler(object):
                     x_max = max(layer["compressedPixels"][::3]) * pixel_size
                     y_min = min(layer["compressedPixels"][1::3]) * pixel_size
                     y_max = max(layer["compressedPixels"][1::3]) * pixel_size
-                    corners = [(x_min, y_min), (x_max, y_min), (x_max, y_max), (x_min, y_max)]
+                    corners = [
+                        (x_min, y_min),
+                        (x_max, y_min),
+                        (x_max, y_max),
+                        (x_min, y_max),
+                    ]
                     room_id = str(segment_id)
                     self.rooms_pos.append(
                         {
@@ -188,17 +246,17 @@ class MapImageHandler(object):
         return room_properties
 
     async def get_image_from_json(
-            self,
-            m_json,
-            robot_state,
-            img_rotation: int = 0,
-            margins: int = 0,
-            user_colors: Colors = None,
-            rooms_colors: Color = None,
-            file_name: "" = None,
-            drawing_limit: float = 0.0,
+        self,
+        m_json,
+        robot_state,
+        img_rotation: int = 0,
+        margins: int = 0,
+        user_colors: Colors = None,
+        rooms_colors: Color = None,
+        file_name: "" = None,
+        drawing_limit: float = 0.0,
+        export_svg: bool = False,
     ):
-
         color_wall: Color = user_colors[0]
         color_no_go: Color = user_colors[6]
         color_go_to: Color = user_colors[7]
@@ -213,6 +271,7 @@ class MapImageHandler(object):
                 _LOGGER.info(f"{file_name}: Composing the image for the camera.")
                 # buffer json data
                 self.json_data = m_json
+                # result_queue = Queue()
 
                 if self.room_propriety and self.frame_number == 0:
                     _LOGGER.info(f"{file_name}: Supporting Rooms Cleaning!")
@@ -231,7 +290,9 @@ class MapImageHandler(object):
                     _LOGGER.debug(f"No JsonID provided: {e}")
                     self.json_id = None
                 else:
-                    _LOGGER.info(f"Vacuum JSon ID: {self.json_id} at Frame {self.frame_number}.")
+                    _LOGGER.info(
+                        f"Vacuum JSon ID: {self.json_id} at Frame {self.frame_number}."
+                    )
 
                 predicted_path = None
                 path_pixels = None
@@ -241,9 +302,7 @@ class MapImageHandler(object):
                     predicted_path = paths_data.get("predicted_path", [])
                     path_pixels = paths_data.get("path", [])
                 except KeyError as e:
-                    _LOGGER.info(
-                        f"{file_name}: Error extracting paths data: {str(e)}"
-                    )
+                    _LOGGER.info(f"{file_name}: Error extracting paths data: {str(e)}")
                 if predicted_path:
                     predicted_path = predicted_path[0]["points"]
                     predicted_path = self.data.sublist(predicted_path, 2)
@@ -297,9 +356,12 @@ class MapImageHandler(object):
                                 self.robot_pos = await self.get_robot_in_room(
                                     (robot_position[1]),
                                     (robot_position[0]),
-                                    robot_position_angle)
+                                    robot_position_angle,
+                                )
 
-                            _LOGGER.debug(f"Robot Position: {list(self.robot_pos.items())}")
+                            _LOGGER.debug(
+                                f"Robot Position: {list(self.robot_pos.items())}"
+                            )
 
                 charger_pos = None
                 if entity_dict:
@@ -314,7 +376,9 @@ class MapImageHandler(object):
                                 "x": charger_pos[0],
                                 "y": charger_pos[1],
                             }
-                        _LOGGER.debug(f"Charger Position: {list(self.charger_pos.items())}")
+                        _LOGGER.debug(
+                            f"Charger Position: {list(self.charger_pos.items())}"
+                        )
 
                 if entity_dict:
                     try:
@@ -329,7 +393,10 @@ class MapImageHandler(object):
                                 points = obstacle.get("points", [])
 
                                 if label and points:
-                                    obstacle_pos = {"label": label, "points": {"x": points[0], "y": points[1]}}
+                                    obstacle_pos = {
+                                        "label": label,
+                                        "points": {"x": points[0], "y": points[1]},
+                                    }
                                     obstacle_positions.append(obstacle_pos)
 
                         # List of dictionaries containing label and points for each obstacle
@@ -344,9 +411,12 @@ class MapImageHandler(object):
                     # The below is drawing the base layer that will be reused at the next frame.
                     _LOGGER.debug(f"{file_name}: Layers to draw: {layers.keys()}")
                     _LOGGER.info(f"{file_name}: Empty image with background color")
-                    img_np_array = await self.draw.create_empty_image(size_x, size_y, color_background)
+                    img_np_array = await self.draw.create_empty_image(
+                        size_x, size_y, color_background
+                    )
                     _LOGGER.info(f"{file_name}: Overlapping Layers")
                     room_id = 0
+                    rooms_list = [color_wall]
                     for layer_type, compressed_pixels_list in layers.items():
                         for compressed_pixels in compressed_pixels_list:
                             pixels = self.data.sublist(compressed_pixels, 3)
@@ -354,14 +424,23 @@ class MapImageHandler(object):
                                 room_color = rooms_colors[room_id]
                                 if layer_type == "segment" or layer_type == "floor":
                                     room_color = rooms_colors[room_id]
+                                    rooms_list.append(room_color)
                                 if layer_type == "segment":
                                     # Check if the room is active and set a modified color
-                                    if active and len(active) > room_id and active[room_id] == 1:
+                                    if (
+                                        active
+                                        and len(active) > room_id
+                                        and active[room_id] == 1
+                                    ):
                                         room_color = (
-                                            ((2 * room_color[0]) + color_zone_clean[0]) // 3,
-                                            ((2 * room_color[1]) + color_zone_clean[1]) // 3,
-                                            ((2 * room_color[2]) + color_zone_clean[2]) // 3,
-                                            ((2 * room_color[3]) + color_zone_clean[3]) // 3
+                                            ((2 * room_color[0]) + color_zone_clean[0])
+                                            // 3,
+                                            ((2 * room_color[1]) + color_zone_clean[1])
+                                            // 3,
+                                            ((2 * room_color[2]) + color_zone_clean[2])
+                                            // 3,
+                                            ((2 * room_color[3]) + color_zone_clean[3])
+                                            // 3,
                                         )
                                 img_np_array = await self.draw.from_json_to_image(
                                     img_np_array, pixels, pixel_size, room_color
@@ -407,20 +486,32 @@ class MapImageHandler(object):
                         )
 
                     if obstacle_positions:
-                        self.draw.draw_obstacles(img_np_array,
-                                                 obstacle_positions,
-                                                 color_no_go)
+                        self.draw.draw_obstacles(
+                            img_np_array, obstacle_positions, color_no_go
+                        )
 
                     if (room_id > 0) and not self.room_propriety:
-                        self.room_propriety = self.extract_room_properties(self.json_data)
+                        self.room_propriety = self.extract_room_properties(
+                            self.json_data
+                        )
                         if self.rooms_pos:
                             self.robot_pos = await self.get_robot_in_room(
                                 (robot_position[1]),
                                 (robot_position[0]),
-                                robot_position_angle)
+                                robot_position_angle,
+                            )
 
                     _LOGGER.info(f"{file_name}: Completed base Layers")
                     self.img_base_layer = await self.async_copy_array(img_np_array)
+                    if export_svg:
+                        await self.numpy_array_to_svg(
+                            self.img_base_layer,
+                            "test.svg",
+                            rooms_list,
+                            color_background,
+                            margins,
+                            img_rotation,
+                        )
 
                 self.frame_number += 1
                 if (self.frame_number > 1024) or (new_frame_hash != self.img_hash):
@@ -473,18 +564,39 @@ class MapImageHandler(object):
                         color_robot,
                         file_name,
                     )
-                _LOGGER.debug(f"{file_name}: Auto cropping the image with rotation: {int(img_rotation)}")
+                # image_process = Process(
+                #     target=self.process_image_multiprocessing,
+                #     args=(img_np_array, color_background, int(margins), int(img_rotation), result_queue)
+                # )
+                # image_process.start()
+                # # Wait for the image processing to finish
+                # image_process.join()
+                #
+                # # Get the result from the queue
+                # processed_image = result_queue.get()
+                #
+                # # Close the image process
+                # image_process.close()
+                #
+                # # Continue with the rest of your method...
+
+                _LOGGER.debug(
+                    f"{file_name}: Auto cropping the image with rotation: {int(img_rotation)}"
+                )
                 img_np_array = await self.auto_crop_and_trim_array(
                     img_np_array,
                     color_background,
                     int(margins),
                     int(img_rotation),
                 )
+
                 pil_img = Image.fromarray(img_np_array, mode="RGBA")
                 del img_np_array
                 return pil_img
         except Exception as e:
-            _LOGGER.warning(f"{file_name} : Error in get_image_from_json: {e}", exc_info=True)
+            _LOGGER.warning(
+                f"{file_name} : Error in get_image_from_json: {e}", exc_info=True
+            )
             return None
 
     def get_frame_number(self):
@@ -516,8 +628,11 @@ class MapImageHandler(object):
         # do we know where we are?
         if self.robot_in_room:
             if (
-                    ((self.robot_in_room["right"] >= int(robot_x)) and (self.robot_in_room["left"] <= int(robot_x)))
-                    and ((self.robot_in_room["down"] >= int(robot_y)) and (self.robot_in_room["up"] <= int(robot_y)))
+                (self.robot_in_room["right"] >= int(robot_x))
+                and (self.robot_in_room["left"] <= int(robot_x))
+            ) and (
+                (self.robot_in_room["down"] >= int(robot_y))
+                and (self.robot_in_room["up"] <= int(robot_y))
             ):
                 temp = {
                     "x": robot_x,
@@ -539,8 +654,11 @@ class MapImageHandler(object):
             }
             # Check if the robot coordinates are inside the room's corners
             if (
-                    ((self.robot_in_room["right"] >= int(robot_x)) and (self.robot_in_room["left"] <= int(robot_x)))
-                    and ((self.robot_in_room["down"] >= int(robot_y)) and (self.robot_in_room["up"] <= int(robot_y)))
+                (self.robot_in_room["right"] >= int(robot_x))
+                and (self.robot_in_room["left"] <= int(robot_x))
+            ) and (
+                (self.robot_in_room["down"] >= int(robot_y))
+                and (self.robot_in_room["up"] <= int(robot_y))
             ):
                 temp = {
                     "x": robot_x,
@@ -624,15 +742,124 @@ class MapImageHandler(object):
 
         return copied_array
 
-    # noinspection PyUnresolvedReferences
     async def calculate_array_hash(self, layers: None, active: None):
         if layers and active:
             data_to_hash = {
-                'layers': len(layers["wall"][0]),
-                'active_segments': tuple(active),
+                "layers": len(layers["wall"][0]),
+                "active_segments": tuple(active),
             }
             data_json = json.dumps(data_to_hash, sort_keys=True)
             hash_value = hashlib.sha256(data_json.encode()).hexdigest()
         else:
             hash_value = None
         return hash_value
+
+    async def numpy_array_to_svg(
+        self,
+        base_layer,
+        file_path,
+        colours_list,
+        color_background,
+        margins,
+        img_rotation,
+    ):
+        dwg = svgwrite.Drawing(file_path, profile="tiny", size=("640px", "480px"))
+        _LOGGER.debug("Trimming and rotating the Numpy data.")
+        swg_img_np = await self.auto_crop_and_trim_array(
+            base_layer,
+            color_background,
+            int(margins),
+            int(img_rotation),
+        )
+        _LOGGER.debug("Converting the NP array to Pil and resize it.")
+        temp_png = Image.fromarray(swg_img_np, mode="RGBA")
+        del swg_img_np
+        temp_png_resize = temp_png.resize((640, 480))
+        swg_img_np = np.array(temp_png_resize)
+        _LOGGER.debug("Check colours variation in the image.")
+        coordinates_data = self.data.extract_color_coordinates(swg_img_np, colours_list)
+        # _LOGGER.debug(f"data of colours changes: {coordinates_data}")
+        # Assuming each element in the NumPy array is part of the floor map
+        (
+            rows,
+            cols,
+            _,
+        ) = swg_img_np.shape  # Assuming RGBA values, hence the third dimension
+        _LOGGER.debug(f"{rows}, {cols}")
+        color_data = color_background
+        dwg.add(
+            shapes.Rect(
+                insert=(0, 0),
+                size=(cols, rows),
+                fill=f"rgb({color_data[0]}, {color_data[1]}, {color_data[2]})",
+            )
+        )
+        # Loop through the coordinates data and draw polylines or polygons
+        for color_data, coordinates_list in coordinates_data:
+            # If there's only one point, draw a circle
+            points_str = " ".join([f"{x},{y}" for x, y in coordinates_list])
+            points = [tuple(map(int, point.split(","))) for point in points_str.split()]
+            sorted_coordinates = sorted(points, key=lambda coord: coord[0])
+            poly_points = self.simplify_polygon(sorted_coordinates)
+            print(poly_points)
+            if poly_points is []:
+                continue
+            if len(poly_points) == 1:
+                print("is Point", color_data)
+                x, y = poly_points[0]
+                dwg.add(
+                    dwg.circle(
+                        center=(int(x), int(y)),
+                        r=1,
+                        fill=f"rgb({color_data[0]}, "
+                        f"{color_data[1]}, {color_data[2]})",
+                    )
+                )
+            else:
+                # If there are multiple points, check if it's a closed shape
+                is_closed = poly_points[0] == poly_points[-1]
+                print(is_closed)
+                # Use Polyline for open shapes, and Polygon for closed shapes
+                if is_closed:
+                    print("is Polygon:", color_data)
+                    points = poly_points
+                    dwg.add(
+                        shapes.Polygon(
+                            points=points,
+                            fill=f"rgb({color_data[0]}, {color_data[1]},"
+                            f" {color_data[2]})",
+                        )
+                    )
+                else:
+                    print("is Polyline", color_data)
+                    dwg.add(
+                        shapes.Polyline(
+                            points=poly_points,
+                            fill="none",
+                            stroke=f"rgb({color_data[0]}, {color_data[1]}, {color_data[2]})",
+                        )
+                    )
+
+        dwg.save()
+
+    @staticmethod
+    def simplify_polygon(sorted_coordinates):
+        simplified_coordinates = []
+
+        i = 0
+        while i < len(sorted_coordinates):
+            start_point = sorted_coordinates[i]
+            current_y = start_point[0]
+
+            # Find the end of the run with the same y-coordinate
+            while i < len(sorted_coordinates) and sorted_coordinates[i][0] == current_y:
+                i += 1
+
+            # Add the first and last points of the run to the simplified list
+            simplified_coordinates.append(start_point)
+            if i < len(sorted_coordinates):
+                simplified_coordinates.append(sorted_coordinates[i - 1])
+
+        # simplified_coordinates.append(simplified_coordinates[0])
+
+        return simplified_coordinates

@@ -3,7 +3,7 @@ Collections of Json and List routines
 ImageData is part of the Image_Handler
 used functions to search data in the json
 provided for the creation of the new camera frame
-Last changes on Version: 1.5.3
+Last changes on Version: 1.5.6.1
 """
 
 import logging
@@ -14,6 +14,34 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class ImageData:
+
+    @staticmethod
+    def extract_color_coordinates(source_array, search_for_colours_list):
+
+        # Initialize an empty list to store color and coordinates tuples
+        color_coordinates_list = []
+
+        # Iterate over the search_for_colours_list
+        for color_to_search in search_for_colours_list:
+            # Initialize an empty list to store coordinates for the current color
+            color_coordinates = []
+
+            # Iterate over the image array
+            for y in range(source_array.shape[0]):
+                for x in range(source_array.shape[1]):
+                    # Extract the pixel color at the current coordinates
+                    pixel_color = source_array[y, x]
+
+                    # Check if the current pixel color matches the color_to_search
+                    if np.all(pixel_color == color_to_search):
+                        # Record the coordinates for the current color
+                        color_coordinates.append((x, y))
+
+            # Append the color and its coordinates to the final list
+            color_coordinates_list.append((color_to_search, color_coordinates))
+
+        # Return the final list of color and coordinates tuples
+        return color_coordinates_list
 
     @staticmethod
     def sublist(lst, n):

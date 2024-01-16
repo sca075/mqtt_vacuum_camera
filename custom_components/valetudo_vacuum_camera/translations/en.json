@@ -28,6 +28,7 @@
           "margins": "150",
           "show_vac_status": "Show Vacuum Status.",
           "color_text": "[255, 255, 255]",
+          "get_svg_file": "Export SVG base layer.",
           "enable_www_snapshots": "Export PNG snapshots."
         },
         "data_description": {

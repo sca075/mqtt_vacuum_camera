@@ -4,6 +4,7 @@ Not fully implemented yet in consideration"""
 
 
 import logging
+
 from custom_components.valetudo_vacuum_camera.types import Colors
 
 _LOGGER = logging.getLogger(__name__)

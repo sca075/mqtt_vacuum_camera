@@ -7,9 +7,10 @@ Last changes on Version: 1.5.5
 """
 
 import logging
-import numpy as np
-from PIL import ImageDraw, ImageFont
 import math
+
+from PIL import ImageDraw, ImageFont
+import numpy as np
 
 _LOGGER = logging.getLogger(__name__)
 
