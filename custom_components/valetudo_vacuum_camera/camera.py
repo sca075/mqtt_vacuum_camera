@@ -487,9 +487,13 @@ class ValetudoCamera(Camera):
                 )
                 if parsed_json is not None:
                     if self._rrm_data:
-                        pil_img = await self.process_rand256_data(parsed_json)
+                        pil_img = await self.hass.async_create_task(
+                            self.process_rand256_data(parsed_json)
+                        )
                     elif self._rrm_data is None:
-                        pil_img = await self.proces_valetudo_data(parsed_json)
+                        pil_img = await self.hass.async_create_task(
+                            self.proces_valetudo_data(parsed_json)
+                        )
                     else:
                         # if no image was processed empty or last snapshot/frame
                         pil_img = self.empty_if_no_data()
