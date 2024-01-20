@@ -515,13 +515,13 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_image_opt(self, user_input: Optional[Dict[str, Any]] = None):
         _LOGGER.debug("Image Options Configuration Started")
         if user_input is not None:
+            # "get_svg_file": user_input.get(EXPORT_SVG),
             self.options.update(
                 {
                     "rotate_image": user_input.get(ATTR_ROTATE),
                     "margins": user_input.get(ATTR_MARGINS),
                     "show_vac_status": user_input.get(CONF_VAC_STAT),
                     "color_text": user_input.get(COLOR_TEXT),
-                    "get_svg_file": user_input.get(EXPORT_SVG),
                     "enable_www_snapshots": user_input.get(CONF_SNAPSHOTS_ENABLE),
                 }
             )

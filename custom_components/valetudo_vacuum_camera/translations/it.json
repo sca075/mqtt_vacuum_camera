@@ -28,6 +28,7 @@
           "margins": "150",
           "show_vac_status": "Viasulizza Stato Vacuum.",
           "color_text": "[255, 255, 255]",
+          "get_svg_file": "Esporta SVG del layer basilare.",
           "enable_www_snapshots": "Esporta snapshot PNG."
         },
         "data_description": {

@@ -28,6 +28,7 @@
           "margins": "150",
           "show_vac_status": "Vakuumstatus anzeigen.",
           "color_text": "[255, 255, 255]",
+          "get_svg_file": "Exportieren Grundschicht SVG.",
           "enable_www_snapshots": "Exportieren PNG-Schnappschüsse."
         },
         "data_description": {
