@@ -6,71 +6,121 @@ avoid the overload of the main_thread of Home Assistant.
 
 from __future__ import annotations
 
-import asyncio
+from functools import partial
 import concurrent.futures
+import asyncio
 import logging
-from multiprocessing import Event, Process, Queue
 import os
-import threading
+
+from .valetudo.image_handler import MapImageHandler
+# from .valetudo.camera_shared import CameraShared
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 class CameraProcessor:
-    def __init__(self):
-        self.task_queue = Queue()
-        self.result_queue = Queue()
-        self.stop_event = Event()
-        self.worker_processes = []
+    def __init__(self, camera_shared):
+        self._map_handler = MapImageHandler()
+        self._shared = camera_shared
 
-    async def _process_task(self, target, args, kw):
-        loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(None, target, *args, **kw)
+    async def async_process_valetudo_data(self, parsed_json):
+        if parsed_json is not None:
+            pil_img = await self._map_handler.get_image_from_json(
+                m_json=parsed_json,
+                robot_state=self._shared.vacuum_state,
+                img_rotation=self._shared.image_rotate,
+                margins=self._shared.margins,
+                user_colors=self._shared.get_user_colors(),
+                rooms_colors=self._shared.get_rooms_colors(),
+                file_name=self._shared.file_name,
+                export_svg=self._shared.export_svg,
+            )
 
-    async def _worker_process(self):
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            current_tid = threading.current_thread().name
-            current_pid = os.getpid()
-            while not self.stop_event.is_set():
-                task = self.task_queue.get()
-                if task is None:
-                    _LOGGER.info(f"Worker process {current_pid} completed.")
-                    break  # Stop processing when None is received
+            if self._shared.export_svg:
+                self._shared.export_svg = False
 
-                target, args, kw = task
-                result = await self._process_task(target, args, kw)
-                self.result_queue.put(result)
-                _LOGGER.debug(
-                    f"Process {current_pid}, Thread {current_tid} completed a task."
-                )
+            if pil_img is not None:
+                if self._shared.map_rooms is None:
+                    self._shared.map_rooms = await self._map_handler.get_rooms_attributes()
+                    if self._shared.map_rooms:
+                        _LOGGER.debug(f"State attributes rooms update: {self._shared.map_rooms}")
 
-    async def process_image(self, target, args, kw):
-        self.task_queue.put((target, args, kw))
-        _LOGGER.debug(f"Task cue updated with target: {target}")
+                if self._shared.show_vacuum_state:
+                    status_text = f"{self._shared.file_name}: {self._shared.vacuum_state}"
+                    text_size = 50
+                    if self._shared.current_room:
+                        try:
+                            in_room = self._shared.current_room.get("in_room", None)
+                        except (ValueError, KeyError):
+                            text_size = 50
+                        else:
+                            if in_room:
+                                text_size = 45
+                                status_text += f", {in_room}"
 
-    async def start_processing(self, num_processes=3):
-        # Starting the one process per CPU core.
-        for _ in range(num_processes):
-            process = Process(target=self._worker_process)
-            self.worker_processes.append(process)
-            process.start()
-            _LOGGER.debug(f"New process started with PID: {process.pid}")
-        # Joining the process threads.
-        loop = asyncio.get_event_loop()
-        tasks = [
-            loop.run_in_executor(None, process.join)
-            for process in self.worker_processes
-        ]
-        _LOGGER.debug(f"{tasks} on process.")
-        await asyncio.gather(*tasks)
+                    self._map_handler.draw.status_text(
+                        pil_img,
+                        text_size,
+                        self._shared.user_colors[8],
+                        status_text,
+                    )
 
-    async def stop_processing(self):
-        # Signal worker processes to stop
-        for _ in range(len(self.worker_processes)):
-            self.task_queue.put(None)
-        # Wait for worker processes to finish
-        for process in self.worker_processes:
-            await process.join()
-            _LOGGER.debug(f"Process: {process.pid}, have now None in queue.")
-            # if process.is_alive():
-            #     process.terminate()
+                if self._shared.attr_calibration_points is None:
+                    self._shared.attr_calibration_points = (
+                        self._map_handler.get_calibration_data(self._shared.image_rotate)
+                    )
+
+                self._shared.vac_json_id = self._map_handler.get_json_id()
+
+                if not self._shared.charger_position:
+                    self._shared.charger_position = self._map_handler.get_charger_position()
+
+                self._shared.current_room = self._map_handler.get_robot_position()
+
+                if not self._shared.image_size:
+                    self._shared.image_size = self._map_handler.get_img_size()
+
+                if not self._shared.snapshot_taken and (
+                        self._shared.vacuum_state == "idle"
+                        or self._shared.vacuum_state == "docked"
+                        or self._shared.vacuum_state == "error"
+                ):
+                    # suspend image processing if we are at the next frame.
+                    if self._shared.frame_number != self._map_handler.get_frame_number():
+                        self._shared.image_grab = False
+                        _LOGGER.info(f"Suspended the camera data processing for: {self._shared.file_name}.")
+
+                        # take a snapshot
+                        # await ValetudoCamera.take_snapshot(parsed_json, pil_img)
+
+            return pil_img
+        return None
+
+    def process_valetudo_data(self, parsed_json):
+        # This is a non-async version of your processing function
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        _LOGGER.debug(f"Processing in Process ID {os.getpid()}")
+        result = loop.run_until_complete(self.async_process_valetudo_data(parsed_json))
+        loop.close()
+        return result
+
+    async def run_async_process_valetudo_data(self, parsed_json):
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            # Use partial to create a function with only one argument (parsed_json)
+            # func = partial(self.process_valetudo_data, parsed_json)
+            func = executor.submit(self.process_valetudo_data, parsed_json).running()
+            result = await asyncio.get_event_loop().run_in_executor(executor, func)
+            # result = list(executor.map(self.process_valetudo_data, parsed_json_list))
+        return result
+
+    def get_frame_number(self):
+        return self._map_handler.get_frame_number() - 1
+
+    def status_text(self, image, size, color, stat):
+        return self._map_handler.draw.status_text(
+            image=image,
+            size=size,
+            color=color,
+            status=stat
+        )

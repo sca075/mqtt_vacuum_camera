@@ -1,5 +1,5 @@
 """
-Camera Version 1.5.6.1
+Camera Version 1.5.6.2
 Valetudo Hypfer and rand256 Firmwares Vacuums maps.
 From PI4 up to all other Home Assistant supported platforms.
 """
@@ -101,8 +101,8 @@ from .const import (
 )
 from .snapshots.snapshot import Snapshots
 from .utils.colors_man import add_alpha_to_rgb
+from .valetudo.camera_shared import CameraShared
 from .valetudo.image_handler import MapImageHandler
-from .valetudo.vacuum import Vacuum
 from .valetudo.valetudore.image_handler import ReImageHandler
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
@@ -147,62 +147,49 @@ class ValetudoCamera(Camera):
 
     def __init__(self, hass, device_info):
         super().__init__()
-        _LOGGER.debug("Camera Starting up..")
         self.hass = hass
         self._attr_name = "Camera"
         self._directory_path = os.getcwd()  # get Home Assistant path
-        _LOGGER.debug(
-            f"Camera Logs storage dir changed to.. {self._directory_path}/{STORAGE_DIR}"
-        )
-        self._snapshots = Snapshots(self._directory_path + "/" + STORAGE_DIR)
+        self._snapshots = Snapshots(f"{self._directory_path}/{STORAGE_DIR}")
+        self._shared = CameraShared()
         self._mqtt_listen_topic = device_info.get(CONF_VACUUM_CONNECTION_STRING)
-        self.file_name = ""
+        self._shared.file_name = ""
         if self._mqtt_listen_topic:
             self._mqtt_listen_topic = str(self._mqtt_listen_topic)
-            file_name = self._mqtt_listen_topic.split("/")
+            self._shared.file_name = self._mqtt_listen_topic.split("/")[1].lower()
+            _LOGGER.debug(f"Camera {self._shared.file_name} Starting up..")
             self.snapshot_img = (
-                self._directory_path + "/www/snapshot_" + file_name[1].lower() + ".png"
+                f"{self._directory_path}/www/snapshot_{self._shared.file_name}.png"
             )
             self.log_file = (
-                self._directory_path + "/www/" + file_name[1].lower() + ".zip"
+                f"{self._directory_path}/www/snapshot_{self._shared.file_name}.zip"
             )
             self.svg_file = (
-                self._directory_path + "/www/" + file_name[1].lower() + ".svg"
+                f"{self._directory_path}/www/{self._shared.file_name}.svg"
             )
             self._attr_unique_id = device_info.get(
                 CONF_UNIQUE_ID,
                 get_vacuum_unique_id_from_mqtt_topic(self._mqtt_listen_topic),
             )
-            self.file_name = file_name[1].lower()
         self._mqtt = ValetudoConnector(self._mqtt_listen_topic, self.hass)
         self._identifiers = device_info.get(CONF_VACUUM_IDENTIFIERS)
         self._image = None
         self._processing = False
-        self._export_svg = device_info.get(EXPORT_SVG)
+        self._shared.export_svg = device_info.get(EXPORT_SVG)
         self._image_w = None
         self._image_h = None
         self._should_poll = False
         self._map_handler = MapImageHandler()
         self._re_handler = ReImageHandler()
-        self._map_rooms = None
-        self._map_pred_zones = None
-        self._map_pred_points = None
-        self._vacuum_shared = Vacuum()
-        self._vacuum_state = None
         self._attr_frame_interval = 1
-        self._vac_img_data = None
-        self._vac_json_data = None
-        self._vac_json_id = None
-        self._attr_calibration_points = None
-        self._base = None
-        self._current = None
+        self._vac_json_available = None
+        self._shared.attr_calibration_points = None
         self._cpu_percent = None
-        self._image_rotate = int(device_info.get(ATTR_ROTATE, 0))
-        self._margins = int(device_info.get(ATTR_MARGINS, 150))
-        self._snapshot_taken = False
-        self._show_vacuum_state = device_info.get(CONF_VAC_STAT)
-        if not self._show_vacuum_state:
-            self._show_vacuum_state = False
+        self._shared.image_rotate = int(device_info.get(ATTR_ROTATE, 0))
+        self._shared.margins = int(device_info.get(ATTR_MARGINS, 150))
+        self._shared.show_vacuum_state = device_info.get(CONF_VAC_STAT)
+        if not self._shared.show_vacuum_state:
+            self._shared.show_vacuum_state = False
         # If not configured, default to True for compatibility
         self._enable_snapshots = device_info.get(CONF_SNAPSHOTS_ENABLE)
         if self._enable_snapshots is None:
@@ -218,8 +205,8 @@ class ValetudoCamera(Camera):
         if os.path.isfile(self.log_file):
             os.remove(self.log_file)
         self._last_image = None
-        self._image_grab = True
-        self._frame_nuber = 0
+        self._shared.image_grab = True
+        self._shared.frame_nuber = 0
         self._rrm_data = False  # Temp. check for rrm data
         try:
             self.user_colors = [
@@ -280,10 +267,10 @@ class ValetudoCamera(Camera):
                 device_info.get(ALPHA_ROOM_14),
                 device_info.get(ALPHA_ROOM_15),
             ]
-            self._vacuum_shared.update_user_colors(
+            self._shared.update_user_colors(
                 add_alpha_to_rgb(self.user_alpha, self.user_colors)
             )
-            self._vacuum_shared.update_rooms_colors(
+            self._shared.update_rooms_colors(
                 add_alpha_to_rgb(self.rooms_alpha, self.rooms_colors)
             )
         except (ValueError, IndexError, UnboundLocalError) as e:
@@ -328,24 +315,24 @@ class ValetudoCamera(Camera):
         """Camera Attributes"""
         attrs = {
             "friendly_name": self._attr_name,
-            "vacuum_status": self._vacuum_state,
+            "vacuum_status": self._shared.vacuum_state,
             "vacuum_topic": self._mqtt_listen_topic,
-            "vacuum_json_id": self._vac_json_id,
-            "json_data": self._vac_json_data,
-            "vacuum_position": self._current,
-            "calibration_points": self._attr_calibration_points,
+            "vacuum_json_id": self._shared.vac_json_id,
+            "json_data": self._vac_json_available,
+            "vacuum_position": self._shared.current_room,
+            "calibration_points": self._shared.attr_calibration_points,
         }
         if self._enable_snapshots:
-            attrs["snapshot"] = self._snapshot_taken
-            attrs["snapshot_path"] = "/local/snapshot_" + self.file_name + ".png"
+            attrs["snapshot"] = self._shared.snapshot_taken
+            attrs["snapshot_path"] = f"/local/snapshot_{self._shared.file_name}.png"
         else:
             attrs["snapshot"] = False
-        if (self._map_rooms is not None) and (self._map_rooms != {}):
-            attrs["rooms"] = self._map_rooms
-        if (self._map_pred_zones is not None) and (self._map_pred_zones != {}):
-            attrs["zones"] = self._map_pred_zones
-        if (self._map_pred_points is not None) and (self._map_pred_points != {}):
-            attrs["points"] = self._map_pred_points
+        if (self._shared.map_rooms is not None) and (self._shared.map_rooms != {}):
+            attrs["rooms"] = self._shared.map_rooms
+        if (self._shared.map_pred_zones is not None) and (self._shared.map_pred_zones != {}):
+            attrs["zones"] = self._shared.map_pred_zones
+        if (self._shared.map_pred_points is not None) and (self._shared.map_pred_points != {}):
+            attrs["points"] = self._shared.map_pred_points
         return attrs
 
     @property
@@ -373,41 +360,41 @@ class ValetudoCamera(Camera):
         if os.path.isfile(self.snapshot_img) and (self._last_image is None):
             # Load the snapshot image
             self._last_image = Image.open(self.snapshot_img)
-            _LOGGER.debug(f"{self.file_name}: Snapshot image loaded")
+            _LOGGER.debug(f"{self._shared.file_name}: Snapshot image loaded")
             return self._last_image
         elif self._last_image is not None:
             return self._last_image
         else:
             # Create an empty image with a gray background
             empty_img = Image.new("RGB", (800, 600), "gray")
-            _LOGGER.info(f"{self.file_name}: Starting up ...")
+            _LOGGER.info(f"{self._shared.file_name}: Starting up ...")
             return empty_img
 
     async def take_snapshot(self, json_data, image_data):
         """Camera Automatic Snapshots"""
         try:
-            self._snapshot_taken = True
+            self._shared.snapshot_taken = True
             # When logger is active.
             if (_LOGGER.getEffectiveLevel() > 0) and (
                 _LOGGER.getEffectiveLevel() != 30
             ):
                 # Save mqtt raw data file.
                 if self._mqtt is not None:
-                    await self._mqtt.save_payload(self.file_name)
+                    await self._mqtt.save_payload(self._shared.file_name)
                 # Write the JSON and data to the file.
-                self._snapshots.data_snapshot(self.file_name, json_data)
+                self._snapshots.data_snapshot(self._shared.file_name, json_data)
             # Save image ready for snapshot.
             if self._enable_snapshots:
                 image_data.save(self.snapshot_img)
-                _LOGGER.info(f"{self.file_name}: Camera Snapshot Taken.")
+                _LOGGER.info(f"{self._shared.file_name}: Camera Snapshot Taken.")
         except IOError:
-            self._snapshot_taken = None
+            self._shared.snapshot_taken = None
             _LOGGER.warning(
-                f"Error Saving {self.file_name}: Snapshot, will not be available till restart."
+                f"Error Saving {self._shared.file_name}: Snapshot, will not be available till restart."
             )
         else:
             _LOGGER.debug(
-                f"{self.file_name}: Snapshot acquired during {self._vacuum_state} Vacuum State."
+                f"{self._shared.file_name}: Snapshot acquired during {self._shared.vacuum_state} Vacuum State."
             )
 
     async def load_test_json(self, file_path=None):
@@ -428,24 +415,24 @@ class ValetudoCamera(Camera):
         if not self._mqtt:
             return self.empty_if_no_data()
         # If we have data from MQTT, we process the image
-        self._vacuum_state = await self._mqtt.get_vacuum_status()
+        self._shared.vacuum_state = await self._mqtt.get_vacuum_status()
         process_data = await self._mqtt.is_data_available(self._processing)
         if process_data:
             self._processing = True
             # if the vacuum is working, or it is the first image.
             if (
-                self._vacuum_state == "cleaning"
-                or self._vacuum_state == "moving"
-                or self._vacuum_state == "returning"
+                self._shared.vacuum_state == "cleaning"
+                or self._shared.vacuum_state == "moving"
+                or self._shared.vacuum_state == "returning"
             ):
                 # grab the image
-                self._image_grab = True
-                self._frame_nuber = self._map_handler.get_frame_number() - 1
+                self._shared.image_grab = True
+                self._shared.frame_nuber = self._map_handler.get_frame_number() - 1
                 # when the vacuum goes / is in idle, error or docked
                 # take the snapshot.
-                self._snapshot_taken = False
+                self._shared.snapshot_taken = False
                 _LOGGER.info(
-                    f"{self.file_name}: Camera image data update available: {process_data}"
+                    f"{self._shared.file_name}: Camera image data update available: {process_data}"
                 )
             # calculate the cycle time for frame adjustment
             start_time = datetime.now()
@@ -456,7 +443,7 @@ class ValetudoCamera(Camera):
                 2,
             )
             try:
-                parsed_json = await self._mqtt.update_data(self._image_grab)
+                parsed_json = await self._mqtt.update_data(self._shared.image_grab)
                 if parsed_json[1]:
                     self._rrm_data = parsed_json[0]
                 else:
@@ -467,9 +454,9 @@ class ValetudoCamera(Camera):
                 # parsed_json = await self.load_test_json(
                 #     "custom_components/valetudo_vacuum_camera/snapshots/test.json")
                 ##########################################################
-                self._vac_json_data = "Success"
+                self._vac_json_available = "Success"
             except ValueError:
-                self._vac_json_data = "Error"
+                self._vac_json_available = "Error"
                 pass
             else:
                 # Just in case, let's check that the data is available
@@ -483,7 +470,7 @@ class ValetudoCamera(Camera):
                     2,
                 )
                 _LOGGER.debug(
-                    f"{self.file_name} System CPU usage stat (1/2): {self._cpu_percent}%"
+                    f"{self._shared.file_name} System CPU usage stat (1/2): {self._cpu_percent}%"
                 )
                 if parsed_json is not None:
                     if self._rrm_data:
@@ -516,16 +503,16 @@ class ValetudoCamera(Camera):
                     self._image = bytes_data
                     # clean up
                     del buffered, pil_img, bytes_data
-                    _LOGGER.debug(f"{self.file_name}: Image update complete")
+                    _LOGGER.debug(f"{self._shared.file_name}: Image update complete")
                     processing_time = (datetime.now() - start_time).total_seconds()
                     self._attr_frame_interval = max(0.1, processing_time)
                     _LOGGER.debug(
-                        f"Adjusted {self.file_name}: Frame interval: {self._attr_frame_interval}"
+                        f"Adjusted {self._shared.file_name}: Frame interval: {self._attr_frame_interval}"
                     )
 
                 else:
                     _LOGGER.info(
-                        f"{self.file_name}: Image not processed. Returning not updated image."
+                        f"{self._shared.file_name}: Image not processed. Returning not updated image."
                     )
                     self._attr_frame_interval = 0.1
                 self.camera_image(self._image_w, self._image_h)
@@ -550,10 +537,10 @@ class ValetudoCamera(Camera):
                     2,
                 )
                 _LOGGER.debug(
-                    f"{self.file_name} System CPU usage stat (2/2): {self._cpu_percent}%"
+                    f"{self._shared.file_name} System CPU usage stat (2/2): {self._cpu_percent}%"
                 )
                 _LOGGER.debug(
-                    f"{self.file_name} Camera Memory usage in GB: "
+                    f"{self._shared.file_name} Camera Memory usage in GB: "
                     f"{round(proc.memory_info()[0]/2.**30, 2)}, "
                     f"{memory_percent}% of Total."
                 )
@@ -569,30 +556,30 @@ class ValetudoCamera(Camera):
         if parsed_json is not None:
             pil_img = await self._map_handler.get_image_from_json(
                 m_json=parsed_json,
-                robot_state=self._vacuum_state,
-                img_rotation=self._image_rotate,
-                margins=self._margins,
-                user_colors=self._vacuum_shared.get_user_colors(),
-                rooms_colors=self._vacuum_shared.get_rooms_colors(),
-                file_name=self.file_name,
-                export_svg=self._export_svg,
+                robot_state=self._shared.vacuum_state,
+                img_rotation=self._shared.image_rotate,
+                margins=self._shared.margins,
+                user_colors=self._shared.get_user_colors(),
+                rooms_colors=self._shared.get_rooms_colors(),
+                file_name=self._shared.file_name,
+                export_svg=self._shared.export_svg,
             )
-            if self._export_svg:
-                self._export_svg = False
+            if self._shared.export_svg:
+                self._shared.export_svg = False
             if pil_img is not None:
-                if self._map_rooms is None:
+                if self._shared.map_rooms is None:
                     if self._rrm_data is None:
-                        self._map_rooms = await self._map_handler.get_rooms_attributes()
-                    if self._map_rooms:
+                        self._shared.map_rooms = await self._map_handler.get_rooms_attributes()
+                    if self._shared.map_rooms:
                         _LOGGER.debug(
-                            f"State attributes rooms update: {self._map_rooms}"
+                            f"State attributes rooms update: {self._shared.map_rooms}"
                         )
-                if self._show_vacuum_state:
-                    status_text = self.file_name + ": " + self._vacuum_state
+                if self._shared.show_vacuum_state:
+                    status_text = self._shared.file_name + ": " + self._shared.vacuum_state
                     text_size = 50
-                    if self._current:
+                    if self._shared.current_room:
                         try:
-                            in_room = self._current.get("in_room", None)
+                            in_room = self._shared.current_room.get("in_room", None)
                         except ValueError or KeyError:
                             text_size = 50
                         else:
@@ -602,32 +589,32 @@ class ValetudoCamera(Camera):
                     self._map_handler.draw.status_text(
                         pil_img,
                         text_size,
-                        self._vacuum_shared.user_colors[8],
+                        self._shared.user_colors[8],
                         status_text,
                     )
 
-                if self._attr_calibration_points is None:
-                    self._attr_calibration_points = (
-                        self._map_handler.get_calibration_data(self._image_rotate)
+                if self._shared.attr_calibration_points is None:
+                    self._shared.attr_calibration_points = (
+                        self._map_handler.get_calibration_data(self._shared.image_rotate)
                     )
 
-                self._vac_json_id = self._map_handler.get_json_id()
-                if not self._base:
-                    self._base = self._map_handler.get_charger_position()
-                self._current = self._map_handler.get_robot_position()
-                if not self._vac_img_data:
-                    self._vac_img_data = self._map_handler.get_img_size()
+                self._shared.vac_json_id = self._map_handler.get_json_id()
+                if not self._shared.charger_position:
+                    self._shared.charger_position = self._map_handler.get_charger_position()
+                self._shared.current_room = self._map_handler.get_robot_position()
+                if not self._shared.image_size:
+                    self._shared.image_size = self._map_handler.get_img_size()
 
-                if not self._snapshot_taken and (
-                    self._vacuum_state == "idle"
-                    or self._vacuum_state == "docked"
-                    or self._vacuum_state == "error"
+                if not self._shared.snapshot_taken and (
+                    self._shared.vacuum_state == "idle"
+                    or self._shared.vacuum_state == "docked"
+                    or self._shared.vacuum_state == "error"
                 ):
                     # suspend image processing if we are at the next frame.
-                    if self._frame_nuber is not self._map_handler.get_frame_number():
-                        self._image_grab = False
+                    if self._shared.frame_number is not self._map_handler.get_frame_number():
+                        self._shared.image_grab = False
                         _LOGGER.info(
-                            f"Suspended the camera data processing for: {self.file_name}."
+                            f"Suspended the camera data processing for: {self._shared.file_name}."
                         )
                         # take a snapshot
                         await self.take_snapshot(parsed_json, pil_img)
@@ -639,59 +626,59 @@ class ValetudoCamera(Camera):
             destinations = await self._mqtt.get_destinations()
             pil_img = await self._re_handler.get_image_from_rrm(
                 m_json=self._rrm_data,
-                img_rotation=self._image_rotate,
-                margins=self._margins,
-                user_colors=self._vacuum_shared.get_user_colors(),
-                rooms_colors=self._vacuum_shared.get_rooms_colors(),
-                file_name=self.file_name,
+                img_rotation=self._shared.image_rotate,
+                margins=self._shared.margins,
+                user_colors=self._shared.get_user_colors(),
+                rooms_colors=self._shared.get_rooms_colors(),
+                file_name=self._shared.file_name,
                 destinations=destinations,
                 drawing_limit=self._cpu_percent,
             )
 
             if pil_img is not None:
-                if self._map_rooms is None:
+                if self._shared.map_rooms is None:
                     destinations = await self._mqtt.get_destinations()
                     if destinations is not None:
                         (
-                            self._map_rooms,
-                            self._map_pred_zones,
-                            self._map_pred_points,
+                            self._shared.map_rooms,
+                            self._shared.map_pred_zones,
+                            self._shared.map_pred_points,
                         ) = await self._re_handler.get_rooms_attributes(destinations)
-                    if self._map_rooms:
+                    if self._shared.map_rooms:
                         _LOGGER.debug(
-                            f"State attributes rooms update: {self._map_rooms}"
+                            f"State attributes rooms update: {self._shared.map_rooms}"
                         )
-                if self._show_vacuum_state:
+                if self._shared.show_vacuum_state:
                     self._map_handler.draw.status_text(
                         pil_img,
                         50,
-                        self._vacuum_shared.user_colors[8],
-                        self.file_name + ": " + self._vacuum_state,
+                        self._shared.user_colors[8],
+                        self._shared.file_name + ": " + self._shared.vacuum_state,
                     )
 
-                if self._attr_calibration_points is None:
-                    self._attr_calibration_points = (
-                        self._re_handler.get_calibration_data(self._image_rotate)
+                if self._shared.attr_calibration_points is None:
+                    self._shared.attr_calibration_points = (
+                        self._re_handler.get_calibration_data(self._shared.image_rotate)
                     )
 
-                self._vac_json_id = self._re_handler.get_json_id()
-                if not self._base:
-                    self._base = self._re_handler.get_charger_position()
-                self._current = self._re_handler.get_robot_position()
-                if not self._vac_img_data:
-                    self._vac_img_data = self._re_handler.get_img_size()
+                self._shared.vac_json_id = self._re_handler.get_json_id()
+                if not self._shared.charger_position:
+                    self._shared.charger_position = self._re_handler.get_charger_position()
+                self._shared.current_room = self._re_handler.get_robot_position()
+                if not self._shared.image_size:
+                    self._shared.image_size = self._re_handler.get_img_size()
 
-                if not self._snapshot_taken and (
-                    self._vacuum_state == "idle"
-                    or self._vacuum_state == "docked"
-                    or self._vacuum_state == "error"
+                if not self._shared.snapshot_taken and (
+                    self._shared.vacuum_state == "idle"
+                    or self._shared.vacuum_state == "docked"
+                    or self._shared.vacuum_state == "error"
                 ):
                     # suspend image processing if we are at the next frame.
                     _LOGGER.info(
-                        f"Suspended the camera data processing for: {self.file_name}."
+                        f"Suspended the camera data processing for: {self._shared.file_name}."
                     )
                     # take a snapshot
                     await self.take_snapshot(self._rrm_data, pil_img)
-                    self._image_grab = False
+                    self._shared.image_grab = False
             return pil_img
         return None
