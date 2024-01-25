@@ -2,7 +2,7 @@
 Image Handler Module.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Last Changed on Version: 1.5.7
+Last Changed on Version: 1.5.7.1
 """
 from __future__ import annotations
 
@@ -15,7 +15,8 @@ import numpy as np
 import svgwrite
 from svgwrite import shapes
 
-from custom_components.valetudo_vacuum_camera.types import Color, Colors
+from custom_components.valetudo_vacuum_camera.types import Color
+from custom_components.valetudo_vacuum_camera.valetudo.hypfer.handler_pocessor import ImageHandlerProcessor
 from custom_components.valetudo_vacuum_camera.utils.colors_man import color_grey
 from custom_components.valetudo_vacuum_camera.utils.draweble import Drawable
 from custom_components.valetudo_vacuum_camera.utils.img_data import ImageData
@@ -25,7 +26,7 @@ _LOGGER = logging.getLogger(__name__)
 
 # noinspection PyTypeChecker,PyUnboundLocalVariable,PyUnresolvedReferences
 class MapImageHandler(object):
-    def __init__(self):
+    def __init__(self, shared_data):
         self.auto_crop = None  # auto crop data to be calculate once.
         self.calibration_data = None  # camera shared data.
         self.charger_pos = None  # vacuum data charger position.
@@ -46,12 +47,14 @@ class MapImageHandler(object):
         self.robot_pos = None  # vacuum coordinates.
         self.room_propriety = None  # vacuum segments data.
         self.rooms_pos = None  # vacuum room coordinates / name list.
+        self.shared = shared_data  # camera shared data.
         self.trim_down = None  # memory stored trims calculated once.
         self.trim_left = None  # memory stored trims calculated once.
         self.trim_right = None  # memory stored trims calculated once.
         self.trim_up = None  # memory stored trims calculated once.
+        self._processor = ImageHandlerProcessor(self.shared)  # imported Camera Processor Module.
 
-    async def auto_crop_and_trim_array(
+    async def async_auto_crop_and_trim_array(
         self,
         image_array,
         detect_colour,
@@ -63,7 +66,7 @@ class MapImageHandler(object):
         """
         if not self.auto_crop:
             _LOGGER.debug(
-                f"Image original size: {image_array.shape[1]}, {image_array.shape[0]}"
+                f"{self.shared.file_name}: Image original size ({image_array.shape[1]}, {image_array.shape[0]})."
             )
             # Find the coordinates of the first occurrence of a non-background color
             nonzero_coords = np.column_stack(
@@ -74,8 +77,8 @@ class MapImageHandler(object):
             max_y, max_x, dummy = np.max(nonzero_coords, axis=0)
             del dummy, nonzero_coords
             _LOGGER.debug(
-                "Found crop max and min values (y,x) ({}, {}) ({},{})...".format(
-                    int(max_y), int(max_x), int(min_y), int(min_x)
+                "{}: Found crop max and min values (y,x) ({}, {}) ({},{})...".format(
+                    self.shared.file_name, int(max_y), int(max_x), int(min_y), int(min_x)
                 )
             )
             # Calculate and store the trims coordinates with margins
@@ -85,21 +88,21 @@ class MapImageHandler(object):
             self.trim_down = int(max_y) + margin_size
             del min_y, min_x, max_x, max_y
             _LOGGER.debug(
-                "Calculated trims coordinates right {}, bottom {}, left {}, up {} ".format(
-                    self.trim_right, self.trim_down, self.trim_left, self.trim_up
+                "{}: Calculated trims coordinates right {}, bottom {}, left {}, up {}.".format(
+                    self.shared.file_name, self.trim_right, self.trim_down, self.trim_left, self.trim_up
                 )
             )
             # Calculate the dimensions after trimming using min/max values
             trimmed_width = max(0, self.trim_right - self.trim_left)
             trimmed_height = max(0, self.trim_down - self.trim_up)
             _LOGGER.debug(
-                "Calculated trim width {} and trim height {}".format(
-                    trimmed_width, trimmed_height
+                "{}: Calculated trimmed image width {} and height {}".format(
+                    self.shared.file_name, trimmed_width, trimmed_height
                 )
             )
             # Test if the trims are okay or not
             if trimmed_height <= margin_size or trimmed_width <= margin_size:
-                _LOGGER.debug(f"Background colour not detected at rotation {rotate}.")
+                _LOGGER.debug(f"{self.shared.file_name}: Background colour not detected at rotation {rotate}.")
                 pos_0 = 0
                 self.crop_area = (
                     pos_0,
@@ -147,9 +150,9 @@ class MapImageHandler(object):
             rotated = trimmed
             self.crop_area = self.auto_crop
         del trimmed
-        _LOGGER.debug(f"Auto Crop and Trim Box data: {self.crop_area}")
+        _LOGGER.debug(f"{self.shared.file_name}: Auto Crop and Trim Box data: {self.crop_area}")
         self.crop_img_size = (rotated.shape[1], rotated.shape[0])
-        _LOGGER.debug(f"Auto Crop and Trim image size: {self.crop_img_size}")
+        _LOGGER.debug(f"{self.shared.file_name}: Auto Crop and Trim image size: {self.crop_img_size}")
         return rotated
 
     def extract_room_properties(self, json_data):
@@ -190,42 +193,35 @@ class MapImageHandler(object):
                         "y": ((y_min + y_max) // 2),
                     }
         if room_properties != {}:
-            _LOGGER.debug("Rooms data extracted!")
+            _LOGGER.debug(f"{self.shared.file_name}: Rooms data extracted!")
         else:
-            _LOGGER.debug("Rooms data not available!")
+            _LOGGER.debug(f"{self.shared.file_name}: Rooms data not available!")
             self.rooms_pos = None
         return room_properties
 
-    async def get_image_from_json(
+    async def async_get_image_from_json(
         self,
         m_json,
-        robot_state,
-        img_rotation: int = 0,
-        margins: int = 0,
-        user_colors: Colors = None,
-        rooms_colors: Color = None,
-        file_name: "" = None,
-        drawing_limit: float = 0.0,
-        export_svg: bool = False,
     ):
-        color_wall: Color = user_colors[0]
-        color_no_go: Color = user_colors[6]
-        color_go_to: Color = user_colors[7]
-        color_robot: Color = user_colors[2]
-        color_charger: Color = user_colors[5]
-        color_move: Color = user_colors[4]
-        color_background: Color = user_colors[3]
-        color_zone_clean: Color = user_colors[1]
+        # Initialize the colors.
+        color_wall: Color = self.shared.user_colors[0]
+        color_no_go: Color = self.shared.user_colors[6]
+        color_go_to: Color = self.shared.user_colors[7]
+        color_robot: Color = self.shared.user_colors[2]
+        color_charger: Color = self.shared.user_colors[5]
+        color_move: Color = self.shared.user_colors[4]
+        color_background: Color = self.shared.user_colors[3]
+        color_zone_clean: Color = self.shared.user_colors[1]
 
         try:
             if m_json is not None:
-                _LOGGER.info(f"{file_name}: Composing the image for the camera.")
+                _LOGGER.info(f"{self.shared.file_name}: Composing the image for the camera.")
                 # buffer json data
                 self.json_data = m_json
                 # result_queue = Queue()
 
                 if self.room_propriety and self.frame_number == 0:
-                    _LOGGER.info(f"{file_name}: Supporting Rooms Cleaning!")
+                    _LOGGER.info(f"{self.shared.file_name}: Supporting Rooms Cleaning!")
 
                 size_x = int(m_json["size"]["x"])
                 size_y = int(m_json["size"]["y"])
@@ -253,7 +249,7 @@ class MapImageHandler(object):
                     predicted_path = paths_data.get("predicted_path", [])
                     path_pixels = paths_data.get("path", [])
                 except KeyError as e:
-                    _LOGGER.info(f"{file_name}: Error extracting paths data: {str(e)}")
+                    _LOGGER.info(f"{self.shared.file_name}: Error extracting paths data: {str(e)}")
                 if predicted_path:
                     predicted_path = predicted_path[0]["points"]
                     predicted_path = self.data.sublist(predicted_path, 2)
@@ -261,28 +257,25 @@ class MapImageHandler(object):
 
                 try:
                     zone_clean = self.data.find_zone_entities(m_json, None)
-                except (ValueError, KeyError) as e:
-                    _LOGGER.info(f"{file_name}: No zones: {str(e)}")
+                except (ValueError, KeyError):
                     zone_clean = None
                 else:
-                    _LOGGER.debug(f"{file_name}: Got zones: {zone_clean}")
+                    _LOGGER.debug(f"{self.shared.file_name}: Got zones: {zone_clean}")
 
                 try:
                     virtual_walls = self.data.find_virtual_walls(m_json)
-                except (ValueError, KeyError) as e:
-                    _LOGGER.info(f"{file_name}: No virtual walls: {str(e)}")
+                except (ValueError, KeyError):
                     virtual_walls = None
                 else:
-                    _LOGGER.debug(f"{file_name}: Got virtual walls: {virtual_walls}")
+                    _LOGGER.debug(f"{self.shared.file_name}: Got virtual walls: {virtual_walls}")
 
                 try:
                     entity_dict = self.data.find_points_entities(m_json, None)
-                except (ValueError, KeyError) as e:
-                    _LOGGER.warning(f"{file_name}: No points in json data: {str(e)}")
+                except (ValueError, KeyError):
                     entity_dict = None
                 else:
                     _LOGGER.debug(
-                        f"{file_name}: Got the points in the json: {entity_dict}"
+                        f"{self.shared.file_name}: Got the points in the json: {entity_dict}"
                     )
 
                 robot_position_angle = None
@@ -304,14 +297,14 @@ class MapImageHandler(object):
                                     "angle": robot_position_angle,
                                 }
                             else:
-                                self.robot_pos = await self.get_robot_in_room(
-                                    (robot_position[1]),
-                                    (robot_position[0]),
-                                    robot_position_angle,
+                                self.robot_pos = await self.async_get_robot_in_room(
+                                    robot_y=(robot_position[1]),
+                                    robot_x=(robot_position[0]),
+                                    angle=robot_position_angle,
                                 )
 
                             _LOGGER.debug(
-                                f"Robot Position: {list(self.robot_pos.items())}"
+                                f"{self.shared.file_name} Position: {list(self.robot_pos.items())}"
                             )
 
                 charger_pos = None
@@ -319,7 +312,7 @@ class MapImageHandler(object):
                     try:
                         charger_pos = entity_dict.get("charger_location")
                     except KeyError:
-                        _LOGGER.warning("No charger position found.")
+                        _LOGGER.warning(f"{self.shared.file_name}: No charger position found.")
                     else:
                         if charger_pos:
                             charger_pos = charger_pos[0]["points"]
@@ -328,7 +321,7 @@ class MapImageHandler(object):
                                 "y": charger_pos[1],
                             }
                         _LOGGER.debug(
-                            f"Charger Position: {list(self.charger_pos.items())}"
+                            f"Charger Position: {list(self.charger_pos.items())} of {self.shared.file_name}"
                         )
 
                 if entity_dict:
@@ -358,23 +351,23 @@ class MapImageHandler(object):
                 layers, active = self.data.find_layers(m_json["layers"])
                 new_frame_hash = await self.calculate_array_hash(layers, active)
                 if self.frame_number == 0:
-                    self.img_hash = await self.calculate_array_hash(layers, active)
+                    self.img_hash = new_frame_hash  # await self.calculate_array_hash(layers, active)
                     # The below is drawing the base layer that will be reused at the next frame.
-                    _LOGGER.debug(f"{file_name}: Layers to draw: {layers.keys()}")
-                    _LOGGER.info(f"{file_name}: Empty image with background color")
+                    _LOGGER.debug(f"{self.shared.file_name}: Layers to draw: {layers.keys()}")
+                    _LOGGER.info(f"{self.shared.file_name}: Empty image with background color")
                     img_np_array = await self.draw.create_empty_image(
                         size_x, size_y, color_background
                     )
-                    _LOGGER.info(f"{file_name}: Overlapping Layers")
+                    _LOGGER.info(f"{self.shared.file_name}: Overlapping Layers")
                     room_id = 0
                     rooms_list = [color_wall]
                     for layer_type, compressed_pixels_list in layers.items():
                         for compressed_pixels in compressed_pixels_list:
                             pixels = self.data.sublist(compressed_pixels, 3)
                             if layer_type == "segment" or layer_type == "floor":
-                                room_color = rooms_colors[room_id]
+                                room_color = self.shared.rooms_colors[room_id]
                                 if layer_type == "segment" or layer_type == "floor":
-                                    room_color = rooms_colors[room_id]
+                                    room_color = self.shared.rooms_colors[room_id]
                                     rooms_list.append(room_color)
                                 if layer_type == "segment":
                                     # Check if the room is active and set a modified color
@@ -421,12 +414,12 @@ class MapImageHandler(object):
                             no_mop_zones = None
 
                         if no_go_zones:
-                            _LOGGER.info(f"{file_name}: Drawing No Go area.")
+                            _LOGGER.info(f"{self.shared.file_name}: Drawing No Go area.")
                             img_np_array = await self.draw.zones(
                                 img_np_array, no_go_zones, color_no_go
                             )
                         if no_mop_zones:
-                            _LOGGER.info(f"{file_name}: Drawing No Mop area.")
+                            _LOGGER.info(f"{self.shared.file_name}: Drawing No Mop area.")
                             img_np_array = await self.draw.zones(
                                 img_np_array, no_mop_zones, color_no_go
                             )
@@ -446,29 +439,26 @@ class MapImageHandler(object):
                             self.json_data
                         )
                         if self.rooms_pos:
-                            self.robot_pos = await self.get_robot_in_room(
-                                (robot_position[1]),
-                                (robot_position[0]),
-                                robot_position_angle,
+                            self.robot_pos = await self.async_get_robot_in_room(
+                                robot_x=(robot_position[0]),
+                                robot_y=(robot_position[1]),
+                                angle=robot_position_angle,
                             )
 
-                    _LOGGER.info(f"{file_name}: Completed base Layers")
+                    _LOGGER.info(f"{self.shared.file_name}: Completed base Layers")
                     self.img_base_layer = await self.async_copy_array(img_np_array)
-                    if export_svg:
-                        await self.numpy_array_to_svg(
-                            self.img_base_layer,
-                            f"{file_name}.svg",
-                            rooms_list,
-                            color_background,
-                            margins,
-                            img_rotation,
+                    if self.shared.export_svg and self.frame_number == 0:
+                        await self.async_numpy_array_to_svg(
+                            base_layer=self.img_base_layer,
+                            colours_list=rooms_list,
+                            color_background=color_background
                         )
 
                 self.frame_number += 1
                 if (self.frame_number > 1024) or (new_frame_hash != self.img_hash):
                     self.frame_number = 0
 
-                _LOGGER.debug(f"{file_name}: Frame number %s", self.frame_number)
+                _LOGGER.debug(f"{self.shared.file_name}: Frame number %s", self.frame_number)
                 img_np_array = await self.async_copy_array(self.img_base_layer)
                 # All below will be drawn each time
                 # If there is a zone clean we draw it now.
@@ -478,7 +468,7 @@ class MapImageHandler(object):
                     except KeyError:
                         zones_clean = None
                     if zones_clean:
-                        _LOGGER.info(f"{file_name}: Drawing Zone Clean.")
+                        _LOGGER.info(f"{self.shared.file_name}: Drawing Zone Clean.")
                         img_np_array = await self.draw.zones(
                             img_np_array, zones_clean, color_zone_clean
                         )
@@ -504,25 +494,25 @@ class MapImageHandler(object):
                         img_np_array = await self.draw.lines(
                             img_np_array, path_pixel2, 5, color_move
                         )
-                if robot_state == "docked":
+                if self.shared.vacuum_state == "docked":
                     robot_position_angle = robot_position_angle - 180
                 if robot_pos:
                     img_np_array = await self.draw.robot(
-                        img_np_array,
-                        robot_position[0],
-                        robot_position[1],
-                        robot_position_angle,
-                        color_robot,
-                        file_name,
+                        layers=img_np_array,
+                        x=robot_position[0],
+                        y=robot_position[1],
+                        angle=robot_position_angle,
+                        fill=color_robot,
+                        log=self.shared.file_name,
                     )
                 _LOGGER.debug(
-                    f"{file_name}: Auto cropping the image with rotation: {int(img_rotation)}"
+                    f"{self.shared.file_name}: Auto cropping the image with rotation: {int(self.shared.image_rotate)}"
                 )
-                img_np_array = await self.auto_crop_and_trim_array(
+                img_np_array = await self.async_auto_crop_and_trim_array(
                     img_np_array,
                     color_background,
-                    int(margins),
-                    int(img_rotation),
+                    int(self.shared.margins),
+                    int(self.shared.image_rotate),
                 )
 
                 pil_img = Image.fromarray(img_np_array, mode="RGBA")
@@ -530,7 +520,7 @@ class MapImageHandler(object):
                 return pil_img
         except Exception as e:
             _LOGGER.warning(
-                f"{file_name} : Error in get_image_from_json: {e}", exc_info=True
+                f"{self.shared.file_name} : Error in get_image_from_json: {e}", exc_info=True
             )
             return None
 
@@ -549,17 +539,17 @@ class MapImageHandler(object):
     def get_json_id(self):
         return self.json_id
 
-    async def get_rooms_attributes(self):
+    async def async_get_rooms_attributes(self):
         if self.room_propriety:
             return self.room_propriety
         if self.json_data:
-            _LOGGER.debug("Checking for Rooms data..")
+            _LOGGER.debug(f"Checking {self.shared.file_name} Rooms data..")
             self.room_propriety = self.extract_room_properties(self.json_data)
             if self.room_propriety:
-                _LOGGER.debug("Got Rooms Attributes.")
+                _LOGGER.debug(f"Got {self.shared.file_name} Rooms Attributes.")
         return self.room_propriety
 
-    async def get_robot_in_room(self, robot_y, robot_x, angle):
+    async def async_get_robot_in_room(self, robot_y, robot_x, angle):
         # do we know where we are?
         if self.robot_in_room:
             if (
@@ -577,7 +567,7 @@ class MapImageHandler(object):
                 }
                 return temp
         # else we need to search and use the async method.
-        _LOGGER.debug("The robot changed room.. searching..")
+        _LOGGER.debug(f"{self.shared.file_name} changed room.. searching..")
         for room in self.rooms_pos:
             corners = room["corners"]
             self.robot_in_room = {
@@ -601,11 +591,11 @@ class MapImageHandler(object):
                     "angle": angle,
                     "in_room": self.robot_in_room["room"],
                 }
-                _LOGGER.debug(f"Robot is in {self.robot_in_room['room']}")
+                _LOGGER.debug(f"{self.shared.file_name} is in {self.robot_in_room['room']}")
                 del room, corners, robot_x, robot_y  # free memory.
                 return temp
         del room, corners  # free memory.
-        _LOGGER.debug("Robot not located in any Room")
+        _LOGGER.debug(f"{self.shared.file_name} not located in any Room")
         self.robot_in_room = None
         temp = {
             "x": robot_x,
@@ -618,7 +608,7 @@ class MapImageHandler(object):
     def get_calibration_data(self, rotation_angle):
         calibration_data = []
         self.img_rotate = rotation_angle
-        _LOGGER.info("Getting Calibrations points")
+        _LOGGER.info(f"Getting {self.shared.file_name} Calibrations points.")
         # Calculate the calibration points in the vacuum coordinate system
 
         vacuum_points = [
@@ -669,15 +659,16 @@ class MapImageHandler(object):
         for vacuum_point, map_point in zip(vacuum_points, map_points):
             calibration_point = {"vacuum": vacuum_point, "map": map_point}
             calibration_data.append(calibration_point)
-
+            # self.shared.attr_calibration_points = calibration_data
         return calibration_data
 
     async def async_copy_array(self, original_array):
+        _LOGGER.info(f"{self.shared.file_name}: Copying the array.")
         copied_array = np.copy(original_array)
-
         return copied_array
 
     async def calculate_array_hash(self, layers: None, active: None):
+        _LOGGER.info(f"{self.shared.file_name}: Calculating the hash of the image.")
         if layers and active:
             data_to_hash = {
                 "layers": len(layers["wall"][0]),
@@ -689,51 +680,20 @@ class MapImageHandler(object):
             hash_value = None
         return hash_value
 
-    async def numpy_array_to_svg(
-        self,
-        base_layer,
-        file_path,
-        colours_list,
-        color_background,
-        margins,
-        img_rotation,
-    ):
-        dwg = svgwrite.Drawing(file_path, profile="tiny", size=("640px", "480px"))
-        _LOGGER.debug("Trimming and rotating the Numpy data.")
-        swg_img_np = await self.auto_crop_and_trim_array(
-            base_layer,
-            color_background,
-            int(margins),
-            int(img_rotation),
-        )
-        _LOGGER.debug("Converting the NP array to Pil and resize it.")
+    async def async_trim_and_resize_image(self, base_layer, color_background,
+                                          margins, image_rotate):
+        swg_img_np = await self.async_auto_crop_and_trim_array(base_layer, color_background,
+                                                               margins, image_rotate)
         temp_png = Image.fromarray(swg_img_np, mode="RGBA")
-        del swg_img_np
         temp_png_resize = temp_png.resize((640, 480))
-        swg_img_np = np.array(temp_png_resize)
-        _LOGGER.debug("Check colours variation in the image.")
-        coordinates_data = self.data.extract_color_coordinates(swg_img_np, colours_list)
-        # _LOGGER.debug(f"data of colours changes: {coordinates_data}")
-        # Assuming each element in the NumPy array is part of the floor map
-        (
-            rows,
-            cols,
-            _,
-        ) = swg_img_np.shape  # Assuming RGBA values, hence the third dimension
-        _LOGGER.debug(f"{rows}, {cols}")
-        color_data = color_background
-        dwg.add(
-            shapes.Rect(
-                insert=(0, 0),
-                size=(cols, rows),
-                fill=f"rgb({color_data[0]}, {color_data[1]}, {color_data[2]})",
-            )
-        )
-        # Loop through the coordinates data and draw polylines or polygons
+        result = np.array(temp_png_resize)
+        return result
+
+    async def async_draw_shapes(self, dwg, coordinates_data):
         for color_data, coordinates_list in coordinates_data:
             # If there's only one point, draw a circle
             points_str = " ".join([f"{x},{y}" for x, y in coordinates_list])
-            points = [tuple(map(int, point.split(","))) for point in points_str.split()]
+            points = [tuple(map(int, point.split(','))) for point in points_str.split()]
             sorted_coordinates = sorted(points, key=lambda coord: coord[0])
             poly_points = self.simplify_polygon(sorted_coordinates)
             print(poly_points)
@@ -742,14 +702,8 @@ class MapImageHandler(object):
             if len(poly_points) == 1:
                 print("is Point", color_data)
                 x, y = poly_points[0]
-                dwg.add(
-                    dwg.circle(
-                        center=(int(x), int(y)),
-                        r=1,
-                        fill=f"rgb({color_data[0]}, "
-                        f"{color_data[1]}, {color_data[2]})",
-                    )
-                )
+                dwg.add(dwg.circle(center=(int(x), int(y)), r=1, fill=f'rgb({color_data[0]}, '
+                                                                      f'{color_data[1]}, {color_data[2]})'))
             else:
                 # If there are multiple points, check if it's a closed shape
                 is_closed = poly_points[0] == poly_points[-1]
@@ -758,23 +712,34 @@ class MapImageHandler(object):
                 if is_closed:
                     print("is Polygon:", color_data)
                     points = poly_points
-                    dwg.add(
-                        shapes.Polygon(
-                            points=points,
-                            fill=f"rgb({color_data[0]}, {color_data[1]},"
-                            f" {color_data[2]})",
-                        )
-                    )
+                    dwg.add(shapes.Polygon(points=points, fill=f'rgb({color_data[0]}, {color_data[1]},'
+                                                               f' {color_data[2]})'))
                 else:
                     print("is Polyline", color_data)
-                    dwg.add(
-                        shapes.Polyline(
-                            points=poly_points,
-                            fill="none",
-                            stroke=f"rgb({color_data[0]}, {color_data[1]}, {color_data[2]})",
-                        )
-                    )
+                    dwg.add(shapes.Polyline(points=poly_points,
+                                            fill='none',
+                                            stroke=f'rgb({color_data[0]}, {color_data[1]}, {color_data[2]})'))
 
+    async def async_numpy_array_to_svg(self,
+                                       base_layer,
+                                       colours_list,
+                                       color_background
+                                       ):
+        # Create an SVG image 640 * 480
+        dwg = svgwrite.Drawing(self.shared.svg_path, profile='tiny', size=('640px', '480px'))
+
+        # Define a separate async function for trimming and resizing the image
+        async def trim_and_resize_image_async():
+            return await self.async_trim_and_resize_image(base_layer,
+                                                          color_background,
+                                                          self.shared.margins,
+                                                          self.shared.image_rotate)
+
+        _LOGGER.debug("SVG from Numpy data start.")
+        trimmed_and_resized_image = await trim_and_resize_image_async()
+        coordinates_result = await self.data.async_extract_color_coordinates(trimmed_and_resized_image,
+                                                                             colours_list)
+        await self.async_draw_shapes(dwg, coordinates_result)
         dwg.save()
 
     @staticmethod

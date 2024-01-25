@@ -12,6 +12,7 @@ import zlib
 
 from homeassistant.components import mqtt
 from homeassistant.core import callback
+from homeassistant.helpers.storage import STORAGE_DIR
 
 from custom_components.valetudo_vacuum_camera.valetudo.valetudore.rrparser import (
     RRMapParser,
@@ -22,7 +23,7 @@ _QOS = 0
 
 
 class ValetudoConnector:
-    def __init__(self, mqtt_topic, hass):
+    def __init__(self, mqtt_topic, hass, camera_shared: None):
         self._hass = hass
         self._mqtt_topic = mqtt_topic
         self._unsubscribe_handlers = []
@@ -40,6 +41,7 @@ class ValetudoConnector:
         self._rrm_destinations = None
         self._mqtt_vac_re_stat = None
         self._rrm_data = RRMapParser()
+        self._shared = camera_shared
 
     async def update_data(self, process: bool = True):
         if self._img_payload:
@@ -107,7 +109,7 @@ class ValetudoConnector:
             elif self._rrm_payload:
                 file_data = self._rrm_payload
             with open(
-                str(os.getcwd()) + "/www/" + file_name + ".raw",
+                f"{str(os.getcwd())}/{STORAGE_DIR}/mqtt_{file_name}.raw",
                 "wb",
             ) as file:
                 file.write(file_data)

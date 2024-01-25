@@ -2,7 +2,7 @@
 Image Handler Module dor Valetudo Re Vacuums.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Last Changed on Version: 1.5.2
+Last Changed on Version: 1.5.7.1
 """
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ import uuid
 from PIL import Image
 import numpy as np
 
-from custom_components.valetudo_vacuum_camera.types import Color, Colors
+from custom_components.valetudo_vacuum_camera.types import Color
 from custom_components.valetudo_vacuum_camera.utils.colors_man import color_grey
 from custom_components.valetudo_vacuum_camera.utils.draweble import Drawable
 from custom_components.valetudo_vacuum_camera.utils.img_data import ImageData
@@ -23,30 +23,31 @@ _LOGGER = logging.getLogger(__name__)
 
 # noinspection PyTypeChecker
 class ReImageHandler(object):
-    def __init__(self):
-        self.auto_crop = None
-        self.calibration_data = None
-        self.charger_pos = None
-        self.crop_area = None
-        self.crop_img_size = None
-        self.data = ImageData
-        self.draw = Drawable
-        self.frame_number = 0
-        self.go_to = None
-        self.img_base_layer = None
-        self.img_rotate = 0
-        self.img_size = None
-        self.json_data = None
-        self.json_id = None
-        self.path_pixels = None
-        self.robot_in_room = None
-        self.robot_pos = None
-        self.room_propriety = None
-        self.rooms_pos = None
-        self.trim_down = None
-        self.trim_left = None
-        self.trim_right = None
-        self.trim_up = None
+    def __init__(self, camera_shared):
+        self.auto_crop = None  # Auto crop flag
+        self.calibration_data = None  # Calibration data
+        self.charger_pos = None  # Charger position
+        self.crop_area = None  # Crop area
+        self.crop_img_size = None  # Crop image size
+        self.data = ImageData  # Image Data
+        self.draw = Drawable  # Drawable
+        self.frame_number = 0  # Image Frame number
+        self.go_to = None  # Go to position data
+        self.img_base_layer = None  # Base image layer
+        self.img_rotate = 0  # Image rotation
+        self.img_size = None  # Image size
+        self.json_data = None  # Json data
+        self.json_id = None  # Json id
+        self.path_pixels = None  # Path pixels data
+        self.robot_in_room = None  # Robot in room data
+        self.robot_pos = None  # Robot position
+        self.room_propriety = None  # Room propriety data
+        self.rooms_pos = None  # Rooms position data
+        self.shared = camera_shared  # Shared data
+        self.trim_down = None  # Trim down
+        self.trim_left = None  # Trim left
+        self.trim_right = None  # Trim right
+        self.trim_up = None  # Trim up
 
     async def auto_crop_and_trim_array(
         self,
@@ -268,31 +269,26 @@ class ReImageHandler(object):
 
     async def get_image_from_rrm(
         self,
-        m_json,
-        img_rotation: int = 0,
-        margins: int = 150,
-        user_colors: Colors = None,
-        rooms_colors: Color = None,
-        file_name: "" = None,
-        destinations: None = None,
-        drawing_limit: float = 0.0,
+        m_json,  # json data
+        destinations: None = None,  # MQTT destinations for labels
+        # drawing_limit: float = 0.0,
     ):
-        color_wall: Color = user_colors[0]
-        color_no_go: Color = user_colors[6]
-        color_go_to: Color = user_colors[7]
-        color_robot: Color = user_colors[2]
-        color_charger: Color = user_colors[5]
-        color_move: Color = user_colors[4]
-        color_background: Color = user_colors[3]
-        color_zone_clean: Color = user_colors[1]
+        color_wall: Color = self.shared.user_colors[0]
+        color_no_go: Color = self.shared.user_colors[6]
+        color_go_to: Color = self.shared.user_colors[7]
+        color_robot: Color = self.shared.user_colors[2]
+        color_charger: Color = self.shared.user_colors[5]
+        color_move: Color = self.shared.user_colors[4]
+        color_background: Color = self.shared.user_colors[3]
+        color_zone_clean: Color = self.shared.user_colors[1]
 
         try:
             if m_json is not None:
-                _LOGGER.info(file_name + ":Composing the image for the camera.")
+                _LOGGER.info(self.shared.file_name + ":Composing the image for the camera.")
                 # buffer json data
                 self.json_data = m_json
                 if self.room_propriety:
-                    _LOGGER.info(file_name + ": Supporting Rooms Cleaning!")
+                    _LOGGER.info(self.shared.file_name + ": Supporting Rooms Cleaning!")
                 size_x, size_y = self.data.get_rrm_image_size(m_json)
                 ##########################
                 self.img_size = {
@@ -352,11 +348,11 @@ class ReImageHandler(object):
                 pixel_size = 5
                 room_id = 0
                 if self.frame_number == 0:
-                    _LOGGER.info(file_name + ": Empty image with background color")
+                    _LOGGER.info(self.shared.file_name + ": Empty image with background color")
                     img_np_array = await self.draw.create_empty_image(
                         5120, 5120, color_background
                     )
-                    _LOGGER.info(file_name + ": Overlapping Layers")
+                    _LOGGER.info(self.shared.file_name + ": Overlapping Layers")
                     # this below are floor data
                     pixels = self.data.from_rrm_to_compressed_pixels(
                         floor_data,
@@ -370,7 +366,7 @@ class ReImageHandler(object):
                         m_json, size_x, size_y, pos_top, pos_left
                     )
                     if (segments and pixels) or pixels:
-                        room_color = rooms_colors[room_id]
+                        room_color = self.shared.rooms_colors[room_id]
                         # drawing floor
                         if pixels:
                             img_np_array = await self.draw.from_json_to_image(
@@ -382,12 +378,12 @@ class ReImageHandler(object):
                                 room_id += 1
                                 if room_id > 15:
                                     room_id = 0
-                                room_color = rooms_colors[room_id]
+                                room_color = self.shared.rooms_colors[room_id]
                                 img_np_array = await self.draw.from_json_to_image(
                                     img_np_array, pixels, pixel_size, room_color
                                 )
 
-                    _LOGGER.info(file_name + ": Completed floor Layers")
+                    _LOGGER.info(self.shared.file_name + ": Completed floor Layers")
                     # Drawing walls.
                     walls = self.data.from_rrm_to_compressed_pixels(
                         walls_data,
@@ -400,7 +396,7 @@ class ReImageHandler(object):
                         img_np_array = await self.draw.from_json_to_image(
                             img_np_array, walls, pixel_size, color_wall
                         )
-                        _LOGGER.info(file_name + ": Completed base Layers")
+                        _LOGGER.info(self.shared.file_name + ": Completed base Layers")
                     if (room_id > 0) and not self.room_propriety:
                         self.room_propriety = await self.get_rooms_attributes(
                             destinations
@@ -417,7 +413,7 @@ class ReImageHandler(object):
                 # If there is a zone clean we draw it now.
                 self.frame_number += 1
                 img_np_array = await self.async_copy_array(self.img_base_layer)
-                _LOGGER.debug(file_name + ": Frame number %s", self.frame_number)
+                _LOGGER.debug(self.shared.file_name + ": Frame number %s", self.frame_number)
                 if self.frame_number > 5:
                     self.frame_number = 0
                 # All below will be drawn each time
@@ -467,17 +463,17 @@ class ReImageHandler(object):
                         robot_position[1],
                         robot_position_angle,
                         color_robot,
-                        file_name,
+                        self.shared.file_name
                     )
                 _LOGGER.debug(
-                    file_name + " Auto cropping the image with rotation: %s",
-                    int(img_rotation),
+                    self.shared.file_name + " Auto cropping the image with rotation: %s",
+                    int(self.shared.image_rotate),
                 )
                 img_np_array = await self.auto_crop_and_trim_array(
                     img_np_array,
                     color_background,
-                    int(margins),
-                    int(img_rotation),
+                    int(self.shared.margins),
+                    int(self.shared.image_rotate),
                 )
                 pil_img = Image.fromarray(img_np_array, mode="RGBA")
                 del img_np_array  # unload memory
@@ -485,7 +481,7 @@ class ReImageHandler(object):
 
         except Exception as e:
             _LOGGER.warning(
-                f"{file_name} : Error in get_image_from_json: {e}", exc_info=True
+                f"{self.shared.file_name} : Error in get_image_from_json: {e}", exc_info=True
             )
             return None
 
@@ -638,5 +634,6 @@ class ReImageHandler(object):
             return self.calibration_data
 
     async def async_copy_array(self, original_array):
+        _LOGGER.debug(f"{self.shared.file_name}: Copying the array.")
         copied_array = np.copy(original_array)
         return copied_array

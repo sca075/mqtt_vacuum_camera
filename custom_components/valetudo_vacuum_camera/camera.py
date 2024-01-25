@@ -1,5 +1,5 @@
 """
-Camera Version 1.5.7 (threading implemented 50%)
+Camera Version 1.5.7.1 (threading implemented 100%)
 Valetudo Hypfer and rand256 Firmwares Vacuums maps.
 From PI4 up to all other Home Assistant supported platforms.
 """
@@ -26,7 +26,7 @@ from homeassistant.helpers.typing import (
     DiscoveryInfoType,
     HomeAssistantType,
 )
-import psutil_home_assistant as proc_insp
+from psutil_home_assistant import PsutilWrapper as ProcInsp
 import voluptuous as vol
 
 from custom_components.valetudo_vacuum_camera.camera_shared import CameraShared
@@ -101,7 +101,7 @@ from .const import (
 )
 from .snapshots.snapshot import Snapshots
 from .utils.colors_man import add_alpha_to_rgb
-from .valetudo.valetudore.image_handler import ReImageHandler
+
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
@@ -164,12 +164,12 @@ class ValetudoCamera(Camera):
             self.log_file = (
                 f"{self._directory_path}/www/snapshot_{self._shared.file_name}.zip"
             )
-            self.svg_file = f"{self._directory_path}/www/{self._shared.file_name}.svg"
+            self._shared.svg_path = f"{self._directory_path}/www/{self._shared.file_name}.svg"
             self._attr_unique_id = device_info.get(
                 CONF_UNIQUE_ID,
                 get_vacuum_unique_id_from_mqtt_topic(self._mqtt_listen_topic),
             )
-        self._mqtt = ValetudoConnector(self._mqtt_listen_topic, self.hass)
+        self._mqtt = ValetudoConnector(self._mqtt_listen_topic, self.hass, self._shared)
         self._identifiers = device_info.get(CONF_VACUUM_IDENTIFIERS)
         self._image = None
         self._processing = False
@@ -177,7 +177,6 @@ class ValetudoCamera(Camera):
         self._image_w = None
         self._image_h = None
         self._should_poll = False
-        self._re_handler = ReImageHandler()
         self._attr_frame_interval = 1
         self._vac_json_available = None
         self._shared.attr_calibration_points = None
@@ -429,23 +428,24 @@ class ValetudoCamera(Camera):
                 # grab the image
                 self._shared.image_grab = True
                 self._shared.frame_number = self.processor.get_frame_number()
-                # when the vacuum goes / is in idle, error or docked
-                # take the snapshot.
+                # when the vacuum goes / is in cleaning, moving or returning
+                # do not take the automatic snapshot.
                 self._shared.snapshot_take = False
                 _LOGGER.info(
                     f"{self._shared.file_name}: Camera image data update available: {process_data}"
                 )
-            # calculate the cycle time for frame adjustment
+            # to calculate the cycle time for frame adjustment.
             start_time = datetime.now()
             pid = os.getpid()  # Start to log the CPU usage of this PID.
-            proc = proc_insp.PsutilWrapper().psutil.Process(pid)  # Get the process PID.
+            proc = ProcInsp().psutil.Process(pid)  # Get the process PID.
             self._cpu_percent = round(
-                (proc.cpu_percent() / proc_insp.PsutilWrapper().psutil.cpu_count()) / 2,
+                (proc.cpu_percent() / ProcInsp().psutil.cpu_count()) / 2,
                 2,
             )
             try:
                 parsed_json = await self._mqtt.update_data(self._shared.image_grab)
                 if parsed_json[1]:
+                    self._shared.is_rand = True
                     self._rrm_data = parsed_json[0]
                 else:
                     parsed_json = parsed_json[0]
@@ -462,21 +462,16 @@ class ValetudoCamera(Camera):
             else:
                 # Just in case, let's check that the data is available
                 pid = os.getpid()  # Start to log the CPU usage of this PID.
-                proc = proc_insp.PsutilWrapper().psutil.Process(
-                    pid
-                )  # Get the process PID.
+                proc = ProcInsp().psutil.Process(pid)  # Get the process PID.
                 self._cpu_percent = round(
-                    (proc.cpu_percent() / proc_insp.PsutilWrapper().psutil.cpu_count())
-                    / 2,
+                    (proc.cpu_percent() / ProcInsp().psutil.cpu_count()) / 2,
                     2,
-                )
-                _LOGGER.debug(
-                    f"{self._shared.file_name} System CPU usage stat (1/2): {self._cpu_percent}%"
                 )
                 if parsed_json is not None:
                     if self._rrm_data:
+                        self._shared.destinations = await self._mqtt.get_destinations()
                         pil_img = await self.hass.async_create_task(
-                            self.process_rand256_data(parsed_json)
+                            self.processor.run_async_process_valetudo_data(self._rrm_data)
                         )
                     elif self._rrm_data is None:
                         pil_img = await self.hass.async_create_task(
@@ -504,7 +499,10 @@ class ValetudoCamera(Camera):
                     self._image = bytes_data
                     # take a snapshot if we meet the conditions.
                     if self._shared.snapshot_take:
-                        await self.take_snapshot(parsed_json, pil_img)
+                        if self._shared.is_rand:
+                            await self.take_snapshot(self._rrm_data, pil_img)
+                        else:
+                            await self.take_snapshot(parsed_json, pil_img)
                     # clean up
                     del buffered, pil_img, bytes_data
                     _LOGGER.debug(f"{self._shared.file_name}: Image update complete")
@@ -523,7 +521,7 @@ class ValetudoCamera(Camera):
                 self._cpu_percent = round(
                     (
                         (self._cpu_percent + proc.cpu_percent())
-                        / proc_insp.PsutilWrapper().psutil.cpu_count()
+                        / ProcInsp().psutil.cpu_count()
                     )
                     / 2,
                     2,
@@ -531,90 +529,19 @@ class ValetudoCamera(Camera):
                 memory_percent = round(
                     (
                         (proc.memory_info()[0] / 2.0**30)
-                        / (
-                            proc_insp.PsutilWrapper().psutil.virtual_memory().total
-                            / 2.0**30
-                        )
+                        / (ProcInsp().psutil.virtual_memory().total / 2.0**30)
                     )
                     * 100,
                     2,
                 )
                 _LOGGER.debug(
-                    f"{self._shared.file_name} System CPU usage stat (2/2): {self._cpu_percent}%"
+                    f"{self._shared.file_name} System CPU usage stat: {self._cpu_percent}%"
                 )
                 _LOGGER.debug(
                     f"{self._shared.file_name} Camera Memory usage in GB: "
                     f"{round(proc.memory_info()[0]/2.**30, 2)}, "
                     f"{memory_percent}% of Total."
                 )
-                self._cpu_percent = (
-                    proc.cpu_percent() / proc_insp.PsutilWrapper().psutil.cpu_count()
-                )
+                self._cpu_percent = proc.cpu_percent() / ProcInsp().psutil.cpu_count()
                 self._processing = False
-                # threading.Thread(target=self.async_update).start()
                 return self._image
-
-    # let's separate the vacuums:
-    async def process_rand256_data(self, parsed_json):
-        if parsed_json is not None:
-            destinations = await self._mqtt.get_destinations()
-            pil_img = await self._re_handler.get_image_from_rrm(
-                m_json=self._rrm_data,
-                img_rotation=self._shared.image_rotate,
-                margins=self._shared.margins,
-                user_colors=self._shared.get_user_colors(),
-                rooms_colors=self._shared.get_rooms_colors(),
-                file_name=self._shared.file_name,
-                destinations=destinations,
-                drawing_limit=self._cpu_percent,
-            )
-
-            if pil_img is not None:
-                if self._shared.map_rooms is None:
-                    destinations = await self._mqtt.get_destinations()
-                    if destinations is not None:
-                        (
-                            self._shared.map_rooms,
-                            self._shared.map_pred_zones,
-                            self._shared.map_pred_points,
-                        ) = await self._re_handler.get_rooms_attributes(destinations)
-                    if self._shared.map_rooms:
-                        _LOGGER.debug(
-                            f"State attributes rooms update: {self._shared.map_rooms}"
-                        )
-                if self._shared.show_vacuum_state:
-                    self.processor.status_text(
-                        pil_img,
-                        50,
-                        self._shared.user_colors[8],
-                        self._shared.file_name + ": " + self._shared.vacuum_state,
-                    )
-
-                if self._shared.attr_calibration_points is None:
-                    self._shared.attr_calibration_points = (
-                        self._re_handler.get_calibration_data(self._shared.image_rotate)
-                    )
-
-                self._shared.vac_json_id = self._re_handler.get_json_id()
-                if not self._shared.charger_position:
-                    self._shared.charger_position = (
-                        self._re_handler.get_charger_position()
-                    )
-                self._shared.current_room = self._re_handler.get_robot_position()
-                if not self._shared.image_size:
-                    self._shared.image_size = self._re_handler.get_img_size()
-
-                if not self._shared.snapshot_take and (
-                    self._shared.vacuum_state == "idle"
-                    or self._shared.vacuum_state == "docked"
-                    or self._shared.vacuum_state == "error"
-                ):
-                    # suspend image processing if we are at the next frame.
-                    _LOGGER.info(
-                        f"Suspended the camera data processing for: {self._shared.file_name}."
-                    )
-                    # take a snapshot
-                    await self.take_snapshot(self._rrm_data, pil_img)
-                    self._shared.image_grab = False
-            return pil_img
-        return None

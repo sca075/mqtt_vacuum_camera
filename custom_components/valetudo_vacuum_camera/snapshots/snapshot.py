@@ -78,7 +78,7 @@ class Snapshots:
                 zf.write(log_file_name, os.path.basename(log_file_name))
 
                 # Check if the file_name.raw exists
-                raw_file_name = os.path.join(self.storage_path, file_name + ".raw")
+                raw_file_name = os.path.join(self.storage_path, f"mqtt_{file_name}.raw")
                 if os.path.exists(raw_file_name):
                     # Add the .raw file to the ZIP archive
                     zf.write(raw_file_name, os.path.basename(raw_file_name))

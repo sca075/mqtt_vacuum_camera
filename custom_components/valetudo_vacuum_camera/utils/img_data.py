@@ -16,7 +16,7 @@ _LOGGER = logging.getLogger(__name__)
 class ImageData:
 
     @staticmethod
-    def extract_color_coordinates(source_array, search_for_colours_list):
+    async def async_extract_color_coordinates(source_array, search_for_colours_list):
 
         # Initialize an empty list to store color and coordinates tuples
         color_coordinates_list = []
