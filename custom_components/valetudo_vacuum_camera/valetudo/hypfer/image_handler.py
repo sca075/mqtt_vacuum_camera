@@ -2,7 +2,7 @@
 Image Handler Module.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Last Changed on Version: 1.5.6.1
+Last Changed on Version: 1.5.7
 """
 from __future__ import annotations
 
@@ -13,7 +13,6 @@ import logging
 from PIL import Image
 import numpy as np
 import svgwrite
-# from multiprocessing import Process, Queue
 from svgwrite import shapes
 
 from custom_components.valetudo_vacuum_camera.types import Color, Colors
@@ -27,49 +26,30 @@ _LOGGER = logging.getLogger(__name__)
 # noinspection PyTypeChecker,PyUnboundLocalVariable,PyUnresolvedReferences
 class MapImageHandler(object):
     def __init__(self):
-        self.auto_crop = None
-        self.calibration_data = None
-        self.charger_pos = None
-        self.crop_area = None
-        self.crop_img_size = None
-        self.data = ImageData
-        self.draw = Drawable
-        self.frame_number = 0
-        self.go_to = None
-        self.img_hash = None
-        self.img_base_layer = None
-        self.img_rotate = 0
-        self.img_size = None
-        self.json_data = None
-        self.json_id = None
-        self.path_pixels = None
-        self.robot_in_room = None
-        self.robot_pos = None
-        self.room_propriety = None
-        self.rooms_pos = None
-        self.trim_down = None
-        self.trim_left = None
-        self.trim_right = None
-        self.trim_up = None
-
-    # async def process_image_multiprocessing(
-    #         self,
-    #         image_array,
-    #         detect_colour,
-    #         margin_size,
-    #         rotate,
-    #         result_queue):
-    #
-    #     try:
-    #         pil_img = await self.auto_crop_and_trim_array(
-    #             image_array,
-    #             detect_colour,
-    #             margin_size,
-    #             rotate
-    #         )
-    #         result_queue.put(pil_img)
-    #     except Exception as e:
-    #         result_queue.put(None)
+        self.auto_crop = None  # auto crop data to be calculate once.
+        self.calibration_data = None  # camera shared data.
+        self.charger_pos = None  # vacuum data charger position.
+        self.crop_area = None  # module shared for calibration data.
+        self.crop_img_size = None  # size of the image cropped calibration data.
+        self.data = ImageData  # imported Image Data Module.
+        self.draw = Drawable  # imported Drawing utilities
+        self.frame_number = 0  # image frame number
+        self.go_to = None  # vacuum go to data
+        self.img_hash = None  # hash of the image calculated to check differences.
+        self.img_base_layer = None  # numpy array store the map base layer.
+        self.img_rotate = 0  # rotation to apply to the image.
+        self.img_size = None  # size of the created image
+        self.json_data = None  # local stored and shared json data.
+        self.json_id = None  # grabbed data of the vacuum image id.
+        self.path_pixels = None  # vacuum path datas.
+        self.robot_in_room = None  # vacuum room position.
+        self.robot_pos = None  # vacuum coordinates.
+        self.room_propriety = None  # vacuum segments data.
+        self.rooms_pos = None  # vacuum room coordinates / name list.
+        self.trim_down = None  # memory stored trims calculated once.
+        self.trim_left = None  # memory stored trims calculated once.
+        self.trim_right = None  # memory stored trims calculated once.
+        self.trim_up = None  # memory stored trims calculated once.
 
     async def auto_crop_and_trim_array(
         self,
@@ -85,8 +65,6 @@ class MapImageHandler(object):
             _LOGGER.debug(
                 f"Image original size: {image_array.shape[1]}, {image_array.shape[0]}"
             )
-            center_x = image_array.shape[1] // 2
-            center_y = image_array.shape[0] // 2
             # Find the coordinates of the first occurrence of a non-background color
             nonzero_coords = np.column_stack(
                 np.where(image_array != list(detect_colour))
@@ -114,15 +92,6 @@ class MapImageHandler(object):
             # Calculate the dimensions after trimming using min/max values
             trimmed_width = max(0, self.trim_right - self.trim_left)
             trimmed_height = max(0, self.trim_down - self.trim_up)
-            trim_r = image_array.shape[1] - self.trim_right
-            trim_d = image_array.shape[0] - self.trim_down
-            trim_l = image_array.shape[1] - self.trim_left
-            trim_u = image_array.shape[0] - self.trim_up
-            _LOGGER.debug(
-                "Calculated trims values for right {}, bottom {}, left {} and up {}.".format(
-                    trim_r, trim_d, trim_l, trim_u
-                )
-            )
             _LOGGER.debug(
                 "Calculated trim width {} and trim height {}".format(
                     trimmed_width, trimmed_height
@@ -141,25 +110,7 @@ class MapImageHandler(object):
                 self.img_size = (image_array.shape[1], image_array.shape[0])
                 del trimmed_width, trimmed_height
                 return image_array
-            # Calculate the cropping sizes after that the trim is apply
-            crop_area = trimmed_height * trimmed_width
-            origin_area = image_array.shape[1] * image_array.shape[0]
-            crop_percentage = 100 - round((origin_area / crop_area), 2)
-            crop_size = (int(min(center_x, center_y) * crop_percentage) / 100) / 100
-            _LOGGER.debug(
-                "Calculated image reduction of {:.2f}% with crop size {:.2f}%".format(
-                    crop_percentage, crop_size
-                )
-            )
-            del (
-                crop_size,
-                crop_percentage,
-                origin_area,
-                crop_area,
-                trimmed_width,
-                trimmed_height,
-            )
-            del center_x, center_y, trim_d, trim_u, trim_l, trim_r
+
             # Store Crop area of the original image_array we will use from the next frame.
             self.auto_crop = (
                 self.trim_left,
@@ -506,7 +457,7 @@ class MapImageHandler(object):
                     if export_svg:
                         await self.numpy_array_to_svg(
                             self.img_base_layer,
-                            "test.svg",
+                            f"{file_name}.svg",
                             rooms_list,
                             color_background,
                             margins,
@@ -564,22 +515,6 @@ class MapImageHandler(object):
                         color_robot,
                         file_name,
                     )
-                # image_process = Process(
-                #     target=self.process_image_multiprocessing,
-                #     args=(img_np_array, color_background, int(margins), int(img_rotation), result_queue)
-                # )
-                # image_process.start()
-                # # Wait for the image processing to finish
-                # image_process.join()
-                #
-                # # Get the result from the queue
-                # processed_image = result_queue.get()
-                #
-                # # Close the image process
-                # image_process.close()
-                #
-                # # Continue with the rest of your method...
-
                 _LOGGER.debug(
                     f"{file_name}: Auto cropping the image with rotation: {int(img_rotation)}"
                 )

@@ -1,11 +1,13 @@
 """
 Class Camera Shared.
 Keep the data between the modules.
-Version 1.5.6.2
+Version 1.5.7
 """
 
 import logging
+
 from custom_components.valetudo_vacuum_camera.types import Colors
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -22,7 +24,7 @@ class CameraShared(object):
         self.vacuum_state = None
         self.charger_position = None
         self.show_vacuum_state = None
-        self.snapshot_taken = False
+        self.snapshot_take = False
         self.vacuum_error = None
         self.vac_json_id = None
         self.margins = None
