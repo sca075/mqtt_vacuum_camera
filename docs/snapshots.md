@@ -49,7 +49,7 @@ log debug function in HA is active ***(we don't store any data in the www folder
 
 Once enabled the Debug log in the home assistant GUI home assistant collect the logs of the camera and other intregrations and add-on's in the instance.
 
-##Example Home Assistant log.##
+## Example Home Assistant log. ##
 ```log
 2024-01-26 09:27:39.930 DEBUG (MainThread) [custom_components.valetudo_vacuum_camera.camera] glossyhardtofindnarwhal System CPU usage stat (1/2): 0.0%
 2024-01-26 09:27:39.930 INFO (MainThread) [custom_components.valetudo_vacuum_camera.camera] glossyhardtofindnarwhal: Image not processed. Returning not updated image.
@@ -72,7 +72,7 @@ And then download it with the file editor of your coise or via SAMBA add-on.
 
 The filtered logs will be as per the example below not containing other integrations or add-on logs such as androidtv, custom_components.localtuya (see above) only the custom_components.valetudo_vacuum_camera logs are exported.. 
 
-##Example Valetudo Camera log.##
+## Example Valetudo Camera log. ##
 ```log
 2024-01-26 09:27:39.930 DEBUG (MainThread) [custom_components.valetudo_vacuum_camera.camera] glossyhardtofindnarwhal System CPU usage stat (1/2): 0.0%
 2024-01-26 09:27:39.930 INFO (MainThread) [custom_components.valetudo_vacuum_camera.camera] glossyhardtofindnarwhal: Image not processed. Returning not updated image.
