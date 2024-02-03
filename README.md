@@ -104,5 +104,6 @@ Via [HACS](https://hacs.xyz//setup/download) please follow. The instructions in 
 - [@Skeletorjus](https://github.com/Skeletorjus) that using this integration gave us several ideas to improve it.
 - [@rohankapoorcom](https://github.com/rohankapoorcom) autor of the v1.4.0 that make really easy to set up this integration.
 - [@gunjambi](https://github.com/gunjambi) that found a solution to re-draw the robot and also implemented the snapshots png to be enabled or disabled from the options.
+- [@T0ytoy](https://github.com/T0ytoy) for the amazing cooperation in testing our Camera that improved [using the threading](https://github.com/sca075/valetudo_vacuum_camera/discussions/71).
 - And to all of you using this integration and reporting any issues, improvements and vacuums used with it.
 
