@@ -17,7 +17,7 @@ class CameraShared(object):
         self.destinations: list = []  # MQTT rand destinations
         self.is_rand: bool = False  # MQTT rand data
         self._new_mqtt_message = False  # New MQTT message
-        self._last_image = None  # Last image received
+        self.last_image = None  # Last image received
         self.image_size = None  # Image size
         self.image_grab = True  # Grab image from MQTT
         self.image_rotate: int = 0  # Rotate image

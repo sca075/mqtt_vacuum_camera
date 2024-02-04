@@ -6,11 +6,13 @@ From PI4 up to all other Home Assistant supported platforms.
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+import time
+from datetime import timedelta
 from io import BytesIO
 import json
 import logging
 import os
+import gc
 from typing import Optional
 
 from PIL import Image
@@ -272,6 +274,8 @@ class ValetudoCamera(Camera):
         except (ValueError, IndexError, UnboundLocalError) as e:
             _LOGGER.error("Error while populating colors: %s", e)
         self.processor = CameraProcessor(self._shared)
+        gc.set_debug(True)
+        gc.DEBUG_LEAK.conjugate()
 
     async def async_added_to_hass(self) -> None:
         """Handle entity added toHome Assistant."""
@@ -302,9 +306,11 @@ class ValetudoCamera(Camera):
         return self._attr_name
 
     def turn_on(self):
+
         self._should_poll = True
 
     def turn_off(self):
+        gc.collect(2)
         self._should_poll = False
 
     @property
@@ -418,130 +424,138 @@ class ValetudoCamera(Camera):
         self._shared.vacuum_state = await self._mqtt.get_vacuum_status()
         process_data = await self._mqtt.is_data_available(self._processing)
         if process_data:
-            self._processing = True
-            # if the vacuum is working, or it is the first image.
-            if (
-                self._shared.vacuum_state == "cleaning"
-                or self._shared.vacuum_state == "moving"
-                or self._shared.vacuum_state == "returning"
-            ):
-                # grab the image
-                self._shared.image_grab = True
-                self._shared.frame_number = self.processor.get_frame_number()
-                # when the vacuum goes / is in cleaning, moving or returning
-                # do not take the automatic snapshot.
-                self._shared.snapshot_take = False
-                _LOGGER.info(
-                    f"{self._shared.file_name}: Camera image data update available: {process_data}"
-                )
-            # to calculate the cycle time for frame adjustment.
-            start_time = datetime.now()
-            pid = os.getpid()  # Start to log the CPU usage of this PID.
-            proc = ProcInsp().psutil.Process(pid)  # Get the process PID.
-            self._cpu_percent = round(
-                (proc.cpu_percent() / ProcInsp().psutil.cpu_count()) / 2,
-                2,
-            )
-            try:
-                parsed_json = await self._mqtt.update_data(self._shared.image_grab)
-                if parsed_json[1]:
-                    self._shared.is_rand = True
-                    self._rrm_data = parsed_json[0]
-                else:
-                    parsed_json = parsed_json[0]
-                    self._rrm_data = None
-                # Below bypassed code is for debug purpose only
-                #########################################################
-                # parsed_json = await self.load_test_json(
-                #     "custom_components/valetudo_vacuum_camera/snapshots/test.json")
-                ##########################################################
-                self._vac_json_available = "Success"
-            except ValueError:
-                self._vac_json_available = "Error"
-                pass
+            if self._cpu_percent is not None and self._cpu_percent > 80:
+                self._processing = False
+                self._image = self._shared.last_image
+                return self._image
             else:
-                # Just in case, let's check that the data is available
+                self._processing = True
+                # if the vacuum is working, or it is the first image.
+                if (
+                    self._shared.vacuum_state == "cleaning"
+                    or self._shared.vacuum_state == "moving"
+                    or self._shared.vacuum_state == "returning"
+                ):
+                    # grab the image
+                    self._shared.image_grab = True
+                    self._shared.frame_number = self.processor.get_frame_number()
+                    # when the vacuum goes / is in cleaning, moving or returning
+                    # do not take the automatic snapshot.
+                    self._shared.snapshot_take = False
+                    _LOGGER.info(
+                        f"{self._shared.file_name}: Camera image data update available: {process_data}"
+                    )
+                # to calculate the cycle time for frame adjustment.
+                start_time = time.perf_counter()
                 pid = os.getpid()  # Start to log the CPU usage of this PID.
                 proc = ProcInsp().psutil.Process(pid)  # Get the process PID.
                 self._cpu_percent = round(
                     (proc.cpu_percent() / ProcInsp().psutil.cpu_count()) / 2,
                     2,
                 )
-                if parsed_json is not None:
-                    if self._rrm_data:
-                        self._shared.destinations = await self._mqtt.get_destinations()
-                        pil_img = await self.hass.async_create_task(
-                            self.processor.run_async_process_valetudo_data(self._rrm_data)
-                        )
-                    elif self._rrm_data is None:
-                        pil_img = await self.hass.async_create_task(
-                            self.processor.run_async_process_valetudo_data(parsed_json)
-                        )
+                try:
+                    parsed_json = await self._mqtt.update_data(self._shared.image_grab)
+                    if parsed_json[1]:
+                        self._shared.is_rand = True
+                        self._rrm_data = parsed_json[0]
                     else:
-                        # if no image was processed empty or last snapshot/frame
-                        pil_img = self.empty_if_no_data()
-                    # Converting the image obtained to bytes
-                    # Using openCV would reduce the CPU and memory usage.
-                    # On Py4 HA OS is not possible to install the openCV library.
-                    buffered = BytesIO()
-                    # backup the image
-                    if pil_img:
-                        self._last_image = pil_img
-                        self._image_w = pil_img.width
-                        self._image_h = pil_img.height
-                    else:
-                        pil_img = self.empty_if_no_data()
-                        self._last_image = None  # pil_img
-                        self._image_w = pil_img.width
-                        self._image_h = pil_img.height
-                    pil_img.save(buffered, format="PNG")
-                    bytes_data = buffered.getvalue()
-                    self._image = bytes_data
-                    # take a snapshot if we meet the conditions.
-                    if self._shared.snapshot_take:
-                        if self._shared.is_rand:
-                            await self.take_snapshot(self._rrm_data, pil_img)
-                        else:
-                            await self.take_snapshot(parsed_json, pil_img)
-                    # clean up
-                    del buffered, pil_img, bytes_data
-                    _LOGGER.debug(f"{self._shared.file_name}: Image update complete")
-                    processing_time = (datetime.now() - start_time).total_seconds()
-                    self._attr_frame_interval = max(0.1, processing_time)
-                    _LOGGER.debug(
-                        f"Adjusted {self._shared.file_name}: Frame interval: {self._attr_frame_interval}"
-                    )
+                        parsed_json = parsed_json[0]
+                        self._rrm_data = None
+                    # Below bypassed code is for debug purpose only
+                    #########################################################
+                    # parsed_json = await self.load_test_json(
+                    #     "custom_components/valetudo_vacuum_camera/snapshots/test.json")
+                    ##########################################################
+                    self._vac_json_available = "Success"
+                except ValueError:
+                    self._vac_json_available = "Error"
+                    pass
                 else:
-                    _LOGGER.info(
-                        f"{self._shared.file_name}: Image not processed. Returning not updated image."
+                    # Just in case, let's check that the data is available
+                    pid = os.getpid()  # Start to log the CPU usage of this PID.
+                    proc = ProcInsp().psutil.Process(pid)  # Get the process PID.
+                    self._cpu_percent = round(
+                        (proc.cpu_percent() / ProcInsp().psutil.cpu_count()) / 2,
+                        2,
                     )
-                    self._attr_frame_interval = 0.1
-                self.camera_image(self._image_w, self._image_h)
-                # HA supervised memory and CUP usage report.
-                self._cpu_percent = round(
-                    (
-                        (self._cpu_percent + proc.cpu_percent())
-                        / ProcInsp().psutil.cpu_count()
+                    if parsed_json is not None:
+                        if self._rrm_data:
+                            self._shared.destinations = await self._mqtt.get_destinations()
+                            pil_img = await self.hass.async_create_task(
+                                self.processor.run_async_process_valetudo_data(self._rrm_data)
+                            )
+                        elif self._rrm_data is None:
+                            pil_img = await self.hass.async_create_task(
+                                self.processor.run_async_process_valetudo_data(parsed_json)
+                            )
+                        else:
+                            # if no image was processed empty or last snapshot/frame
+                            pil_img = self.empty_if_no_data()
+                        # Converting the image obtained to bytes
+                        # Using openCV would reduce the CPU and memory usage.
+                        # On Py4 HA OS is not possible to install the openCV library.
+                        buffered = BytesIO()
+                        # backup the image
+                        if pil_img:
+                            self._last_image = pil_img
+                            self._image_w = pil_img.width
+                            self._image_h = pil_img.height
+                        else:
+                            pil_img = self.empty_if_no_data()
+                            self._last_image = None  # pil_img
+                            self._image_w = pil_img.width
+                            self._image_h = pil_img.height
+                        pil_img.save(buffered, format="PNG")
+                        bytes_data = buffered.getvalue()
+                        self._image = bytes_data
+                        self._shared.last_image = bytes_data
+                        # take a snapshot if we meet the conditions.
+                        if self._shared.snapshot_take:
+                            if self._shared.is_rand:
+                                await self.take_snapshot(self._rrm_data, pil_img)
+                            else:
+                                await self.take_snapshot(parsed_json, pil_img)
+                        # clean up
+                        del buffered, pil_img, bytes_data
+                        _LOGGER.debug(f"{self._shared.file_name}: Image update complete")
+                        processing_time = round((time.perf_counter() - start_time), 3)
+                        # Adjust the frame interval to the processing time.
+                        self._attr_frame_interval = max(0.1, processing_time)
+                        _LOGGER.debug(
+                            f"Adjusted {self._shared.file_name}: Frame interval: {self._attr_frame_interval}"
+                        )
+                        gc.collect(2)
+                    else:
+                        _LOGGER.info(
+                            f"{self._shared.file_name}: Image not processed. Returning not updated image."
+                        )
+                        self._attr_frame_interval = 0.1
+                    self.camera_image(self._image_w, self._image_h)
+                    # HA supervised memory and CUP usage report.
+                    self._cpu_percent = round(
+                        (
+                            (self._cpu_percent + proc.cpu_percent())
+                            / ProcInsp().psutil.cpu_count()
+                        )
+                        / 2,
+                        2,
                     )
-                    / 2,
-                    2,
-                )
-                memory_percent = round(
-                    (
-                        (proc.memory_info()[0] / 2.0**30)
-                        / (ProcInsp().psutil.virtual_memory().total / 2.0**30)
+                    memory_percent = round(
+                        (
+                            (proc.memory_info()[0] / 2.0**30)
+                            / (ProcInsp().psutil.virtual_memory().total / 2.0**30)
+                        )
+                        * 100,
+                        2,
                     )
-                    * 100,
-                    2,
-                )
-                _LOGGER.debug(
-                    f"{self._shared.file_name} System CPU usage stat: {self._cpu_percent}%"
-                )
-                _LOGGER.debug(
-                    f"{self._shared.file_name} Camera Memory usage in GB: "
-                    f"{round(proc.memory_info()[0]/2.**30, 2)}, "
-                    f"{memory_percent}% of Total."
-                )
-                self._cpu_percent = proc.cpu_percent() / ProcInsp().psutil.cpu_count()
-                self._processing = False
-                return self._image
+                    _LOGGER.debug(
+                        f"{self._shared.file_name} System CPU usage stat: {self._cpu_percent}%"
+                    )
+                    _LOGGER.debug(
+                        f"{self._shared.file_name} Camera Memory usage in GB: "
+                        f"{round(proc.memory_info()[0]/2.**30, 2)}, "
+                        f"{memory_percent}% of Total."
+                    )
+                    self._cpu_percent = proc.cpu_percent() / ProcInsp().psutil.cpu_count()
+                    self._processing = False
+                    return self._image

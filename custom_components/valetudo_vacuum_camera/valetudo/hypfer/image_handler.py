@@ -9,19 +9,28 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import os
+import gc
 
 from PIL import Image
 import numpy as np
 import svgwrite
 from svgwrite import shapes
+from psutil_home_assistant import PsutilWrapper as ProcInspector
 
 from custom_components.valetudo_vacuum_camera.types import Color
-from custom_components.valetudo_vacuum_camera.valetudo.hypfer.handler_pocessor import ImageHandlerProcessor
 from custom_components.valetudo_vacuum_camera.utils.colors_man import color_grey
 from custom_components.valetudo_vacuum_camera.utils.draweble import Drawable
 from custom_components.valetudo_vacuum_camera.utils.img_data import ImageData
 
 _LOGGER = logging.getLogger(__name__)
+
+
+# Custom exception for memory shortage
+class MemoryShortageError(Exception):
+    def __init__(self, message="Not enough memory available"):
+        self.message = message
+        super().__init__(self.message)
 
 
 # noinspection PyTypeChecker,PyUnboundLocalVariable,PyUnresolvedReferences
@@ -52,7 +61,6 @@ class MapImageHandler(object):
         self.trim_left = None  # memory stored trims calculated once.
         self.trim_right = None  # memory stored trims calculated once.
         self.trim_up = None  # memory stored trims calculated once.
-        self._processor = ImageHandlerProcessor(self.shared)  # imported Camera Processor Module.
 
     async def async_auto_crop_and_trim_array(
         self,
@@ -64,95 +72,99 @@ class MapImageHandler(object):
         """
         Automatically crops and trims a numpy array and returns the processed image.
         """
-        if not self.auto_crop:
-            _LOGGER.debug(
-                f"{self.shared.file_name}: Image original size ({image_array.shape[1]}, {image_array.shape[0]})."
-            )
-            # Find the coordinates of the first occurrence of a non-background color
-            nonzero_coords = np.column_stack(
-                np.where(image_array != list(detect_colour))
-            )
-            # Calculate the crop box based on the first and last occurrences
-            min_y, min_x, dummy = np.min(nonzero_coords, axis=0)
-            max_y, max_x, dummy = np.max(nonzero_coords, axis=0)
-            del dummy, nonzero_coords
-            _LOGGER.debug(
-                "{}: Found crop max and min values (y,x) ({}, {}) ({},{})...".format(
-                    self.shared.file_name, int(max_y), int(max_x), int(min_y), int(min_x)
+        try:
+            if not self.auto_crop:
+                _LOGGER.debug(
+                    f"{self.shared.file_name}: Image original size ({image_array.shape[1]}, {image_array.shape[0]})."
                 )
-            )
-            # Calculate and store the trims coordinates with margins
-            self.trim_left = int(min_x) - margin_size
-            self.trim_up = int(min_y) - margin_size
-            self.trim_right = int(max_x) + margin_size
-            self.trim_down = int(max_y) + margin_size
-            del min_y, min_x, max_x, max_y
-            _LOGGER.debug(
-                "{}: Calculated trims coordinates right {}, bottom {}, left {}, up {}.".format(
-                    self.shared.file_name, self.trim_right, self.trim_down, self.trim_left, self.trim_up
+                # Find the coordinates of the first occurrence of a non-background color
+                nonzero_coords = np.column_stack(
+                    np.where(image_array != list(detect_colour))
                 )
-            )
-            # Calculate the dimensions after trimming using min/max values
-            trimmed_width = max(0, self.trim_right - self.trim_left)
-            trimmed_height = max(0, self.trim_down - self.trim_up)
-            _LOGGER.debug(
-                "{}: Calculated trimmed image width {} and height {}".format(
-                    self.shared.file_name, trimmed_width, trimmed_height
+                # Calculate the crop box based on the first and last occurrences
+                min_y, min_x, dummy = np.min(nonzero_coords, axis=0)
+                max_y, max_x, dummy = np.max(nonzero_coords, axis=0)
+                del dummy, nonzero_coords
+                _LOGGER.debug(
+                    "{}: Found crop max and min values (y,x) ({}, {}) ({},{})...".format(
+                        self.shared.file_name, int(max_y), int(max_x), int(min_y), int(min_x)
+                    )
                 )
-            )
-            # Test if the trims are okay or not
-            if trimmed_height <= margin_size or trimmed_width <= margin_size:
-                _LOGGER.debug(f"{self.shared.file_name}: Background colour not detected at rotation {rotate}.")
-                pos_0 = 0
-                self.crop_area = (
-                    pos_0,
-                    pos_0,
-                    image_array.shape[1],
-                    image_array.shape[0],
+                # Calculate and store the trims coordinates with margins
+                self.trim_left = int(min_x) - margin_size
+                self.trim_up = int(min_y) - margin_size
+                self.trim_right = int(max_x) + margin_size
+                self.trim_down = int(max_y) + margin_size
+                del min_y, min_x, max_x, max_y
+                _LOGGER.debug(
+                    "{}: Calculated trims coordinates right {}, bottom {}, left {}, up {}.".format(
+                        self.shared.file_name, self.trim_right, self.trim_down, self.trim_left, self.trim_up
+                    )
                 )
-                self.img_size = (image_array.shape[1], image_array.shape[0])
-                del trimmed_width, trimmed_height
-                return image_array
+                # Calculate the dimensions after trimming using min/max values
+                trimmed_width = max(0, self.trim_right - self.trim_left)
+                trimmed_height = max(0, self.trim_down - self.trim_up)
+                _LOGGER.debug(
+                    "{}: Calculated trimmed image width {} and height {}".format(
+                        self.shared.file_name, trimmed_width, trimmed_height
+                    )
+                )
+                # Test if the trims are okay or not
+                if trimmed_height <= margin_size or trimmed_width <= margin_size:
+                    _LOGGER.debug(f"{self.shared.file_name}: Background colour not detected at rotation {rotate}.")
+                    pos_0 = 0
+                    self.crop_area = (
+                        pos_0,
+                        pos_0,
+                        image_array.shape[1],
+                        image_array.shape[0],
+                    )
+                    self.img_size = (image_array.shape[1], image_array.shape[0])
+                    del trimmed_width, trimmed_height
+                    return image_array
 
-            # Store Crop area of the original image_array we will use from the next frame.
-            self.auto_crop = (
-                self.trim_left,
-                self.trim_up,
-                self.trim_right,
-                self.trim_down,
-            )
-        # Apply the auto-calculated trims to the rotated image
-        trimmed = image_array[
-            self.auto_crop[1] : self.auto_crop[3], self.auto_crop[0] : self.auto_crop[2]
-        ]
-        del image_array
-        # Rotate the cropped image based on the given angle
-        if rotate == 90:
-            rotated = np.rot90(trimmed, 1)
-            self.crop_area = (
-                self.trim_left,
-                self.trim_up,
-                self.trim_right,
-                self.trim_down,
-            )
-        elif rotate == 180:
-            rotated = np.rot90(trimmed, 2)
-            self.crop_area = self.auto_crop
-        elif rotate == 270:
-            rotated = np.rot90(trimmed, 3)
-            self.crop_area = (
-                self.trim_left,
-                self.trim_up,
-                self.trim_right,
-                self.trim_down,
-            )
-        else:
-            rotated = trimmed
-            self.crop_area = self.auto_crop
-        del trimmed
-        _LOGGER.debug(f"{self.shared.file_name}: Auto Crop and Trim Box data: {self.crop_area}")
-        self.crop_img_size = (rotated.shape[1], rotated.shape[0])
-        _LOGGER.debug(f"{self.shared.file_name}: Auto Crop and Trim image size: {self.crop_img_size}")
+                # Store Crop area of the original image_array we will use from the next frame.
+                self.auto_crop = (
+                    self.trim_left,
+                    self.trim_up,
+                    self.trim_right,
+                    self.trim_down,
+                )
+            # Apply the auto-calculated trims to the rotated image
+            trimmed = image_array[
+                self.auto_crop[1] : self.auto_crop[3], self.auto_crop[0] : self.auto_crop[2]
+            ]
+            del image_array
+            # Rotate the cropped image based on the given angle
+            if rotate == 90:
+                rotated = np.rot90(trimmed, 1)
+                self.crop_area = (
+                    self.trim_left,
+                    self.trim_up,
+                    self.trim_right,
+                    self.trim_down,
+                )
+            elif rotate == 180:
+                rotated = np.rot90(trimmed, 2)
+                self.crop_area = self.auto_crop
+            elif rotate == 270:
+                rotated = np.rot90(trimmed, 3)
+                self.crop_area = (
+                    self.trim_left,
+                    self.trim_up,
+                    self.trim_right,
+                    self.trim_down,
+                )
+            else:
+                rotated = trimmed
+                self.crop_area = self.auto_crop
+            del trimmed
+            _LOGGER.debug(f"{self.shared.file_name}: Auto Crop and Trim Box data: {self.crop_area}")
+            self.crop_img_size = (rotated.shape[1], rotated.shape[0])
+            _LOGGER.debug(f"{self.shared.file_name}: Auto Crop and Trim image size: {self.crop_img_size}")
+        except Exception as e:
+            _LOGGER.error(f"{self.shared.file_name}: Error {e} during auto crop and trim.", exc_info=True)
+            return None
         return rotated
 
     def extract_room_properties(self, json_data):
@@ -218,7 +230,6 @@ class MapImageHandler(object):
                 _LOGGER.info(f"{self.shared.file_name}: Composing the image for the camera.")
                 # buffer json data
                 self.json_data = m_json
-                # result_queue = Queue()
 
                 if self.room_propriety and self.frame_number == 0:
                     _LOGGER.info(f"{self.shared.file_name}: Supporting Rooms Cleaning!")
@@ -351,7 +362,7 @@ class MapImageHandler(object):
                 layers, active = self.data.find_layers(m_json["layers"])
                 new_frame_hash = await self.calculate_array_hash(layers, active)
                 if self.frame_number == 0:
-                    self.img_hash = new_frame_hash  # await self.calculate_array_hash(layers, active)
+                    self.img_hash = new_frame_hash
                     # The below is drawing the base layer that will be reused at the next frame.
                     _LOGGER.debug(f"{self.shared.file_name}: Layers to draw: {layers.keys()}")
                     _LOGGER.info(f"{self.shared.file_name}: Empty image with background color")
@@ -389,6 +400,7 @@ class MapImageHandler(object):
                                 img_np_array = await self.draw.from_json_to_image(
                                     img_np_array, pixels, pixel_size, room_color
                                 )
+                                gc.collect(2)
                                 if room_id < 15:
                                     room_id += 1
                                 else:
@@ -447,74 +459,90 @@ class MapImageHandler(object):
 
                     _LOGGER.info(f"{self.shared.file_name}: Completed base Layers")
                     self.img_base_layer = await self.async_copy_array(img_np_array)
-                    if self.shared.export_svg and self.frame_number == 0:
-                        await self.async_numpy_array_to_svg(
-                            base_layer=self.img_base_layer,
-                            colours_list=rooms_list,
-                            color_background=color_background
-                        )
+                    # if self.shared.export_svg and self.frame_number == 0:
+                    #     await self.async_numpy_array_to_svg(
+                    #         base_layer=self.img_base_layer,
+                    #         colours_list=rooms_list,
+                    #         color_background=color_background
+                    #     )
 
                 self.frame_number += 1
                 if (self.frame_number > 1024) or (new_frame_hash != self.img_hash):
                     self.frame_number = 0
-
+                gc.collect(2)
                 _LOGGER.debug(f"{self.shared.file_name}: Frame number %s", self.frame_number)
+                try:
+                    self.check_memory_with_margin(self.img_base_layer)
+                except MemoryShortageError as e:
+                    _LOGGER.error(f"Memory shortage error: {e}")
+                    return None
                 img_np_array = await self.async_copy_array(self.img_base_layer)
                 # All below will be drawn each time
                 # If there is a zone clean we draw it now.
-                if zone_clean:
-                    try:
-                        zones_clean = zone_clean.get("active_zone")
-                    except KeyError:
-                        zones_clean = None
-                    if zones_clean:
-                        _LOGGER.info(f"{self.shared.file_name}: Drawing Zone Clean.")
-                        img_np_array = await self.draw.zones(
-                            img_np_array, zones_clean, color_zone_clean
-                        )
+                try:
+                    if zone_clean:
+                        try:
+                            zones_clean = zone_clean.get("active_zone")
+                        except KeyError:
+                            zones_clean = None
+                        if zones_clean:
+                            _LOGGER.info(f"{self.shared.file_name}: Drawing Zone Clean.")
+                            img_np_array = await self.draw.zones(
+                                img_np_array, zones_clean, color_zone_clean
+                            )
 
-                if go_to:
-                    img_np_array = await self.draw.go_to_flag(
-                        img_np_array,
-                        (go_to[0]["points"][0], go_to[0]["points"][1]),
-                        self.img_rotate,
-                        color_go_to,
-                    )
-                if predicted_pat2:
-                    img_np_array = await self.draw.lines(
-                        img_np_array, predicted_pat2, 2, color_grey
-                    )
-                # draw path
-                if path_pixels:
-                    for path in path_pixels:
-                        # Get the points from the current path and extend the all_path_points list
-                        points = path.get("points", [])
-                        sublists = self.data.sublist(points, 2)
-                        path_pixel2 = self.data.sublist_join(sublists, 2)
+                    if go_to:
+                        img_np_array = await self.draw.go_to_flag(
+                            img_np_array,
+                            (go_to[0]["points"][0], go_to[0]["points"][1]),
+                            self.img_rotate,
+                            color_go_to,
+                        )
+                    if predicted_pat2:
                         img_np_array = await self.draw.lines(
-                            img_np_array, path_pixel2, 5, color_move
+                            img_np_array, predicted_pat2, 2, color_grey
                         )
-                if self.shared.vacuum_state == "docked":
-                    robot_position_angle = robot_position_angle - 180
-                if robot_pos:
-                    img_np_array = await self.draw.robot(
-                        layers=img_np_array,
-                        x=robot_position[0],
-                        y=robot_position[1],
-                        angle=robot_position_angle,
-                        fill=color_robot,
-                        log=self.shared.file_name,
+                    # draw path
+                    if path_pixels:
+                        for path in path_pixels:
+                            # Get the points from the current path and extend the all_path_points list
+                            points = path.get("points", [])
+                            sublists = self.data.sublist(points, 2)
+                            path_pixel2 = self.data.sublist_join(sublists, 2)
+                            img_np_array = await self.draw.lines(
+                                img_np_array, path_pixel2, 5, color_move
+                            )
+                    if self.shared.vacuum_state == "docked":
+                        robot_position_angle = robot_position_angle - 180
+                    if robot_pos:
+                        img_np_array = await self.draw.robot(
+                            layers=img_np_array,
+                            x=robot_position[0],
+                            y=robot_position[1],
+                            angle=robot_position_angle,
+                            fill=color_robot,
+                            log=self.shared.file_name,
+                        )
+                    _LOGGER.debug(
+                        f"{self.shared.file_name}: Auto cropping the image with rotation:"
+                        f" {int(self.shared.image_rotate)}"
                     )
-                _LOGGER.debug(
-                    f"{self.shared.file_name}: Auto cropping the image with rotation: {int(self.shared.image_rotate)}"
-                )
-                img_np_array = await self.async_auto_crop_and_trim_array(
-                    img_np_array,
-                    color_background,
-                    int(self.shared.margins),
-                    int(self.shared.image_rotate),
-                )
+                    img_np_array = await self.async_auto_crop_and_trim_array(
+                        img_np_array,
+                        color_background,
+                        int(self.shared.margins),
+                        int(self.shared.image_rotate),
+                    )
+                except Exception as e:
+                    _LOGGER.error(
+                        f"{self.shared.file_name}: Error while drawing the image: {e}",
+                        exc_info=True,
+                    )
+                    return None
 
+                if img_np_array is None:
+                    return None
+                # Convert the numpy array to a PIL image
                 pil_img = Image.fromarray(img_np_array, mode="RGBA")
                 del img_np_array
                 return pil_img
@@ -538,6 +566,25 @@ class MapImageHandler(object):
 
     def get_json_id(self):
         return self.json_id
+
+    # Function to calculate memory usage of a NumPy array
+    def calculate_memory_usage(self, array):
+        element_size_bytes = array.itemsize
+        total_memory_bytes = array.size * element_size_bytes
+        total_memory_mb = total_memory_bytes / (1024 * 1024)
+        _LOGGER.debug(f"{self.shared.file_name}: Memory usage of the array: {total_memory_mb} MB")
+        return total_memory_mb
+
+    # Function to check if there is enough available memory with a margin
+    def check_memory_with_margin(self, array, margin=3):
+        pid = os.getpid()  # Start to log the CPU usage of this PID
+        proc = ProcInspector().psutil.Process(pid)  # Get the process PID.
+        array_memory_mb = self.calculate_memory_usage(array)
+        margin_memory_mb = margin * array_memory_mb
+        available_memory_mb = ProcInspector().psutil.virtual_memory().available / (1024 * 1024)
+        _LOGGER.debug(f"{self.shared.file_name}: Available memory: {available_memory_mb} MB")
+        if available_memory_mb < margin_memory_mb:
+            raise MemoryShortageError(f"Not enough memory available (Margin: {margin}x)")
 
     async def async_get_rooms_attributes(self):
         if self.room_propriety:

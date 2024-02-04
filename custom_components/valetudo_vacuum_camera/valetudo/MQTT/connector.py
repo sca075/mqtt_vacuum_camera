@@ -1,5 +1,5 @@
 """
-Version 1.5.2
+Version 1.5.7.2
 - Removed the PNG decode, the json is extracted from map-data instead of map-data hass.
 - Tested no influence on the camera performance.
 - Added gzip library used in Valetudo RE data compression.
@@ -23,7 +23,7 @@ _QOS = 0
 
 
 class ValetudoConnector:
-    def __init__(self, mqtt_topic, hass, camera_shared: None):
+    def __init__(self, mqtt_topic, hass, camera_shared):
         self._hass = hass
         self._mqtt_topic = mqtt_topic
         self._unsubscribe_handlers = []
