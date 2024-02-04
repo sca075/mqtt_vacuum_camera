@@ -1,5 +1,5 @@
 """
-Version 1.5.7.2
+Version 1.5.7.1
 - Removed the PNG decode, the json is extracted from map-data instead of map-data hass.
 - Tested no influence on the camera performance.
 - Added gzip library used in Valetudo RE data compression.
@@ -46,7 +46,7 @@ class ValetudoConnector:
     async def update_data(self, process: bool = True):
         if self._img_payload:
             if process:
-                _LOGGER.debug("Processing " + self._mqtt_topic + " data from MQTT")
+                _LOGGER.debug(f"Processing {self._mqtt_topic} data from MQTT")
                 json_data = zlib.decompress(self._img_payload).decode("utf-8")
                 result = json.loads(json_data)
                 _LOGGER.info(self._mqtt_topic + ": Extracting JSON Complete")
@@ -55,13 +55,13 @@ class ValetudoConnector:
                 self._img_payload = None
                 return result, self._is_rrm
             else:
-                _LOGGER.info("No data from " + self._mqtt_topic + " or vacuum docked")
+                _LOGGER.info(f"No data from {self._mqtt_topic} or vacuum docked")
                 self._data_in = False
                 self._is_rrm = False
                 return None, self._is_rrm
         elif self._rrm_payload:
             if process:
-                _LOGGER.debug("Processing " + self._mqtt_topic + " raw data from MQTT")
+                _LOGGER.debug(f"Processing {self._mqtt_topic} raw data from MQTT")
                 # parse the RRM topic
                 payload_decompressed = gzip.decompress(
                     self._rrm_payload
@@ -72,10 +72,10 @@ class ValetudoConnector:
                 self._is_rrm = True
                 self._data_in = False
                 self._rrm_payload = None
-                _LOGGER.info("got Valetudo RE image payload: %s", self._is_rrm)
+                _LOGGER.info(f"got Valetudo RE image payload: {self._is_rrm}")
                 return self._rrm_json, self._is_rrm
             else:
-                _LOGGER.info("No data from " + self._mqtt_topic + " or vacuum docked")
+                _LOGGER.info(f"No data from {self._mqtt_topic} or vacuum docked")
                 self._data_in = False
                 self._is_rrm = False
                 return None, self._is_rrm
@@ -109,19 +109,19 @@ class ValetudoConnector:
             elif self._rrm_payload:
                 file_data = self._rrm_payload
             with open(
-                f"{str(os.getcwd())}/{STORAGE_DIR}/mqtt_{file_name}.raw",
+                f"{str(os.getcwd())}/{STORAGE_DIR}/{file_name}.raw",
                 "wb",
             ) as file:
                 file.write(file_data)
-            _LOGGER.info("Saved image data from MQTT in mqtt_" + file_name + ".raw!")
+            _LOGGER.info(f"Saved image data from MQTT in {file_name}.raw!")
 
     @callback
     async def async_message_received(self, msg):
         self._rcv_topic = msg.topic
-        if self._rcv_topic == (self._mqtt_topic + "/map_data"):
+        if self._rcv_topic == f"{self._mqtt_topic}/map_data":
             if not self._data_in:
                 _LOGGER.info(
-                    "Received Valetudo RE " + self._mqtt_topic + " image data from MQTT"
+                    f"Received Valetudo RE {self._mqtt_topic} image data from MQTT"
                 )
                 self._rrm_payload = (
                     msg.payload
@@ -134,50 +134,32 @@ class ValetudoConnector:
                     )
                     await self.rrm_publish_destinations()
                     self._do_it_once = False
-        elif self._rcv_topic == self._mqtt_topic + "/MapData/map-data":
+        elif self._rcv_topic == f"{self._mqtt_topic}/MapData/map-data":
             if not self._data_in:
-                _LOGGER.info("Received " + self._mqtt_topic + " image data from MQTT")
+                _LOGGER.info(f"Received {self._mqtt_topic} image data from MQTT")
                 self._img_payload = msg.payload
                 self._data_in = True
                 self._is_rrm = False
-        elif self._rcv_topic == (self._mqtt_topic + "/StatusStateAttribute/status"):
+        elif self._rcv_topic == f"{self._mqtt_topic}/StatusStateAttribute/status":
             self._payload = msg.payload
             if self._payload:
                 self._mqtt_vac_stat = bytes.decode(self._payload, "utf-8")
-                _LOGGER.info(
-                    self._mqtt_topic
-                    + ": Received vacuum "
-                    + self._mqtt_vac_stat
-                    + " status."
-                )
-        elif self._rcv_topic == (self._mqtt_topic + "/state"):  # for ValetudoRe
+                _LOGGER.info(f"{self._mqtt_topic}: Received vacuum {self._mqtt_vac_stat} status.")
+        elif self._rcv_topic == f"{self._mqtt_topic}/state":  # for ValetudoRe
             self._payload = msg.payload
             if self._payload:
                 tmp_data = json.loads(self._payload)
                 self._mqtt_vac_re_stat = tmp_data.get("state", None)
-                _LOGGER.info(
-                    self._mqtt_topic
-                    + ": Received vacuum "
-                    + self._mqtt_vac_re_stat
-                    + " status."
-                )
-        elif self._rcv_topic == (
-            self._mqtt_topic + "/StatusStateAttribute/error_description"
-        ):
+                _LOGGER.info(f"{self._mqtt_topic}: Received vacuum {self._mqtt_vac_re_stat} status.")
+        elif self._rcv_topic == f"{self._mqtt_topic}/StatusStateAttribute/error_description":
             self._payload = msg.payload
             self._mqtt_vac_err = bytes.decode(msg.payload, "utf-8")
-            _LOGGER.info(
-                self._mqtt_topic + ": Received vacuum Error: " + self._mqtt_vac_err
-            )
-        elif self._rcv_topic == (self._mqtt_topic + "/destinations"):
+            _LOGGER.info(f"{self._mqtt_topic}: Received vacuum Error: {self._mqtt_vac_err}")
+        elif self._rcv_topic == f"{self._mqtt_topic}/destinations":
             self._payload = msg.payload
             tmp_data = bytes.decode(msg.payload, "utf-8")
             self._rrm_destinations = tmp_data
-            _LOGGER.info(
-                self._mqtt_topic
-                + ": Received vacuum destinations. "
-                + self._rrm_destinations
-            )
+            _LOGGER.info(f"{self._mqtt_topic}: Received vacuum destinations: {self._rrm_destinations}")
 
     async def async_subscribe_to_topics(self):
         if self._mqtt_topic:

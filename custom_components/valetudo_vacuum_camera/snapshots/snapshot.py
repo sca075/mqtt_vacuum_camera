@@ -1,4 +1,4 @@
-"""Snapshot Version 1.4.3"""
+"""Snapshot Version 1.5.7.1"""
 # Added Errors handling.
 
 import os
@@ -48,14 +48,14 @@ class Snapshots:
 
         try:
             # Save JSON data to a file
-            json_file_name = os.path.join(self.storage_path, file_name + ".json")
+            json_file_name = os.path.join(self.storage_path, f"{file_name}.json")
             with open(json_file_name, "w") as json_file:
                 json.dump(json_data, json_file, indent=4)
 
             log_data = self._get_filtered_logs()
 
             # Save log data to a file
-            log_file_name = os.path.join(self.storage_path, file_name + ".log")
+            log_file_name = os.path.join(self.storage_path, f"{file_name}.log")
             with open(log_file_name, "w") as log_file:
                 log_file.write(log_data)
 
@@ -64,12 +64,12 @@ class Snapshots:
 
     def _zip_snapshot(self, file_name):
         # Create a ZIP archive
-        zip_file_name = os.path.join(self.storage_path, file_name + ".zip")
+        zip_file_name = os.path.join(self.storage_path, f"{file_name}.zip")
 
         try:
             with zipfile.ZipFile(zip_file_name, "w", zipfile.ZIP_DEFLATED) as zf:
-                json_file_name = os.path.join(self.storage_path, file_name + ".json")
-                log_file_name = os.path.join(self.storage_path, file_name + ".log")
+                json_file_name = os.path.join(self.storage_path, f"{file_name}.json")
+                log_file_name = os.path.join(self.storage_path, f"{file_name}.log")
 
                 # Add the JSON file to the ZIP archive
                 zf.write(json_file_name, os.path.basename(json_file_name))
@@ -78,7 +78,7 @@ class Snapshots:
                 zf.write(log_file_name, os.path.basename(log_file_name))
 
                 # Check if the file_name.raw exists
-                raw_file_name = os.path.join(self.storage_path, f"mqtt_{file_name}.raw")
+                raw_file_name = os.path.join(self.storage_path, f"{file_name}.raw")
                 if os.path.exists(raw_file_name):
                     # Add the .raw file to the ZIP archive
                     zf.write(raw_file_name, os.path.basename(raw_file_name))
