@@ -2,15 +2,13 @@
 Image Handler Module.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Last Changed on Version: 1.5.7.1
+Last Changed on Version: 1.5.7.2
 """
 from __future__ import annotations
 
 import hashlib
 import json
 import logging
-import os
-import gc
 
 from PIL import Image
 import numpy as np
@@ -400,7 +398,6 @@ class MapImageHandler(object):
                                 img_np_array = await self.draw.from_json_to_image(
                                     img_np_array, pixels, pixel_size, room_color
                                 )
-                                gc.collect(2)
                                 if room_id < 15:
                                     room_id += 1
                                 else:
@@ -465,11 +462,9 @@ class MapImageHandler(object):
                     #         colours_list=rooms_list,
                     #         color_background=color_background
                     #     )
-
                 self.frame_number += 1
                 if (self.frame_number > 1024) or (new_frame_hash != self.img_hash):
                     self.frame_number = 0
-                gc.collect(2)
                 _LOGGER.debug(f"{self.shared.file_name}: Frame number %s", self.frame_number)
                 try:
                     self.check_memory_with_margin(self.img_base_layer)
@@ -479,73 +474,66 @@ class MapImageHandler(object):
                 img_np_array = await self.async_copy_array(self.img_base_layer)
                 # All below will be drawn each time
                 # If there is a zone clean we draw it now.
-                try:
-                    if zone_clean:
-                        try:
-                            zones_clean = zone_clean.get("active_zone")
-                        except KeyError:
-                            zones_clean = None
-                        if zones_clean:
-                            _LOGGER.info(f"{self.shared.file_name}: Drawing Zone Clean.")
-                            img_np_array = await self.draw.zones(
-                                img_np_array, zones_clean, color_zone_clean
-                            )
+                if zone_clean:
+                    try:
+                        zones_clean = zone_clean.get("active_zone")
+                    except KeyError:
+                        zones_clean = None
+                    if zones_clean:
+                        _LOGGER.info(f"{self.shared.file_name}: Drawing Zone Clean.")
+                        img_np_array = await self.draw.zones(
+                            img_np_array, zones_clean, color_zone_clean
+                        )
 
-                    if go_to:
-                        img_np_array = await self.draw.go_to_flag(
-                            img_np_array,
-                            (go_to[0]["points"][0], go_to[0]["points"][1]),
-                            self.img_rotate,
-                            color_go_to,
-                        )
-                    if predicted_pat2:
-                        img_np_array = await self.draw.lines(
-                            img_np_array, predicted_pat2, 2, color_grey
-                        )
-                    # draw path
-                    if path_pixels:
-                        for path in path_pixels:
-                            # Get the points from the current path and extend the all_path_points list
-                            points = path.get("points", [])
-                            sublists = self.data.sublist(points, 2)
-                            path_pixel2 = self.data.sublist_join(sublists, 2)
-                            img_np_array = await self.draw.lines(
-                                img_np_array, path_pixel2, 5, color_move
-                            )
-                    if self.shared.vacuum_state == "docked":
-                        robot_position_angle = robot_position_angle - 180
-                    if robot_pos:
-                        img_np_array = await self.draw.robot(
-                            layers=img_np_array,
-                            x=robot_position[0],
-                            y=robot_position[1],
-                            angle=robot_position_angle,
-                            fill=color_robot,
-                            log=self.shared.file_name,
-                        )
-                    _LOGGER.debug(
-                        f"{self.shared.file_name}: Auto cropping the image with rotation:"
-                        f" {int(self.shared.image_rotate)}"
-                    )
-                    img_np_array = await self.async_auto_crop_and_trim_array(
+                if go_to:
+                    img_np_array = await self.draw.go_to_flag(
                         img_np_array,
-                        color_background,
-                        int(self.shared.margins),
-                        int(self.shared.image_rotate),
+                        (go_to[0]["points"][0], go_to[0]["points"][1]),
+                        self.img_rotate,
+                        color_go_to,
                     )
-                except Exception as e:
-                    _LOGGER.error(
-                        f"{self.shared.file_name}: Error while drawing the image: {e}",
-                        exc_info=True,
+                if predicted_pat2:
+                    img_np_array = await self.draw.lines(
+                        img_np_array, predicted_pat2, 2, color_grey
                     )
-                    return None
-
-                if img_np_array is None:
-                    return None
-                # Convert the numpy array to a PIL image
-                pil_img = Image.fromarray(img_np_array, mode="RGBA")
-                del img_np_array
-                return pil_img
+                # draw path
+                if path_pixels:
+                    for path in path_pixels:
+                        # Get the points from the current path and extend the all_path_points list
+                        points = path.get("points", [])
+                        sublists = self.data.sublist(points, 2)
+                        path_pixel2 = self.data.sublist_join(sublists, 2)
+                        img_np_array = await self.draw.lines(
+                            img_np_array, path_pixel2, 5, color_move
+                        )
+                if self.shared.vacuum_state == "docked":
+                    robot_position_angle = robot_position_angle - 180
+                if robot_pos:
+                    img_np_array = await self.draw.robot(
+                        layers=img_np_array,
+                        x=robot_position[0],
+                        y=robot_position[1],
+                        angle=robot_position_angle,
+                        fill=color_robot,
+                        log=self.shared.file_name,
+                    )
+                _LOGGER.debug(
+                    f"{self.shared.file_name}: Auto cropping the image with rotation:"
+                    f" {int(self.shared.image_rotate)}"
+                )
+                img_np_array = await self.async_auto_crop_and_trim_array(
+                    img_np_array,
+                    color_background,
+                    int(self.shared.margins),
+                    int(self.shared.image_rotate),
+                )
+            if img_np_array is None:
+                _LOGGER.warning(f"{self.shared.file_name}: Image array is None.")
+                return None
+            # Convert the numpy array to a PIL image
+            pil_img = Image.fromarray(img_np_array, mode="RGBA")
+            del img_np_array
+            return pil_img
         except Exception as e:
             _LOGGER.warning(
                 f"{self.shared.file_name} : Error in get_image_from_json: {e}", exc_info=True
@@ -568,23 +556,20 @@ class MapImageHandler(object):
         return self.json_id
 
     # Function to calculate memory usage of a NumPy array
-    def calculate_memory_usage(self, array):
+    def calculate_memory_usage(self, array, margin):
         element_size_bytes = array.itemsize
         total_memory_bytes = array.size * element_size_bytes
-        total_memory_mb = total_memory_bytes / (1024 * 1024)
-        _LOGGER.debug(f"{self.shared.file_name}: Memory usage of the array: {total_memory_mb} MB")
+        total_memory_mb = margin * (total_memory_bytes / (1024 * 1024))
+        _LOGGER.debug(f"{self.shared.file_name}: Estimated Margin of Memory usage: {total_memory_mb} MiB")
         return total_memory_mb
 
     # Function to check if there is enough available memory with a margin
-    def check_memory_with_margin(self, array, margin=3):
-        pid = os.getpid()  # Start to log the CPU usage of this PID
-        proc = ProcInspector().psutil.Process(pid)  # Get the process PID.
-        array_memory_mb = self.calculate_memory_usage(array)
-        margin_memory_mb = margin * array_memory_mb
-        available_memory_mb = ProcInspector().psutil.virtual_memory().available / (1024 * 1024)
-        _LOGGER.debug(f"{self.shared.file_name}: Available memory: {available_memory_mb} MB")
-        if available_memory_mb < margin_memory_mb:
-            raise MemoryShortageError(f"Not enough memory available (Margin: {margin}x)")
+    def check_memory_with_margin(self, array, margin=24):
+        array_memory_mb = self.calculate_memory_usage(array, margin)
+        available_memory_mb = round(ProcInspector().psutil.virtual_memory().available / (1024 * 1024), 1)
+        _LOGGER.debug(f"{self.shared.file_name}: Available memory: {available_memory_mb} MiB")
+        if available_memory_mb < array_memory_mb:
+            raise MemoryShortageError(f"Not enough memory available (Margin: {array_memory_mb} MiB)")
 
     async def async_get_rooms_attributes(self):
         if self.room_propriety:
