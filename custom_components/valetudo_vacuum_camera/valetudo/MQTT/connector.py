@@ -27,6 +27,7 @@ class ValetudoConnector:
         self._hass = hass
         self._mqtt_topic = mqtt_topic
         self._unsubscribe_handlers = []
+        self._process_data = True
         self._rcv_topic = None
         self._payload = None
         self._img_payload = None
@@ -91,8 +92,10 @@ class ValetudoConnector:
 
     async def is_data_available(self, process):
         if not process:
+            self._process_data = True
             return self._data_in
         else:
+            self._process_data = False
             return False
 
     async def get_destinations(self):
@@ -119,7 +122,7 @@ class ValetudoConnector:
     async def async_message_received(self, msg):
         self._rcv_topic = msg.topic
         if self._rcv_topic == f"{self._mqtt_topic}/map_data":
-            if not self._data_in:
+            if not self._data_in and self._process_data:
                 _LOGGER.info(
                     f"Received Valetudo RE {self._mqtt_topic} image data from MQTT"
                 )
@@ -135,7 +138,7 @@ class ValetudoConnector:
                     await self.rrm_publish_destinations()
                     self._do_it_once = False
         elif self._rcv_topic == f"{self._mqtt_topic}/MapData/map-data":
-            if not self._data_in:
+            if not self._data_in and self._process_data:
                 _LOGGER.info(f"Received {self._mqtt_topic} image data from MQTT")
                 self._img_payload = msg.payload
                 self._data_in = True

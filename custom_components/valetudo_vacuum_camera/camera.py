@@ -179,7 +179,7 @@ class ValetudoCamera(Camera):
         self._image_w = None
         self._image_h = None
         self._should_poll = False
-        self._attr_frame_interval = 1
+        self._attr_frame_interval = 6
         self._vac_json_available = None
         self._shared.attr_calibration_points = None
         self._cpu_percent = None
@@ -292,7 +292,7 @@ class ValetudoCamera(Camera):
     @property
     def frame_interval(self) -> float:
         """Camera Frame Interval"""
-        return 1
+        return self._attr_frame_interval
 
     def camera_image(
         self, width: Optional[int] = None, height: Optional[int] = None
@@ -363,12 +363,13 @@ class ValetudoCamera(Camera):
         """Return an empty image if there are no data"""
         # Check if the snapshot file exists
         _LOGGER.info(f"{self.snapshot_img}: searching Snapshot image")
-        if os.path.isfile(self.snapshot_img) and (self._last_image is None):
-            # Load the snapshot image
-            self._last_image = Image.open(self.snapshot_img)
-            _LOGGER.debug(f"{self._shared.file_name}: Snapshot image loaded")
-            return self._last_image
-        elif self._last_image is not None:
+        # if os.path.isfile(self.snapshot_img) and (self._last_image is None):
+        #     # Load the snapshot image
+        #     self._last_image = Image.open(self.snapshot_img)
+        #     _LOGGER.debug(f"{self._shared.file_name}: Snapshot image loaded")
+        #     return self._last_image
+        # elif self._last_image is not None:
+        if self._last_image is not None:
             return self._last_image
         else:
             # Create an empty image with a gray background
@@ -419,6 +420,7 @@ class ValetudoCamera(Camera):
         # check and update the vacuum reported state
         if not self._mqtt or (self._cpu_percent is not None and self._cpu_percent > 80):
             self._image = await self.async_pil_to_bytes(None)
+            _LOGGER.debug("No MQTT, or CPU usage too high. Returning not updated image.")
             return self._image
         # If we have data from MQTT, we process the image
         self._shared.vacuum_state = await self._mqtt.get_vacuum_status()
@@ -431,7 +433,7 @@ class ValetudoCamera(Camera):
                 or self._shared.vacuum_state == "moving"
                 or self._shared.vacuum_state == "returning"
             ):
-                # grab the image
+                # grab the image from MQTT
                 self._shared.image_grab = True
                 self._shared.frame_number = self.processor.get_frame_number()
                 # when the vacuum goes / is in cleaning, moving or returning
@@ -545,12 +547,17 @@ class ValetudoCamera(Camera):
         buffered = BytesIO()
         # backup the image
         if pil_img:
+            _LOGGER.debug("Image from Json.")
             self._last_image = pil_img
             self._image_w = pil_img.width
             self._image_h = pil_img.height
         else:
-            pil_img = self.empty_if_no_data()
-            self._last_image = None  # pil_img
+            if self._last_image:
+                _LOGGER.debug("Last Image.")
+                pil_img = self._last_image
+            else:
+                _LOGGER.debug("Gray Image.")
+                pil_img = self.empty_if_no_data()
             self._image_w = pil_img.width
             self._image_h = pil_img.height
         pil_img.save(buffered, format="PNG")

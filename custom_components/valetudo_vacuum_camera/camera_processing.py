@@ -1,5 +1,5 @@
 """
-Multiprocessing module (version 1.5.7.1)
+Multiprocessing module (version 1.5.7.3)
 This module provide the image multiprocessing in order to
 avoid the overload of the main_thread of Home Assistant.
 """
@@ -49,9 +49,7 @@ class CameraProcessor:
                         await self._map_handler.async_get_rooms_attributes()
                     )
                     if self._shared.map_rooms:
-                        _LOGGER.debug(
-                            f"State attributes rooms update: {self._shared.map_rooms}"
-                        )
+                        _LOGGER.debug("State attributes rooms updated")
 
                 if self._shared.show_vacuum_state:
                     status_text = (
@@ -111,6 +109,7 @@ class CameraProcessor:
                         # take a snapshot
                         self._shared.snapshot_take = True
             return pil_img
+        _LOGGER.debug("No Json, returned None.")
         return None
 
     async def async_process_rand256_data(self, parsed_json):
@@ -130,9 +129,7 @@ class CameraProcessor:
                             self._shared.map_pred_points,
                         ) = await self._re_handler.get_rooms_attributes(destinations)
                     if self._shared.map_rooms:
-                        _LOGGER.debug(
-                            f"State attributes rooms update: {self._shared.map_rooms}"
-                        )
+                        _LOGGER.debug("State attributes rooms updated")
                 if self._shared.show_vacuum_state:
                     self.status_text(
                         pil_img,
