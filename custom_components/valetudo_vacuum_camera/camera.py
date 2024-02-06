@@ -419,11 +419,11 @@ class ValetudoCamera(Camera):
         """Camera Frame Update"""
         # check and update the vacuum reported state
         if not self._mqtt or (self._cpu_percent is not None and self._cpu_percent > 80):
-            if self._cpu_percent > 100 and self._shared.vacuum_state is not "cleaning":
+            if self._cpu_percent > 80 or (self._shared.vacuum_state != "docked"):
                 self._cpu_percent = 0
-            self._image = await self.async_pil_to_bytes(None)
+            # self._image = await self.async_pil_to_bytes(None)
             _LOGGER.debug("No MQTT, or CPU usage too high. Returning not updated image.")
-            return self._image
+            # return self._image
         # If we have data from MQTT, we process the image
         self._shared.vacuum_state = await self._mqtt.get_vacuum_status()
         process_data = await self._mqtt.is_data_available(self._processing)
