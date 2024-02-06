@@ -33,6 +33,9 @@ class MemoryShortageError(Exception):
 
 # noinspection PyTypeChecker,PyUnboundLocalVariable,PyUnresolvedReferences
 class MapImageHandler(object):
+
+    DRAWING_STEPS = 12  # Drawing steps for the PNG
+
     def __init__(self, shared_data):
         self.auto_crop = None  # auto crop data to be calculate once.
         self.calibration_data = None  # camera shared data.
@@ -298,7 +301,9 @@ class MapImageHandler(object):
                     else:
                         if robot_pos:
                             robot_position = robot_pos[0]["points"]
-                            robot_position_angle = robot_pos[0]["metaData"]["angle"]
+                            robot_position_angle = round(
+                                float(robot_pos[0]["metaData"]["angle"])
+                                , 1)
                             if self.rooms_pos is None:
                                 self.robot_pos = {
                                     "x": robot_position[0],
@@ -559,12 +564,12 @@ class MapImageHandler(object):
     def calculate_memory_usage(self, array, margin):
         element_size_bytes = array.itemsize
         total_memory_bytes = array.size * element_size_bytes
-        total_memory_mb = margin * (total_memory_bytes / (1024 * 1024))
+        total_memory_mb = round((margin * (total_memory_bytes / (1024 * 1024))), 1)
         _LOGGER.debug(f"{self.shared.file_name}: Estimated Margin of Memory usage: {total_memory_mb} MiB")
         return total_memory_mb
 
     # Function to check if there is enough available memory with a margin
-    def check_memory_with_margin(self, array, margin=24):
+    def check_memory_with_margin(self, array, margin=DRAWING_STEPS):
         array_memory_mb = self.calculate_memory_usage(array, margin)
         available_memory_mb = round(ProcInspector().psutil.virtual_memory().available / (1024 * 1024), 1)
         _LOGGER.debug(f"{self.shared.file_name}: Available memory: {available_memory_mb} MiB")

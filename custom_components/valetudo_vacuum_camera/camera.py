@@ -419,6 +419,8 @@ class ValetudoCamera(Camera):
         """Camera Frame Update"""
         # check and update the vacuum reported state
         if not self._mqtt or (self._cpu_percent is not None and self._cpu_percent > 80):
+            if self._cpu_percent > 100 and self._shared.vacuum_state is not "cleaning":
+                self._cpu_percent = 0
             self._image = await self.async_pil_to_bytes(None)
             _LOGGER.debug("No MQTT, or CPU usage too high. Returning not updated image.")
             return self._image
@@ -500,6 +502,7 @@ class ValetudoCamera(Camera):
                         else:
                             await self.take_snapshot(parsed_json, pil_img)
                     # clean up
+                    self._last_image = pil_img
                     del pil_img
                     _LOGGER.debug(f"{self._shared.file_name}: Image update complete")
                     processing_time = round((time.perf_counter() - start_time), 3)
@@ -516,11 +519,10 @@ class ValetudoCamera(Camera):
                 self.camera_image(self._image_w, self._image_h)
                 # HA supervised memory and CUP usage report.
                 self._cpu_percent = round(
-                    (
+                    ((
                         (self._cpu_percent + proc.cpu_percent())
                         / ProcInsp().psutil.cpu_count()
-                    )
-                    / 2,
+                    ) / 2),
                     2,
                 )
                 memory_percent = round(
@@ -548,11 +550,10 @@ class ValetudoCamera(Camera):
         # backup the image
         if pil_img:
             _LOGGER.debug("Image from Json.")
-            self._last_image = pil_img
             self._image_w = pil_img.width
             self._image_h = pil_img.height
         else:
-            if self._last_image:
+            if self._last_image is not None:
                 _LOGGER.debug("Last Image.")
                 pil_img = self._last_image
             else:
