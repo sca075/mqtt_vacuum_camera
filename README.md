@@ -15,8 +15,7 @@
 **About:**
 Extract the maps for rooted Vacuum Cleaners with Valetudo [Hypfer](https://valetudo.cloud/) or [RE(rand256)](https://github.com/rand256/valetudo) Firmware connected to Home Assistant via MQTT, [easy setup](./docs/install.md) thanks to [HACS](https://hacs.xyz/)  and guided Home Assistant GUI configuration.
 
-**What it is:**
-Recently designed successor of ICantBelieveItsNotValetudo is [ValetudoPNG](https://github.com/erkexzcx/valetudopng) that can be used as alternative. 
+**What it is:** 
 This custom component anyhow is simple to install and setup, decode and render the vacuum maps to Home Assistant in few clicks. 
 When you want also to control your vacuum you will need to also install the:
 [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card) from HACS as well.
@@ -42,7 +41,24 @@ internal_variables:
 We did agree and work with the author of the card, we guess soon a [new version of the card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card/actions/runs/7005593157) will be released.
 Those settings for the internal_variables will be automatically setup in the card as soon the vacuum and camera will be setup in the card.
 
-In the wiki section of this project, there is a description of how the camera works. It contains also guidelines on how to contribute to this development. 
+### Limitations and Compatibility:
+<details>
+   <summary>
+      Please read the limitations and compatibility before to install the camera.
+   </summary>
+
+I kindly ask for your understanding regarding any limitations you may encounter with this custom component.
+While it's been extensively tested on a PI4 8GB, hardware below PI4 8GB may face issues. **Your feedback on such platforms is invaluable**;
+please report any problems you encounter.
+As a team of one, I'm diligently working to address compatibility across all environments, but this process takes time. In the interim, you can utilize [ValetudoPNG](https://github.com/erkexzcx/valetudopng) as an alternative on unsupported platforms.
+Your support in making this component compatible with all environments is greatly appreciated. If you'd like to contribute, whether through code or time, please consider joining our efforts.
+For further details on how the camera operates and how you can contribute, refer to the Wiki section of this project. Your patience and assistance are crucial as we strive toward our goal of universal compatibility.
+
+- PROXMOX: The camera is not properly working on Proxmox, we are working to make it compatible.
+- PI3 4GB: The camera is working on PI3 4GB, anyhow no chance there to run two vacuums cameras at the same time.
+- PI4 4GB: The camera is working on PI4 4GB, anyhow run two vacuums cameras at the same time isn't advised.
+</details>
+
 
 ### Known Supported Vacuums:
 <details><summary>We here list, thanks to our users and tests done, the known working vacuums.</summary>
