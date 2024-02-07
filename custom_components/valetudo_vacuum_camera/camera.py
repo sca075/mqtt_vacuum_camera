@@ -1,5 +1,5 @@
 """
-Camera Version 1.5.7.2 (threading implemented 100%)
+Camera Version 1.5.7.3 (threading implemented 100%)
 Valetudo Hypfer and rand256 Firmwares Vacuums maps.
 From PI4 up to all other Home Assistant supported platforms.
 """
@@ -12,7 +12,6 @@ from io import BytesIO
 import json
 import logging
 import os
-import gc
 from typing import Optional
 
 from PIL import Image
@@ -274,8 +273,6 @@ class ValetudoCamera(Camera):
         except (ValueError, IndexError, UnboundLocalError) as e:
             _LOGGER.error("Error while populating colors: %s", e)
         self.processor = CameraProcessor(self._shared)
-        gc.set_debug(True)
-        gc.DEBUG_LEAK.conjugate()
 
     async def async_added_to_hass(self) -> None:
         """Handle entity added toHome Assistant."""
@@ -309,7 +306,6 @@ class ValetudoCamera(Camera):
         self._should_poll = True
 
     def turn_off(self):
-        gc.collect(2)
         self._should_poll = False
 
     @property
