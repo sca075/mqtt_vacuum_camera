@@ -169,7 +169,9 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
         old_options = {**config_entry.options}
         if len(old_options) != 0:
             tmp_option = {"margins": "150",
-                          "get_svg_file": False}
+                          "get_svg_file": False,
+                          "enable_www_snapshots": True,
+                          }
             new_options = await update_options(old_options, tmp_option)
             _LOGGER.debug(dict(new_options))
             config_entry.version = 2.2
