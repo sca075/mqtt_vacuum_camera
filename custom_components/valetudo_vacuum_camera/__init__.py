@@ -162,13 +162,14 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
             config_entry, data=new_data, options=new_options
         )
 
-    if config_entry.version == 2.1:
+    if config_entry.version <= 2.1:
         old_data = {**config_entry.data}
         new_data = {"vacuum_config_entry": old_data["vacuum_config_entry"]}
         _LOGGER.debug(dict(new_data))
         old_options = {**config_entry.options}
         if len(old_options) != 0:
-            tmp_option = {"margins": "150"}
+            tmp_option = {"margins": "150",
+                          "get_svg_file": False}
             new_options = await update_options(old_options, tmp_option)
             _LOGGER.debug(dict(new_options))
             config_entry.version = 2.2

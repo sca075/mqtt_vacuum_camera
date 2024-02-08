@@ -6,12 +6,12 @@ From PI4 up to all other Home Assistant supported platforms.
 
 from __future__ import annotations
 
-import time
 from datetime import timedelta
 from io import BytesIO
 import json
 import logging
 import os
+import time
 from typing import Optional
 
 from PIL import Image
@@ -90,6 +90,7 @@ from .const import (
     COLOR_TEXT,
     COLOR_WALL,
     COLOR_ZONE_CLEAN,
+    CONF_EXPORT_SVG,
     CONF_SNAPSHOTS_ENABLE,
     CONF_VAC_STAT,
     CONF_VACUUM_CONNECTION_STRING,
@@ -97,12 +98,10 @@ from .const import (
     CONF_VACUUM_IDENTIFIERS,
     DEFAULT_NAME,
     DOMAIN,
-    EXPORT_SVG,
     PLATFORMS,
 )
 from .snapshots.snapshot import Snapshots
 from .utils.colors_man import add_alpha_to_rgb
-
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
@@ -139,6 +138,7 @@ async def async_setup_platform(
     async_add_entities: AddEntitiesCallback,
     discovery_info: DiscoveryInfoType | None = None,
 ):
+    """Set up the camera platform."""
     async_add_entities([ValetudoCamera(hass, config)])
     await async_setup_reload_service(hass, DOMAIN, PLATFORMS)
 
@@ -152,9 +152,8 @@ class ValetudoCamera(Camera):
         self._attr_name = "Camera"
         self._directory_path = os.getcwd()  # get Home Assistant path
         self._snapshots = Snapshots(f"{self._directory_path}/{STORAGE_DIR}")
-        self._shared = CameraShared()
+        self._shared = CameraShared()  # Camera Shared data between threads.
         self._mqtt_listen_topic = device_info.get(CONF_VACUUM_CONNECTION_STRING)
-        self._shared.file_name = ""
         if self._mqtt_listen_topic:
             self._mqtt_listen_topic = str(self._mqtt_listen_topic)
             self._shared.file_name = self._mqtt_listen_topic.split("/")[1].lower()
@@ -165,7 +164,9 @@ class ValetudoCamera(Camera):
             self.log_file = (
                 f"{self._directory_path}/www/snapshot_{self._shared.file_name}.zip"
             )
-            self._shared.svg_path = f"{self._directory_path}/www/{self._shared.file_name}.svg"
+            self._shared.svg_path = (
+                f"{self._directory_path}/www/{self._shared.file_name}.svg"
+            )
             self._attr_unique_id = device_info.get(
                 CONF_UNIQUE_ID,
                 get_vacuum_unique_id_from_mqtt_topic(self._mqtt_listen_topic),
@@ -174,7 +175,7 @@ class ValetudoCamera(Camera):
         self._identifiers = device_info.get(CONF_VACUUM_IDENTIFIERS)
         self._image = None
         self._processing = False
-        self._shared.export_svg = device_info.get(EXPORT_SVG)
+        self._shared.export_svg = device_info.get(CONF_EXPORT_SVG)
         self._image_w = None
         self._image_h = None
         self._should_poll = False
@@ -202,8 +203,6 @@ class ValetudoCamera(Camera):
         if os.path.isfile(self.log_file):
             os.remove(self.log_file)
         self._last_image = None
-        self._shared.image_grab = True
-        self._shared.frame_number = 0
         self._rrm_data = False  # Temp. check for rrm data
         try:
             self.user_colors = [
@@ -272,7 +271,7 @@ class ValetudoCamera(Camera):
             )
         except (ValueError, IndexError, UnboundLocalError) as e:
             _LOGGER.error("Error while populating colors: %s", e)
-        self.processor = CameraProcessor(self._shared)
+        self.processor = CameraProcessor(self.hass, self._shared)
 
     async def async_added_to_hass(self) -> None:
         """Handle entity added toHome Assistant."""
@@ -356,7 +355,7 @@ class ValetudoCamera(Camera):
         return device_info(identifiers=self._identifiers)
 
     def empty_if_no_data(self):
-        """Return an empty image if there are no data"""
+        """Return an empty image if there are no data."""
         # Check if the snapshot file exists
         _LOGGER.info(f"{self.snapshot_img}: searching Snapshot image")
         # if os.path.isfile(self.snapshot_img) and (self._last_image is None):
@@ -374,7 +373,7 @@ class ValetudoCamera(Camera):
             return empty_img
 
     async def take_snapshot(self, json_data, image_data):
-        """Camera Automatic Snapshots"""
+        """Camera Automatic Snapshots."""
         try:
             # When logger is active.
             if (_LOGGER.getEffectiveLevel() > 0) and (
@@ -400,6 +399,7 @@ class ValetudoCamera(Camera):
             )
 
     async def load_test_json(self, file_path=None):
+        """Load a test json."""
         # Load a test json
         if file_path:
             json_file = file_path
@@ -412,15 +412,19 @@ class ValetudoCamera(Camera):
             return None
 
     async def async_update(self):
-        """Camera Frame Update"""
+        """Camera Frame Update."""
         # check and update the vacuum reported state
         if not self._mqtt or (self._cpu_percent is not None and self._cpu_percent > 80):
             if self._cpu_percent > 80 or (self._shared.vacuum_state != "docked"):
-                self._cpu_percent = 0  # this will retry in case of high CPU usage.
-            self._image = await self.async_pil_to_bytes(None)  # return an empty or last image
-            _LOGGER.debug("No MQTT, or CPU usage too high. Returning not updated image.")
+                # This will allow to retry in case of high CPU usage.
+                self._cpu_percent = 0
+            # return last image if no MQTT or CPU usage too high.
+            self._image = await self.async_pil_to_bytes(self._last_image)
+            _LOGGER.debug(
+                "No MQTT, or CPU usage too high. Returning not updated image."
+            )
             return self._image
-        # If we have data from MQTT, we process the image
+        # If we have data from MQTT, we process the image.
         self._shared.vacuum_state = await self._mqtt.get_vacuum_status()
         process_data = await self._mqtt.is_data_available(self._processing)
         if process_data:
@@ -431,7 +435,7 @@ class ValetudoCamera(Camera):
                 or self._shared.vacuum_state == "moving"
                 or self._shared.vacuum_state == "returning"
             ):
-                # grab the image from MQTT
+                # grab the image from MQTT.
                 self._shared.image_grab = True
                 self._shared.frame_number = self.processor.get_frame_number()
                 # when the vacuum goes / is in cleaning, moving or returning
@@ -456,7 +460,7 @@ class ValetudoCamera(Camera):
                 else:
                     parsed_json = parsed_json[0]
                     self._rrm_data = None
-                # Below bypassed code is for debug purpose only
+                # Below bypassed code is for debug purpose only.
                 #########################################################
                 # parsed_json = await self.load_test_json(
                 #     "custom_components/valetudo_vacuum_camera/snapshots/test.json")
@@ -466,7 +470,7 @@ class ValetudoCamera(Camera):
                 self._vac_json_available = "Error"
                 pass
             else:
-                # Just in case, let's check that the data is available
+                # Just in case, let's check that the data is available.
                 pid = os.getpid()  # Start to log the CPU usage of this PID.
                 proc = ProcInsp().psutil.Process(pid)  # Get the process PID.
                 self._cpu_percent = round(
@@ -477,7 +481,9 @@ class ValetudoCamera(Camera):
                     if self._rrm_data:
                         self._shared.destinations = await self._mqtt.get_destinations()
                         pil_img = await self.hass.async_create_task(
-                            self.processor.run_async_process_valetudo_data(self._rrm_data)
+                            self.processor.run_async_process_valetudo_data(
+                                self._rrm_data
+                            )
                         )
                     elif self._rrm_data is None:
                         pil_img = await self.hass.async_create_task(
@@ -513,12 +519,15 @@ class ValetudoCamera(Camera):
                     )
                     self._attr_frame_interval = 0.1
                 self.camera_image(self._image_w, self._image_h)
-                # HA supervised memory and CUP usage report.
+                # HA supervised Memory and CUP usage report.
                 self._cpu_percent = round(
-                    ((
-                        (self._cpu_percent + proc.cpu_percent())
-                        / ProcInsp().psutil.cpu_count()
-                    ) / 2),
+                    (
+                        (
+                            (self._cpu_percent + proc.cpu_percent())
+                            / ProcInsp().psutil.cpu_count()
+                        )
+                        / 2
+                    ),
                     2,
                 )
                 memory_percent = round(
@@ -542,18 +551,19 @@ class ValetudoCamera(Camera):
                 return self._image
 
     async def async_pil_to_bytes(self, pil_img) -> Optional[bytes]:
+        """Convert PIL image to bytes"""
         buffered = BytesIO()
         # backup the image
         if pil_img:
-            _LOGGER.debug("Image from Json.")
+            _LOGGER.debug(f"{self._shared.file_name}: Image from Json.")
             self._image_w = pil_img.width
             self._image_h = pil_img.height
         else:
             if self._last_image is not None:
-                _LOGGER.debug("Last Image.")
+                _LOGGER.debug(f"{self._shared.file_name}: Last Image.")
                 pil_img = self._last_image
             else:
-                _LOGGER.debug("Gray Image.")
+                _LOGGER.debug(f"{self._shared.file_name}: Gray Image.")
                 pil_img = self.empty_if_no_data()
             self._image_w = pil_img.width
             self._image_h = pil_img.height
