@@ -42,7 +42,7 @@ class MapImageHandler(object):
     """Map Image Handler Class.
     This class is used to handle the image data and the drawing of the map."""
 
-    DRAWING_STEPS = 12  # Drawing steps for the PNG to be created.
+    MEMORY_WARN_LIMIT = 2  # Required memory for number of np.array's
 
     def __init__(self, shared_data):
         """Initialize the Map Image Handler."""
@@ -532,7 +532,7 @@ class MapImageHandler(object):
                 try:
                     self.check_memory_with_margin(self.img_base_layer)
                 except MemoryShortageError as e:
-                    _LOGGER.error(f"Memory shortage error: {e}")
+                    _LOGGER.warning(f"Memory shortage error: {e}")
                     return None
                 img_np_array = await self.async_copy_array(self.img_base_layer)
                 # All below will be drawn each time
@@ -628,15 +628,16 @@ class MapImageHandler(object):
         """Return the JSON ID from the image."""
         return self.json_id
 
-    def calculate_memory_usage(self, array, margin):
+    def calculate_memory_usage(self, array: np.ndarray, margin: int) -> float:
         """Calculate the memory usage of the array.
-        summing the memory usage of the arrays that will be used."""
-        element_size_bytes = array.itemsize
+        summing the memory usage of the arrays that will be used.
+        The Numpy array shape is (y, x, 4) where 4 is the RGBA channels.
+        Generally 1 pixel is 16 bytes.
+        """
+        element_size_bytes = array.itemsize * 4  # int32 is 4 bytes
         total_memory_bytes = array.size * element_size_bytes
-        total_memory_mb = round((margin * (total_memory_bytes / (1024 * 1024))), 1)
-        _LOGGER.debug(
-            f"{self.shared.file_name}: Estimated Margin of Memory usage: {total_memory_mb} MiB"
-        )
+        total_memory_mb = round(((margin * total_memory_bytes) / (1024 * 1024)), 1)
+        _LOGGER.debug(f"{self.shared.file_name}: Estimated Margin of Memory usage: {total_memory_mb} MiB")
         return total_memory_mb
 
     # Function to check if there is enough available memory with a margin
