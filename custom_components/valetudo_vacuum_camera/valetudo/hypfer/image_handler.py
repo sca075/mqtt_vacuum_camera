@@ -641,7 +641,7 @@ class MapImageHandler(object):
         return total_memory_mb
 
     # Function to check if there is enough available memory with a margin
-    def check_memory_with_margin(self, array, margin=DRAWING_STEPS):
+    def check_memory_with_margin(self, array, margin=MEMORY_WARN_LIMIT):
         """Check if there is enough available memory with a margin.
         :raises MemoryShortageError: If there is not enough memory available."""
         array_memory_mb = self.calculate_memory_usage(array, margin)
