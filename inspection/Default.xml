@@ -1,7 +1,9 @@
 <profile version="1.0">
   <option name="myName" value="Default" />
   <inspection_tool class="JsonSchemaCompliance" enabled="false" level="WARNING" enabled_by_default="false" />
-  <inspection_tool class="PyCallingNonCallableInspection" enabled="false" level="WARNING" enabled_by_default="false" />
+  <inspection_tool class="PyArgumentEqualDefaultInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
+  <inspection_tool class="PyAugmentAssignmentInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
+  <inspection_tool class="PyClassicStyleClassInspection" enabled="true" level="WARNING" enabled_by_default="true" />
   <inspection_tool class="PyCompatibilityInspection" enabled="true" level="WARNING" enabled_by_default="true">
     <option name="ourVersions">
       <value>
@@ -32,6 +34,14 @@
         <option value="custom_components.valetudo_vacuum_camera.common.DeviceEntry" />
         <option value="int.__getitem__" />
       </list>
+    </option>
+  </inspection_tool>
+  <inspection_tool class="RegExpAnonymousGroup" enabled="true" level="WARNING" enabled_by_default="true" />
+  <inspection_tool class="RestRoleInspection" enabled="true" level="WARNING" enabled_by_default="true">
+    <option name="ignoredRoles">
+      <value>
+        <list size="0" />
+      </value>
     </option>
   </inspection_tool>
 </profile>
