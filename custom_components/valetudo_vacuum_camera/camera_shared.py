@@ -44,6 +44,8 @@ class CameraShared(object):
         self.map_rooms = None  # Rooms data from the vacuum
         self.map_pred_zones = None  # Predefined zones data
         self.map_pred_points = None  # Predefined points data
+        self.map_new_path = None  # New path data
+        self.map_old_path = None  # Old path data
 
     def update_user_colors(self, user_colors):
         """Update the user colors."""

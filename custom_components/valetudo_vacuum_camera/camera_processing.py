@@ -75,9 +75,7 @@ class CameraProcessor:
 
                 if self._shared.attr_calibration_points is None:
                     self._shared.attr_calibration_points = (
-                        self._map_handler.get_calibration_data(
-                            self._shared.image_rotate
-                        )
+                        self._map_handler.get_calibration_data()
                     )
 
                 self._shared.vac_json_id = self._map_handler.get_json_id()
@@ -216,7 +214,7 @@ class CameraProcessor:
 
     def get_frame_number(self):
         """Get the frame number."""
-        return self._map_handler.get_frame_number() - 1
+        return self._map_handler.get_frame_number() - 2
 
     def status_text(self, image, size, color, stat):
         """Draw the status text on the image."""

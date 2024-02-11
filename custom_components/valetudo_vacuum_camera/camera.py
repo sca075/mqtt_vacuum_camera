@@ -1,7 +1,5 @@
 """
-Camera Version 1.5.7.3 (threading implemented 100%)
-Valetudo Hypfer and rand256 Firmwares Vacuums maps.
-From PI4 up to all other Home Assistant supported platforms.
+Camera Version 1.5.8 (threading implemented 100%)
 """
 
 from __future__ import annotations
@@ -11,8 +9,10 @@ from io import BytesIO
 import json
 import logging
 import os
+import platform
 import time
 from typing import Optional
+from functools import partial
 
 from PIL import Image
 from homeassistant import config_entries, core
@@ -144,6 +144,11 @@ async def async_setup_platform(
 
 
 class ValetudoCamera(Camera):
+    """
+    Rend the vacuum map and the vacuum state for:
+    Valetudo Hypfer and rand256 Firmwares Vacuums maps.
+    From PI4 up to all other Home Assistant supported platforms.
+    """
     _attr_has_entity_name = True
 
     def __init__(self, hass, device_info):
@@ -158,6 +163,13 @@ class ValetudoCamera(Camera):
             self._mqtt_listen_topic = str(self._mqtt_listen_topic)
             self._shared.file_name = self._mqtt_listen_topic.split("/")[1].lower()
             _LOGGER.debug(f"Camera {self._shared.file_name} Starting up..")
+            _LOGGER.info(f"System Release: {platform.node()}, {platform.release()}")
+            _LOGGER.info(f"System Version: {platform.version()}")
+            _LOGGER.info(f"System Machine: {platform.machine()}")
+            _LOGGER.info(f"Python Version: {platform.python_version()}")
+            _LOGGER.info(f"Memory Available: "
+                         f"{round((ProcInsp().psutil.virtual_memory().available / (1024 * 1024)), 1)}"
+                         f" and In Use: {round((ProcInsp().psutil.virtual_memory().used / (1024 * 1024)), 1)}")
             self.snapshot_img = (
                 f"{self._directory_path}/www/snapshot_{self._shared.file_name}.png"
             )
@@ -204,6 +216,7 @@ class ValetudoCamera(Camera):
             os.remove(self.log_file)
         self._last_image = None
         self._rrm_data = False  # Temp. check for rrm data
+        # self._attr_extra_state_attributes = {}
         try:
             self.user_colors = [
                 device_info.get(COLOR_WALL),
@@ -296,21 +309,33 @@ class ValetudoCamera(Camera):
         """Camera Image"""
         return self._image
 
+    async def async_camera_image(
+            self, width: int | None = None, height: int | None = None
+    ) -> bytes | None:
+        """Return bytes of camera image."""
+        return await self.hass.async_add_executor_job(
+            partial(self.camera_image, width=self._image_w, height=self._image_h)
+        )
+
     @property
     def name(self) -> str:
         """Camera Entity Name"""
         return self._attr_name
 
-    def turn_on(self):
+    def turn_on(self) -> None:
+        """Camera Turn On"""
         self._should_poll = True
 
-    def turn_off(self):
+    def turn_off(self) -> None:
+        """Camera Turn Off"""
         self._should_poll = False
 
     @property
-    def extra_state_attributes(self):
+    def extra_state_attributes(self) -> dict:
         """Camera Attributes"""
         attrs = {
+            "model_name": "Valetudo Vacuum Camera",
+            "brand": "Valetudo Vacuums",
             "friendly_name": self._attr_name,
             "vacuum_status": self._shared.vacuum_state,
             "vacuum_topic": self._mqtt_listen_topic,
@@ -338,6 +363,7 @@ class ValetudoCamera(Camera):
 
     @property
     def should_poll(self) -> bool:
+        """ON/OFF Camera Polling"""
         return self._should_poll
 
     @property
@@ -352,25 +378,26 @@ class ValetudoCamera(Camera):
             from homeassistant.helpers.entity import DeviceInfo
 
             device_info = DeviceInfo
+
         return device_info(identifiers=self._identifiers)
 
     def empty_if_no_data(self):
         """Return an empty image if there are no data."""
-        # Check if the snapshot file exists
-        _LOGGER.info(f"{self.snapshot_img}: searching Snapshot image")
-        # if os.path.isfile(self.snapshot_img) and (self._last_image is None):
-        #     # Load the snapshot image
-        #     self._last_image = Image.open(self.snapshot_img)
-        #     _LOGGER.debug(f"{self._shared.file_name}: Snapshot image loaded")
-        #     return self._last_image
-        # elif self._last_image is not None:
-        if self._last_image is not None:
+        if self._last_image:
             return self._last_image
-        else:
-            # Create an empty image with a gray background
-            empty_img = Image.new("RGB", (800, 600), "gray")
-            _LOGGER.info(f"{self._shared.file_name}: Starting up ...")
-            return empty_img
+        elif self._last_image is None:
+            # Check if the snapshot file exists
+            _LOGGER.info(f"Searching for {self.snapshot_img}.")
+            if os.path.isfile(self.snapshot_img):
+                # Load the snapshot image
+                self._last_image = Image.open(self.snapshot_img)
+                _LOGGER.debug(f"{self._shared.file_name}: Returning Snapshot image.")
+                return self._last_image
+            else:
+                # Create an empty image with a gray background
+                empty_img = Image.new("RGB", (800, 600), "gray")
+                _LOGGER.info(f"{self._shared.file_name}: Returning Empty image.")
+                return empty_img
 
     async def take_snapshot(self, json_data, image_data):
         """Camera Automatic Snapshots."""
@@ -418,11 +445,14 @@ class ValetudoCamera(Camera):
             if self._cpu_percent > 80 or (self._shared.vacuum_state != "docked"):
                 # This will allow to retry in case of high CPU usage.
                 self._cpu_percent = 0
-            # return last image if no MQTT or CPU usage too high.
+                # self.turn_on()
+            # return last/empty image if no MQTT or CPU usage too high.
+            self._last_image = self.empty_if_no_data()
             self._image = await self.async_pil_to_bytes(self._last_image)
             _LOGGER.debug(
-                "No MQTT, or CPU usage too high. Returning not updated image."
+                "Camera turned OFF, no MQTT, or CPU usage too high."
             )
+            self.turn_off()
             return self._image
         # If we have data from MQTT, we process the image.
         self._shared.vacuum_state = await self._mqtt.get_vacuum_status()
@@ -449,8 +479,7 @@ class ValetudoCamera(Camera):
             pid = os.getpid()  # Start to log the CPU usage of this PID.
             proc = ProcInsp().psutil.Process(pid)  # Get the process PID.
             self._cpu_percent = round(
-                (proc.cpu_percent() / ProcInsp().psutil.cpu_count()) / 2,
-                2,
+                ((proc.cpu_percent() / int(ProcInsp().psutil.cpu_count()))/10), 1,
             )
             try:
                 parsed_json = await self._mqtt.update_data(self._shared.image_grab)
@@ -474,7 +503,7 @@ class ValetudoCamera(Camera):
                 pid = os.getpid()  # Start to log the CPU usage of this PID.
                 proc = ProcInsp().psutil.Process(pid)  # Get the process PID.
                 self._cpu_percent = round(
-                    (proc.cpu_percent() / ProcInsp().psutil.cpu_count()) / 2,
+                    (proc.cpu_percent() / int(ProcInsp().psutil.cpu_count())),
                     2,
                 )
                 if parsed_json is not None:
@@ -521,14 +550,7 @@ class ValetudoCamera(Camera):
                 self.camera_image(self._image_w, self._image_h)
                 # HA supervised Memory and CUP usage report.
                 self._cpu_percent = round(
-                    (
-                        (
-                            (self._cpu_percent + proc.cpu_percent())
-                            / ProcInsp().psutil.cpu_count()
-                        )
-                        / 2
-                    ),
-                    2,
+                    ((proc.cpu_percent() / int(ProcInsp().psutil.cpu_count()))/10), 1,
                 )
                 memory_percent = round(
                     (
