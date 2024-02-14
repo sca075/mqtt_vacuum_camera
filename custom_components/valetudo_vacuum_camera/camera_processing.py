@@ -10,6 +10,7 @@ import asyncio
 from asyncio import gather, get_event_loop
 import concurrent.futures
 import logging
+from typing import Coroutine
 
 from .valetudo.hypfer.image_handler import MapImageHandler
 from .valetudo.valetudore.image_handler import ReImageHandler
@@ -134,12 +135,12 @@ class CameraProcessor:
                     if self._shared.map_rooms:
                         _LOGGER.debug("State attributes rooms updated")
                 if self._shared.show_vacuum_state:
-                    self.status_text(
-                        pil_img,
-                        50,
-                        self._shared.user_colors[8],
-                        self._shared.file_name + ": " + self._shared.vacuum_state,
-                    )
+                    await self.status_text(
+                            pil_img,
+                            50,
+                            self._shared.user_colors[8],
+                            self._shared.file_name + ": " + self._shared.vacuum_state,
+                        )
 
                 if self._shared.attr_calibration_points is None:
                     self._shared.attr_calibration_points = (
@@ -216,7 +217,7 @@ class CameraProcessor:
         """Get the frame number."""
         return self._map_handler.get_frame_number() - 2
 
-    def status_text(self, image, size, color, stat):
+    async def status_text(self, image, size: int, color, stat) -> Coroutine:
         """Draw the status text on the image."""
         return self._map_handler.draw.status_text(
             image=image, size=size, color=color, status=stat

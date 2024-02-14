@@ -1,5 +1,5 @@
 """
-Version 1.5.7.4
+Version 1.5.8
 - Removed the PNG decode, the json is extracted from map-data instead of map-data hass.
 - Tested no influence on the camera performance.
 - Added gzip library used in Valetudo RE data compression.
@@ -29,11 +29,11 @@ class ValetudoConnector:
         self._hass = hass
         self._mqtt_topic = mqtt_topic
         self._unsubscribe_handlers = []
-        self._process_data = True
+        self._ignore_data = False
         self._rcv_topic = None
         self._payload = None
         self._img_payload = None
-        self._mqtt_vac_stat = None
+        self._mqtt_vac_stat = ""
         self._mqtt_vac_err = None
         self._data_in = False
         # Payload and data from Valetudo Re
@@ -64,7 +64,9 @@ class ValetudoConnector:
                 self._img_payload = None
                 return result, self._is_rrm
             else:
-                _LOGGER.info(f"No data from {self._mqtt_topic} or vacuum docked")
+                _LOGGER.info(f"No data from {self._mqtt_topic},"
+                             f"vacuum in { self._mqtt_vac_stat} status.")
+                self._ignore_data = True
                 self._data_in = False
                 self._is_rrm = False
                 return None, self._is_rrm
@@ -89,31 +91,26 @@ class ValetudoConnector:
                 self._is_rrm = False
                 return None, self._is_rrm
 
-    async def get_vacuum_status(self):
+    async def get_vacuum_status(self) -> str:
         """Return the vacuum status."""
         if self._mqtt_vac_stat:
             return self._mqtt_vac_stat
         if self._mqtt_vac_re_stat:
             return self._mqtt_vac_re_stat
 
-    async def get_vacuum_error(self):
+    async def get_vacuum_error(self) -> str:
         """Return the vacuum error."""
         return self._mqtt_vac_err
 
-    async def is_data_available(self, process):
+    async def is_data_available(self) -> bool:
         """Check and Return the data availability."""
-        if not process:
-            self._process_data = True
-            return self._data_in
-        else:
-            self._process_data = False
-            return False
+        return self._data_in
 
     async def get_destinations(self):
         """Return the destinations used only for Rand256."""
         return self._rrm_destinations
 
-    async def save_payload(self, file_name):
+    async def save_payload(self, file_name: str) -> None:
         """
         Save payload when available.
         """
@@ -133,14 +130,14 @@ class ValetudoConnector:
             _LOGGER.info(f"Saved image data from MQTT in {file_name}.raw!")
 
     @callback
-    async def async_message_received(self, msg):
+    async def async_message_received(self, msg) -> None:
         """
         Handle new MQTT messages.
         MapData/map_data is for Hypfer, and map-data is for ValetudoRe.
         """
         self._rcv_topic = msg.topic
         if self._rcv_topic == f"{self._mqtt_topic}/map_data":
-            if not self._data_in and self._process_data:
+            if not self._data_in:
                 _LOGGER.info(
                     f"Received Valetudo RE {self._mqtt_topic} image data from MQTT"
                 )
@@ -155,8 +152,8 @@ class ValetudoConnector:
                     )
                     await self.rrm_publish_destinations()
                     self._do_it_once = False
-        elif self._rcv_topic == f"{self._mqtt_topic}/MapData/map-data":
-            if not self._data_in and self._process_data:
+        elif (self._rcv_topic == f"{self._mqtt_topic}/MapData/map-data") and (not self._ignore_data):
+            if not self._data_in:
                 _LOGGER.info(f"Received {self._mqtt_topic} image data from MQTT")
                 self._img_payload = msg.payload
                 self._data_in = True
@@ -168,6 +165,8 @@ class ValetudoConnector:
                 _LOGGER.info(
                     f"{self._mqtt_topic}: Received vacuum {self._mqtt_vac_stat} status."
                 )
+                if self._mqtt_vac_stat != "docked":
+                    self._ignore_data = False
         elif self._rcv_topic == f"{self._mqtt_topic}/state":  # for ValetudoRe
             self._payload = msg.payload
             if self._payload:
@@ -193,7 +192,7 @@ class ValetudoConnector:
                 f"{self._mqtt_topic}: Received vacuum destinations: {self._rrm_destinations}"
             )
 
-    async def async_subscribe_to_topics(self):
+    async def async_subscribe_to_topics(self) -> None:
         """Subscribe to the MQTT topics for Hypfer and ValetudoRe."""
         if self._mqtt_topic:
             for x in [
@@ -210,7 +209,7 @@ class ValetudoConnector:
                     )
                 )
 
-    async def rrm_publish_destinations(self):
+    async def rrm_publish_destinations(self) -> None:
         """
         Request the destinations from ValetudoRe.
         Destination is used to gater the room names.
@@ -226,13 +225,13 @@ class ValetudoConnector:
             encoding="utf-8",
         )
 
-    async def async_unsubscribe_from_topics(self):
+    async def async_unsubscribe_from_topics(self) -> None:
         """Unsubscribe from all MQTT topics."""
         _LOGGER.debug("Unsubscribing topics!!!")
         map(lambda x: x(), self._unsubscribe_handlers)
 
     @staticmethod
-    def get_test_payload(payload_data):
+    def get_test_payload(payload_data) -> None:
         """Test Payload for testing the Camera."""
         ValetudoConnector._img_payload = payload_data
         _LOGGER.debug("Processing Test Data..")
