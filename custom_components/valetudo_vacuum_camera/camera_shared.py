@@ -1,7 +1,7 @@
 """
 Class Camera Shared.
 Keep the data between the modules.
-Version 1.5.7.4
+Version 1.5.8
 """
 
 import logging
@@ -30,6 +30,8 @@ class CameraShared(object):
         self.current_room = None  # Current room of rhe vacuum
         self.user_colors = Colors  # User base colors
         self.rooms_colors = Colors  # Rooms colors
+        self.vacuum_battery = None  # Vacuum battery state
+        self.vacuum_connection = None  # Vacuum connection state
         self.vacuum_state = None  # Vacuum state
         self.charger_position = None  # Vacuum Charger position
         self.show_vacuum_state = None  # Show vacuum state on the map

@@ -134,8 +134,8 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
                 "alpha_wall": 255.0,
                 "alpha_robot": 255.0,
                 "alpha_go_to": 255.0,
-                "alpha_no_go": 25.0,
-                "alpha_zone_clean": 25.0,
+                "alpha_no_go": 125.0,
+                "alpha_zone_clean": 125.0,
                 "alpha_background": 255.0,
                 "alpha_text": 255.0,
                 "alpha_room_0": 255.0,
@@ -168,10 +168,11 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
         _LOGGER.debug(dict(new_data))
         old_options = {**config_entry.options}
         if len(old_options) != 0:
-            tmp_option = {"margins": "150",
-                          "get_svg_file": False,
-                          "enable_www_snapshots": True,
-                          }
+            tmp_option = {
+                "margins": "150",
+                "get_svg_file": False,
+                "enable_www_snapshots": True,
+            }
             new_options = await update_options(old_options, tmp_option)
             _LOGGER.debug(dict(new_options))
             config_entry.version = 2.2
@@ -243,6 +244,7 @@ async def async_unload_entry(
     return unload_ok
 
 
+# noinspection PyCallingNonCallable
 async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
     """Set up the Valetudo Camera Custom component from yaml configuration."""
     # Make sure MQTT integration is enabled and the client is available

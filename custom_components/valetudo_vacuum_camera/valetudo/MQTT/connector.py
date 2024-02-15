@@ -34,6 +34,8 @@ class ValetudoConnector:
         self._payload = None
         self._img_payload = None
         self._mqtt_vac_stat = ""
+        self._mqtt_vac_connect_state = ""
+        self._mqtt_vac_battery_level = None
         self._mqtt_vac_err = None
         self._data_in = False
         # Payload and data from Valetudo Re
@@ -102,13 +104,21 @@ class ValetudoConnector:
         """Return the vacuum error."""
         return self._mqtt_vac_err
 
-    async def is_data_available(self) -> bool:
-        """Check and Return the data availability."""
-        return self._data_in
+    async def get_battery_level(self) -> str:
+        """Rerun vacuum battery Level."""
+        return f"{self._mqtt_vac_battery_level}%"
+
+    async def get_vacuum_connection_state(self) -> str:
+        """Return the vacuum connection state."""
+        return self._mqtt_vac_connect_state
 
     async def get_destinations(self):
         """Return the destinations used only for Rand256."""
         return self._rrm_destinations
+
+    async def is_data_available(self) -> bool:
+        """Check and Return the data availability."""
+        return self._data_in
 
     async def save_payload(self, file_name: str) -> None:
         """
@@ -167,6 +177,23 @@ class ValetudoConnector:
                 )
                 if self._mqtt_vac_stat != "docked":
                     self._ignore_data = False
+        elif self._rcv_topic == f"{self._mqtt_topic}/$state":
+            self._payload = msg.payload
+            if self._payload:
+                self._mqtt_vac_connect_state = bytes.decode(self._payload, "utf-8")
+                _LOGGER.info(
+                    f"{self._mqtt_topic}: Received vacuum connection status: {self._mqtt_vac_connect_state}."
+                )
+            # if self._ignore_data:
+            #     self._ignore_data = False
+            #     self._data_in = True
+        elif self._rcv_topic == f"{self._mqtt_topic}/BatteryStateAttribute/level":
+            self._payload = msg.payload
+            if self._payload:
+                self._mqtt_vac_battery_level = int(bytes.decode(self._payload, "utf-8"))
+                _LOGGER.info(
+                    f"{self._mqtt_topic}: Received vacuum battery level: {self._mqtt_vac_battery_level }%."
+                )
         elif self._rcv_topic == f"{self._mqtt_topic}/state":  # for ValetudoRe
             self._payload = msg.payload
             if self._payload:
@@ -199,6 +226,8 @@ class ValetudoConnector:
                 self._mqtt_topic + "/MapData/map-data",
                 self._mqtt_topic + "/StatusStateAttribute/status",
                 self._mqtt_topic + "/StatusStateAttribute/error_description",
+                self._mqtt_topic + "/$state",
+                self._mqtt_topic + "/BatteryStateAttribute/level",
                 self._mqtt_topic + "/map_data",  # added for ValetudoRe
                 self._mqtt_topic + "/state",  # added for ValetudoRe
                 self._mqtt_topic + "/destinations",  # added for ValetudoRe

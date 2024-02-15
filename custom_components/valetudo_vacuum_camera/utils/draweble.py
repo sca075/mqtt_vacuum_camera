@@ -11,24 +11,32 @@ import math
 
 from PIL import ImageDraw, ImageFont
 import numpy as np
+from custom_components.valetudo_vacuum_camera.types import Color
 
 _LOGGER = logging.getLogger(__name__)
 
 
 class Drawable:
+    """
+    Collection of drawing utility functions for the image handlers.
+    This class contains static methods to draw various elements on the Numpy Array.
+    We cant use openCV because it is not supported by the Home Assistant OS.
+    """
 
     @staticmethod
-    async def create_empty_image(width, height, background_color):
-        # Create the empty background image numpy array
+    async def create_empty_image(width: int, height: int, background_color: Color) -> np.ndarray:
+        """ Create the empty background image numpy array. """
+        """ Background color is specified as RGBA tuple. """
         image_array = np.full((height, width, 4), background_color, dtype=np.uint8)
         return image_array
 
     @staticmethod
-    async def from_json_to_image(layer, data, pixel_size, color):
+    async def from_json_to_image(layer: np.ndarray, pixels: dict, pixel_size: int, color: Color) -> np.ndarray:
+        """ Drawing the layers (rooms) from the vacuum json data."""
         # Create a backup of the array the image
         image_array = layer
         # Draw rectangles for each point in data
-        for x, y, z in data:
+        for x, y, z in pixels:
             for i in range(z):
                 col = (x + i) * pixel_size
                 row = y * pixel_size
@@ -368,7 +376,7 @@ class Drawable:
         # Draw the robot outline
         tmp_layer = Drawable._filled_circle(tmp_layer, (tmp_x, tmp_y), radius, fill, outline, 1)
         # Draw bin cover
-        angle = angle - 90  # we remove 90 for the cover orientation
+        angle -= 90  # we remove 90 for the cover orientation
         a1 = ((angle + 90) - 80) / 180 * math.pi
         a2 = ((angle + 90) + 80) / 180 * math.pi
         x1 = int(tmp_x - r_cover * math.sin(a1))
@@ -431,6 +439,7 @@ class Drawable:
 
     @staticmethod
     def status_text(image, size, color, status):
+        """ Draw the Status Test on the image. """
         # Load a font
         path = (
             "custom_components/valetudo_vacuum_camera/utils/fonts/lato/Lato-Regular.ttf"

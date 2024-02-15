@@ -341,11 +341,12 @@ class ValetudoCamera(Camera):
             "model_name": "Valetudo Vacuum Camera",
             "brand": "Valetudo Vacuums",
             "friendly_name": self._attr_name,
-            "vacuum_status": self._shared.vacuum_state,
-            "vacuum_topic": self._mqtt_listen_topic,
-            "vacuum_json_id": self._shared.vac_json_id,
-            "json_data": self._vac_json_available,
+            "vacuum_battery": self._shared.vacuum_battery,
             "vacuum_position": self._shared.current_room,
+            "vacuum_topic": self._mqtt_listen_topic,
+            "vacuum_status": self._shared.vacuum_state,
+            "json_data": self._vac_json_available,
+            "vacuum_json_id": self._shared.vac_json_id,
             "calibration_points": self._shared.attr_calibration_points,
         }
         if self._enable_snapshots:
@@ -462,6 +463,8 @@ class ValetudoCamera(Camera):
 
         # If we have data from MQTT, we process the image.
         self._shared.vacuum_state = await self._mqtt.get_vacuum_status()
+        self._shared.vacuum_battery = await self._mqtt.get_battery_level()
+        self._shared.vacuum_connection = await self._mqtt.get_vacuum_connection_state()
         process_data = await self._mqtt.is_data_available()
         if process_data:
             # to calculate the cycle time for frame adjustment.

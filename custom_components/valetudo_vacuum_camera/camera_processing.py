@@ -1,5 +1,5 @@
 """
-Multiprocessing module (version 1.5.7.4)
+Multiprocessing module (version 1.5.8)
 This module provide the image multiprocessing in order to
 avoid the overload of the main_thread of Home Assistant.
 """
@@ -10,7 +10,6 @@ import asyncio
 from asyncio import gather, get_event_loop
 import concurrent.futures
 import logging
-from typing import Coroutine
 
 from .valetudo.hypfer.image_handler import MapImageHandler
 from .valetudo.valetudore.image_handler import ReImageHandler
@@ -53,9 +52,18 @@ class CameraProcessor:
                         _LOGGER.debug("State attributes rooms updated")
 
                 if self._shared.show_vacuum_state:
-                    status_text = (
-                        f"{self._shared.file_name}: {self._shared.vacuum_state}"
-                    )
+                    if self._shared.vacuum_connection == "disconnected":
+                        status_text = f"{self._shared.file_name}: {self._shared.vacuum_connection} from MQTT"
+                    else:
+                        if self._shared.vacuum_state == "docked":
+                            status_text = (
+                                f"{self._shared.file_name}: {self._shared.vacuum_state}"
+                            )
+                        else:
+                            status_text = (
+                                f"{self._shared.file_name}: {self._shared.vacuum_state} "
+                                f"(Battery: {self._shared.vacuum_battery})"
+                            )
                     text_size = 50
                     if self._shared.current_room:
                         try:
@@ -135,7 +143,7 @@ class CameraProcessor:
                     if self._shared.map_rooms:
                         _LOGGER.debug("State attributes rooms updated")
                 if self._shared.show_vacuum_state:
-                    await self.status_text(
+                    self._re_handler.draw.status_text(
                             pil_img,
                             50,
                             self._shared.user_colors[8],
@@ -216,12 +224,6 @@ class CameraProcessor:
     def get_frame_number(self):
         """Get the frame number."""
         return self._map_handler.get_frame_number() - 2
-
-    async def status_text(self, image, size: int, color, stat) -> Coroutine:
-        """Draw the status text on the image."""
-        return self._map_handler.draw.status_text(
-            image=image, size=size, color=color, status=stat
-        )
 
 
 """ 
