@@ -3,6 +3,9 @@
     <option name="selectAutopopupSuggestionsByChars" value="true" />
     <option name="SELECT_AUTOPOPUP_SUGGESTIONS_BY_CHARS" value="true" />
   </component>
+  <component name="DaemonCodeAnalyzerSettings">
+    <option name="AUTOREPARSE_DELAY" value="0" />
+  </component>
   <component name="EditorSettings">
     <option name="BIDI_TEXT_DIRECTION" value="LTR" />
   </component>
