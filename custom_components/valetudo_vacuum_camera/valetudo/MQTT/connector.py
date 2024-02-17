@@ -108,9 +108,11 @@ class ValetudoConnector:
         """Rerun vacuum battery Level."""
         return f"{self._mqtt_vac_battery_level}%"
 
-    async def get_vacuum_connection_state(self) -> str:
+    async def get_vacuum_connection_state(self) -> bool:
         """Return the vacuum connection state."""
-        return self._mqtt_vac_connect_state
+        if self._mqtt_vac_connect_state != "ready":
+            return False
+        return True
 
     async def get_destinations(self):
         """Return the destinations used only for Rand256."""
@@ -184,9 +186,9 @@ class ValetudoConnector:
                 _LOGGER.info(
                     f"{self._mqtt_topic}: Received vacuum connection status: {self._mqtt_vac_connect_state}."
                 )
-            # if self._ignore_data:
-            #     self._ignore_data = False
-            #     self._data_in = True
+            if self._ignore_data and self._mqtt_vac_connect_state != "ready":
+                self._ignore_data = False
+                self._data_in = True
         elif self._rcv_topic == f"{self._mqtt_topic}/BatteryStateAttribute/level":
             self._payload = msg.payload
             if self._payload:

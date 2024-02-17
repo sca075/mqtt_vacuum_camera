@@ -61,6 +61,20 @@ body:
       placeholder: yyyy.mm.x
       description: >
         If known, otherwise leave blank.
+  - type: dropdown
+    validations:
+      required: true
+    attributes:
+      label: What type of platform you use?
+      description: >
+        As per there are limitations recently reported, please specify the machine were Home Assistant Runs.
+
+        [![Open your Home Assistant instance and show your Home Assistant version information.](https://my.home-assistant.io/badges/info.svg)](https://my.home-assistant.io/redirect/info/)
+      options:
+        - Intel NUC (or generic x86_64)
+        - ARM (Raspberry Pi, Odroid, etc.) < 4GB
+        - ARM (Raspberry Pi, Odroid, etc.) > 4GB
+        - VEMLinux (Virtual Machine) such as Proxmox, VMWare, etc.
   - type: input
     id: ha-version
     validations:

@@ -462,8 +462,8 @@ class ValetudoCamera(Camera):
             return self._image
 
         # If we have data from MQTT, we process the image.
-        self._shared.vacuum_state = await self._mqtt.get_vacuum_status()
         self._shared.vacuum_battery = await self._mqtt.get_battery_level()
+        self._shared.vacuum_state = await self._mqtt.get_vacuum_status()
         self._shared.vacuum_connection = await self._mqtt.get_vacuum_connection_state()
         process_data = await self._mqtt.is_data_available()
         if process_data:
@@ -480,6 +480,7 @@ class ValetudoCamera(Camera):
                 self._shared.vacuum_state == "cleaning"
                 or self._shared.vacuum_state == "moving"
                 or self._shared.vacuum_state == "returning"
+                and self._shared.vacuum_connection
             ):
                 # grab the image from MQTT.
                 self._shared.image_grab = True
@@ -583,6 +584,8 @@ class ValetudoCamera(Camera):
             _LOGGER.debug(
                 f"{self._shared.file_name}: Image from Json: {self._shared.vac_json_id}."
             )
+            if self._shared.show_vacuum_state:
+                pil_img = await self.processor.run_async_draw_image_text(pil_img, self._shared.user_colors[8])
         else:
             if self._last_image is not None:
                 _LOGGER.debug(f"{self._shared.file_name}: Output Last Image.")

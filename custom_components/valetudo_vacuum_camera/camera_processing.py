@@ -13,6 +13,8 @@ import logging
 
 from .valetudo.hypfer.image_handler import MapImageHandler
 from .valetudo.valetudore.image_handler import ReImageHandler
+from .utils.draweble import Drawable as Draw
+from .types import Color, PilPNG
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 _LOGGER.propagate = True
@@ -50,37 +52,6 @@ class CameraProcessor:
                     )
                     if self._shared.map_rooms:
                         _LOGGER.debug("State attributes rooms updated")
-
-                if self._shared.show_vacuum_state:
-                    if self._shared.vacuum_connection == "disconnected":
-                        status_text = f"{self._shared.file_name}: {self._shared.vacuum_connection} from MQTT"
-                    else:
-                        if self._shared.vacuum_state == "docked":
-                            status_text = (
-                                f"{self._shared.file_name}: {self._shared.vacuum_state}"
-                            )
-                        else:
-                            status_text = (
-                                f"{self._shared.file_name}: {self._shared.vacuum_state} "
-                                f"(Battery: {self._shared.vacuum_battery})"
-                            )
-                    text_size = 50
-                    if self._shared.current_room:
-                        try:
-                            in_room = self._shared.current_room.get("in_room", None)
-                        except (ValueError, KeyError):
-                            text_size = 50
-                        else:
-                            if in_room:
-                                text_size = 45
-                                status_text += f", {in_room}"
-
-                    self._map_handler.draw.status_text(
-                        pil_img,
-                        text_size,
-                        self._shared.user_colors[8],
-                        status_text,
-                    )
 
                 if self._shared.attr_calibration_points is None:
                     self._shared.attr_calibration_points = (
@@ -224,6 +195,78 @@ class CameraProcessor:
     def get_frame_number(self):
         """Get the frame number."""
         return self._map_handler.get_frame_number() - 2
+
+    def get_status_text(self):
+        """Get the status text."""
+        status_text = "Something went wrong.."
+        text_size = 50
+        if self._shared.show_vacuum_state:
+            status_text = f"{self._shared.file_name}: {self._shared.vacuum_state}"
+            if self._shared.vacuum_connection == "disconnected":
+                self._shared.image_grab = True
+                status_text = f"{self._shared.file_name}: {self._shared.vacuum_connection} from MQTT"
+            else:
+                if self._shared.vacuum_state == "docked":
+                    if self._shared.vacuum_battery != "100%":
+                        status_text += f"/Charging: {self._shared.vacuum_battery}"
+                    else:
+                        status_text += "/Charged!"
+                else:
+                    status_text += f"/Batt.: {self._shared.vacuum_battery}"
+            if self._shared.current_room:
+                try:
+                    in_room = self._shared.current_room.get("in_room", None)
+                except (ValueError, KeyError):
+                    text_size = 50
+                else:
+                    if in_room:
+                        text_size = 45
+                        status_text += f", {in_room}"
+        return status_text, text_size
+
+    async def async_draw_image_text(self, pil_img: PilPNG, color: Color) -> PilPNG:
+        """Draw text on the image."""
+        if pil_img is not None:
+            text, size = self.get_status_text()
+            Draw.status_text(image=pil_img, size=size, color=color, status=text)
+        return pil_img
+
+    def process_status_text(self, pil_img: PilPNG, color: Color):
+        """Async function to process the image data from the Vacuum Json data."""
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            result = loop.run_until_complete(
+                self.async_draw_image_text(pil_img, color)
+            )
+        finally:
+            loop.close()
+        return result
+
+    async def run_async_draw_image_text(self, pil_img: PilPNG, color: Color) -> PilPNG:
+        """Thread function to process the image data from the Vacuum Json data."""
+        num_processes = 1
+        parsed_json_list = [pil_img for _ in range(num_processes)]
+        loop = get_event_loop()
+
+        with concurrent.futures.ThreadPoolExecutor(
+                max_workers=1, thread_name_prefix=f"{self._shared.file_name}_camera"
+        ) as executor:
+            tasks = [
+                loop.run_in_executor(executor, self.process_status_text, pil_img, color)
+                for parsed_json in parsed_json_list
+            ]
+            images = await gather(*tasks)
+
+        if isinstance(images, list) and len(images) > 0:
+            _LOGGER.debug(
+                f"{self._shared.file_name}: Got {len(images)} image text.."
+            )
+            result = images[0]
+        else:
+            result = None
+
+        return result
 
 
 """ 

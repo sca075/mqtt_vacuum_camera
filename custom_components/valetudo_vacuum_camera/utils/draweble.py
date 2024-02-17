@@ -417,11 +417,9 @@ class Drawable:
     def draw_obstacles(image, obstacle_info_list, color):
         """
         Draw filled circles for obstacles on the image.
-
         Parameters:
         - image: NumPy array representing the image.
         - obstacle_info_list: List of dictionaries containing obstacle information.
-
         Returns:
         - Modified image with filled circles for obstacles.
         """
