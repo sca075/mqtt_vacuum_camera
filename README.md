@@ -54,7 +54,6 @@ As a team of one, I'm diligently working to address compatibility across all env
 Your support in making this component compatible with all environments is greatly appreciated. If you'd like to contribute, whether through code or time, please consider joining our efforts.
 For further details on how the camera operates and how you can contribute, refer to the Wiki section of this project. Your patience and assistance are crucial as we strive toward our goal of universal compatibility.
 
-- PROXMOX: The camera is not properly working on Proxmox, we are working to make it compatible.
 - PI3 4GB: The camera is working on PI3 4GB, anyhow no chance there to run two vacuums cameras at the same time.
 - PI4 4GB: The camera is working on PI4 4GB, anyhow run two vacuums cameras at the same time isn't advised.
 </details>
