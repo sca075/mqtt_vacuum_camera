@@ -5,7 +5,7 @@
         "data": {
           "vacuum_entity": "掃地機實體ID",
           "vacuum_config_entry": "掃地機設定資料",
-          "vacuum_map": "掃地機主題",
+          "vacuum_map": "掃地機地圖",
           "vacuum_identifiers": "掃地機MQTT ID",
           "unique_id": ""
         },
@@ -19,7 +19,7 @@
     "step": {
       "init": {
         "title": "Valetudo攝影機選項",
-        "description": "可能的更改:",
+        "description": "可用的更改:",
         "data": {"camera_config_action": "動作"}
       },
       "image_opt": {
@@ -52,10 +52,10 @@
           "add_base_alpha": "配置透明度:"
         },
         "data_description": {
-          "color_charger": "充電器顏色。",
+          "color_charger": "充電基座顏色。",
           "color_move": "移動顏色。",
           "color_wall": "牆壁顏色。",
-          "color_robot": "吸塵器顏色。",
+          "color_robot": "掃地機顏色。",
           "color_go_to": "前往顏色。",
           "color_no_go": "禁止顏色。",
           "color_zone_clean": "區域清潔顏色。",
@@ -66,10 +66,10 @@
       },
       "alpha_1": {
         "data": {
-          "alpha_charger": "充電器透明度",
+          "alpha_charger": "充電基座透明度",
           "alpha_move": "移動透明度",
           "alpha_wall": "牆壁透明度",
-          "alpha_robot": "吸塵器透明度",
+          "alpha_robot": "掃地機透明度",
           "alpha_go_to": "前往區域透明度",
           "alpha_no_go": "禁止區域透明度",
           "alpha_zone_clean": "區域清潔透明度",
