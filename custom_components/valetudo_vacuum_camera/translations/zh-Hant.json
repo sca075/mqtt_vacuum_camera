@@ -1,0 +1,193 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "vacuum_entity": "掃地機實體ID",
+          "vacuum_config_entry": "掃地機設定資料",
+          "vacuum_map": "掃地機地圖",
+          "vacuum_identifiers": "掃地機MQTT ID",
+          "unique_id": ""
+        },
+        "data_description": {"vacuum_entity": "掃地機實體ID"},
+        "description": "攝影機設定。",
+        "title": "Valetudo攝影機設定"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Valetudo攝影機選項",
+        "description": "可用的更改:",
+        "data": {"camera_config_action": "動作"}
+      },
+      "image_opt": {
+        "data": {
+          "rotate_image": "旋轉",
+          "margins": "150",
+          "show_vac_status": "顯示掃地機狀態。",
+          "color_text": "[255, 255, 255]",
+          "get_svg_file": "匯出SVG基礎層。",
+          "enable_www_snapshots": "匯出PNG快照。"
+        },
+        "data_description": {
+          "rotate_image": "度數 0、90、180、270",
+          "margins": "以像素為單位的自動裁剪邊緣。",
+          "color_text": "掃地機狀態文字顏色。"
+        },
+        "description": "攝影機圖像選項",
+        "title": "圖像選項"
+      },
+      "base_colours": {
+        "data": {
+          "color_charger": "[255, 128, 0]",
+          "color_move": "[238, 247, 255]",
+          "color_wall": "[255, 255, 0]",
+          "color_robot": "[255, 255, 204]",
+          "color_go_to": "[0, 255, 0]",
+          "color_no_go": "[255, 0, 0]",
+          "color_zone_clean": "[255, 255, 255]",
+          "color_background": "[0, 125, 255]",
+          "add_base_alpha": "配置透明度:"
+        },
+        "data_description": {
+          "color_charger": "充電基座顏色。",
+          "color_move": "移動顏色。",
+          "color_wall": "牆壁顏色。",
+          "color_robot": "掃地機顏色。",
+          "color_go_to": "前往顏色。",
+          "color_no_go": "禁止顏色。",
+          "color_zone_clean": "區域清潔顏色。",
+          "color_background": "背景顏色。"
+        },
+        "description": "攝影機顏色選項。",
+        "title": "基本顏色設置"
+      },
+      "alpha_1": {
+        "data": {
+          "alpha_charger": "充電基座透明度",
+          "alpha_move": "移動透明度",
+          "alpha_wall": "牆壁透明度",
+          "alpha_robot": "掃地機透明度",
+          "alpha_go_to": "前往區域透明度",
+          "alpha_no_go": "禁止區域透明度",
+          "alpha_zone_clean": "區域清潔透明度",
+          "alpha_background": "背景透明度",
+          "alpha_text": "文字透明度"
+        },
+        "description": "攝影機選項。Alpha 1",
+        "title": "Alpha通道基本顏色"
+      },
+      "rooms_colours_1": {
+        "data": {
+          "color_room_0": "[135, 206, 250]",
+          "color_room_1": "[176, 226, 255]",
+          "color_room_2": "[165, 105, 18]",
+          "color_room_3": "[164, 211, 238]",
+          "color_room_4": "[141, 182, 205]",
+          "color_room_5": "[96, 123, 139]",
+          "color_room_6": "[224, 255, 255]",
+          "color_room_7": "[209, 238, 238]",
+          "add_room_1_alpha": "配置透明度:"
+        },
+        "data_description": {
+          "color_room_0": "房間1，地板顏色。",
+          "color_room_1": "房間2",
+          "color_room_2": "房間3",
+          "color_room_3": "房間4",
+          "color_room_4": "房間5",
+          "color_room_5": "房間6",
+          "color_room_6": "房間7",
+          "color_room_7": "房間8"
+        },
+        "description": "攝影機顏色選項。",
+        "title": "房間1至8顏色"
+      },
+      "rooms_colours_2": {
+        "data": {
+          "color_room_8": "[180, 205, 205]",
+          "color_room_9": "[122, 139, 139]",
+          "color_room_10": "[175, 238, 238]",
+          "color_room_11": "[84, 153, 199]",
+          "color_room_12": "[133, 193, 233]",
+          "color_room_13": "[245, 176, 65]",
+          "color_room_14": "[82, 190, 128]",
+          "color_room_15": "[72, 201, 176]",
+          "add_room_2_alpha": "配置透明度:"
+        },
+        "data_description": {
+          "color_room_8": "房間9",
+          "color_room_9": "房間10",
+          "color_room_10": "房間11",
+          "color_room_11": "房間12",
+          "color_room_12": "房間13",
+          "color_room_13": "房間14",
+          "color_room_14": "房間15",
+          "color_room_15": "房間16"
+        },
+        "description": "攝影機顏色選項。",
+        "title": "房間9至15顏色"
+      },
+      "alpha_2": {
+        "data": {
+          "alpha_room_0": "房間1，地板顏色。",
+          "alpha_room_1": "房間2",
+          "alpha_room_2": "房間3",
+          "alpha_room_3": "房間4",
+          "alpha_room_4": "房間5",
+          "alpha_room_5": "房間6",
+          "alpha_room_6": "房間7",
+          "alpha_room_7": "房間8"
+        },
+        "description": "攝影機選項。Alpha 2",
+        "title": "Alpha通道房間顏色"
+      },
+      "alpha_3": {
+        "data": {
+          "alpha_room_8": "房間9",
+          "alpha_room_9": "房間10",
+          "alpha_room_10": "房間11",
+          "alpha_room_11": "房間12",
+          "alpha_room_12": "房間13",
+          "alpha_room_13": "房間14",
+          "alpha_room_14": "房間15",
+          "alpha_room_15": "房間16"
+        },
+        "description": "攝影機選項。Alpha 3",
+        "title": "Alpha通道房間顏色"
+      }
+    }
+  },
+  "selector": {
+    "camera_config_action": {
+      "options": {
+        "opt_1": "設定圖像",
+        "opt_2": "設定一般顏色",
+        "opt_3": "設定房間1至8的顏色",
+        "opt_4": "設定房間9至16的顏色",
+        "opt_5": "將攝影機日誌複製到www"
+      }
+    }
+  },
+  "services": {
+    "turn_off": {
+      "name": "[%key:common::action::turn_off%]",
+      "description": "關閉攝影機。"
+    },
+    "turn_on": {
+      "name": "[%key:common::action::turn_on%]",
+      "description": "打開攝影機。"
+    },
+    "snapshot": {
+      "name": "拍攝快照",
+      "description": "從攝影機拍攝快照。",
+      "fields": {
+        "filename": {
+          "name": "檔名",
+          "description": "檔名的範本。可用變數為 `entity_id`。"
+        }
+      }
+    }
+  }
+}

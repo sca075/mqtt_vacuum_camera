@@ -1,0 +1,193 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "vacuum_entity": "掃除機エンティティID",
+          "vacuum_config_entry": "掃除機設定データ",
+          "vacuum_map": "掃除機トピック",
+          "vacuum_identifiers": "掃除機MQTT ID",
+          "unique_id": ""
+        },
+        "data_description": {"vacuum_entity": "掃除機エンティティID"},
+        "description": "カメラ設定。",
+        "title": "Valetudoカメラ設定"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Valetudoカメラオプション",
+        "description": "可能な変更:",
+        "data": {"camera_config_action": "アクション"}
+      },
+      "image_opt": {
+        "data": {
+          "rotate_image": "回転",
+          "margins": "150",
+          "show_vac_status": "掃除機ステータスを表示する。",
+          "color_text": "[255, 255, 255]",
+          "get_svg_file": "SVGベースレイヤーをエクスポートする。",
+          "enable_www_snapshots": "PNGスナップショットをエクスポートする。"
+        },
+        "data_description": {
+          "rotate_image": "度数 0、90、180、270",
+          "margins": "ピクセル単位の自動クロップマージン。",
+          "color_text": "掃除機ステータステキストの色。"
+        },
+        "description": "カメラ画像オプション",
+        "title": "画像オプション"
+      },
+      "base_colours": {
+        "data": {
+          "color_charger": "[255, 128, 0]",
+          "color_move": "[238, 247, 255]",
+          "color_wall": "[255, 255, 0]",
+          "color_robot": "[255, 255, 204]",
+          "color_go_to": "[0, 255, 0]",
+          "color_no_go": "[255, 0, 0]",
+          "color_zone_clean": "[255, 255, 255]",
+          "color_background": "[0, 125, 255]",
+          "add_base_alpha": "透明度を設定する:"
+        },
+        "data_description": {
+          "color_charger": "ドックの色。",
+          "color_move": "移動の色。",
+          "color_wall": "壁の色。",
+          "color_robot": "掃除機の色。",
+          "color_go_to": "目的地の色。",
+          "color_no_go": "ノーゴーゾーンの色。",
+          "color_zone_clean": "ゾーンクリーンの色。",
+          "color_background": "背景色。"
+        },
+        "description": "カメラカラーオプション。",
+        "title": "ベースカラー設定"
+      },
+      "alpha_1": {
+        "data": {
+          "alpha_charger": "ドックの透明度  ",
+          "alpha_move": "移動の透明度    ",
+          "alpha_wall": "壁の透明度      ",
+          "alpha_robot": "掃除機の透明度  ",
+          "alpha_go_to": "目的地の透明度  ",
+          "alpha_no_go": "ノーゴーゾーンの透明度",
+          "alpha_zone_clean": "ゾーンクリーンの透明度",
+          "alpha_background": "背景の透明度",
+          "alpha_text": "テキストの透明度"
+        },
+        "description": "カメラオプション。透明度 1",
+        "title": "アルファチャンネル（透明度）ベースカラー"
+      },
+      "rooms_colours_1": {
+        "data": {
+          "color_room_0": "[135, 206, 250]",
+          "color_room_1": "[176, 226, 255]",
+          "color_room_2": "[165, 105, 18]",
+          "color_room_3": "[164, 211, 238]",
+          "color_room_4": "[141, 182, 205]",
+          "color_room_5": "[96, 123, 139]",
+          "color_room_6": "[224, 255, 255]",
+          "color_room_7": "[209, 238, 238]",
+          "add_room_1_alpha": "透明度を設定する:"
+        },
+        "data_description": {
+          "color_room_0": "部屋1",
+          "color_room_1": "部屋2",
+          "color_room_2": "部屋3",
+          "color_room_3": "部屋4",
+          "color_room_4": "部屋5",
+          "color_room_5": "部屋6",
+          "color_room_6": "部屋7",
+          "color_room_7": "部屋8"
+        },
+        "description": "カメラカラーオプション。",
+        "title": "部屋1から8の色"
+      },
+      "rooms_colours_2": {
+        "data": {
+          "color_room_8": "[180, 205, 205]",
+          "color_room_9": "[122, 139, 139]",
+          "color_room_10": "[175, 238, 238]",
+          "color_room_11": "[84, 153, 199]",
+          "color_room_12": "[133, 193, 233]",
+          "color_room_13": "[245, 176, 65]",
+          "color_room_14": "[82, 190, 128]",
+          "color_room_15": "[72, 201, 176]",
+          "add_room_2_alpha": "透明度を設定する:"
+        },
+        "data_description": {
+          "color_room_8": "部屋9",
+          "color_room_9": "部屋10",
+          "color_room_10": "部屋11",
+          "color_room_11": "部屋12",
+          "color_room_12": "部屋13",
+          "color_room_13": "部屋14",
+          "color_room_14": "部屋15",
+          "color_room_15": "部屋16"
+        },
+        "description": "カメラカラーオプション。",
+        "title": "部屋9から15の色"
+      },
+      "alpha_2": {
+        "data": {
+          "alpha_room_0": "部屋1",
+          "alpha_room_1": "部屋2",
+          "alpha_room_2": "部屋3",
+          "alpha_room_3": "部屋4",
+          "alpha_room_4": "部屋5",
+          "alpha_room_5": "部屋6",
+          "alpha_room_6": "部屋7",
+          "alpha_room_7": "部屋8"
+        },
+        "description": "カメラオプション。アルファ 2",
+        "title": "アルファチャンネル部屋の色"
+      },
+      "alpha_3": {
+        "data": {
+          "alpha_room_8": "部屋9",
+          "alpha_room_9": "部屋10",
+          "alpha_room_10": "部屋11",
+          "alpha_room_11": "部屋12",
+          "alpha_room_12": "部屋13",
+          "alpha_room_13": "部屋14",
+          "alpha_room_14": "部屋15",
+          "alpha_room_15": "部屋16"
+        },
+        "description": "カメラオプション。アルファ 3",
+        "title": "アルファチャンネル部屋の色"
+      }
+    }
+  },
+  "selector": {
+    "camera_config_action": {
+      "options": {
+        "opt_1": "画像の設定",
+        "opt_2": "一般的な色の設定",
+        "opt_3": "部屋1から8の色の設定",
+        "opt_4": "部屋9から16の色の設定",
+        "opt_5": "カメラログをwwwにコピー"
+      }
+    }
+  },
+  "services": {
+    "turn_off": {
+      "name": "[%key:common::action::turn_off%]",
+      "description": "カメラをオフにします。"
+    },
+    "turn_on": {
+      "name": "[%key:common::action::turn_on%]",
+      "description": "カメラをオンにします。"
+    },
+    "snapshot": {
+      "name": "スナップショットを撮る",
+      "description": "カメラからスナップショットを撮ります。",
+      "fields": {
+        "filename": {
+          "name": "ファイル名",
+          "description": "ファイル名のテンプレート。利用可能な変数は `entity_id` です。"
+        }
+      }
+    }
+  }
+}
