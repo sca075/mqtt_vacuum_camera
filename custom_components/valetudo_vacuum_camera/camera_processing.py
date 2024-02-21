@@ -1,5 +1,5 @@
 """
-Multiprocessing module (version 1.5.8)
+Multiprocessing module (version v1.5.9-beta.1)
 This module provide the image multiprocessing in order to
 avoid the overload of the main_thread of Home Assistant.
 """
@@ -202,17 +202,18 @@ class CameraProcessor:
         text_size = 50
         if self._shared.show_vacuum_state:
             status_text = f"{self._shared.file_name}: {self._shared.vacuum_state}"
-            if self._shared.vacuum_connection == "disconnected":
-                self._shared.image_grab = True
-                status_text = f"{self._shared.file_name}: {self._shared.vacuum_connection} from MQTT"
+            if not self._shared.vacuum_connection:
+                status_text = f"{self._shared.file_name}: Disconnected from MQTT"
             else:
                 if self._shared.vacuum_state == "docked":
-                    if self._shared.vacuum_battery != "100%":
-                        status_text += f"/Charging: {self._shared.vacuum_battery}"
+                    if int(self._shared.vacuum_battery) <= 99:
+                        status_text += f"/Charging: {self._shared.vacuum_battery}%"
+                        self._shared.vacuum_bat_charged = False
                     else:
                         status_text += "/Charged!"
+                        self._shared.vacuum_bat_charged = True
                 else:
-                    status_text += f"/Batt.: {self._shared.vacuum_battery}"
+                    status_text += f"/Batt.: {self._shared.vacuum_battery}%"
             if self._shared.current_room:
                 try:
                     in_room = self._shared.current_room.get("in_room", None)
@@ -246,22 +247,19 @@ class CameraProcessor:
     async def run_async_draw_image_text(self, pil_img: PilPNG, color: Color) -> PilPNG:
         """Thread function to process the image data from the Vacuum Json data."""
         num_processes = 1
-        parsed_json_list = [pil_img for _ in range(num_processes)]
+        pil_img_list = [pil_img for _ in range(num_processes)]
         loop = get_event_loop()
 
         with concurrent.futures.ThreadPoolExecutor(
-                max_workers=1, thread_name_prefix=f"{self._shared.file_name}_camera"
+                max_workers=1, thread_name_prefix=f"{self._shared.file_name}_camera_text"
         ) as executor:
             tasks = [
                 loop.run_in_executor(executor, self.process_status_text, pil_img, color)
-                for parsed_json in parsed_json_list
+                for pil_img in pil_img_list
             ]
             images = await gather(*tasks)
 
         if isinstance(images, list) and len(images) > 0:
-            _LOGGER.debug(
-                f"{self._shared.file_name}: Got {len(images)} image text.."
-            )
             result = images[0]
         else:
             result = None
