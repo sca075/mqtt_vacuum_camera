@@ -1,5 +1,5 @@
 """
-Multiprocessing module (version v1.5.9-beta.1)
+Multiprocessing module (version v1.5.9-beta.2)
 This module provide the image multiprocessing in order to
 avoid the overload of the main_thread of Home Assistant.
 """
@@ -7,14 +7,14 @@ avoid the overload of the main_thread of Home Assistant.
 from __future__ import annotations
 
 import asyncio
-from asyncio import gather, get_event_loop
 import concurrent.futures
 import logging
+from asyncio import gather, get_event_loop
 
+from .types import Color, PilPNG
+from .utils.draweble import Drawable as Draw
 from .valetudo.hypfer.image_handler import MapImageHandler
 from .valetudo.valetudore.image_handler import ReImageHandler
-from .utils.draweble import Drawable as Draw
-from .types import Color, PilPNG
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 _LOGGER.propagate = True
@@ -71,14 +71,14 @@ class CameraProcessor:
                     self._shared.image_size = self._map_handler.get_img_size()
 
                 if not self._shared.snapshot_take and (
-                    self._shared.vacuum_state == "idle"
-                    or self._shared.vacuum_state == "docked"
-                    or self._shared.vacuum_state == "error"
+                        self._shared.vacuum_state == "idle"
+                        or self._shared.vacuum_state == "docked"
+                        or self._shared.vacuum_state == "error"
                 ):
                     # suspend image processing if we are at the next frame.
                     if (
-                        self._shared.frame_number
-                        != self._map_handler.get_frame_number()
+                            self._shared.frame_number
+                            != self._map_handler.get_frame_number()
                     ):
                         self._shared.image_grab = False
                         _LOGGER.info(
@@ -115,10 +115,10 @@ class CameraProcessor:
                         _LOGGER.debug("State attributes rooms updated")
                 if self._shared.show_vacuum_state:
                     self._re_handler.draw.status_text(
-                            pil_img,
-                            50,
-                            self._shared.user_colors[8],
-                            self._shared.file_name + ": " + self._shared.vacuum_state,
+                        pil_img,
+                        50,
+                        self._shared.user_colors[8],
+                        self._shared.file_name + ": " + self._shared.vacuum_state,
                         )
 
                 if self._shared.attr_calibration_points is None:
@@ -136,9 +136,9 @@ class CameraProcessor:
                     self._shared.image_size = self._re_handler.get_img_size()
 
                 if not self._shared.snapshot_take and (
-                    self._shared.vacuum_state == "idle"
-                    or self._shared.vacuum_state == "docked"
-                    or self._shared.vacuum_state == "error"
+                        self._shared.vacuum_state == "idle"
+                        or self._shared.vacuum_state == "docked"
+                        or self._shared.vacuum_state == "error"
                 ):
                     # suspend image processing if we are at the next frame.
                     _LOGGER.info(
@@ -174,7 +174,7 @@ class CameraProcessor:
         loop = get_event_loop()
 
         with concurrent.futures.ThreadPoolExecutor(
-            max_workers=1, thread_name_prefix=f"{self._shared.file_name}_camera"
+                max_workers=1, thread_name_prefix=f"{self._shared.file_name}_camera"
         ) as executor:
             tasks = [
                 loop.run_in_executor(executor, self.process_valetudo_data, parsed_json)
@@ -200,35 +200,40 @@ class CameraProcessor:
         """Get the status text."""
         status_text = "Something went wrong.."
         text_size = 50
+        charge_level = u"\u2301"  # unicode Battery symbol
+        charging = u"\u2211"  # unicode Charging symbol
         if self._shared.show_vacuum_state:
-            status_text = f"{self._shared.file_name}: {self._shared.vacuum_state}"
+            status_text = f"{self._shared.file_name}: {self._shared.vacuum_state.upper()}"
             if not self._shared.vacuum_connection:
                 status_text = f"{self._shared.file_name}: Disconnected from MQTT"
             else:
+                if self._shared.current_room:
+                    try:
+                        in_room = self._shared.current_room.get("in_room", None)
+                    except (ValueError, KeyError):
+                        text_size = 50
+                    else:
+                        if in_room:
+                            text_size = 45
+                            status_text += f" ({in_room})"
                 if self._shared.vacuum_state == "docked":
                     if int(self._shared.vacuum_battery) <= 99:
-                        status_text += f"/Charging: {self._shared.vacuum_battery}%"
+                        status_text += f" \u00B7 {charge_level}{charging} {self._shared.vacuum_battery}%"
                         self._shared.vacuum_bat_charged = False
                     else:
-                        status_text += "/Charged!"
+                        status_text += f" \u00B7 {charge_level} Ready."
                         self._shared.vacuum_bat_charged = True
                 else:
-                    status_text += f"/Batt.: {self._shared.vacuum_battery}%"
-            if self._shared.current_room:
-                try:
-                    in_room = self._shared.current_room.get("in_room", None)
-                except (ValueError, KeyError):
-                    text_size = 50
-                else:
-                    if in_room:
-                        text_size = 45
-                        status_text += f", {in_room}"
+                    status_text += f" \u00B7 {charge_level} {self._shared.vacuum_battery}%"
         return status_text, text_size
 
     async def async_draw_image_text(self, pil_img: PilPNG, color: Color) -> PilPNG:
         """Draw text on the image."""
         if pil_img is not None:
             text, size = self.get_status_text()
+            if self._shared.image_ref_width > 0:
+                scale_factor = pil_img.width / self._shared.image_ref_width
+                size = int(size * scale_factor)
             Draw.status_text(image=pil_img, size=size, color=color, status=text)
         return pil_img
 

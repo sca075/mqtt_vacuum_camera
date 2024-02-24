@@ -1,7 +1,7 @@
 """
 Class Camera Shared.
 Keep the data between the modules.
-Version v1.5.9-beta.1
+Version v1.5.9-beta.2
 """
 
 import logging
@@ -24,6 +24,7 @@ class CameraShared(object):
         self._new_mqtt_message = False  # New MQTT message
         self.last_image = None  # Last image received
         self.image_size = None  # Image size
+        self.image_ref_width: int = 0  # Image reference width
         self.image_grab = True  # Grab image from MQTT
         self.image_rotate: int = 0  # Rotate image
         self.drawing_limit: float = 0.0  # Drawing CPU limit

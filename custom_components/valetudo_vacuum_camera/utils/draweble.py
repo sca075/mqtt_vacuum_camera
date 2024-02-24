@@ -9,8 +9,9 @@ Last changes on Version: 1.5.5
 import logging
 import math
 
-from PIL import ImageDraw, ImageFont
 import numpy as np
+from PIL import ImageDraw, ImageFont
+
 from custom_components.valetudo_vacuum_camera.types import Color
 
 _LOGGER = logging.getLogger(__name__)
@@ -440,7 +441,7 @@ class Drawable:
         """ Draw the Status Test on the image. """
         # Load a font
         path = (
-            "custom_components/valetudo_vacuum_camera/utils/fonts/lato/Lato-Regular.ttf"
+            "custom_components/valetudo_vacuum_camera/utils/fonts/FreeSerif.ttf"
         )
         font = ImageFont.truetype(path, size)
         text = status

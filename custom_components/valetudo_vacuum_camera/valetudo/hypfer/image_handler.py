@@ -2,7 +2,7 @@
 Image Handler Module.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Last Changed on Version: 1.5.7.4
+Last Changed on Version: 1.5.9-beta.2
 """
 from __future__ import annotations
 
@@ -10,10 +10,10 @@ import hashlib
 import json
 import logging
 
-from PIL import Image
 import numpy as np
-from psutil_home_assistant import PsutilWrapper as ProcInspector
 import svgwrite
+from PIL import Image
+from psutil_home_assistant import PsutilWrapper as ProcInspector
 from svgwrite import shapes
 
 from custom_components.valetudo_vacuum_camera.types import (
@@ -68,6 +68,8 @@ class MapImageHandler(object):
         self.robot_pos = None  # vacuum coordinates.
         self.room_propriety = None  # vacuum segments data.
         self.rooms_pos = None  # vacuum room coordinates / name list.
+        self.active_zones = None  # vacuum active zones.
+        self.zooming = False  # zooming the image.
         self.shared = shared_data  # camera shared data.
         self.svg_wait = False  # SVG image creation wait.
         self.trim_down = None  # memory stored trims calculated once.
@@ -76,11 +78,12 @@ class MapImageHandler(object):
         self.trim_up = None  # memory stored trims calculated once.
 
     async def async_auto_crop_and_trim_array(
-        self,
-        image_array,
-        detect_colour,
-        margin_size: int = 0,
-        rotate: int = 0,
+            self,
+            image_array,
+            detect_colour,
+            margin_size: int = 0,
+            rotate: int = 0,
+            zoom: bool = False,
     ):
         """
         Automatically crops and trims a numpy array and returns the processed image.
@@ -125,6 +128,7 @@ class MapImageHandler(object):
                 # Calculate the dimensions after trimming using min/max values
                 trimmed_width = max(0, self.trim_right - self.trim_left)
                 trimmed_height = max(0, self.trim_down - self.trim_up)
+                self.shared.image_ref_width = trimmed_width
                 _LOGGER.debug(
                     "{}: Calculated trimmed image width {} and height {}".format(
                         self.shared.file_name, trimmed_width, trimmed_height
@@ -153,11 +157,22 @@ class MapImageHandler(object):
                     self.trim_right,
                     self.trim_down,
                 )
-            # Apply the auto-calculated trims to the rotated image
-            trimmed = image_array[
-                self.auto_crop[1] : self.auto_crop[3],
-                self.auto_crop[0] : self.auto_crop[2],
-            ]
+            if zoom and self.shared.vacuum_state == "cleaning":
+                # Zoom the image by 2x
+                _LOGGER.debug(
+                    f"{self.shared.file_name}: Zooming the image on room {self.robot_in_room['room']}."
+                )
+                trim_left = self.robot_in_room['left'] - margin_size
+                trim_right = self.robot_in_room['right'] + margin_size
+                trim_up = self.robot_in_room['up'] - margin_size
+                trim_down = self.robot_in_room['down'] + margin_size
+                trimmed = image_array[trim_up:trim_down, trim_left:trim_right]
+            else:
+                # Apply the auto-calculated trims to the rotated image
+                trimmed = image_array[
+                          self.auto_crop[1] : self.auto_crop[3],
+                          self.auto_crop[0] : self.auto_crop[2],
+                          ]
             del image_array
             # Rotate the cropped image based on the given angle
             if rotate == 90:
@@ -190,6 +205,7 @@ class MapImageHandler(object):
             _LOGGER.debug(
                 f"{self.shared.file_name}: Auto Crop and Trim image size: {self.crop_img_size}"
             )
+
         except Exception as e:
             _LOGGER.error(
                 f"{self.shared.file_name}: Error {e} during auto crop and trim.",
@@ -246,8 +262,8 @@ class MapImageHandler(object):
 
     # noinspection PyUnresolvedReferences
     async def async_get_image_from_json(
-        self,
-        m_json: json | None,
+            self,
+            m_json: json | None,
     ) -> Image.Image | None:
         """Get the image from the JSON data.
         :param m_json: The JSON data from the Vacuum."""
@@ -409,6 +425,7 @@ class MapImageHandler(object):
                 pixel_size = int(m_json["pixelSize"])
                 layers, active = self.data.find_layers(m_json["layers"])
                 new_frame_hash = await self.calculate_array_hash(layers, active)
+                self.active_zones = active
                 if self.frame_number == 0:
                     self.img_hash = new_frame_hash
                     # The below is drawing the base layer that will be reused at the next frame.
@@ -435,9 +452,9 @@ class MapImageHandler(object):
                                 if layer_type == "segment":
                                     # Check if the room is active and set a modified color
                                     if (
-                                        active
-                                        and len(active) > room_id
-                                        and active[room_id] == 1
+                                            active
+                                            and len(active) > room_id
+                                            and active[room_id] == 1
                                     ):
                                         room_color = (
                                             ((2 * room_color[0]) + color_zone_clean[0])
@@ -588,12 +605,15 @@ class MapImageHandler(object):
                 _LOGGER.debug(
                     f"{self.shared.file_name}: Auto cropping the image with rotation:"
                     f" {int(self.shared.image_rotate)}"
+                    f" {self.zooming}"
+                    f" {self.active_zones}"
                 )
                 img_np_array = await self.async_auto_crop_and_trim_array(
                     img_np_array,
                     color_background,
                     int(self.shared.margins),
                     int(self.shared.image_rotate),
+                    self.zooming,
                 )
             if img_np_array is None:
                 _LOGGER.warning(f"{self.shared.file_name}: Image array is None.")
@@ -679,12 +699,14 @@ class MapImageHandler(object):
     async def async_get_robot_in_room(self, robot_y: int, robot_x: int, angle: float) -> RobotPosition:
         """Get the robot position and return in what room is."""
         if self.robot_in_room:
+            # Check if the robot coordinates are inside the room's corners
+            last_room = self.robot_in_room["room"]
             if (
-                (self.robot_in_room["right"] >= int(robot_x))
-                and (self.robot_in_room["left"] <= int(robot_x))
+                    (self.robot_in_room["right"] >= int(robot_x))
+                    and (self.robot_in_room["left"] <= int(robot_x))
             ) and (
-                (self.robot_in_room["down"] >= int(robot_y))
-                and (self.robot_in_room["up"] <= int(robot_y))
+                    (self.robot_in_room["down"] >= int(robot_y))
+                    and (self.robot_in_room["up"] <= int(robot_y))
             ):
                 temp = {
                     "x": robot_x,
@@ -692,26 +714,31 @@ class MapImageHandler(object):
                     "angle": angle,
                     "in_room": self.robot_in_room["room"],
                 }
+                if self.active_zones and self.robot_in_room["id"] < len(self.active_zones):
+                    self.zooming = bool(self.active_zones[self.robot_in_room["id"] + 1])
                 return temp
         # else we need to search and use the async method.
         if self.rooms_pos:
             _LOGGER.debug(f"{self.shared.file_name} changed room.. searching..")
+            room_count = 0
             for room in self.rooms_pos:
                 corners = room["corners"]
                 self.robot_in_room = {
+                    "id": room_count,
                     "left": int(corners[0][0]),
                     "right": int(corners[2][0]),
                     "up": int(corners[0][1]),
                     "down": int(corners[2][1]),
                     "room": room["name"],
                 }
+                room_count += 1
                 # Check if the robot coordinates are inside the room's corners
                 if (
-                    (self.robot_in_room["right"] >= int(robot_x))
-                    and (self.robot_in_room["left"] <= int(robot_x))
+                        (self.robot_in_room["right"] >= int(robot_x))
+                        and (self.robot_in_room["left"] <= int(robot_x))
                 ) and (
-                    (self.robot_in_room["down"] >= int(robot_y))
-                    and (self.robot_in_room["up"] <= int(robot_y))
+                        (self.robot_in_room["down"] >= int(robot_y))
+                        and (self.robot_in_room["up"] <= int(robot_y))
                 ):
                     temp = {
                         "x": robot_x,
@@ -817,7 +844,7 @@ class MapImageHandler(object):
         return hash_value
 
     async def async_trim_and_resize_image(
-        self, base_layer: np.ndarray, color_background: Color, margins: int, image_rotate: int
+            self, base_layer: np.ndarray, color_background: Color, margins: int, image_rotate: int
     ) -> np.ndarray:
         """Trim and resize the image. This function is part of the SVG creation process."""
         swg_img_np = await self.async_auto_crop_and_trim_array(
@@ -846,7 +873,7 @@ class MapImageHandler(object):
                         center=(int(x), int(y)),
                         r=1,
                         fill=f"rgb({color_data[0]}, "
-                        f"{color_data[1]}, {color_data[2]})",
+                             f"{color_data[1]}, {color_data[2]})",
                     )
                 )
             else:
@@ -859,7 +886,7 @@ class MapImageHandler(object):
                         shapes.Polygon(
                             points=points,
                             fill=f"rgb({color_data[0]}, {color_data[1]},"
-                            f" {color_data[2]})",
+                                 f" {color_data[2]})",
                         )
                     )
                 else:
@@ -872,7 +899,7 @@ class MapImageHandler(object):
                     )
 
     async def async_numpy_array_to_svg(
-        self, base_layer, colours_list, color_background
+            self, base_layer, colours_list, color_background
     ):
         """Convert the numpy array to an SVG image."""
         # Create an SVG image 640 * 480
