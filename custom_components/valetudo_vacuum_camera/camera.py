@@ -5,17 +5,18 @@ Image Processing Threading implemented on Version 1.5.7.
 
 from __future__ import annotations
 
-import shutil
-from datetime import timedelta
-from functools import partial
-from io import BytesIO
 import json
 import logging
 import os
 import platform
+import shutil
 import time
-from typing import Optional, Any
+from datetime import timedelta
+from functools import partial
+from io import BytesIO
+from typing import Any, Optional
 
+import voluptuous as vol
 from PIL import Image
 from homeassistant import config_entries, core
 # from homeassistant.core import Event, HomeAssistant, ServiceCall, callback
@@ -31,13 +32,11 @@ from homeassistant.helpers.typing import (
     HomeAssistantType,
 )
 from psutil_home_assistant import PsutilWrapper as ProcInsp
-import voluptuous as vol
 
 from custom_components.valetudo_vacuum_camera.camera_shared import CameraShared
 from custom_components.valetudo_vacuum_camera.valetudo.MQTT.connector import (
     ValetudoConnector,
 )
-
 from .camera_processing import CameraProcessor
 from .common import get_vacuum_unique_id_from_mqtt_topic
 from .const import (
@@ -121,9 +120,9 @@ _LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
-        hass: core.HomeAssistant,
-        config_entry: config_entries.ConfigEntry,
-        async_add_entities,
+    hass: core.HomeAssistant,
+    config_entry: config_entries.ConfigEntry,
+    async_add_entities,
 ) -> None:
     """Setup camera from a config entry created in the integrations UI."""
     config = hass.data[DOMAIN][config_entry.entry_id]
@@ -136,10 +135,10 @@ async def async_setup_entry(
 
 
 async def async_setup_platform(
-        hass: HomeAssistantType,
-        config: ConfigType,
-        async_add_entities: AddEntitiesCallback,
-        discovery_info: DiscoveryInfoType | None = None,
+    hass: HomeAssistantType,
+    config: ConfigType,
+    async_add_entities: AddEntitiesCallback,
+    discovery_info: DiscoveryInfoType | None = None,
 ):
     """Set up the camera platform."""
     async_add_entities([ValetudoCamera(hass, config)])
@@ -216,11 +215,12 @@ class ValetudoCamera(Camera):
         if self._enable_snapshots is None:
             self._enable_snapshots = True
         # If snapshots are disabled, delete www data
-        if (
-                not self._enable_snapshots
-                and os.path.isfile(f"{self._directory_path}/www/snapshot_{self._shared.file_name}.png")
+        if not self._enable_snapshots and os.path.isfile(
+            f"{self._directory_path}/www/snapshot_{self._shared.file_name}.png"
         ):
-            os.remove(f"{self._directory_path}/www/snapshot_{self._shared.file_name}.png")
+            os.remove(
+                f"{self._directory_path}/www/snapshot_{self._shared.file_name}.png"
+            )
         # If there is a log zip in www remove it
         if os.path.isfile(self.log_file):
             os.remove(self.log_file)
@@ -273,7 +273,7 @@ class ValetudoCamera(Camera):
         return self._attr_frame_interval
 
     def camera_image(
-            self, width: Optional[int] = None, height: Optional[int] = None
+        self, width: Optional[int] = None, height: Optional[int] = None
     ) -> Optional[bytes]:
         """Camera Image"""
         return self.Image
@@ -303,11 +303,11 @@ class ValetudoCamera(Camera):
         if (self._shared.map_rooms is not None) and (self._shared.map_rooms != {}):
             attrs["rooms"] = self._shared.map_rooms
         if (self._shared.map_pred_zones is not None) and (
-                self._shared.map_pred_zones != {}
+            self._shared.map_pred_zones != {}
         ):
             attrs["zones"] = self._shared.map_pred_zones
         if (self._shared.map_pred_points is not None) and (
-                self._shared.map_pred_points != {}
+            self._shared.map_pred_points != {}
         ):
             attrs["points"] = self._shared.map_pred_points
         return attrs
@@ -322,14 +322,16 @@ class ValetudoCamera(Camera):
         """Return the device info."""
         try:
             from homeassistant.helpers.device_registry import DeviceInfo
+
             device_info = DeviceInfo
         except ImportError:
             from homeassistant.helpers.entity import DeviceInfo
+
             device_info = DeviceInfo
         return device_info(identifiers=self._identifiers)
 
     async def async_camera_image(
-            self, width: int | None = None, height: int | None = None
+        self, width: int | None = None, height: int | None = None
     ) -> bytes | None:
         """Return bytes of camera image."""
         return await self.hass.async_add_executor_job(
@@ -373,7 +375,7 @@ class ValetudoCamera(Camera):
         try:
             # When logger is active.
             if (_LOGGER.getEffectiveLevel() > 0) and (
-                    _LOGGER.getEffectiveLevel() != 30
+                _LOGGER.getEffectiveLevel() != 30
             ):
                 # Save mqtt raw data file.
                 if self._mqtt is not None:
@@ -384,9 +386,12 @@ class ValetudoCamera(Camera):
             image_data.save(self.snapshot_img)  # Save the image in .storage
             if self._enable_snapshots:
                 if os.path.isfile(
-                        f"{self._directory_path}/{STORAGE_DIR}/{self._shared.file_name}.png"):
-                    shutil.copy(f"{self._directory_path}/{STORAGE_DIR}/{self._shared.file_name}.png",
-                                f"{self._directory_path}/www/snapshot_{self._shared.file_name}.png")
+                    f"{self._directory_path}/{STORAGE_DIR}/{self._shared.file_name}.png"
+                ):
+                    shutil.copy(
+                        f"{self._directory_path}/{STORAGE_DIR}/{self._shared.file_name}.png",
+                        f"{self._directory_path}/www/snapshot_{self._shared.file_name}.png",
+                    )
                 _LOGGER.info(f"{self._shared.file_name}: Camera Snapshot saved on WWW!")
         except IOError:
             self._shared.snapshot_take = None
@@ -437,11 +442,11 @@ class ValetudoCamera(Camera):
             self._processing = True
             # if the vacuum is working, or it is the first image.
             if (
-                    self._shared.vacuum_state == "cleaning"
-                    or self._shared.vacuum_state == "moving"
-                    or self._shared.vacuum_state == "returning"
-                    or not self._shared.vacuum_bat_charged  # text update use negative logic
-                    and self._shared.vacuum_connection
+                self._shared.vacuum_state == "cleaning"
+                or self._shared.vacuum_state == "moving"
+                or self._shared.vacuum_state == "returning"
+                or not self._shared.vacuum_bat_charged  # text update use negative logic
+                and self._shared.vacuum_connection
             ):
                 # grab the image from MQTT.
                 self._shared.image_grab = True
@@ -516,8 +521,8 @@ class ValetudoCamera(Camera):
                 # HA supervised Memory and CUP usage report.
                 memory_percent = round(
                     (
-                            (proc.memory_info()[0] / 2.0 ** 30)
-                            / (ProcInsp().psutil.virtual_memory().total / 2.0 ** 30)
+                        (proc.memory_info()[0] / 2.0**30)
+                        / (ProcInsp().psutil.virtual_memory().total / 2.0**30)
                     )
                     * 100,
                     2,
@@ -534,7 +539,7 @@ class ValetudoCamera(Camera):
                     f"{memory_percent}% of Total."
                 )
                 self._processing = False
-                return self.async_camera_image(self._image_w, self._image_h)
+                return self.camera_image(self._image_w, self._image_h)
 
     async def async_pil_to_bytes(self, pil_img) -> Optional[bytes]:
         """Convert PIL image to bytes"""
@@ -545,7 +550,8 @@ class ValetudoCamera(Camera):
             )
             if self._shared.show_vacuum_state:
                 pil_img = await self.processor.run_async_draw_image_text(
-                    pil_img, self._shared.user_colors[8])
+                    pil_img, self._shared.user_colors[8]
+                )
         else:
             if self._last_image is not None:
                 _LOGGER.debug(f"{self._shared.file_name}: Output Last Image.")
