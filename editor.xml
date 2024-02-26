@@ -6,6 +6,13 @@
   <component name="DaemonCodeAnalyzerSettings">
     <option name="AUTOREPARSE_DELAY" value="0" />
   </component>
+  <component name="DeclarativeInlayHintsSettings">
+    <option name="providerIdToEnabled">
+      <map>
+        <entry key="qodana.yaml.inspection.descriptions" value="true" />
+      </map>
+    </option>
+  </component>
   <component name="EditorSettings">
     <option name="BIDI_TEXT_DIRECTION" value="LTR" />
   </component>
