@@ -82,6 +82,7 @@ async def update_options(bk_options, new_options):
     """
     Keep track of the modified options.
     Returns updated options after editing in Config_Flow.
+    version: 1.5.8
     """
     # Initialize updated_options as an empty dictionary
     updated_options = {}
@@ -89,6 +90,7 @@ async def update_options(bk_options, new_options):
     keys_to_update = [
         "rotate_image",
         "margins",
+        "auto_zoom",
         "show_vac_status",
         "get_svg_file",
         "enable_www_snapshots",

@@ -1,4 +1,5 @@
 """valetudo vacuum camera"""
+
 import logging
 
 from homeassistant import config_entries, core
@@ -13,7 +14,6 @@ from custom_components.valetudo_vacuum_camera.common import (
     get_vacuum_unique_id_from_mqtt_topic,
     update_options,
 )
-
 from .const import (
     CONF_MQTT_HOST,
     CONF_MQTT_PASS,
@@ -37,9 +37,8 @@ async def options_update_listener(
 
 
 async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
-    mqtt_topic_base = ""
-
     """Migrate old entry."""
+    mqtt_topic_base = ""
     _LOGGER.debug("Migrating config entry from version %s", config_entry.version)
 
     if config_entry.version <= 2.0:
@@ -162,7 +161,7 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
             config_entry, data=new_data, options=new_options
         )
 
-    if config_entry.version <= 2.1:
+    if config_entry.version == 2.2 or config_entry.version == 2.1:
         old_data = {**config_entry.data}
         new_data = {"vacuum_config_entry": old_data["vacuum_config_entry"]}
         _LOGGER.debug(dict(new_data))
@@ -170,12 +169,13 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
         if len(old_options) != 0:
             tmp_option = {
                 "margins": "150",
+                "auto_zoom": False,
                 "get_svg_file": False,
                 "enable_www_snapshots": True,
             }
             new_options = await update_options(old_options, tmp_option)
-            _LOGGER.debug(dict(new_options))
-            config_entry.version = 2.2
+            _LOGGER.debug(f"migration data:{dict(new_options)}")
+            config_entry.version = 2.3
             hass.config_entries.async_update_entry(
                 config_entry, data=new_data, options=new_options
             )

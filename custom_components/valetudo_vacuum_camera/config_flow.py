@@ -1,4 +1,4 @@
-"""config_flow ver.1.5.7.4
+"""config_flow ver.1.5.9
 IMPORTANT: When adding new options to the camera
 it will be mandatory to update const.py update_options.
 Format of the new constants must be CONST_NAME = "const_name" update also
@@ -10,12 +10,13 @@ import os
 import shutil
 from typing import Any, Dict, Optional
 
+import homeassistant.helpers.config_validation as cv
+import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.components.vacuum import DOMAIN as ZONE_VACUUM
 from homeassistant.const import CONF_UNIQUE_ID
 from homeassistant.core import callback
 from homeassistant.helpers import entity_registry as er
-import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.selector import (
     BooleanSelector,
     ColorRGBSelector,
@@ -28,7 +29,6 @@ from homeassistant.helpers.selector import (
     SelectSelectorMode,
 )
 from homeassistant.helpers.storage import STORAGE_DIR
-import voluptuous as vol
 
 from .common import (  # get_entity_identifier_from_mqtt,
     get_device_info,
@@ -89,6 +89,7 @@ from .const import (
     COLOR_TEXT,
     COLOR_WALL,
     COLOR_ZONE_CLEAN,
+    CONF_AUTO_ZOOM,
     CONF_EXPORT_SVG,
     CONF_SNAPSHOTS_ENABLE,
     CONF_VAC_STAT,
@@ -112,7 +113,7 @@ VACUUM_SCHEMA = vol.Schema(
 
 
 class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
-    VERSION = 2.2
+    VERSION = 2.3
 
     def __init__(self):
         self.data = {}
@@ -151,6 +152,7 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 {
                     "rotate_image": "0",
                     "margins": "150",
+                    "auto_zoom": False,
                     "show_vac_status": False,
                     "get_svg_file": False,
                     "enable_www_snapshots": False,
@@ -259,6 +261,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Optional(
                         ATTR_MARGINS, default=config_entry.options.get("margins")
                     ): cv.string,
+                    vol.Optional(
+                        CONF_AUTO_ZOOM,
+                        default=config_entry.options.get("auto_zoom"),
+                    ): BooleanSelector(),
                     vol.Optional(
                         CONF_VAC_STAT,
                         default=config_entry.options.get("show_vac_status"),
@@ -525,6 +531,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 {
                     "rotate_image": user_input.get(ATTR_ROTATE),
                     "margins": user_input.get(ATTR_MARGINS),
+                    "auto_zoom": user_input.get(CONF_AUTO_ZOOM),
                     "show_vac_status": user_input.get(CONF_VAC_STAT),
                     "color_text": user_input.get(COLOR_TEXT),
                     "get_svg_file": user_input.get(CONF_EXPORT_SVG),

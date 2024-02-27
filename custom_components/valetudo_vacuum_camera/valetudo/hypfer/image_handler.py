@@ -4,6 +4,7 @@ It returns the PIL PNG image frame relative to the Map Data extrapolated from th
 It also returns calibration, rooms data to the card and other images information to the camera.
 Last Changed on Version: 1.5.9-beta.2
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -12,7 +13,7 @@ import logging
 
 import numpy as np
 import svgwrite
-from PIL import Image
+from PIL import Image  # , ImageOps
 from psutil_home_assistant import PsutilWrapper as ProcInspector
 from svgwrite import shapes
 
@@ -133,6 +134,7 @@ class MapImageHandler(object):
                 # Calculate the dimensions after trimming using min/max values
                 trimmed_width = max(0, self.trim_right - self.trim_left)
                 trimmed_height = max(0, self.trim_down - self.trim_up)
+                self.shared.image_ref_height = trimmed_height
                 self.shared.image_ref_width = trimmed_width
                 _LOGGER.debug(
                     "{}: Calculated trimmed image width {} and height {}".format(
@@ -162,7 +164,11 @@ class MapImageHandler(object):
                     self.trim_right,
                     self.trim_down,
                 )
-            if zoom and self.shared.vacuum_state == "cleaning":
+            if (
+                zoom
+                and self.shared.vacuum_state == "cleaning"
+                and self.shared.image_auto_zoom
+            ):
                 # Zoom the image based on the robot's position.
                 _LOGGER.debug(
                     f"{self.shared.file_name}: Zooming the image on room {self.robot_in_room['room']}."
@@ -628,6 +634,10 @@ class MapImageHandler(object):
                 # svg_img.add_done_callback(lambda future: future.result())
                 self.svg_wait = False
             del img_np_array
+            # reduce the image size if the zoomed image is bigger then the original.
+            # if self.shared.image_auto_zoom and self.shared.vacuum_state == "cleaning" and self.zooming:
+            #     return ImageOps.fit(pil_img, (self.shared.image_ref_width,
+            #                                 self.shared.image_ref_height))
             return pil_img
         except Exception as e:
             _LOGGER.warning(
@@ -729,6 +739,9 @@ class MapImageHandler(object):
         if self.rooms_pos:
             _LOGGER.debug(f"{self.shared.file_name} changed room.. searching..")
             room_count = 0
+            last_room = None
+            if self.robot_in_room:
+                last_room = self.robot_in_room
             for room in self.rooms_pos:
                 corners = room["corners"]
                 self.robot_in_room = {
@@ -763,14 +776,13 @@ class MapImageHandler(object):
             _LOGGER.debug(
                 f"{self.shared.file_name} not located within Camera Rooms coordinates."
             )
-            last_room = self.robot_in_room["room"]
-            self.robot_in_room = None
+            self.robot_in_room = last_room
             self.zooming = False
             temp = {
                 "x": robot_x,
                 "y": robot_y,
                 "angle": angle,
-                "in_room": last_room,
+                "in_room": last_room["room"] if last_room else None,
             }
             # If the robot is not inside any room, return a default value
             return temp

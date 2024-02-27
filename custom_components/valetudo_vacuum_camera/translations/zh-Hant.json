@@ -26,6 +26,7 @@
         "data": {
           "rotate_image": "旋轉",
           "margins": "150",
+          "auto_zoom": "启用自动缩放",
           "show_vac_status": "顯示掃地機狀態。",
           "color_text": "[255, 255, 255]",
           "get_svg_file": "匯出SVG基礎層。",

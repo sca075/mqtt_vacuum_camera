@@ -26,6 +26,7 @@
         "data": {
           "rotate_image": "Obrócić Obraz",
           "margins": "150",
+          "auto_zoom": "Włącz automatyczne powiększanie",
           "show_vac_status": "Pokaż stan odkurzacza.",
           "color_text": "[255, 255, 255]",
           "enable_www_snapshots": "Eksportuj migawki PNG."

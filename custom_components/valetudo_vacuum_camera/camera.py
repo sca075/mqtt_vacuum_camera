@@ -33,11 +33,8 @@ from homeassistant.helpers.typing import (
 )
 from psutil_home_assistant import PsutilWrapper as ProcInsp
 
-from custom_components.valetudo_vacuum_camera.camera_shared import CameraShared
-from custom_components.valetudo_vacuum_camera.valetudo.MQTT.connector import (
-    ValetudoConnector,
-)
 from .camera_processing import CameraProcessor
+from .camera_shared import CameraShared
 from .common import get_vacuum_unique_id_from_mqtt_topic
 from .const import (
     ALPHA_BACKGROUND,
@@ -92,6 +89,7 @@ from .const import (
     COLOR_TEXT,
     COLOR_WALL,
     COLOR_ZONE_CLEAN,
+    CONF_AUTO_ZOOM,
     CONF_EXPORT_SVG,
     CONF_SNAPSHOTS_ENABLE,
     CONF_VAC_STAT,
@@ -104,6 +102,7 @@ from .const import (
 )
 from .snapshots.snapshot import Snapshots
 from .utils.colors_man import add_alpha_to_rgb
+from .valetudo.MQTT.connector import ValetudoConnector
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
@@ -197,7 +196,6 @@ class ValetudoCamera(Camera):
         self.Image = None
         self._image_bk = None  # Backup image for testing.
         self._processing = False
-        self._shared.export_svg = device_info.get(CONF_EXPORT_SVG)
         self._image_w = None
         self._image_h = None
         self._should_poll = False
@@ -205,6 +203,8 @@ class ValetudoCamera(Camera):
         self._vac_json_available = None
         self._shared.attr_calibration_points = None
         self._cpu_percent = None
+        self._shared.export_svg = device_info.get(CONF_EXPORT_SVG)
+        self._shared.image_auto_zoom = device_info.get(CONF_AUTO_ZOOM)
         self._shared.image_rotate = int(device_info.get(ATTR_ROTATE, 0))
         self._shared.margins = int(device_info.get(ATTR_MARGINS, 150))
         self._shared.show_vacuum_state = device_info.get(CONF_VAC_STAT)
@@ -287,7 +287,7 @@ class ValetudoCamera(Camera):
         """Camera Attributes"""
         attrs = {
             "friendly_name": self._attr_name,
-            "vacuum_battery": self._shared.vacuum_battery,
+            "vacuum_battery": f"{self._shared.vacuum_battery}%",
             "vacuum_position": self._shared.current_room,
             "vacuum_topic": self._mqtt_listen_topic,
             "vacuum_status": self._shared.vacuum_state,

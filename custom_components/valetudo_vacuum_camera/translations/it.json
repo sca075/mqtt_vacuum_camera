@@ -26,6 +26,7 @@
         "data": {
           "rotate_image": "Ruotare",
           "margins": "150",
+          "auto_zoom": "Abilita Zoom Automatico",
           "show_vac_status": "Viasulizza Stato Vacuum.",
           "color_text": "[255, 255, 255]",
           "get_svg_file": "Esporta SVG del layer basilare.",

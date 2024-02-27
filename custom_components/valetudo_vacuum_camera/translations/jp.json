@@ -26,6 +26,7 @@
         "data": {
           "rotate_image": "回転",
           "margins": "150",
+          "auto_zoom": "自動ズームを有効にする",
           "show_vac_status": "掃除機ステータスを表示する。",
           "color_text": "[255, 255, 255]",
           "get_svg_file": "SVGベースレイヤーをエクスポートする。",

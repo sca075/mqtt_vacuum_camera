@@ -24,6 +24,8 @@ class CameraShared(object):
         self._new_mqtt_message = False  # New MQTT message
         self.last_image = None  # Last image received
         self.image_size = None  # Image size
+        self.image_auto_zoom: bool = False  # Auto zoom image
+        self.image_ref_height: int = 0  # Image reference height
         self.image_ref_width: int = 0  # Image reference width
         self.image_grab = True  # Grab image from MQTT
         self.image_rotate: int = 0  # Rotate image

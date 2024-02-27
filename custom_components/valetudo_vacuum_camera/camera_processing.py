@@ -220,7 +220,7 @@ class CameraProcessor:
                             status_text += f" ({in_room})"
                 if self._shared.vacuum_state == "docked":
                     if int(self._shared.vacuum_battery) <= 99:
-                        status_text += f" \u00B7 {charge_level}{charging} {self._shared.vacuum_battery}%"
+                        status_text += f" \u00B7 {charging}{charge_level} {self._shared.vacuum_battery}%"
                         self._shared.vacuum_bat_charged = False
                     else:
                         status_text += f" \u00B7 {charge_level} Ready."
@@ -274,7 +274,7 @@ class CameraProcessor:
         return result
 
 
-""" 
+"""
 run_async_process_valetudo_data for MultiProcessing working mode.
 It was tested and it works. It will be at the moment not used.
 There is still no data coming back form the called function.

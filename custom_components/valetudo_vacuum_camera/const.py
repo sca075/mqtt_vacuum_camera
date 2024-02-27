@@ -1,5 +1,6 @@
 """Constants for the valetudo_vacuum_camera integration."""
-"""Version 1.5.7.4"""
+
+"""Version 1.5.9"""
 
 """Required in Config_Flow"""
 PLATFORMS = ["camera"]
@@ -22,6 +23,7 @@ CONF_VACUUM_CONFIG_ENTRY_ID = "vacuum_config_entry"
 CONF_VACUUM_IDENTIFIERS = "vacuum_identifiers"
 CONF_SNAPSHOTS_ENABLE = "enable_www_snapshots"
 CONF_EXPORT_SVG = "get_svg_file"
+CONF_AUTO_ZOOM = "auto_zoom"
 ICON = "mdi:camera"
 NAME = "Valetudo Vacuum Camera"
 
