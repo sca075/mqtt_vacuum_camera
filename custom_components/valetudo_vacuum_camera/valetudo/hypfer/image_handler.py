@@ -11,10 +11,10 @@ import hashlib
 import json
 import logging
 
-import numpy as np
-import svgwrite
 from PIL import Image  # , ImageOps
+import numpy as np
 from psutil_home_assistant import PsutilWrapper as ProcInspector
+import svgwrite
 from svgwrite import shapes
 
 from custom_components.valetudo_vacuum_camera.types import (
