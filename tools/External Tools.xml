@@ -1,7 +1,7 @@
 <toolSet name="External Tools">
   <tool name="isort" showInMainMenu="false" showInEditor="false" showInProject="false" showInSearchPopup="false" disabled="false" useConsole="true" showConsoleOnStdOut="false" showConsoleOnStdErr="false" synchronizeAfterRun="true">
     <exec>
-      <option name="COMMAND" value="$PyInterpreterDirectory$/isort" />
+      <option name="COMMAND" value="$USER_HOME$/PycharmProjects/Valetudo_Map_Extractor_V2/venv/bin/isort" />
       <option name="PARAMETERS" value="$FilePath$" />
       <option name="WORKING_DIRECTORY" value="$ProjectFileDir$" />
     </exec>
