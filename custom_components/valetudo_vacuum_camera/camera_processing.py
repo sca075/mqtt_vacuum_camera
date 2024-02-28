@@ -71,14 +71,14 @@ class CameraProcessor:
                     self._shared.image_size = self._map_handler.get_img_size()
 
                 if not self._shared.snapshot_take and (
-                    self._shared.vacuum_state == "idle"
-                    or self._shared.vacuum_state == "docked"
-                    or self._shared.vacuum_state == "error"
+                        self._shared.vacuum_state == "idle"
+                        or self._shared.vacuum_state == "docked"
+                        or self._shared.vacuum_state == "error"
                 ):
                     # suspend image processing if we are at the next frame.
                     if (
-                        self._shared.frame_number
-                        != self._map_handler.get_frame_number()
+                            self._shared.frame_number
+                            != self._map_handler.get_frame_number()
                     ):
                         self._shared.image_grab = False
                         _LOGGER.info(
@@ -119,7 +119,7 @@ class CameraProcessor:
                         50,
                         self._shared.user_colors[8],
                         self._shared.file_name + ": " + self._shared.vacuum_state,
-                    )
+                        )
 
                 if self._shared.attr_calibration_points is None:
                     self._shared.attr_calibration_points = (
@@ -136,9 +136,9 @@ class CameraProcessor:
                     self._shared.image_size = self._re_handler.get_img_size()
 
                 if not self._shared.snapshot_take and (
-                    self._shared.vacuum_state == "idle"
-                    or self._shared.vacuum_state == "docked"
-                    or self._shared.vacuum_state == "error"
+                        self._shared.vacuum_state == "idle"
+                        or self._shared.vacuum_state == "docked"
+                        or self._shared.vacuum_state == "error"
                 ):
                     # suspend image processing if we are at the next frame.
                     _LOGGER.info(
@@ -174,7 +174,7 @@ class CameraProcessor:
         loop = get_event_loop()
 
         with concurrent.futures.ThreadPoolExecutor(
-            max_workers=1, thread_name_prefix=f"{self._shared.file_name}_camera"
+                max_workers=1, thread_name_prefix=f"{self._shared.file_name}_camera"
         ) as executor:
             tasks = [
                 loop.run_in_executor(executor, self.process_valetudo_data, parsed_json)
@@ -196,11 +196,12 @@ class CameraProcessor:
         """Get the frame number."""
         return self._map_handler.get_frame_number() - 2
 
-    def get_status_text(self):
+    def get_status_text(self, text_img: PilPNG):
         """Get the status text."""
         status_text = "Something went wrong.."
-        text_size = 60
-        charge_level = "\u2301"  # unicode Battery symbol
+        text_size_coverage = 1.5
+        text_size = 50
+        charge_level = "\u03DE"  # unicode Koppa symbol
         charging = "\u2211"  # unicode Charging symbol
         if self._shared.show_vacuum_state:
             status_text = (
@@ -213,10 +214,9 @@ class CameraProcessor:
                     try:
                         in_room = self._shared.current_room.get("in_room", None)
                     except (ValueError, KeyError):
-                        text_size = 60
+                        _LOGGER.debug("No in_room data.")
                     else:
                         if in_room:
-                            text_size = 55
                             status_text += f" ({in_room})"
                 if self._shared.vacuum_state == "docked":
                     if int(self._shared.vacuum_battery) <= 99:
@@ -229,15 +229,14 @@ class CameraProcessor:
                     status_text += (
                         f" \u00B7 {charge_level} {self._shared.vacuum_battery}%"
                     )
+                text_pixels = len(status_text)
+                text_size = int((text_size_coverage * text_img.width) // text_pixels)
         return status_text, text_size
 
     async def async_draw_image_text(self, pil_img: PilPNG, color: Color) -> PilPNG:
         """Draw text on the image."""
         if pil_img is not None:
-            text, size = self.get_status_text()
-            if self._shared.image_ref_width > 0:
-                scale_factor = pil_img.width / self._shared.image_ref_width
-                size = int(size * scale_factor)
+            text, size = self.get_status_text(pil_img)
             Draw.status_text(image=pil_img, size=size, color=color, status=text)
         return pil_img
 
@@ -258,7 +257,7 @@ class CameraProcessor:
         loop = get_event_loop()
 
         with concurrent.futures.ThreadPoolExecutor(
-            max_workers=1, thread_name_prefix=f"{self._shared.file_name}_camera_text"
+                max_workers=1, thread_name_prefix=f"{self._shared.file_name}_camera_text"
         ) as executor:
             tasks = [
                 loop.run_in_executor(executor, self.process_status_text, pil_img, color)

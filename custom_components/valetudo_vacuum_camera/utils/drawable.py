@@ -457,7 +457,7 @@ class Drawable:
         """ Draw the Status Test on the image. """
         # Load a font
         path = (
-            "custom_components/valetudo_vacuum_camera/utils/fonts/FreeSerif.ttf"
+            "custom_components/valetudo_vacuum_camera/utils/fonts/FiraSans.ttf"
         )
         font = ImageFont.truetype(path, size)
         text = status

@@ -1,5 +1,5 @@
 """
-Camera Version v1.5.9-beta.1
+Camera Version v1.5.9
 Image Processing Threading implemented on Version 1.5.7.
 """
 
@@ -19,6 +19,7 @@ from typing import Any, Optional
 import voluptuous as vol
 from PIL import Image
 from homeassistant import config_entries, core
+
 # from homeassistant.core import Event, HomeAssistant, ServiceCall, callback
 from homeassistant.components.camera import PLATFORM_SCHEMA, Camera, CameraEntityFeature
 from homeassistant.const import CONF_NAME, CONF_UNIQUE_ID

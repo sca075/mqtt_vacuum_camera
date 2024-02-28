@@ -1,7 +1,8 @@
 """
 This module contains type aliases for the project.
-Last Updated: Version 1.5.8
+Last Updated: Version 1.5.9
 """
+
 from typing import Union, Tuple, Dict, Any, AnyStr
 from PIL import Image
 import numpy as np

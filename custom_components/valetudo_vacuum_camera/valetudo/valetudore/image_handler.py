@@ -2,8 +2,9 @@
 Image Handler Module dor Valetudo Re Vacuums.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Last Changed on Version: 1.5.7.1
+Last Changed on Version: 1.5.9
 """
+
 from __future__ import annotations
 
 import json
@@ -284,7 +285,9 @@ class ReImageHandler(object):
 
         try:
             if m_json is not None:
-                _LOGGER.info(self.shared.file_name + ":Composing the image for the camera.")
+                _LOGGER.info(
+                    self.shared.file_name + ":Composing the image for the camera."
+                )
                 # buffer json data
                 self.json_data = m_json
                 if self.room_propriety:
@@ -348,7 +351,9 @@ class ReImageHandler(object):
                 pixel_size = 5
                 room_id = 0
                 if self.frame_number == 0:
-                    _LOGGER.info(self.shared.file_name + ": Empty image with background color")
+                    _LOGGER.info(
+                        self.shared.file_name + ": Empty image with background color"
+                    )
                     img_np_array = await self.draw.create_empty_image(
                         5120, 5120, color_background
                     )
@@ -413,7 +418,9 @@ class ReImageHandler(object):
                 # If there is a zone clean we draw it now.
                 self.frame_number += 1
                 img_np_array = await self.async_copy_array(self.img_base_layer)
-                _LOGGER.debug(self.shared.file_name + ": Frame number %s", self.frame_number)
+                _LOGGER.debug(
+                    self.shared.file_name + ": Frame number %s", self.frame_number
+                )
                 if self.frame_number > 5:
                     self.frame_number = 0
                 # All below will be drawn each time
@@ -463,10 +470,11 @@ class ReImageHandler(object):
                         robot_position[1],
                         robot_position_angle,
                         color_robot,
-                        self.shared.file_name
+                        self.shared.file_name,
                     )
                 _LOGGER.debug(
-                    self.shared.file_name + " Auto cropping the image with rotation: %s",
+                    self.shared.file_name
+                    + " Auto cropping the image with rotation: %s",
                     int(self.shared.image_rotate),
                 )
                 img_np_array = await self.auto_crop_and_trim_array(
@@ -481,7 +489,8 @@ class ReImageHandler(object):
 
         except Exception as e:
             _LOGGER.warning(
-                f"{self.shared.file_name} : Error in get_image_from_json: {e}", exc_info=True
+                f"{self.shared.file_name} : Error in get_image_from_json: {e}",
+                exc_info=True,
             )
             return None
 
