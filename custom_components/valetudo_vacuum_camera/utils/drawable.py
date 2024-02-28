@@ -12,7 +12,12 @@ import math
 import numpy as np
 from PIL import ImageDraw, ImageFont
 
-from custom_components.valetudo_vacuum_camera.types import Color, NumpyArray, PilPNG, Point
+from custom_components.valetudo_vacuum_camera.types import (
+    Color,
+    NumpyArray,
+    PilPNG,
+    Point,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -25,15 +30,19 @@ class Drawable:
     """
 
     @staticmethod
-    async def create_empty_image(width: int, height: int, background_color: Color) -> NumpyArray:
-        """ Create the empty background image numpy array. """
+    async def create_empty_image(
+        width: int, height: int, background_color: Color
+    ) -> NumpyArray:
+        """Create the empty background image numpy array."""
         """ Background color is specified as RGBA tuple. """
         image_array = np.full((height, width, 4), background_color, dtype=np.uint8)
         return image_array
 
     @staticmethod
-    async def from_json_to_image(layer: NumpyArray, pixels: dict, pixel_size: int, color: Color) -> NumpyArray:
-        """ Drawing the layers (rooms) from the vacuum json data."""
+    async def from_json_to_image(
+        layer: NumpyArray, pixels: dict, pixel_size: int, color: Color
+    ) -> NumpyArray:
+        """Drawing the layers (rooms) from the vacuum json data."""
         # Create a backup of the array the image
         image_array = layer
         # Draw rectangles for each point in data
@@ -41,13 +50,15 @@ class Drawable:
             for i in range(z):
                 col = (x + i) * pixel_size
                 row = y * pixel_size
-                image_array[row: row + pixel_size, col: col + pixel_size] = color
+                image_array[row : row + pixel_size, col : col + pixel_size] = color
         # Convert the image array to a PIL image
         return image_array
 
     @staticmethod
-    async def battery_charger(layers: NumpyArray, x: int, y: int, color: Color) -> NumpyArray:
-        """ Draw the battery charger on the input layer."""
+    async def battery_charger(
+        layers: NumpyArray, x: int, y: int, color: Color
+    ) -> NumpyArray:
+        """Draw the battery charger on the input layer."""
         charger_width = 10
         charger_height = 20
         # Get the starting and ending indices of the charger rectangle
@@ -60,7 +71,9 @@ class Drawable:
         return layers
 
     @staticmethod
-    async def go_to_flag(layer: NumpyArray, center: Point, rotation_angle: int, flag_color: Color) -> NumpyArray:
+    async def go_to_flag(
+        layer: NumpyArray, center: Point, rotation_angle: int, flag_color: Color
+    ) -> NumpyArray:
         """
         It is draw a flag on centered at specified coordinates on
         the input layer. It uses the rotation angle of the image
@@ -161,7 +174,15 @@ class Drawable:
         return inside
 
     @staticmethod
-    def _line(layer: NumpyArray, x1: int, y1: int, x2: int, y2: int, color: Color, width: int = 3) -> NumpyArray:
+    def _line(
+        layer: NumpyArray,
+        x1: int,
+        y1: int,
+        x2: int,
+        y2: int,
+        color: Color,
+        width: int = 3,
+    ) -> NumpyArray:
         """
         Draw a line on a NumPy array (layer) from point A to B.
         Parameters:
@@ -207,13 +228,15 @@ class Drawable:
         return layer
 
     @staticmethod
-    async def draw_virtual_walls(layer: NumpyArray, virtual_walls, color: Color) -> NumpyArray:
+    async def draw_virtual_walls(
+        layer: NumpyArray, virtual_walls, color: Color
+    ) -> NumpyArray:
         """
         Draw virtual walls on the input layer.
         """
         for wall in virtual_walls:
             for i in range(0, len(wall), 4):
-                x1, y1, x2, y2 = wall[i:i + 4]
+                x1, y1, x2, y2 = wall[i : i + 4]
                 # Draw the virtual wall as a line with a fixed width of 6 pixels
                 layer = Drawable._line(layer, x1, y1, x2, y2, color, width=6)
         return layer
@@ -260,8 +283,14 @@ class Drawable:
         return arr
 
     @staticmethod
-    def _filled_circle(image: NumpyArray, center: Point, radius: int, color: Color,
-                       outline_color: Color = None, outline_width: int = 0) -> NumpyArray:
+    def _filled_circle(
+        image: NumpyArray,
+        center: Point,
+        radius: int,
+        color: Color,
+        outline_color: Color = None,
+        outline_width: int = 0,
+    ) -> NumpyArray:
         """
         Draw a filled circle on the image using NumPy.
 
@@ -275,12 +304,14 @@ class Drawable:
         - Modified image with the filled circle drawn.
         """
         y, x = center
-        rr, cc = np.ogrid[:image.shape[0], :image.shape[1]]
-        circle = (rr - x) ** 2 + (cc - y) ** 2 <= radius ** 2
+        rr, cc = np.ogrid[: image.shape[0], : image.shape[1]]
+        circle = (rr - x) ** 2 + (cc - y) ** 2 <= radius**2
         image[circle] = color
         if outline_width > 0:
             # Create a mask for the outer circle
-            outer_circle = (rr - x) ** 2 + (cc - y) ** 2 <= (radius + outline_width) ** 2
+            outer_circle = (rr - x) ** 2 + (cc - y) ** 2 <= (
+                radius + outline_width
+            ) ** 2
             # Create a mask for the outline by subtracting the inner circle mask from the outer circle mask
             outline_mask = outer_circle & ~circle
             # Fill the outline with the outline color
@@ -289,7 +320,9 @@ class Drawable:
         return image
 
     @staticmethod
-    def _ellipse(image: NumpyArray, center: Point, radius: int, color: Color) -> NumpyArray:
+    def _ellipse(
+        image: NumpyArray, center: Point, radius: int, color: Color
+    ) -> NumpyArray:
         """
         Draw an ellipse on the image using NumPy.
         """
@@ -304,8 +337,13 @@ class Drawable:
         return result_image
 
     @staticmethod
-    def _polygon_outline(arr: NumpyArray, points, width: int, outline_color: Color,
-                         fill_color: Color = None) -> NumpyArray:
+    def _polygon_outline(
+        arr: NumpyArray,
+        points,
+        width: int,
+        outline_color: Color,
+        fill_color: Color = None,
+    ) -> NumpyArray:
         """
         Draw the outline of a filled polygon on the array using _line.
         """
@@ -316,10 +354,12 @@ class Drawable:
             # Use the _line function to draw a line between the current and next points
             arr = Drawable._line(
                 arr,
-                current_point[0], current_point[1],
-                next_point[0], next_point[1],
+                current_point[0],
+                current_point[1],
+                next_point[0],
+                next_point[1],
                 outline_color,
-                width
+                width,
             )
             # Fill the polygon area with the specified fill color
             if fill_color is not None:
@@ -357,7 +397,9 @@ class Drawable:
         return layers
 
     @staticmethod
-    async def robot(layers: NumpyArray, x: int, y: int, angle: float, fill: Color, log: str = "") -> NumpyArray:
+    async def robot(
+        layers: NumpyArray, x: int, y: int, angle: float, fill: Color, log: str = ""
+    ) -> NumpyArray:
         """
         We Draw the robot with in a smaller array
         this helps numpy to work faster and at lower
@@ -377,13 +419,17 @@ class Drawable:
         radius = 25  # Radius of the vacuum constant
         r_scaled = radius // 11  # Offset scale for placement of the objects.
         r_cover = r_scaled * 12  # Scale factor for cover
-        lidar_angle = np.deg2rad(angle + 90)  # Convert angle to radians and adjust for LIDAR orientation
+        lidar_angle = np.deg2rad(
+            angle + 90
+        )  # Convert angle to radians and adjust for LIDAR orientation
         r_lidar = r_scaled * 3  # Scale factor for the lidar
         r_button = r_scaled * 1  # scale factor of the button
         # Outline colour from fill colour
         outline = (fill[0] // 2, fill[1] // 2, fill[2] // 2, fill[3])
         # Draw the robot outline
-        tmp_layer = Drawable._filled_circle(tmp_layer, (tmp_x, tmp_y), radius, fill, outline, 1)
+        tmp_layer = Drawable._filled_circle(
+            tmp_layer, (tmp_x, tmp_y), radius, fill, outline, 1
+        )
         # Draw bin cover
         angle -= 90  # we remove 90 for the cover orientation
         a1 = ((angle + 90) - 80) / 180 * math.pi
@@ -396,18 +442,28 @@ class Drawable:
         # Draw Lidar
         lidar_x = int(tmp_x + 15 * np.cos(lidar_angle))  # Calculate LIDAR x-coordinate
         lidar_y = int(tmp_y + 15 * np.sin(lidar_angle))  # Calculate LIDAR y-coordinate
-        tmp_layer = Drawable._filled_circle(tmp_layer, (lidar_x, lidar_y), r_lidar, outline)
+        tmp_layer = Drawable._filled_circle(
+            tmp_layer, (lidar_x, lidar_y), r_lidar, outline
+        )
         # Draw Button
-        butt_x = int(tmp_x - 20 * np.cos(lidar_angle))  # Calculate the button x-coordinate
-        butt_y = int(tmp_y - 20 * np.sin(lidar_angle))  # Calculate the button y-coordinate
-        tmp_layer = Drawable._filled_circle(tmp_layer, (butt_x, butt_y), r_button, outline)
+        butt_x = int(
+            tmp_x - 20 * np.cos(lidar_angle)
+        )  # Calculate the button x-coordinate
+        butt_y = int(
+            tmp_y - 20 * np.sin(lidar_angle)
+        )  # Calculate the button y-coordinate
+        tmp_layer = Drawable._filled_circle(
+            tmp_layer, (butt_x, butt_y), r_button, outline
+        )
         # at last overlay the new robot image to the layer in input.
         layers = Drawable.overlay_robot(layers, tmp_layer, x, y)
         # return the new layer as np array.
         return layers
 
     @staticmethod
-    def overlay_robot(background_image: NumpyArray, robot_image: NumpyArray, x: int, y: int) -> NumpyArray:
+    def overlay_robot(
+        background_image: NumpyArray, robot_image: NumpyArray, x: int, y: int
+    ) -> NumpyArray:
         """
         Overlay the robot image on the background image at the specified coordinates.
         @param background_image:
@@ -427,11 +483,15 @@ class Drawable:
         bottom_right_x = top_left_x + robot_width
         bottom_right_y = top_left_y + robot_height
         # Overlay the robot on the background image
-        background_image[top_left_y:bottom_right_y, top_left_x:bottom_right_x] = robot_image
+        background_image[top_left_y:bottom_right_y, top_left_x:bottom_right_x] = (
+            robot_image
+        )
         return background_image
 
     @staticmethod
-    def draw_obstacles(image: NumpyArray, obstacle_info_list, color: Color) -> NumpyArray:
+    def draw_obstacles(
+        image: NumpyArray, obstacle_info_list, color: Color
+    ) -> NumpyArray:
         """
         Draw filled circles for obstacles on the image.
         Parameters:
@@ -443,7 +503,7 @@ class Drawable:
         for obstacle_info in obstacle_info_list:
             enter = obstacle_info.get("points", {})
             label = obstacle_info.get("label", {})
-            center = (enter['x'], enter['y'])
+            center = (enter["x"], enter["y"])
 
             radius = 6
 
@@ -454,11 +514,9 @@ class Drawable:
 
     @staticmethod
     def status_text(image: PilPNG, size: int, color: Color, status: str) -> None:
-        """ Draw the Status Test on the image. """
+        """Draw the Status Test on the image."""
         # Load a font
-        path = (
-            "custom_components/valetudo_vacuum_camera/utils/fonts/FiraSans.ttf"
-        )
+        path = "custom_components/valetudo_vacuum_camera/utils/fonts/FiraSans.ttf"
         font = ImageFont.truetype(path, size)
         text = status
         # Create a drawing object

@@ -71,14 +71,14 @@ class CameraProcessor:
                     self._shared.image_size = self._map_handler.get_img_size()
 
                 if not self._shared.snapshot_take and (
-                        self._shared.vacuum_state == "idle"
-                        or self._shared.vacuum_state == "docked"
-                        or self._shared.vacuum_state == "error"
+                    self._shared.vacuum_state == "idle"
+                    or self._shared.vacuum_state == "docked"
+                    or self._shared.vacuum_state == "error"
                 ):
                     # suspend image processing if we are at the next frame.
                     if (
-                            self._shared.frame_number
-                            != self._map_handler.get_frame_number()
+                        self._shared.frame_number
+                        != self._map_handler.get_frame_number()
                     ):
                         self._shared.image_grab = False
                         _LOGGER.info(
@@ -119,7 +119,7 @@ class CameraProcessor:
                         50,
                         self._shared.user_colors[8],
                         self._shared.file_name + ": " + self._shared.vacuum_state,
-                        )
+                    )
 
                 if self._shared.attr_calibration_points is None:
                     self._shared.attr_calibration_points = (
@@ -136,9 +136,9 @@ class CameraProcessor:
                     self._shared.image_size = self._re_handler.get_img_size()
 
                 if not self._shared.snapshot_take and (
-                        self._shared.vacuum_state == "idle"
-                        or self._shared.vacuum_state == "docked"
-                        or self._shared.vacuum_state == "error"
+                    self._shared.vacuum_state == "idle"
+                    or self._shared.vacuum_state == "docked"
+                    or self._shared.vacuum_state == "error"
                 ):
                     # suspend image processing if we are at the next frame.
                     _LOGGER.info(
@@ -174,7 +174,7 @@ class CameraProcessor:
         loop = get_event_loop()
 
         with concurrent.futures.ThreadPoolExecutor(
-                max_workers=1, thread_name_prefix=f"{self._shared.file_name}_camera"
+            max_workers=1, thread_name_prefix=f"{self._shared.file_name}_camera"
         ) as executor:
             tasks = [
                 loop.run_in_executor(executor, self.process_valetudo_data, parsed_json)
@@ -257,7 +257,7 @@ class CameraProcessor:
         loop = get_event_loop()
 
         with concurrent.futures.ThreadPoolExecutor(
-                max_workers=1, thread_name_prefix=f"{self._shared.file_name}_camera_text"
+            max_workers=1, thread_name_prefix=f"{self._shared.file_name}_camera_text"
         ) as executor:
             tasks = [
                 loop.run_in_executor(executor, self.process_status_text, pil_img, color)
