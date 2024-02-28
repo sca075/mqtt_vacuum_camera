@@ -15,7 +15,7 @@ import numpy as np
 
 from custom_components.valetudo_vacuum_camera.types import Color
 from custom_components.valetudo_vacuum_camera.utils.colors_man import color_grey
-from custom_components.valetudo_vacuum_camera.utils.draweble import Drawable
+from custom_components.valetudo_vacuum_camera.utils.drawable import Drawable
 from custom_components.valetudo_vacuum_camera.utils.img_data import ImageData
 
 _LOGGER = logging.getLogger(__name__)

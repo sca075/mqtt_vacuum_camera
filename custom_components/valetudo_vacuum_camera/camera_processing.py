@@ -12,7 +12,7 @@ import logging
 from asyncio import gather, get_event_loop
 
 from .types import Color, PilPNG
-from .utils.draweble import Drawable as Draw
+from .utils.drawable import Drawable as Draw
 from .valetudo.hypfer.image_handler import MapImageHandler
 from .valetudo.valetudore.image_handler import ReImageHandler
 
@@ -199,7 +199,7 @@ class CameraProcessor:
     def get_status_text(self):
         """Get the status text."""
         status_text = "Something went wrong.."
-        text_size = 50
+        text_size = 60
         charge_level = "\u2301"  # unicode Battery symbol
         charging = "\u2211"  # unicode Charging symbol
         if self._shared.show_vacuum_state:
@@ -213,10 +213,10 @@ class CameraProcessor:
                     try:
                         in_room = self._shared.current_room.get("in_room", None)
                     except (ValueError, KeyError):
-                        text_size = 50
+                        text_size = 60
                     else:
                         if in_room:
-                            text_size = 45
+                            text_size = 55
                             status_text += f" ({in_room})"
                 if self._shared.vacuum_state == "docked":
                     if int(self._shared.vacuum_battery) <= 99:

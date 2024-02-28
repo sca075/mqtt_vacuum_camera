@@ -385,9 +385,7 @@ class ValetudoCamera(Camera):
             # Save image ready for snapshot.
             image_data.save(self.snapshot_img)  # Save the image in .storage
             if self._enable_snapshots:
-                if os.path.isfile(
-                    f"{self._directory_path}/{STORAGE_DIR}/{self._shared.file_name}.png"
-                ):
+                if os.path.isfile(self.snapshot_img):
                     shutil.copy(
                         f"{self._directory_path}/{STORAGE_DIR}/{self._shared.file_name}.png",
                         f"{self._directory_path}/www/snapshot_{self._shared.file_name}.png",

@@ -26,7 +26,7 @@ from custom_components.valetudo_vacuum_camera.types import (
     RoomsProperties,
 )
 from custom_components.valetudo_vacuum_camera.utils.colors_man import color_grey
-from custom_components.valetudo_vacuum_camera.utils.draweble import Drawable
+from custom_components.valetudo_vacuum_camera.utils.drawable import Drawable
 from custom_components.valetudo_vacuum_camera.utils.img_data import ImageData
 
 # import asyncio

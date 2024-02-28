@@ -3,7 +3,7 @@ Collections of Drawing Utility
 Drawable is part of the Image_Handler
 used functions to draw the elements on the Numpy Array
 that is actually our camera frame.
-Last changes on Version: 1.5.5
+Last changes on Version: 1.5.9
 """
 
 import logging
@@ -12,7 +12,7 @@ import math
 import numpy as np
 from PIL import ImageDraw, ImageFont
 
-from custom_components.valetudo_vacuum_camera.types import Color
+from custom_components.valetudo_vacuum_camera.types import Color, NumpyArray, PilPNG, Point
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -20,19 +20,19 @@ _LOGGER = logging.getLogger(__name__)
 class Drawable:
     """
     Collection of drawing utility functions for the image handlers.
-    This class contains static methods to draw various elements on the Numpy Array.
+    This class contains static methods to draw various elements on the Numpy Arrays (images).
     We cant use openCV because it is not supported by the Home Assistant OS.
     """
 
     @staticmethod
-    async def create_empty_image(width: int, height: int, background_color: Color) -> np.ndarray:
+    async def create_empty_image(width: int, height: int, background_color: Color) -> NumpyArray:
         """ Create the empty background image numpy array. """
         """ Background color is specified as RGBA tuple. """
         image_array = np.full((height, width, 4), background_color, dtype=np.uint8)
         return image_array
 
     @staticmethod
-    async def from_json_to_image(layer: np.ndarray, pixels: dict, pixel_size: int, color: Color) -> np.ndarray:
+    async def from_json_to_image(layer: NumpyArray, pixels: dict, pixel_size: int, color: Color) -> NumpyArray:
         """ Drawing the layers (rooms) from the vacuum json data."""
         # Create a backup of the array the image
         image_array = layer
@@ -46,8 +46,8 @@ class Drawable:
         return image_array
 
     @staticmethod
-    async def battery_charger(layers, x, y, color):
-        # Draw Battery Charger (it is filled a rectangle)
+    async def battery_charger(layers: NumpyArray, x: int, y: int, color: Color) -> NumpyArray:
+        """ Draw the battery charger on the input layer."""
         charger_width = 10
         charger_height = 20
         # Get the starting and ending indices of the charger rectangle
@@ -60,7 +60,7 @@ class Drawable:
         return layers
 
     @staticmethod
-    async def go_to_flag(layer, center, rotation_angle, flag_color):
+    async def go_to_flag(layer: NumpyArray, center: Point, rotation_angle: int, flag_color: Color) -> NumpyArray:
         """
         It is draw a flag on centered at specified coordinates on
         the input layer. It uses the rotation angle of the image
@@ -132,7 +132,7 @@ class Drawable:
         return layer
 
     @staticmethod
-    def point_inside(x, y, points):
+    def point_inside(x: int, y: int, points) -> bool:
         """
         Check if a point (x, y) is inside a polygon defined by a list of points.
         Utility to establish the fill point of the geometry.
@@ -161,7 +161,7 @@ class Drawable:
         return inside
 
     @staticmethod
-    def _line(layer, x1, y1, x2, y2, color, width=3):
+    def _line(layer: NumpyArray, x1: int, y1: int, x2: int, y2: int, color: Color, width: int = 3) -> NumpyArray:
         """
         Draw a line on a NumPy array (layer) from point A to B.
         Parameters:
@@ -207,7 +207,10 @@ class Drawable:
         return layer
 
     @staticmethod
-    async def draw_virtual_walls(layer, virtual_walls, color):
+    async def draw_virtual_walls(layer: NumpyArray, virtual_walls, color: Color) -> NumpyArray:
+        """
+        Draw virtual walls on the input layer.
+        """
         for wall in virtual_walls:
             for i in range(0, len(wall), 4):
                 x1, y1, x2, y2 = wall[i:i + 4]
@@ -216,7 +219,7 @@ class Drawable:
         return layer
 
     @staticmethod
-    async def lines(arr, coords, width, color):
+    async def lines(arr: NumpyArray, coords, width: int, color: Color) -> NumpyArray:
         """
         it joins the coordinates creating a continues line.
         the result is our path.
@@ -257,7 +260,8 @@ class Drawable:
         return arr
 
     @staticmethod
-    def _filled_circle(image, center, radius, color, outline_color=None, outline_width=0):
+    def _filled_circle(image: NumpyArray, center: Point, radius: int, color: Color,
+                       outline_color: Color = None, outline_width: int = 0) -> NumpyArray:
         """
         Draw a filled circle on the image using NumPy.
 
@@ -285,7 +289,7 @@ class Drawable:
         return image
 
     @staticmethod
-    def _ellipse(image, center, radius, color):
+    def _ellipse(image: NumpyArray, center: Point, radius: int, color: Color) -> NumpyArray:
         """
         Draw an ellipse on the image using NumPy.
         """
@@ -300,7 +304,8 @@ class Drawable:
         return result_image
 
     @staticmethod
-    def _polygon_outline(arr, points, width, outline_color, fill_color=None):
+    def _polygon_outline(arr: NumpyArray, points, width: int, outline_color: Color,
+                         fill_color: Color = None) -> NumpyArray:
         """
         Draw the outline of a filled polygon on the array using _line.
         """
@@ -330,7 +335,10 @@ class Drawable:
         return arr
 
     @staticmethod
-    async def zones(layers, coordinates, color):
+    async def zones(layers: NumpyArray, coordinates, color: Color) -> NumpyArray:
+        """
+        Draw the zones on the input layer.
+        """
         dot_radius = 1  # number of pixels the dot should be
         dot_spacing = 4  # space between dots.
         # Iterate over zones
@@ -349,7 +357,7 @@ class Drawable:
         return layers
 
     @staticmethod
-    async def robot(layers, x, y, angle, fill, log=""):
+    async def robot(layers: NumpyArray, x: int, y: int, angle: float, fill: Color, log: str = "") -> NumpyArray:
         """
         We Draw the robot with in a smaller array
         this helps numpy to work faster and at lower
@@ -399,7 +407,15 @@ class Drawable:
         return layers
 
     @staticmethod
-    def overlay_robot(background_image, robot_image, x, y):
+    def overlay_robot(background_image: NumpyArray, robot_image: NumpyArray, x: int, y: int) -> NumpyArray:
+        """
+        Overlay the robot image on the background image at the specified coordinates.
+        @param background_image:
+        @param robot_image:
+        @param robot x:
+        @param robot y:
+        @return: robot image overlaid on the background image.
+        """
         # Calculate the dimensions of the robot image
         robot_height, robot_width, _ = robot_image.shape
         # Calculate the center of the robot image (in case const changes)
@@ -415,7 +431,7 @@ class Drawable:
         return background_image
 
     @staticmethod
-    def draw_obstacles(image, obstacle_info_list, color):
+    def draw_obstacles(image: NumpyArray, obstacle_info_list, color: Color) -> NumpyArray:
         """
         Draw filled circles for obstacles on the image.
         Parameters:
@@ -437,7 +453,7 @@ class Drawable:
         return image
 
     @staticmethod
-    def status_text(image, size, color, status):
+    def status_text(image: PilPNG, size: int, color: Color, status: str) -> None:
         """ Draw the Status Test on the image. """
         # Load a font
         path = (
