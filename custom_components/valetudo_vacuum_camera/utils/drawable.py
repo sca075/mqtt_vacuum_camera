@@ -8,6 +8,7 @@ Last changes on Version: 1.5.9
 
 import logging
 import math
+import re
 
 import numpy as np
 from PIL import ImageDraw, ImageFont
@@ -515,13 +516,26 @@ class Drawable:
     @staticmethod
     def status_text(image: PilPNG, size: int, color: Color, status: str) -> None:
         """Draw the Status Test on the image."""
-        # Load a font
-        path = "custom_components/valetudo_vacuum_camera/utils/fonts/FiraSans.ttf"
-        font = ImageFont.truetype(path, size)
         text = status
+        # Load a fonts
+        path_font1 = "custom_components/valetudo_vacuum_camera/utils/fonts/FiraSans.ttf"
+        path_font2 = "custom_components/valetudo_vacuum_camera/utils/fonts/NotoSansCJKhk-VF.ttf"
+        font1 = ImageFont.truetype(path_font1, size)
+        font2 = ImageFont.truetype(path_font2, size)
+        split_text = re.split(r'[\(\)]', text)
+        split_text = [item for item in split_text if item]
         # Create a drawing object
         draw = ImageDraw.Draw(image)
         # Define the text and position
-        position = (10, 10)  # Upper left corner
+        x, y = 10, 10
         # Draw the text on the image
-        draw.text(position, text, font=font, fill=color)
+        for i, item in enumerate(split_text):
+            if i == 1:  # The room name is always the second item
+                font = font2  # Use font2 for the room name
+                item = f"({item})"
+                width = 1
+            else:
+                font = font1  # Use font1 for other pieces of text
+                width = None
+            draw.text((x, y), item, font=font, fill=color, stroke_width=width)
+            x += draw.textlength(item, font=font1)
