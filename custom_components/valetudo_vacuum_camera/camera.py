@@ -19,7 +19,6 @@ from typing import Any, Optional
 import voluptuous as vol
 from PIL import Image
 from homeassistant import config_entries, core
-
 # from homeassistant.core import Event, HomeAssistant, ServiceCall, callback
 from homeassistant.components.camera import PLATFORM_SCHEMA, Camera, CameraEntityFeature
 from homeassistant.const import CONF_NAME, CONF_UNIQUE_ID
@@ -445,7 +444,6 @@ class ValetudoCamera(Camera):
                 or self._shared.vacuum_state == "moving"
                 or self._shared.vacuum_state == "returning"
                 or not self._shared.vacuum_bat_charged  # text update use negative logic
-                and self._shared.vacuum_connection
             ):
                 # grab the image from MQTT.
                 self._shared.image_grab = True
