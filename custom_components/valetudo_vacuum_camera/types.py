@@ -1,11 +1,12 @@
 """
 This module contains type aliases for the project.
-Last Updated: Version 1.5.9
+Version 1.5.9-rc2
 """
 
-from typing import Union, Tuple, Dict, Any, AnyStr
-from PIL import Image
+from typing import Union, Tuple, Dict, Any
+
 import numpy as np
+from PIL import Image
 
 Color = Union[Tuple[int, int, int], Tuple[int, int, int, int]]
 Colors = Dict[str, Color]

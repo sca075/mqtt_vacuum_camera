@@ -1,5 +1,5 @@
 """
-Multiprocessing module (version v1.5.9-beta.2)
+Multiprocessing module (version v1.5.9-rc2)
 This module provide the image multiprocessing in order to
 avoid the overload of the main_thread of Home Assistant.
 """
@@ -184,7 +184,7 @@ class CameraProcessor:
 
         if isinstance(images, list) and len(images) > 0:
             _LOGGER.debug(
-                f"{self._shared.file_name}: Got {len(images)} elements list.."
+                f"{self._shared.file_name}: Camera frame processed."
             )
             result = images[0]
         else:
@@ -208,7 +208,7 @@ class CameraProcessor:
                 f"{self._shared.file_name}: {self._shared.vacuum_state.capitalize()}"
             )
             if not self._shared.vacuum_connection:
-                status_text = f"{self._shared.file_name}: Disconnected from MQTT"
+                status_text = f"{self._shared.file_name}: Disconnected from MQTT?"
             else:
                 if self._shared.current_room:
                     try:

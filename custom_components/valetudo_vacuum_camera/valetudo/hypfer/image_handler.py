@@ -2,7 +2,7 @@
 Image Handler Module.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Last Changed on Version: 1.5.9-beta.2
+Last Changed on Version: 1.5.9-rc2
 """
 
 from __future__ import annotations
@@ -11,10 +11,10 @@ import hashlib
 import json
 import logging
 
-from PIL import Image  # , ImageOps
 import numpy as np
-from psutil_home_assistant import PsutilWrapper as ProcInspector
 import svgwrite
+from PIL import Image  # , ImageOps
+from psutil_home_assistant import PsutilWrapper as ProcInspector
 from svgwrite import shapes
 
 from custom_components.valetudo_vacuum_camera.types import (

@@ -1,5 +1,5 @@
 """
-Camera Version v1.5.9
+Camera Version v1.5.9-rc2
 Image Processing Threading implemented on Version 1.5.7.
 """
 

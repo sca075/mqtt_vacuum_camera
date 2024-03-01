@@ -1,4 +1,5 @@
 """
+Version 1.5.9-rc2
 Custom component to integrate the Valetudo vacuum with Home Assistant.
 Home Assistant Backup support.
 """
