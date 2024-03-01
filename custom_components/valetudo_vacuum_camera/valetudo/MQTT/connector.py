@@ -109,7 +109,6 @@ class ValetudoConnector:
         """Return the vacuum connection state."""
         if self._mqtt_vac_connect_state != "ready":
             return False
-        self._data_in = True
         return True
 
     async def get_destinations(self):
@@ -201,6 +200,7 @@ class ValetudoConnector:
             if self._payload:
                 tmp_data = json.loads(self._payload)
                 self._mqtt_vac_re_stat = tmp_data.get("state", None)
+                self._mqtt_vac_battery_level = tmp_data.get("battery_level", None)
                 _LOGGER.info(
                     f"{self._mqtt_topic}: Received vacuum {self._mqtt_vac_re_stat} status."
                 )
