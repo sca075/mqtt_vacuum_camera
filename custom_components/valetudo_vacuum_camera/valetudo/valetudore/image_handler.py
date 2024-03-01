@@ -2,7 +2,7 @@
 Image Handler Module dor Valetudo Re Vacuums.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Last Changed on Version: 1.5.9
+Version 1.5.9-rc2
 """
 
 from __future__ import annotations
@@ -11,10 +11,10 @@ import json
 import logging
 import uuid
 
-from PIL import Image
 import numpy as np
+from PIL import Image
 
-from custom_components.valetudo_vacuum_camera.types import Color
+from custom_components.valetudo_vacuum_camera.types import Color, NumpyArray, PilPNG, JsonType
 from custom_components.valetudo_vacuum_camera.utils.colors_man import color_grey
 from custom_components.valetudo_vacuum_camera.utils.drawable import Drawable
 from custom_components.valetudo_vacuum_camera.utils.img_data import ImageData
@@ -24,6 +24,9 @@ _LOGGER = logging.getLogger(__name__)
 
 # noinspection PyTypeChecker
 class ReImageHandler(object):
+    """
+    Image Handler for Valetudo Re Vacuums.
+    """
     def __init__(self, camera_shared):
         self.auto_crop = None  # Auto crop flag
         self.calibration_data = None  # Calibration data
@@ -52,11 +55,11 @@ class ReImageHandler(object):
 
     async def auto_crop_and_trim_array(
         self,
-        image_array,
-        detect_colour,
+        image_array: NumpyArray,
+        detect_colour: Color,
         margin_size: int = 0,
         rotate: int = 0,
-    ):
+    ) -> NumpyArray:
         """
         Automatically crops and trims a numpy array and returns the processed image.
         """
@@ -181,7 +184,8 @@ class ReImageHandler(object):
         _LOGGER.debug("Auto Crop and Trim image size: %s", self.crop_img_size)
         return rotated
 
-    def extract_room_properties(self, json_data, destinations):
+    def extract_room_properties(self, json_data: JsonType, destinations: JsonType):
+        """Extract the room properties."""
         unsorted_id = ImageData.get_rrm_segments_ids(json_data)
         size_x, size_y = ImageData.get_rrm_image_size(json_data)
         top, left = ImageData.get_rrm_image_position(json_data)
@@ -270,10 +274,10 @@ class ReImageHandler(object):
 
     async def get_image_from_rrm(
         self,
-        m_json,  # json data
+        m_json: JsonType,  # json data
         destinations: None = None,  # MQTT destinations for labels
         # drawing_limit: float = 0.0,
-    ):
+    ) -> PilPNG or None:
         color_wall: Color = self.shared.user_colors[0]
         color_no_go: Color = self.shared.user_colors[6]
         color_go_to: Color = self.shared.user_colors[7]
@@ -494,22 +498,28 @@ class ReImageHandler(object):
             )
             return None
 
-    def get_frame_number(self):
+    def get_frame_number(self)-> int:
+        """Return the frame number."""
         return self.frame_number
 
-    def get_robot_position(self):
+    def get_robot_position(self)-> any:
+        """Return the robot position."""
         return self.robot_pos
 
-    def get_charger_position(self):
+    def get_charger_position(self) -> any:
+        """Return the charger position."""
         return self.charger_pos
 
-    def get_img_size(self):
+    def get_img_size(self) -> any:
+        """Return the image size."""
         return self.img_size
 
-    def get_json_id(self):
+    def get_json_id(self) -> str:
+        """Return the json id."""
         return self.json_id
 
-    async def get_rooms_attributes(self, destinations: None):
+    async def get_rooms_attributes(self, destinations: JsonType = None) -> any:
+        """Return the rooms attributes."""
         if self.room_propriety:
             return self.room_propriety
         if self.json_data and destinations:
@@ -521,8 +531,8 @@ class ReImageHandler(object):
                 _LOGGER.debug("Got Rooms Attributes.")
         return self.room_propriety
 
-    async def get_robot_in_room(self, robot_x, robot_y, angle):
-        # do we know where we are?
+    async def get_robot_in_room(self, robot_x: int, robot_y: int, angle: float)-> any:
+        """Return the robot in room data."""
         if self.robot_in_room:
             if (
                 (self.robot_in_room["left"] >= robot_x)
@@ -572,7 +582,8 @@ class ReImageHandler(object):
         # If the robot is not inside any room, return None or a default value
         return self.robot_in_room
 
-    def get_calibration_data(self, rotation_angle):
+    def get_calibration_data(self, rotation_angle: int = 0) -> any:
+        """Return the map calibration data."""
         if not self.calibration_data:
             self.calibration_data = []
             self.img_rotate = rotation_angle
@@ -642,7 +653,8 @@ class ReImageHandler(object):
         else:
             return self.calibration_data
 
-    async def async_copy_array(self, original_array):
+    async def async_copy_array(self, original_array: NumpyArray) -> NumpyArray:
+        """Copy the numpy array."""
         _LOGGER.debug(f"{self.shared.file_name}: Copying the array.")
         copied_array = np.copy(original_array)
         return copied_array
