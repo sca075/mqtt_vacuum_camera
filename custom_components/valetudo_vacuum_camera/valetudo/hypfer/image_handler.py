@@ -2,7 +2,7 @@
 Image Handler Module.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Last Changed on Version: 1.5.9-rc2
+Last Changed on Version: 1.5.9
 """
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ import logging
 
 import numpy as np
 import svgwrite
-from PIL import Image  # , ImageOps
+from PIL import Image, ImageOps
 from psutil_home_assistant import PsutilWrapper as ProcInspector
 from svgwrite import shapes
 
@@ -635,9 +635,14 @@ class MapImageHandler(object):
                 self.svg_wait = False
             del img_np_array
             # reduce the image size if the zoomed image is bigger then the original.
-            # if self.shared.image_auto_zoom and self.shared.vacuum_state == "cleaning" and self.zooming:
-            #     return ImageOps.fit(pil_img, (self.shared.image_ref_width,
-            #                                 self.shared.image_ref_height))
+            if (
+                self.shared.image_auto_zoom
+                and self.shared.vacuum_state == "cleaning"
+                and self.zooming
+            ):
+                width = self.shared.image_ref_width + self.shared.margins
+                height = self.shared.image_ref_height + self.shared.margins
+                return ImageOps.fit(pil_img, (width, height))
             return pil_img
         except Exception as e:
             _LOGGER.warning(

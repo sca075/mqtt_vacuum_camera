@@ -1,5 +1,5 @@
 """
-Camera Version v1.5.9-rc2
+Camera Version v1.5.9
 Image Processing Threading implemented on Version 1.5.7.
 """
 
@@ -280,6 +280,7 @@ class ValetudoCamera(Camera):
 
     @property
     def supported_features(self) -> int:
+        """Return supported features."""
         return CameraEntityFeature.ON_OFF
 
     @property
@@ -426,8 +427,14 @@ class ValetudoCamera(Camera):
 
         # If we have data from MQTT, we process the image.
         self._shared.vacuum_battery = await self._mqtt.get_battery_level()
-        self._shared.vacuum_state = await self._mqtt.get_vacuum_status()
         self._shared.vacuum_connection = await self._mqtt.get_vacuum_connection_state()
+        if not self._shared.vacuum_connection:
+            self._shared.vacuum_state = "disconnected"
+        else:
+            if self._shared.vacuum_state == "disconnected":
+                self._shared.vacuum_state = "idle"
+            else:
+                self._shared.vacuum_state = await self._mqtt.get_vacuum_status()
         pid = os.getpid()  # Start to log the CPU usage of this PID.
         proc = ProcInsp().psutil.Process(pid)  # Get the process PID.
         process_data = await self._mqtt.is_data_available()
@@ -443,6 +450,7 @@ class ValetudoCamera(Camera):
                 self._shared.vacuum_state == "cleaning"
                 or self._shared.vacuum_state == "moving"
                 or self._shared.vacuum_state == "returning"
+                or self._shared.vacuum_state == "disconnected"
                 or not self._shared.vacuum_bat_charged  # text update use negative logic
             ):
                 # grab the image from MQTT.
