@@ -1,9 +1,9 @@
 ### How to Install and Configure the Camera:
-Using [HACS](https://hacs.xyz/) add custom repositories:
+Using [HACS](https://hacs.xyz/) (current HACS version  1.34.0) add custom repositories by clicking on the three dots on the top right of the HACS page and select **Integrations**:
 
 ![Screenshot 2023-08-12 at 17 06 17](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/4abdf05a-eb50-4317-a0e9-8c6984bdba05)
 
-please copy the repository link below in ***new repository*** section.
+please copy the repository link below in ***Custom repositories*** section.
 
 ```
 https://github.com/sca075/valetudo_vacuum_camera.git
@@ -11,7 +11,7 @@ https://github.com/sca075/valetudo_vacuum_camera.git
 
 ![Screenshot 2023-08-12 at 17 25 12](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/5e0874e6-4599-4853-b69b-940609555491)
 
-Select **Integration** as **Category** and click the **Add** button.
+Select **Integration** as _Category_ and click the **Add** button.
 
 Once the repository is added, please click on the repository and the home page will be display. From there you need to
 **Download** the integration, [HACS](https://hacs.xyz/) will setup the integration for you. (Note: You can selct here if you want to be notify for beta releases that some time are containg instant fixes).
@@ -34,16 +34,45 @@ The camera entity created will have the same friendly name of your vacuum + "cam
 
 ### Manual Setup.
 If you want to install this camera manually without HACS:
-Check the last release available and replace it (at current v1.5.0)
+Check the last release available and replace it (at current v1.5.9)
 To install this integration manually you have to download valetudo_vacuum_camera.zip and extract its contents to config/custom_components/valetudo_vacuum_camera directory:
 
 ```
 mkdir -p custom_components/valetudo_vacuum_camera
 cd custom_components/valetudo_vacuum_camera
-wget https://github.com/sca075/valetudo_vacuum_camera/archive/refs/tags/v.1.5.0.zip
+wget https://github.com/sca075/valetudo_vacuum_camera/archive/refs/tags/v.1.5.9.zip
 unzip valetudo_vacuum_camera_v1.5.0.zip
 rm valetudo_vacuum_camera_v1.5.0.zip
 ```
+
+Once the files are in the right place, you will need to restart Home Assistant to have the integration available. Once Home Assistant will reload, please go in (plase press CTRL clicking the link this would open the link in a different tab of your browser) [**Settings** -> **Devices & Services **](https://my.home-assistant.io/redirect/config_flow_start/?domain=valetudo_vacuum_camera) then please confirm to add the integration.
+
+### Card Configuration:
+
+Configuration of the [card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card) (thanks to [@PiotrMachowski](https://github.com/PiotrMachowski)) once the camera is installed requires:
+
+*calibration source will be set to camera **not to identity** as the camera is providing the calibration points to the card.*
+```
+calibration_source: 
+  camera: true 
+```
+
+**Warning: You need to use the internal_variables** as Valetudo is using MQTT is necessary to set in the card the topic.
+*Your topic can be obtained also from the camera attributes vacuum_topic.*
+
+![Screenshot 2023-10-24 at 18 25 59](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/080b7bcb-19f1-4415-870f-2285329e7ce9)
+
+### Note: "your_topic" must be replaced with what you can find it in the camera attributes.
+```
+internal_variables: 
+  topic: valetudo/your_topic  
+```
+
+We did agree and work with the author of the card, we guess soon a [new version of the card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card/actions/runs/7005593157) will be released.
+Those settings for the internal_variables will be automatically setup in the card as soon the vacuum and camera will be setup in the card.
+
+
+### Configuration:
 
 The Options menu since V1.5.0 was redesigned in order to feet as much is possible a mobile phone.
 
