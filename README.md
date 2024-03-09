@@ -59,7 +59,11 @@ For further details on how the camera operates and how you can contribute, refer
 
 
 ### How to install:
-Via [HACS](https://hacs.xyz//setup/download) please follow. The instructions in [here](./docs/install.md) show detailed steps and will help to set up the camera also without HACS (manual setup).
+
+Via [HACS](https://hacs.xyz//setup/download) please follow. The instructions in [here](./docs/install.md) show detailed
+steps and will help to set up the camera also without HACS (manual setup). Our setup guide also includes **important**
+informations on how to setup
+the [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
 
 ### Features: 
 <details><summary> We here List what this camera offers as futures.</summary>
@@ -86,13 +90,16 @@ Via [HACS](https://hacs.xyz//setup/download) please follow. The instructions in 
 7) The camera as all cameras in HA **supports the ON/OFF service**, it is possible to *suspend and resume the camera streem as desired*.
 8) In the attributes is possible to get on what room the vacuum is.
 9) No Go, Virtual Walls, Zone Clean, Active Segments and Obstacles are draw on the map when available.
-10) Auto Zooming the room (segment) when the vacuum is cleaning it.
+10) [Auto Zooming the room (segment)](./docs/auto_zoom.md) when the vacuum is cleaning it.
 </details>
 
 
 ## Notes:
-- This integration is developed and tested using a PI4 with Home Assistant OS fully updated [to the last version](https://www.home-assistant.io/faq/release/), this allows us to confirm that the component is working properly with Home Assistant. Tested also on Docker Supervised "production" enviroment (fully setup home installation).
 
+- This integration is developed and tested using a PI4 with Home Assistant OS fully
+  updated [to the last version](https://www.home-assistant.io/faq/release/), this allows us to confirm that the
+  component is working properly with Home Assistant. Tested also on ProxMox and Docker Supervised "production"
+  enviroment (fully setup home installation).
 ### Tanks to:
 - [@PiotrMachowski](https://github.com/PiotrMachowski) inspiring this integration and his amazing work.
 - [@Hypfer](https://github.com/Hypfer) for freeing the vacuums from the clouds and continuously improve our vacuums :)

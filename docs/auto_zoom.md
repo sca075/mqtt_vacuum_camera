@@ -2,16 +2,16 @@
 
 ***Category:*** Camera Configuration - Image Options - Auto Zoom.
 
-![Screenshot 2024-03-09 at 21.18.47.png](..%2F..%2F..%2F..%2FDesktop%2FScreenshot%202024-03-09%20at%2021.18.47.png)
+![Screenshot 2024-03-09 at 21 18 47](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/02787561-6c1b-4db7-9960-fd8f3e911161)
 
-![Screenshot 2024-03-09 at 21.20.48.png](..%2F..%2F..%2F..%2FDesktop%2FScreenshot%202024-03-09%20at%2021.20.48.png)
+![Screenshot 2024-03-09 at 21 20 48](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/7d98c2e9-700f-49cc-b6c5-d43b11f7baef)
 
 ***Default:***  Disable
 
 ***Description:*** If the vacuum supports the segments and those are properly configured also in the card, when the
 vacuum enters the room to clean the Camera will zoom the image on that room.
 
-[auto_zoom.mov](..%2F..%2F..%2F..%2FDesktop%2Fauto_zoom.mov)
+https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/b27cafb4-549a-4957-9548-2aa4cc07c8cd
 
 ***Note:*** The zoom works only when the vacuum is in “cleaning” state. In all other states the image returns
 automatically to the floor plan. If the auto zoom is disabled the floor map is displayed normally, cleaned or in clean
