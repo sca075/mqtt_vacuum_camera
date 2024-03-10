@@ -1,8 +1,8 @@
 """
-Image Handler Module dor Valetudo Re Vacuums.
+Image Handler Module for Valetudo Re Vacuums.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Version 1.5.9-rc2
+Version 1.6.0-b1
 """
 
 from __future__ import annotations
@@ -14,7 +14,12 @@ import uuid
 import numpy as np
 from PIL import Image
 
-from custom_components.valetudo_vacuum_camera.types import Color, NumpyArray, PilPNG, JsonType
+from custom_components.valetudo_vacuum_camera.types import (
+    Color,
+    NumpyArray,
+    PilPNG,
+    JsonType,
+)
 from custom_components.valetudo_vacuum_camera.utils.colors_man import color_grey
 from custom_components.valetudo_vacuum_camera.utils.drawable import Drawable
 from custom_components.valetudo_vacuum_camera.utils.img_data import ImageData
@@ -27,6 +32,7 @@ class ReImageHandler(object):
     """
     Image Handler for Valetudo Re Vacuums.
     """
+
     def __init__(self, camera_shared):
         self.auto_crop = None  # Auto crop flag
         self.calibration_data = None  # Calibration data
@@ -498,11 +504,11 @@ class ReImageHandler(object):
             )
             return None
 
-    def get_frame_number(self)-> int:
+    def get_frame_number(self) -> int:
         """Return the frame number."""
         return self.frame_number
 
-    def get_robot_position(self)-> any:
+    def get_robot_position(self) -> any:
         """Return the robot position."""
         return self.robot_pos
 
@@ -531,7 +537,7 @@ class ReImageHandler(object):
                 _LOGGER.debug("Got Rooms Attributes.")
         return self.room_propriety
 
-    async def get_robot_in_room(self, robot_x: int, robot_y: int, angle: float)-> any:
+    async def get_robot_in_room(self, robot_x: int, robot_y: int, angle: float) -> any:
         """Return the robot in room data."""
         if self.robot_in_room:
             if (

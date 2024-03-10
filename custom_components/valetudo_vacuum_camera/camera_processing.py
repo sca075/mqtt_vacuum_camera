@@ -14,7 +14,7 @@ from asyncio import gather, get_event_loop
 from .types import Color, PilPNG
 from .utils.drawable import Drawable as Draw
 from .valetudo.hypfer.image_handler import MapImageHandler
-from .valetudo.valetudore.image_handler import ReImageHandler
+from .valetudo.rand256.image_handler import ReImageHandler
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 _LOGGER.propagate = True

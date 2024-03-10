@@ -432,7 +432,7 @@ class ValetudoCamera(Camera):
             self._shared.vacuum_state = "disconnected"
         else:
             if self._shared.vacuum_state == "disconnected":
-                self._shared.vacuum_state = "idle"
+                self._shared.vacuum_state = "connected"
             else:
                 self._shared.vacuum_state = await self._mqtt.get_vacuum_status()
         pid = os.getpid()  # Start to log the CPU usage of this PID.
@@ -451,6 +451,7 @@ class ValetudoCamera(Camera):
                 or self._shared.vacuum_state == "moving"
                 or self._shared.vacuum_state == "returning"
                 or self._shared.vacuum_state == "disconnected"
+                or self._shared.vacuum_state == "connected"
                 or not self._shared.vacuum_bat_charged  # text update use negative logic
             ):
                 # grab the image from MQTT.
