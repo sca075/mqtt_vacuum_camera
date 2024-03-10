@@ -1,0 +1,198 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "vacuum_entity": "Støvsuger enhets-ID",
+          "vacuum_config_entry": "Støvsuger konfigurasjonsdata",
+          "vacuum_map": "Støvsuger emne",
+          "vacuum_identifiers": "Støvsuger MQTT-ID",
+          "unique_id": ""
+        },
+        "data_description": {
+          "vacuum_entity": "Støvsuger enhets-ID"
+        },
+        "description": "Kameraoppsett.",
+        "title": "Valetudo Kameraoppsett"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Valetudo Kameraalternativer",
+        "description": "Mulige endringer:",
+        "data": {
+          "camera_config_action": "Handling"
+        }
+      },
+      "image_opt": {
+        "data": {
+          "rotate_image": "Roter",
+          "margins": "150",
+          "auto_zoom": "Aktiver automatisk zoom",
+          "show_vac_status": "Vis støvsugerstatus.",
+          "color_text": "[255, 255, 255]",
+          "get_svg_file": "Eksporter SVG base lag.",
+          "enable_www_snapshots": "Eksporter PNG øyeblikksbilder."
+        },
+        "data_description": {
+          "rotate_image": "Grad 0, 90, 180, 270",
+          "margins": "Automatisk beskjæringsmarginer i piksler.",
+          "color_text": "Støvsugerstatus tekstfarge."
+        },
+        "description": "Kamera bildealternativer",
+        "title": "Bildealternativer"
+      },
+      "base_colours": {
+        "data": {
+          "color_charger": "[255, 128, 0]",
+          "color_move": "[238, 247, 255]",
+          "color_wall": "[255, 255, 0]",
+          "color_robot": "[255, 255, 204]",
+          "color_go_to": "[0, 255, 0]",
+          "color_no_go": "[255, 0, 0]",
+          "color_zone_clean": "[255, 255, 255]",
+          "color_background": "[0, 125, 255]",
+          "add_base_alpha": "Konfigurer gjennomsiktighet:"
+        },
+        "data_description": {
+          "color_charger": "Laderfarge.",
+          "color_move": "Flytt farge.",
+          "color_wall": "Veggfarge.",
+          "color_robot": "Robotfarge.",
+          "color_go_to": "Gå til farge.",
+          "color_no_go": "Ikke gå farge.",
+          "color_zone_clean": "Sone ren farge.",
+          "color_background": "Bakgrunnsfarge."
+        },
+        "description": "Kamera fargealternativer.",
+        "title": "Basefarger Oppsett"
+      },
+      "alpha_1": {
+        "data": {
+          "alpha_charger": "Lader Alpha   ",
+          "alpha_move": "Flytter Alpha     ",
+          "alpha_wall": "Vegg Alpha     ",
+          "alpha_robot": "Robot Alpha     ",
+          "alpha_go_to": "Gå Til Området Alpha",
+          "alpha_no_go": "Ikke Gå Område Alpha",
+          "alpha_zone_clean": "Sone Ren Alpha",
+          "alpha_background": "Bakgrunns Alpha",
+          "alpha_text": "Tekst Alpha      "
+        },
+        "description": "Kamera alternativer. Alpha 1",
+        "title": "Alpha Chanel Basefarger"
+      },
+      "rooms_colours_1": {
+        "data": {
+          "color_room_0": "[135, 206, 250]",
+          "color_room_1": "[176, 226, 255]",
+          "color_room_2": "[165, 105, 18]",
+          "color_room_3": "[164, 211, 238]",
+          "color_room_4": "[141, 182, 205]",
+          "color_room_5": "[96, 123, 139]",
+          "color_room_6": "[224, 255, 255]",
+          "color_room_7": "[209, 238, 238]",
+          "add_room_1_alpha": "Konfigurer gjennomsiktighet:"
+        },
+        "data_description": {
+          "color_room_0": "Rom 1, gulvfarge.",
+          "color_room_1": "Rom 2",
+          "color_room_2": "Rom 3",
+          "color_room_3": "Rom 4",
+          "color_room_4": "Rom 5",
+          "color_room_5": "Rom 6",
+          "color_room_6": "Rom 7",
+          "color_room_7": "Rom 8"
+        },
+        "description": "Kamera fargealternativer.",
+        "title": "Rom 1 til 8 Farger"
+      },
+      "rooms_colours_2": {
+        "data": {
+          "color_room_8": "[180, 205, 205]",
+          "color_room_9": "[122, 139, 139]",
+          "color_room_10": "[175, 238, 238]",
+          "color_room_11": "[84, 153, 199]",
+          "color_room_12": "[133, 193, 233]",
+          "color_room_13": "[245, 176, 65]",
+          "color_room_14": "[82, 190, 128]",
+          "color_room_15": "[72, 201, 176]",
+          "add_room_2_alpha": "Konfigurer gjennomsiktighet:"
+        },
+        "data_description": {
+          "color_room_8": "Rom 9",
+          "color_room_9": "Rom 10",
+          "color_room_10": "Rom 11",
+          "color_room_11": "Rom 12",
+          "color_room_12": "Rom 13",
+          "color_room_13": "Rom 14",
+          "color_room_14": "Rom 15",
+          "color_room_15": "Rom 16"
+        },
+        "description": "Kamera fargealternativer.",
+        "title": "Rom 9 til 15 Farger"
+      },
+      "alpha_2": {
+        "data": {
+          "alpha_room_0": "Rom 1, gulvfarge.",
+          "alpha_room_1": "Rom 2",
+          "alpha_room_2": "Rom 3",
+          "alpha_room_3": "Rom 4",
+          "alpha_room_4": "Rom 5",
+          "alpha_room_5": "Rom 6",
+          "alpha_room_6": "Rom 7",
+          "alpha_room_7": "Rom 8"
+        },
+        "description": "Kamera alternativer. Alpha 2",
+        "title": "Alpha Chanel Rom Farger"
+      },
+      "alpha_3": {
+        "data": {
+          "alpha_room_8": "Rom 9",
+          "alpha_room_9": "Rom 10",
+          "alpha_room_10": "Rom 11",
+          "alpha_room_11": "Rom 12",
+          "alpha_room_12": "Rom 13",
+          "alpha_room_13": "Rom 14",
+          "alpha_room_14": "Rom 15",
+          "alpha_room_15": "Rom 16"
+        },
+        "description": "Kamera alternativer. Alpha 3",
+        "title": "Alpha Chanel Rom Farger"
+      }
+    }
+  },
+  "selector": {
+    "camera_config_action": {
+      "options": {
+        "opt_1": "Konfigurer bilde",
+        "opt_2": "Konfigurer generelle farger",
+        "opt_3": "Farger Rom 1 til 8",
+        "opt_4": "Farger Rom 9 til 16",
+        "opt_5": "Kopier kamera logger til www"
+      }
+    }
+  },
+  "services": {
+    "turn_off": {
+      "name": "[%key:common::action::turn_off%]",
+      "description": "Slår av kameraet."
+    },
+    "turn_on": {
+      "name": "[%key:common::action::turn_on%]",
+      "description": "Slår på kameraet."
+    },
+    "snapshot": {
+      "name": "Ta øyeblikksbilde",
+      "description": "Tar et øyeblikksbilde fra et kamera.",
+      "fields": {
+        "filename": {
+          "name": "Filnavn",
+          "description": "Mal for et filnavn. Variabel tilgjengelig er `entity_id`."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,198 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "vacuum_entity": "Stofzuiger Entiteit ID",
+          "vacuum_config_entry": "Stofzuiger Configuratie Gegevens",
+          "vacuum_map": "Stofzuiger Onderwerp",
+          "vacuum_identifiers": "Stofzuiger MQTT ID",
+          "unique_id": ""
+        },
+        "data_description": {
+          "vacuum_entity": "Stofzuiger Entiteit ID"
+        },
+        "description": "Camera Opstelling.",
+        "title": "Valetudo Camera Opstelling"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Valetudo Camera Opties",
+        "description": "Mogelijke Wijzigingen:",
+        "data": {
+          "camera_config_action": "Actie"
+        }
+      },
+      "image_opt": {
+        "data": {
+          "rotate_image": "Roteren",
+          "margins": "150",
+          "auto_zoom": "Automatisch Zoomen Inschakelen",
+          "show_vac_status": "Toon Stofzuiger Status.",
+          "color_text": "[255, 255, 255]",
+          "get_svg_file": "Exporteer SVG baselaag.",
+          "enable_www_snapshots": "Exporteer PNG snapshots."
+        },
+        "data_description": {
+          "rotate_image": "Graad 0, 90, 180, 270",
+          "margins": "Automatische Bijsnijding Marges in pixels.",
+          "color_text": "Stofzuiger Status Tekstkleur."
+        },
+        "description": "Camera Beeld Opties",
+        "title": "Beeld Opties"
+      },
+      "base_colours": {
+        "data": {
+          "color_charger": "[255, 128, 0]",
+          "color_move": "[238, 247, 255]",
+          "color_wall": "[255, 255, 0]",
+          "color_robot": "[255, 255, 204]",
+          "color_go_to": "[0, 255, 0]",
+          "color_no_go": "[255, 0, 0]",
+          "color_zone_clean": "[255, 255, 255]",
+          "color_background": "[0, 125, 255]",
+          "add_base_alpha": "Configureer Transparantie:"
+        },
+        "data_description": {
+          "color_charger": "Oplader kleur.",
+          "color_move": "Beweging kleur.",
+          "color_wall": "Muur kleur.",
+          "color_robot": "Robot kleur.",
+          "color_go_to": "Ga-naar kleur.",
+          "color_no_go": "Niet gaan kleur.",
+          "color_zone_clean": "Zone schoon kleur.",
+          "color_background": "Achtergrond kleur."
+        },
+        "description": "Camera Kleuren Opties.",
+        "title": "Basis Kleuren Opstelling"
+      },
+      "alpha_1": {
+        "data": {
+          "alpha_charger": "Oplader Alpha   ",
+          "alpha_move": "Bewegingen Alpha     ",
+          "alpha_wall": "Muren Alpha     ",
+          "alpha_robot": "Robot Alpha     ",
+          "alpha_go_to": "Ga Naar Gebied Alpha",
+          "alpha_no_go": "Niet Gaan Gebied Alpha",
+          "alpha_zone_clean": "Zone Schoon Alpha",
+          "alpha_background": "Achtergrond Alpha",
+          "alpha_text": "Tekst Alpha      "
+        },
+        "description": "Camera Opties. Alpha 1",
+        "title": "Alpha Kanaal Basis Kleuren"
+      },
+      "rooms_colours_1": {
+        "data": {
+          "color_room_0": "[135, 206, 250]",
+          "color_room_1": "[176, 226, 255]",
+          "color_room_2": "[165, 105, 18]",
+          "color_room_3": "[164, 211, 238]",
+          "color_room_4": "[141, 182, 205]",
+          "color_room_5": "[96, 123, 139]",
+          "color_room_6": "[224, 255, 255]",
+          "color_room_7": "[209, 238, 238]",
+          "add_room_1_alpha": "Configureer Transparantie:"
+        },
+        "data_description": {
+          "color_room_0": "Kamer 1, vloerkleur.",
+          "color_room_1": "Kamer 2",
+          "color_room_2": "Kamer 3",
+          "color_room_3": "Kamer 4",
+          "color_room_4": "Kamer 5",
+          "color_room_5": "Kamer 6",
+          "color_room_6": "Kamer 7",
+          "color_room_7": "Kamer 8"
+        },
+        "description": "Camera Kleuren Opties.",
+        "title": "Kamers 1 tot 8 Kleuren"
+      },
+      "rooms_colours_2": {
+        "data": {
+          "color_room_8": "[180, 205, 205]",
+          "color_room_9": "[122, 139, 139]",
+          "color_room_10": "[175, 238, 238]",
+          "color_room_11": "[84, 153, 199]",
+          "color_room_12": "[133, 193, 233]",
+          "color_room_13": "[245, 176, 65]",
+          "color_room_14": "[82, 190, 128]",
+          "color_room_15": "[72, 201, 176]",
+          "add_room_2_alpha": "Configureer Transparantie:"
+        },
+        "data_description": {
+          "color_room_8": "Kamer 9",
+          "color_room_9": "Kamer 10",
+          "color_room_10": "Kamer 11",
+          "color_room_11": "Kamer 12",
+          "color_room_12": "Kamer 13",
+          "color_room_13": "Kamer 14",
+          "color_room_14": "Kamer 15",
+          "color_room_15": "Kamer 16"
+        },
+        "description": "Camera Kleuren Opties.",
+        "title": "Kamers 9 tot 15 Kleuren"
+      },
+      "alpha_2": {
+        "data": {
+          "alpha_room_0": "Kamer 1, vloerkleur.",
+          "alpha_room_1": "Kamer 2",
+          "alpha_room_2": "Kamer 3",
+          "alpha_room_3": "Kamer 4",
+          "alpha_room_4": "Kamer 5",
+          "alpha_room_5": "Kamer 6",
+          "alpha_room_6": "Kamer 7",
+          "alpha_room_7": "Kamer 8"
+        },
+        "description": "Camera Opties. Alpha 2",
+        "title": "Alpha Kanaal Kamers Kleuren"
+      },
+      "alpha_3": {
+        "data": {
+          "alpha_room_8": "Kamer 9",
+          "alpha_room_9": "Kamer 10",
+          "alpha_room_10": "Kamer 11",
+          "alpha_room_11": "Kamer 12",
+          "alpha_room_12": "Kamer 13",
+          "alpha_room_13": "Kamer 14",
+          "alpha_room_14": "Kamer 15",
+          "alpha_room_15": "Kamer 16"
+        },
+        "description": "Camera Opties. Alpha 3",
+        "title": "Alpha Kanaal Kamers Kleuren"
+      }
+    }
+  },
+  "selector": {
+    "camera_config_action": {
+      "options": {
+        "opt_1": "Configureer Afbeelding",
+        "opt_2": "Configureer Algemene Kleuren",
+        "opt_3": "Kleuren Kamers 1 tot 8",
+        "opt_4": "Kleuren Kamers 9 tot 16",
+        "opt_5": "Kopieer Camera Logs naar www"
+      }
+    }
+  },
+  "services": {
+    "turn_off": {
+      "name": "[%key:common::action::turn_off%]",
+      "description": "Schakelt de camera uit."
+    },
+    "turn_on": {
+      "name": "[%key:common::action::turn_on%]",
+      "description": "Schakelt de camera in."
+    },
+    "snapshot": {
+      "name": "Maak een momentopname",
+      "description": "Maakt een momentopname van een camera.",
+      "fields": {
+        "filename": {
+          "name": "Bestandsnaam",
+          "description": "Sjabloon voor een bestandsnaam. Variabele beschikbaar is `entity_id`."
+        }
+      }
+    }
+  }
+}

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import asyncio
 import concurrent.futures
+import json
 import logging
 from asyncio import gather, get_event_loop
 
@@ -183,9 +184,7 @@ class CameraProcessor:
             images = await gather(*tasks)
 
         if isinstance(images, list) and len(images) > 0:
-            _LOGGER.debug(
-                f"{self._shared.file_name}: Camera frame processed."
-            )
+            _LOGGER.debug(f"{self._shared.file_name}: Camera frame processed.")
             result = images[0]
         else:
             result = None
@@ -196,11 +195,24 @@ class CameraProcessor:
         """Get the frame number."""
         return self._map_handler.get_frame_number() - 2
 
+    def load_translations(self, language):
+        translations = {}
+        with open(f"{language}.json", "r") as file:
+            translations = json.load(file)
+        return translations
+
+    def get_vacuum_status_translation(self, language):
+        translations = self.load_translations(language)
+        if "vacuum_status" in translations:
+            return translations["vacuum_status"]
+        else:
+            return None
+
     def get_status_text(self, text_img: PilPNG):
         """Get the status text."""
         status_text = "Something went wrong.."
         text_size_coverage = 1.5
-        text_size = 50
+        text_size = self._shared.vacuum_status_size
         charge_level = "\u03DE"  # unicode Koppa symbol
         charging = "\u2211"  # unicode Charging symbol
         if self._shared.show_vacuum_state:
@@ -233,19 +245,25 @@ class CameraProcessor:
                 text_size = int((text_size_coverage * text_img.width) // text_pixels)
         return status_text, text_size
 
-    async def async_draw_image_text(self, pil_img: PilPNG, color: Color) -> PilPNG:
+    async def async_draw_image_text(
+        self, pil_img: PilPNG, color: Color, img_top: bool = True
+    ) -> PilPNG:
         """Draw text on the image."""
         if pil_img is not None:
             text, size = self.get_status_text(pil_img)
-            Draw.status_text(image=pil_img, size=size, color=color, status=text)
+            Draw.status_text(
+                image=pil_img, size=size, color=color, status=text, position=img_top
+            )
         return pil_img
 
-    def process_status_text(self, pil_img: PilPNG, color: Color):
+    def process_status_text(self, pil_img: PilPNG, color: Color, img_top: bool = True):
         """Async function to process the image data from the Vacuum Json data."""
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         try:
-            result = loop.run_until_complete(self.async_draw_image_text(pil_img, color))
+            result = loop.run_until_complete(
+                self.async_draw_image_text(pil_img, color, img_top)
+            )
         finally:
             loop.close()
         return result
@@ -260,7 +278,13 @@ class CameraProcessor:
             max_workers=1, thread_name_prefix=f"{self._shared.file_name}_camera_text"
         ) as executor:
             tasks = [
-                loop.run_in_executor(executor, self.process_status_text, pil_img, color)
+                loop.run_in_executor(
+                    executor,
+                    self.process_status_text,
+                    pil_img,
+                    color,
+                    self._shared.vacuum_status_position,
+                )
                 for pil_img in pil_img_list
             ]
             images = await gather(*tasks)

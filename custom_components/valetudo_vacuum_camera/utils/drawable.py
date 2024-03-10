@@ -514,20 +514,40 @@ class Drawable:
         return image
 
     @staticmethod
-    def status_text(image: PilPNG, size: int, color: Color, status: str) -> None:
+    def split_string_with_font(text, font):
+        pattern = f"[\U00000000-\U0010FFFF]+(?=\s*{font})"
+        matches = re.findall(pattern, text)
+        if matches:
+            split_text = re.split(pattern, text)
+            return split_text
+        else:
+            return [text]
+
+    @staticmethod
+    def status_text(
+        image: PilPNG, size: int, color: Color, status: str, position: bool
+    ) -> None:
         """Draw the Status Test on the image."""
         text = status
         # Load a fonts
+        path_font0 = (
+            "custom_components/valetudo_vacuum_camera/utils/fonts/NotoEmojiRegular.ttf"
+        )
         path_font1 = "custom_components/valetudo_vacuum_camera/utils/fonts/FiraSans.ttf"
-        path_font2 = "custom_components/valetudo_vacuum_camera/utils/fonts/NotoSansCJKhk-VF.ttf"
+        path_font2 = (
+            "custom_components/valetudo_vacuum_camera/utils/fonts/NotoSansCJKhk-VF.ttf"
+        )
         font1 = ImageFont.truetype(path_font1, size)
         font2 = ImageFont.truetype(path_font2, size)
-        split_text = re.split(r'[\(\)]', text)
+        split_text = re.split(r"[\(\)]", text)
         split_text = [item for item in split_text if item]
         # Create a drawing object
         draw = ImageDraw.Draw(image)
         # Define the text and position
-        x, y = 10, 10
+        if position:
+            x, y = 10, 10
+        else:
+            x, y = 10, image.height - 20 - size
         # Draw the text on the image
         for i, item in enumerate(split_text):
             if i == 1:  # The room name is always the second item

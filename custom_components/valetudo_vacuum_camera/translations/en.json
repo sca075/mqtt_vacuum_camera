@@ -27,18 +27,29 @@
           "rotate_image": "Rotate",
           "margins": "150",
           "auto_zoom": "Enable Auto Zoom",
-          "show_vac_status": "Show Vacuum Status.",
-          "color_text": "[255, 255, 255]",
           "get_svg_file": "Export SVG base layer.",
           "enable_www_snapshots": "Export PNG snapshots."
         },
         "data_description": {
           "rotate_image": "Degree 0, 90, 180, 270",
-          "margins": "Auto Crop Margins in pixels.",
-          "color_text": "Vacuum Status Text colour."
+          "margins": "Auto Crop Margins in pixels."
         },
         "description": "Camera Image Options",
         "title": "Image Options"
+      },
+      "status_text": {
+        "data": {
+          "show_vac_status": "Show Vacuum Status.",
+          "vac_status_size": "Text Size",
+          "vac_status_position": "Text Position: Top(OFF)/Bottom(ON)",
+          "color_text": "[255, 255, 255]"
+        },
+        "data_description": {
+          "vac_status_size": "Text size default 50.",
+          "color_text": "Vacuum Status Text colour."
+        },
+        "description": "Image Options",
+        "title": "Status Text Options"
       },
       "base_colours": {
         "data": {
@@ -164,10 +175,11 @@
     "camera_config_action": {
       "options": {
         "opt_1": "Configure Image",
-        "opt_2": "Configure General Colours",
-        "opt_3": "Colours Rooms 1 to 8",
-        "opt_4": "Colours Rooms 9 to 16",
-        "opt_5": "Copy Camera Logs to www"
+        "opt_2": "Configure Status Text",
+        "opt_3": "Configure General Colours",
+        "opt_4": "Colours Rooms 1 to 8",
+        "opt_5": "Colours Rooms 9 to 16",
+        "opt_6": "Copy Camera Logs to www"
       }
     }
   },

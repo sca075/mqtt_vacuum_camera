@@ -1,0 +1,198 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "vacuum_entity": "معرف كيان الفراغ",
+          "vacuum_config_entry": "بيانات تكوين الفراغ",
+          "vacuum_map": "موضوع الفراغ",
+          "vacuum_identifiers": "معرف MQTT الفراغ",
+          "unique_id": ""
+        },
+        "data_description": {
+          "vacuum_entity": "معرف كيان الفراغ"
+        },
+        "description": "إعداد الكاميرا.",
+        "title": "إعداد الكاميرا Valetudo"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "خيارات الكاميرا Valetudo",
+        "description": "التغييرات الممكنة:",
+        "data": {
+          "camera_config_action": "الإجراء"
+        }
+      },
+      "image_opt": {
+        "data": {
+          "rotate_image": "تدوير",
+          "margins": "150",
+          "auto_zoom": "تمكين التكبير التلقائي",
+          "show_vac_status": "عرض حالة الفراغ.",
+          "color_text": "[255, 255, 255]",
+          "get_svg_file": "تصدير طبقة SVG الأساسية.",
+          "enable_www_snapshots": "تصدير لقطات PNG."
+        },
+        "data_description": {
+          "rotate_image": "زاوية 0، 90، 180، 270",
+          "margins": "هوامش القص التلقائي بالبكسل.",
+          "color_text": "لون نص حالة الفراغ."
+        },
+        "description": "خيارات صورة الكاميرا",
+        "title": "خيارات الصورة"
+      },
+      "base_colours": {
+        "data": {
+          "color_charger": "[255, 128, 0]",
+          "color_move": "[238, 247, 255]",
+          "color_wall": "[255, 255, 0]",
+          "color_robot": "[255, 255, 204]",
+          "color_go_to": "[0, 255, 0]",
+          "color_no_go": "[255, 0, 0]",
+          "color_zone_clean": "[255, 255, 255]",
+          "color_background": "[0, 125, 255]",
+          "add_base_alpha": "تكوين الشفافية:"
+        },
+        "data_description": {
+          "color_charger": "لون الشاحن.",
+          "color_move": "لون الحركة.",
+          "color_wall": "لون الجدار.",
+          "color_robot": "لون الروبوت.",
+          "color_go_to": "لون الانتقال.",
+          "color_no_go": "لون منطقة العدم المسموح بها.",
+          "color_zone_clean": "لون منطقة التنظيف.",
+          "color_background": "لون الخلفية."
+        },
+        "description": "خيارات ألوان الكاميرا.",
+        "title": "إعدادات الألوان الأساسية"
+      },
+      "alpha_1": {
+        "data": {
+          "alpha_charger": "شفافية الشاحن   ",
+          "alpha_move": "شفافية الحركة     ",
+          "alpha_wall": "شفافية الجدار     ",
+          "alpha_robot": "شفافية الروبوت     ",
+          "alpha_go_to": "شفافية منطقة الانتقال",
+          "alpha_no_go": "شفافية منطقة العدم المسموح به",
+          "alpha_zone_clean": "شفافية منطقة التنظيف",
+          "alpha_background": "شفافية الخلفية",
+          "alpha_text": "شفافية النص      "
+        },
+        "description": "خيارات الكاميرا. ألفا 1",
+        "title": "قناة ألفا الألوان الأساسية"
+      },
+      "rooms_colours_1": {
+        "data": {
+          "color_room_0": "[135, 206, 250]",
+          "color_room_1": "[176, 226, 255]",
+          "color_room_2": "[165, 105, 18]",
+          "color_room_3": "[164, 211, 238]",
+          "color_room_4": "[141, 182, 205]",
+          "color_room_5": "[96, 123, 139]",
+          "color_room_6": "[224, 255, 255]",
+          "color_room_7": "[209, 238, 238]",
+          "add_room_1_alpha": "تكوين الشفافية:"
+        },
+        "data_description": {
+          "color_room_0": "غرفة 1، لون الأرضية.",
+          "color_room_1": "غرفة 2",
+          "color_room_2": "غرفة 3",
+          "color_room_3": "غرفة 4",
+          "color_room_4": "غرفة 5",
+          "color_room_5": "غرفة 6",
+          "color_room_6": "غرفة 7",
+          "color_room_7": "غرفة 8"
+        },
+        "description": "خيارات ألوان الكاميرا.",
+        "title": "ألوان الغرف 1 إلى 8"
+      },
+      "rooms_colours_2": {
+        "data": {
+          "color_room_8": "[180, 205, 205]",
+          "color_room_9": "[122, 139, 139]",
+          "color_room_10": "[175, 238, 238]",
+          "color_room_11": "[84, 153, 199]",
+          "color_room_12": "[133, 193, 233]",
+          "color_room_13": "[245, 176, 65]",
+          "color_room_14": "[82, 190, 128]",
+          "color_room_15": "[72, 201, 176]",
+          "add_room_2_alpha": "تكوين الشفافية:"
+        },
+        "data_description": {
+          "color_room_8": "غرفة 9",
+          "color_room_9": "غرفة 10",
+          "color_room_10": "غرفة 11",
+          "color_room_11": "غرفة 12",
+          "color_room_12": "غرفة 13",
+          "color_room_13": "غرفة 14",
+          "color_room_14": "غرفة 15",
+          "color_room_15": "غرفة 16"
+        },
+        "description": "خيارات ألوان الكاميرا.",
+        "title": "ألوان الغرف 9 إلى 15"
+      },
+      "alpha_2": {
+        "data": {
+          "alpha_room_0": "غرفة 1، لون الأرضية.",
+          "alpha_room_1": "غرفة 2",
+          "alpha_room_2": "غرفة 3",
+          "alpha_room_3": "غرفة 4",
+          "alpha_room_4": "غرفة 5",
+          "alpha_room_5": "غرفة 6",
+          "alpha_room_6": "غرفة 7",
+          "alpha_room_7": "غرفة 8"
+        },
+        "description": "خيارات الكاميرا. ألفا 2",
+        "title": "قناة ألفا الألوان الغرف"
+      },
+      "alpha_3": {
+        "data": {
+          "alpha_room_8": "غرفة 9",
+          "alpha_room_9": "غرفة 10",
+          "alpha_room_10": "غرفة 11",
+          "alpha_room_11": "غرفة 12",
+          "alpha_room_12": "غرفة 13",
+          "alpha_room_13": "غرفة 14",
+          "alpha_room_14": "غرفة 15",
+          "alpha_room_15": "غرفة 16"
+        },
+        "description": "خيارات الكاميرا. ألفا 3",
+        "title": "قناة ألفا الألوان الغرف"
+      }
+    }
+  },
+  "selector": {
+    "camera_config_action": {
+      "options": {
+        "opt_1": "تكوين الصورة",
+        "opt_2": "تكوين الألوان العامة",
+        "opt_3": "ألوان الغرف 1 إلى 8",
+        "opt_4": "ألوان الغرف 9 إلى 16",
+        "opt_5": "نسخ سجلات الكاميرا إلى www"
+      }
+    }
+  },
+  "services": {
+    "turn_off": {
+      "name": "[%key:common::action::turn_off%]",
+      "description": "يُغلق الكاميرا."
+    },
+    "turn_on": {
+      "name": "[%key:common::action::turn_on%]",
+      "description": "يُشغل الكاميرا."
+    },
+    "snapshot": {
+      "name": "خذ لقطة",
+      "description": "يأخذ لقطة من الكاميرا.",
+      "fields": {
+        "filename": {
+          "name": "اسم الملف",
+          "description": "قالب لاسم الملف. المتغير المتاح هو `entity_id`."
+        }
+      }
+    }
+  }
+}

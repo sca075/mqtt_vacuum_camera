@@ -93,6 +93,8 @@ from .const import (
     CONF_EXPORT_SVG,
     CONF_SNAPSHOTS_ENABLE,
     CONF_VAC_STAT,
+    CONF_VAC_STAT_POS,
+    CONF_VAC_STAT_SIZE,
     CONF_VACUUM_CONNECTION_STRING,
     CONF_VACUUM_ENTITY_ID,
     CONF_VACUUM_IDENTIFIERS,
@@ -181,9 +183,7 @@ class ValetudoCamera(Camera):
             self.snapshot_img = (
                 f"{self._directory_path}/{STORAGE_DIR}/{self._shared.file_name}.png"
             )
-            self.log_file = (
-                f"{self._directory_path}/www/snapshot_{self._shared.file_name}.zip"
-            )
+            self.log_file = f"{self._directory_path}/www/{self._shared.file_name}.zip"
             self._shared.svg_path = (
                 f"{self._directory_path}/www/{self._shared.file_name}.svg"
             )
@@ -208,6 +208,8 @@ class ValetudoCamera(Camera):
         self._shared.image_rotate = int(device_info.get(ATTR_ROTATE, 0))
         self._shared.margins = int(device_info.get(ATTR_MARGINS, 150))
         self._shared.show_vacuum_state = device_info.get(CONF_VAC_STAT)
+        self._shared.vacuum_status_size = device_info.get(CONF_VAC_STAT_SIZE)
+        self._shared.vacuum_status_position = device_info.get(CONF_VAC_STAT_POS)
         if not self._shared.show_vacuum_state:
             self._shared.show_vacuum_state = False
         # If not configured, default to True for compatibility
