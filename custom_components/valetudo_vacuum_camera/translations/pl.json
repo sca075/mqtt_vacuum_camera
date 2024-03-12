@@ -27,17 +27,30 @@
           "rotate_image": "Obrócić Obraz",
           "margins": "150",
           "auto_zoom": "Włącz automatyczne powiększanie",
-          "show_vac_status": "Pokaż stan odkurzacza.",
-          "color_text": "[255, 255, 255]",
           "enable_www_snapshots": "Eksportuj migawki PNG."
         },
         "data_description": {
           "rotate_image": "Stopień 0, 90, 180, 270",
-          "margins": "Marginesy automatycznego przycinania w pikselach.",
-          "color_text": "Kolor tekstu statusu odkurzacza."
+          "margins": "Marginesy automatycznego przycinania w pikselach."
         },
         "description": "Opcje obrazu z kamery",
         "title": "Opcje obrazu"
+      },
+      "status_text": {
+        "data": {
+          "show_vac_status": "Pokaż status odkurzacza.",
+          "vac_status_font": "Czcionka",
+          "vac_status_size": "Rozmiar tekstu",
+          "vac_status_position": "Pozycja tekstu: Dół(Wyłączone)",
+          "color_text": "[255, 255, 255]"
+        },
+        "data_description": {
+          "vac_status_font": "Czcionka tekstu, domyślnie Fira Serif.",
+          "vac_status_size": "Rozmiar tekstu, domyślnie 50.",
+          "color_text": "Kolor tekstu statusu odkurzacza."
+        },
+        "description": "Opcje obrazu",
+        "title": "Opcje tekstu statusu"
       },
       "base_colours": {
         "data": {

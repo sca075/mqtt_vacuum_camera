@@ -93,8 +93,9 @@ from .const import (
     CONF_EXPORT_SVG,
     CONF_SNAPSHOTS_ENABLE,
     CONF_VAC_STAT,
-    CONF_VAC_STAT_SIZE,
+    CONF_VAC_STAT_FONT,
     CONF_VAC_STAT_POS,
+    CONF_VAC_STAT_SIZE,
     CONF_VACUUM_CONFIG_ENTRY_ID,
     CONF_VACUUM_ENTITY_ID,
     DOMAIN,
@@ -156,6 +157,7 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     "margins": "150",
                     "auto_zoom": False,
                     "show_vac_status": False,
+                    "vac_status_font": "custom_components/valetudo_vacuum_camera/utils/fonts/FiraSans.ttf",
                     "vac_status_size": 50,
                     "vac_status_position": True,
                     "get_svg_file": False,
@@ -262,6 +264,41 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 "max": 60,  # Maximum value
                 "step": 5,  # Step value
             }
+            font_selector = SelectSelectorConfig(
+                options=[
+                    {
+                        "label": "Fira Sans",
+                        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/FiraSans.ttf",
+                    },
+                    {
+                        "label": "Inter",
+                        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/Inter-VF.ttf",
+                    },
+                    {
+                        "label": "M Plus Regular",
+                        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/MPLUSRegular.ttf",
+                    },
+                    {
+                        "label": "Noto Sans CJKhk",
+                        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/NotoSansCJKhk-VF.ttf",
+                    },
+                    {
+                        "label": "Noto Kufi Arabic",
+                        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/NotoKufiArabic-VF.ttf",
+                    },
+                    {
+                        "label": "Noto Sans Khojki",
+                        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/NotoSansKhojki.ttf",
+                    },
+                    {
+                        "label": "Lato Regular",
+                        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/Lato-Regular.ttf",
+                    },
+                ],
+                mode=SelectSelectorMode.DROPDOWN,
+            )
+
+            # data_schema = {"camera_config_action": SelectSelector(menu_keys)}
             self.IMG_SCHEMA = vol.Schema(
                 {
                     vol.Required(
@@ -290,6 +327,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         CONF_VAC_STAT,
                         default=config_entry.options.get("show_vac_status"),
                     ): BooleanSelector(),
+                    vol.Optional(
+                        CONF_VAC_STAT_FONT,
+                        default=config_entry.options.get("vac_status_font"),
+                    ): SelectSelector(font_selector),
                     vol.Optional(
                         CONF_VAC_STAT_SIZE,
                         default=config_entry.options.get("vac_status_size"),
@@ -571,12 +612,13 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_status_text(self, user_input: Optional[Dict[str, Any]] = None):
         """
-        Images Options Configuration
+        Images Status Text Configuration
         """
         if user_input is not None:
             self.options.update(
                 {
                     "show_vac_status": user_input.get(CONF_VAC_STAT),
+                    "vac_status_font": user_input.get(CONF_VAC_STAT_FONT),
                     "vac_status_size": user_input.get(CONF_VAC_STAT_SIZE),
                     "vac_status_position": user_input.get(CONF_VAC_STAT_POS),
                     "color_text": user_input.get(COLOR_TEXT),

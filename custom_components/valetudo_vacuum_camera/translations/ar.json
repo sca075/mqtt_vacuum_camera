@@ -31,18 +31,31 @@
           "rotate_image": "تدوير",
           "margins": "150",
           "auto_zoom": "تمكين التكبير التلقائي",
-          "show_vac_status": "عرض حالة الفراغ.",
-          "color_text": "[255, 255, 255]",
           "get_svg_file": "تصدير طبقة SVG الأساسية.",
           "enable_www_snapshots": "تصدير لقطات PNG."
         },
         "data_description": {
           "rotate_image": "زاوية 0، 90، 180، 270",
-          "margins": "هوامش القص التلقائي بالبكسل.",
-          "color_text": "لون نص حالة الفراغ."
+          "margins": "هوامش القص التلقائي بالبكسل."
         },
         "description": "خيارات صورة الكاميرا",
         "title": "خيارات الصورة"
+      },
+      "status_text": {
+        "data": {
+          "show_vac_status": "عرض حالة الكنس",
+          "vac_status_font": "الخط النصي",
+          "vac_status_size": "حجم النص",
+          "vac_status_position": "موضع النص: أسفل(معطل)",
+          "color_text": "[255, 255, 255]"
+        },
+        "data_description": {
+          "vac_status_font": "نوع الخط النصي، الافتراضي Fira Serif.",
+          "vac_status_size": "حجم النص، الافتراضي 50.",
+          "color_text": "لون نص حالة الكنس."
+        },
+        "description": "خيارات الصورة",
+        "title": "خيارات نص الحالة"
       },
       "base_colours": {
         "data": {

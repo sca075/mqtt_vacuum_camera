@@ -3,7 +3,7 @@ This module contains type aliases for the project.
 Version 1.5.9-rc2
 """
 
-from typing import Union, Tuple, Dict, Any
+from typing import Any, Dict, Tuple, Union
 
 import numpy as np
 from PIL import Image

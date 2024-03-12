@@ -31,18 +31,31 @@
           "rotate_image": "Otočit",
           "margins": "150",
           "auto_zoom": "Povolit automatické zvětšení",
-          "show_vac_status": "Zobrazit stav vysavače.",
-          "color_text": "[255, 255, 255]",
           "get_svg_file": "Exportovat SVG základní vrstvu.",
           "enable_www_snapshots": "Exportovat PNG snímky."
         },
         "data_description": {
           "rotate_image": "Stupeň 0, 90, 180, 270",
-          "margins": "Automaticky oříznout okraje v pixelech.",
-          "color_text": "Barva textu stavu vysavače."
+          "margins": "Automaticky oříznout okraje v pixelech."
         },
         "description": "Možnosti obrazu kamery",
         "title": "Možnosti obrazu"
+      },
+      "status_text": {
+        "data": {
+          "show_vac_status": "Zobrazit stav vysavače.",
+          "vac_status_font": "Písmo",
+          "vac_status_size": "Velikost textu",
+          "vac_status_position": "Pozice textu: Dole(Vypnuto)",
+          "color_text": "[255, 255, 255]"
+        },
+        "data_description": {
+          "vac_status_font": "Písmo textu, výchozí je Fira Serif.",
+          "vac_status_size": "Velikost textu, výchozí je 50.",
+          "color_text": "Barva textu stavu vysavače."
+        },
+        "description": "Možnosti obrázku",
+        "title": "Možnosti textu stavu"
       },
       "base_colours": {
         "data": {

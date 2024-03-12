@@ -31,18 +31,31 @@
           "rotate_image": "Roteren",
           "margins": "150",
           "auto_zoom": "Automatisch Zoomen Inschakelen",
-          "show_vac_status": "Toon Stofzuiger Status.",
-          "color_text": "[255, 255, 255]",
           "get_svg_file": "Exporteer SVG baselaag.",
           "enable_www_snapshots": "Exporteer PNG snapshots."
         },
         "data_description": {
           "rotate_image": "Graad 0, 90, 180, 270",
-          "margins": "Automatische Bijsnijding Marges in pixels.",
-          "color_text": "Stofzuiger Status Tekstkleur."
+          "margins": "Automatische Bijsnijding Marges in pixels."
         },
         "description": "Camera Beeld Opties",
         "title": "Beeld Opties"
+      },
+      "status_text": {
+        "data": {
+          "show_vac_status": "Toon stofzuigerstatus.",
+          "vac_status_font": "Lettertype",
+          "vac_status_size": "Tekstgrootte",
+          "vac_status_position": "Tekstpositie: Onder(Uit)",
+          "color_text": "[255, 255, 255]"
+        },
+        "data_description": {
+          "vac_status_font": "Lettertype voor tekst, standaard Fira Serif.",
+          "vac_status_size": "Tekstgrootte, standaard 50.",
+          "color_text": "Kleur van de stofzuigerstatus-tekst."
+        },
+        "description": "Beeldopties",
+        "title": "Status Tekstopties"
       },
       "base_colours": {
         "data": {

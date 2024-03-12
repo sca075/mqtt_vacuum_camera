@@ -31,18 +31,31 @@
           "rotate_image": "Поворот",
           "margins": "150",
           "auto_zoom": "Включить Автоматическое Масштабирование",
-          "show_vac_status": "Показывать Статус Пылесоса.",
-          "color_text": "[255, 255, 255]",
           "get_svg_file": "Экспорт SVG базового слоя.",
           "enable_www_snapshots": "Экспорт PNG снимков."
         },
         "data_description": {
           "rotate_image": "Градус 0, 90, 180, 270",
-          "margins": "Автоматические Поля Отсечения в пикселях.",
-          "color_text": "Цвет Текста Статуса Пылесоса."
+          "margins": "Автоматические Поля Отсечения в пикселях."
         },
         "description": "Опции Изображения Камеры",
         "title": "Опции Изображения"
+      },
+      "status_text": {
+        "data": {
+          "show_vac_status": "Показывать статус пылесоса.",
+          "vac_status_font": "Шрифт",
+          "vac_status_size": "Размер текста",
+          "vac_status_position": "Позиция текста: Внизу(Выкл)",
+          "color_text": "[255, 255, 255]"
+        },
+        "data_description": {
+          "vac_status_font": "Шрифт текста, по умолчанию Fira Serif.",
+          "vac_status_size": "Размер текста, по умолчанию 50.",
+          "color_text": "Цвет текста статуса пылесоса."
+        },
+        "description": "Настройки изображения",
+        "title": "Настройки текста статуса"
       },
       "base_colours": {
         "data": {

@@ -8,7 +8,6 @@ Version 1.5.9-rc2
 
 import logging
 import math
-import re
 
 import numpy as np
 from PIL import ImageDraw, ImageFont
@@ -19,6 +18,8 @@ from custom_components.valetudo_vacuum_camera.types import (
     PilPNG,
     Point,
 )
+
+# import re
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -514,48 +515,42 @@ class Drawable:
         return image
 
     @staticmethod
-    def split_string_with_font(text, font):
-        pattern = f"[\U00000000-\U0010FFFF]+(?=\s*{font})"
-        matches = re.findall(pattern, text)
-        if matches:
-            split_text = re.split(pattern, text)
-            return split_text
-        else:
-            return [text]
-
-    @staticmethod
     def status_text(
-        image: PilPNG, size: int, color: Color, status: str, position: bool
+        image: PilPNG,
+        size: int,
+        color: Color,
+        status: list[str],
+        path_font: str,
+        position: bool,
     ) -> None:
         """Draw the Status Test on the image."""
-        text = status
         # Load a fonts
-        path_font0 = (
-            "custom_components/valetudo_vacuum_camera/utils/fonts/NotoEmojiRegular.ttf"
+        path_default_font = (
+            "custom_components/valetudo_vacuum_camera/utils/fonts/FiraSans.ttf"
         )
-        path_font1 = "custom_components/valetudo_vacuum_camera/utils/fonts/FiraSans.ttf"
-        path_font2 = (
-            "custom_components/valetudo_vacuum_camera/utils/fonts/NotoSansCJKhk-VF.ttf"
-        )
-        font1 = ImageFont.truetype(path_font1, size)
-        font2 = ImageFont.truetype(path_font2, size)
-        split_text = re.split(r"[\(\)]", text)
-        split_text = [item for item in split_text if item]
-        # Create a drawing object
-        draw = ImageDraw.Draw(image)
+        default_font = ImageFont.truetype(path_default_font, size)
+        user_font = ImageFont.truetype(path_font, size)
         # Define the text and position
         if position:
             x, y = 10, 10
         else:
             x, y = 10, image.height - 20 - size
-        # Draw the text on the image
-        for i, item in enumerate(split_text):
-            if i == 1:  # The room name is always the second item
-                font = font2  # Use font2 for the room name
-                item = f"({item})"
-                width = 1
-            else:
-                font = font1  # Use font1 for other pieces of text
+        # Create a drawing object
+        draw = ImageDraw.Draw(image)
+        # Draw the text
+        for text in status:
+            if "\u2211" in text or "\u03DE" in text:
+                font = default_font
                 width = None
-            draw.text((x, y), item, font=font, fill=color, stroke_width=width)
-            x += draw.textlength(item, font=font1)
+            else:
+                font = user_font
+                is_variable = path_font.endswith("VT.ttf")
+                if is_variable:
+                    width = 2
+                else:
+                    width = None
+            if width:
+                draw.text((x, y), text, font=font, fill=color, stroke_width=width)
+            else:
+                draw.text((x, y), text, font=font, fill=color)
+            x += draw.textlength(text, font=default_font)

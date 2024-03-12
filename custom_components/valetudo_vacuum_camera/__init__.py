@@ -179,6 +179,24 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
             hass.config_entries.async_update_entry(
                 config_entry, data=new_data, options=new_options
             )
+
+    if config_entry.version == 2.3:
+        old_data = {**config_entry.data}
+        new_data = {"vacuum_config_entry": old_data["vacuum_config_entry"]}
+        _LOGGER.debug(dict(new_data))
+        old_options = {**config_entry.options}
+        if len(old_options) != 0:
+            tmp_option = {
+                "vac_status_font": "custom_components/valetudo_vacuum_camera/utils/fonts/FiraSans.ttf",
+                "vac_status_size": 50,
+                "vac_status_position": True,
+            }
+            new_options = await update_options(old_options, tmp_option)
+            _LOGGER.debug(f"migration data:{dict(new_options)}")
+            config_entry.version = 2.4
+            hass.config_entries.async_update_entry(
+                config_entry, data=new_data, options=new_options
+            )
         else:
             _LOGGER.error(
                 "Please REMOVE and SETUP the Camera again. Error in migration process!!"

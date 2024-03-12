@@ -27,18 +27,31 @@
           "rotate_image": "Ruotare",
           "margins": "150",
           "auto_zoom": "Abilita Zoom Automatico",
-          "show_vac_status": "Viasulizza Stato Vacuum.",
-          "color_text": "[255, 255, 255]",
           "get_svg_file": "Esporta SVG del layer basilare.",
           "enable_www_snapshots": "Esporta snapshot PNG."
         },
         "data_description": {
           "rotate_image": "Alngoli 0, 90, 180, 270",
-          "margins": "Magrini in pixels.",
-          "color_text": "Colore Testo stato Vacuum."
+          "margins": "Magrini in pixels."
         },
         "description": "Camera Opzioni Immagine",
         "title": "Opzioni Imaggine"
+      },
+      "status_text": {
+        "data": {
+          "show_vac_status": "Mostra lo stato dell'aspirapolvere.",
+          "vac_status_font": "Carattere",
+          "vac_status_size": "Dimensione testo",
+          "vac_status_position": "Posizione testo: Inferiore(Disattivato)",
+          "color_text": "[255, 255, 255]"
+        },
+        "data_description": {
+          "vac_status_font": "Carattere del testo, predefinito Fira Serif.",
+          "vac_status_size": "Dimensione testo, predefinito 50.",
+          "color_text": "Colore del testo dello stato dell'aspirapolvere."
+        },
+        "description": "Opzioni immagine",
+        "title": "Opzioni testo di stato"
       },
       "base_colours": {
         "data": {

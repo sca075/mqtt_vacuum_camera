@@ -1,0 +1,212 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "vacuum_entity": "ID de l'entité d'aspiration",
+          "vacuum_config_entry": "Données de configuration d'aspiration",
+          "vacuum_map": "Sujet d'aspiration",
+          "vacuum_identifiers": "ID MQTT de l'aspirateur",
+          "unique_id": ""
+        },
+        "data_description": {
+          "vacuum_entity": "ID de l'entité d'aspiration"
+        },
+        "description": "Configuration de la caméra.",
+        "title": "Configuration de la caméra Valetudo"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options de la caméra Valetudo",
+        "description": "Changements possibles :",
+        "data": {
+          "camera_config_action": "Action"
+        }
+      },
+      "image_opt": {
+        "data": {
+          "rotate_image": "Rotation",
+          "margins": "150",
+          "auto_zoom": "Activer le zoom automatique",
+          "get_svg_file": "Exporter la couche de base SVG.",
+          "enable_www_snapshots": "Exporter les instantanés PNG."
+        },
+        "data_description": {
+          "rotate_image": "Degré 0, 90, 180, 270",
+          "margins": "Marges de recadrage automatique en pixels."
+        },
+        "description": "Options d'image de la caméra",
+        "title": "Options d'image"
+      },
+      "status_text": {
+        "data": {
+          "show_vac_status": "Afficher l'état de l'aspiration.",
+          "vac_status_font": "Fira Sans",
+          "vac_status_size": "Taille du texte",
+          "vac_status_position": "Position du texte : Bas (Désactivé)",
+          "color_text": "[255, 255, 255]"
+        },
+        "data_description": {
+          "vac_status_font": "Police de texte par défaut Fira Serif.",
+          "vac_status_size": "Taille de texte par défaut 50.",
+          "color_text": "Couleur du texte de l'état de l'aspiration."
+        },
+        "description": "Options d'image",
+        "title": "Options de texte d'état"
+      },
+      "base_colours": {
+        "data": {
+          "color_charger": "[255, 128, 0]",
+          "color_move": "[238, 247, 255]",
+          "color_wall": "[255, 255, 0]",
+          "color_robot": "[255, 255, 204]",
+          "color_go_to": "[0, 255, 0]",
+          "color_no_go": "[255, 0, 0]",
+          "color_zone_clean": "[255, 255, 255]",
+          "color_background": "[0, 125, 255]",
+          "add_base_alpha": "Configurer la transparence :"
+        },
+        "data_description": {
+          "color_charger": "Couleur du chargeur.",
+          "color_move": "Couleur du mouvement.",
+          "color_wall": "Couleur du mur.",
+          "color_robot": "Couleur du robot.",
+          "color_go_to": "Couleur du déplacement.",
+          "color_no_go": "Couleur du non-déplacement.",
+          "color_zone_clean": "Couleur de nettoyage de zone.",
+          "color_background": "Couleur de fond."
+        },
+        "description": "Options de couleurs de la caméra.",
+        "title": "Configuration des couleurs de base"
+      },
+      "alpha_1": {
+        "data": {
+          "alpha_charger": "Alpha du chargeur",
+          "alpha_move": "Alpha des mouvements",
+          "alpha_wall": "Alpha des murs",
+          "alpha_robot": "Alpha du robot",
+          "alpha_go_to": "Alpha de déplacement",
+          "alpha_no_go": "Alpha de non-déplacement",
+          "alpha_zone_clean": "Alpha de nettoyage de zone",
+          "alpha_background": "Alpha de fond",
+          "alpha_text": "Alpha du texte"
+        },
+        "description": "Options de la caméra. Alpha 1",
+        "title": "Couleurs de base du canal alpha"
+      },
+      "rooms_colours_1": {
+        "data": {
+          "color_room_0": "[135, 206, 250]",
+          "color_room_1": "[176, 226, 255]",
+          "color_room_2": "[165, 105, 18]",
+          "color_room_3": "[164, 211, 238]",
+          "color_room_4": "[141, 182, 205]",
+          "color_room_5": "[96, 123, 139]",
+          "color_room_6": "[224, 255, 255]",
+          "color_room_7": "[209, 238, 238]",
+          "add_room_1_alpha": "Configurer la transparence :"
+        },
+        "data_description": {
+          "color_room_0": "Couleur du sol de la pièce 1.",
+          "color_room_1": "Pièce 2",
+          "color_room_2": "Pièce 3",
+          "color_room_3": "Pièce 4",
+          "color_room_4": "Pièce 5",
+          "color_room_5": "Pièce 6",
+          "color_room_6": "Pièce 7",
+          "color_room_7": "Pièce 8"
+        },
+        "description": "Options de couleurs de la caméra.",
+        "title": "Couleurs des pièces 1 à 8"
+      },
+      "rooms_colours_2": {
+        "data": {
+          "color_room_8": "[180, 205, 205]",
+          "color_room_9": "[122, 139, 139]",
+          "color_room_10": "[175, 238, 238]",
+          "color_room_11": "[84, 153, 199]",
+          "color_room_12": "[133, 193, 233]",
+          "color_room_13": "[245, 176, 65]",
+          "color_room_14": "[82, 190, 128]",
+          "color_room_15": "[72, 201, 176]",
+          "add_room_2_alpha": "Configurer la transparence :"
+        },
+        "data_description": {
+          "color_room_8": "Pièce 9",
+          "color_room_9": "Pièce 10",
+          "color_room_10": "Pièce 11",
+          "color_room_11": "Pièce 12",
+          "color_room_12": "Pièce 13",
+          "color_room_13": "Pièce 14",
+          "color_room_14": "Pièce 15",
+          "color_room_15": "Pièce 16"
+        },
+        "description": "Options de couleurs de la caméra.",
+        "title": "Couleurs des pièces 9 à 15"
+      },
+      "alpha_2": {
+        "data": {
+          "alpha_room_0": "Couleur du sol de la pièce 1.",
+          "alpha_room_1": "Pièce 2",
+          "alpha_room_2": "Pièce 3",
+          "alpha_room_3": "Pièce 4",
+          "alpha_room_4": "Pièce 5",
+          "alpha_room_5": "Pièce 6",
+          "alpha_room_6": "Pièce 7",
+          "alpha_room_7": "Pièce 8"
+        },
+        "description": "Options de la caméra. Alpha 2",
+        "title": "Couleurs de base du canal alpha des pièces"
+      },
+      "alpha_3": {
+        "data": {
+          "alpha_room_8": "Pièce 9",
+          "alpha_room_9": "Pièce 10",
+          "alpha_room_10": "Pièce 11",
+          "alpha_room_11": "Pièce 12",
+          "alpha_room_12": "Pièce 13",
+          "alpha_room_13": "Pièce 14",
+          "alpha_room_14": "Pièce 15",
+          "alpha_room_15": "Pièce 16"
+        },
+        "description": "Options de la caméra. Alpha 3",
+        "title": "Couleurs de base du canal alpha des pièces"
+      }
+    }
+  },
+  "selector": {
+    "camera_config_action": {
+      "options": {
+        "opt_1": "Configurer l'image",
+        "opt_2": "Configurer le texte d'état",
+        "opt_3": "Configurer les couleurs générales",
+        "opt_4": "Couleurs des pièces 1 à 8",
+        "opt_5": "Couleurs des pièces 9 à 16",
+        "opt_6": "Copier les journaux de la caméra vers www"
+      }
+    }
+  },
+  "services": {
+    "turn_off": {
+      "name": "[%key:common::action::turn_off%]",
+      "description": "Éteint la caméra."
+    },
+    "turn_on": {
+      "name": "[%key:common::action::turn_on%]",
+      "description": "Allume la caméra."
+    },
+    "snapshot": {
+      "name": "Prendre une capture d'écran",
+      "description": "Prend une capture d'écran depuis une caméra.",
+      "fields": {
+        "filename": {
+          "name": "Nom du fichier",
+          "description": "Modèle de nom de fichier. Variable disponible : `entity_id`."
+        }
+      }
+    }
+  }
+}

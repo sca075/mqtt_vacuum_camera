@@ -39,6 +39,9 @@ class CameraShared(object):
         self.vacuum_state = None  # Vacuum state
         self.charger_position = None  # Vacuum Charger position
         self.show_vacuum_state = None  # Show vacuum state on the map
+        self.vacuum_status_font: str = (
+            "/custom_components/valetudo_vacuum_camera/utils/fonts/FiraSans.ttf"  # Font
+        )
         self.vacuum_status_size: int = 50  # Vacuum status size
         self.vacuum_status_position: bool = True  # Vacuum status text image top
         self.snapshot_take = False  # Take snapshot

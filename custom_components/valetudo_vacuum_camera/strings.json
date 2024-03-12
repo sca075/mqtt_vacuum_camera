@@ -40,11 +40,13 @@
             "status_text": {
                 "data": {
                     "show_vac_status": "Show Vacuum Status.",
+                  "vac_status_font": "Fira Sans",
                     "vac_status_size": "Text Size",
-                    "vac_status_position": "Text Position: Top(OFF)/Bottom(ON)",
+                  "vac_status_position": "Text Position: Bottom(OFF)",
                     "color_text": "[255, 255, 255]"
                 },
                 "data_description": {
+                  "vac_status_font": "Text Font default Fira Serif.",
                     "vac_status_size": "Text size default 50.",
                     "color_text": "Vacuum Status Text colour."
                 },

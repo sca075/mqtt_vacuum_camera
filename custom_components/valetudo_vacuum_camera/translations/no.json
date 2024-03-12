@@ -31,18 +31,31 @@
           "rotate_image": "Roter",
           "margins": "150",
           "auto_zoom": "Aktiver automatisk zoom",
-          "show_vac_status": "Vis støvsugerstatus.",
-          "color_text": "[255, 255, 255]",
           "get_svg_file": "Eksporter SVG base lag.",
           "enable_www_snapshots": "Eksporter PNG øyeblikksbilder."
         },
         "data_description": {
           "rotate_image": "Grad 0, 90, 180, 270",
-          "margins": "Automatisk beskjæringsmarginer i piksler.",
-          "color_text": "Støvsugerstatus tekstfarge."
+          "margins": "Automatisk beskjæringsmarginer i piksler."
         },
         "description": "Kamera bildealternativer",
         "title": "Bildealternativer"
+      },
+      "status_text": {
+        "data": {
+          "show_vac_status": "Vis støvsugerstatus.",
+          "vac_status_font": "Skrifttype",
+          "vac_status_size": "Tekststørrelse",
+          "vac_status_position": "Tekstposisjon: Bunn(Av)",
+          "color_text": "[255, 255, 255]"
+        },
+        "data_description": {
+          "vac_status_font": "Tekstskrifttype, standard Fira Serif.",
+          "vac_status_size": "Tekststørrelse, standard 50.",
+          "color_text": "Farge på støvsugerstatus-teksten."
+        },
+        "description": "Bildealternativer",
+        "title": "Tekststatusalternativer"
       },
       "base_colours": {
         "data": {

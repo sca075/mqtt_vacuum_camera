@@ -12,7 +12,7 @@ import json
 import logging
 from asyncio import gather, get_event_loop
 
-from .types import Color, PilPNG
+from .types import Color, JsonType, PilPNG
 from .utils.drawable import Drawable as Draw
 from .valetudo.hypfer.image_handler import MapImageHandler
 from .valetudo.rand256.image_handler import ReImageHandler
@@ -32,7 +32,7 @@ class CameraProcessor:
         self._re_handler = ReImageHandler(camera_shared)
         self._shared = camera_shared
 
-    async def async_process_valetudo_data(self, parsed_json):
+    async def async_process_valetudo_data(self, parsed_json: JsonType) -> PilPNG | None:
         """
         Compose the Camera Image from the Vacuum Json data.
         :param parsed_json:
@@ -91,7 +91,7 @@ class CameraProcessor:
         _LOGGER.debug("No Json, returned None.")
         return None
 
-    async def async_process_rand256_data(self, parsed_json):
+    async def async_process_rand256_data(self, parsed_json: JsonType) -> PilPNG | None:
         """
         Process the image data from the RAND256 Json data.
         :param parsed_json:
@@ -151,7 +151,7 @@ class CameraProcessor:
             return pil_img
         return None
 
-    def process_valetudo_data(self, parsed_json):
+    def process_valetudo_data(self, parsed_json: JsonType):
         """Async function to process the image data from the Vacuum Json data."""
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
@@ -168,7 +168,9 @@ class CameraProcessor:
             loop.close()
         return result
 
-    async def run_async_process_valetudo_data(self, parsed_json):
+    async def run_async_process_valetudo_data(
+        self, parsed_json: JsonType
+    ) -> PilPNG | None:
         """Thread function to process the image data from the Vacuum Json data."""
         num_processes = 1
         parsed_json_list = [parsed_json for _ in range(num_processes)]
@@ -195,32 +197,44 @@ class CameraProcessor:
         """Get the frame number."""
         return self._map_handler.get_frame_number() - 2
 
-    def load_translations(self, language):
-        translations = {}
+    """
+    Functions to Thread the image text processing.
+    """
+
+    def load_translations(self, language: str) -> JsonType:
         with open(f"{language}.json", "r") as file:
             translations = json.load(file)
         return translations
 
-    def get_vacuum_status_translation(self, language):
+    def get_vacuum_status_translation(self, language: str) -> any:
+        """
+        Get the vacuum status translation.
+        @param language: String IT, PL, DE, ES, FR, EN.
+        @return: Json data or None.
+        """
         translations = self.load_translations(language)
         if "vacuum_status" in translations:
             return translations["vacuum_status"]
         else:
             return None
 
-    def get_status_text(self, text_img: PilPNG):
-        """Get the status text."""
-        status_text = "Something went wrong.."
-        text_size_coverage = 1.5
-        text_size = self._shared.vacuum_status_size
+    def get_status_text(self, text_img: PilPNG) -> tuple[list[str], int]:
+        """
+        Compose the image status text.
+        :param text_img: Image to draw the text on.
+        :return status_text, text_size: List of the status text and the text size.
+        """
+        status_text = ["If you read me, something went wrong.."]  # default text
+        text_size_coverage = 1.5  # resize factor for the text
+        text_size = self._shared.vacuum_status_size  # default text size
         charge_level = "\u03DE"  # unicode Koppa symbol
         charging = "\u2211"  # unicode Charging symbol
         if self._shared.show_vacuum_state:
-            status_text = (
+            status_text = [
                 f"{self._shared.file_name}: {self._shared.vacuum_state.capitalize()}"
-            )
+            ]
             if not self._shared.vacuum_connection:
-                status_text = f"{self._shared.file_name}: Disconnected from MQTT?"
+                status_text = [f"{self._shared.file_name}: Disconnected from MQTT?"]
             else:
                 if self._shared.current_room:
                     try:
@@ -229,40 +243,54 @@ class CameraProcessor:
                         _LOGGER.debug("No in_room data.")
                     else:
                         if in_room:
-                            status_text += f" ({in_room})"
+                            status_text.append(f" ({in_room})")
                 if self._shared.vacuum_state == "docked":
                     if int(self._shared.vacuum_battery) <= 99:
-                        status_text += f" \u00B7 {charging}{charge_level} {self._shared.vacuum_battery}%"
+                        status_text.append(f" \u00B7 ")
+                        status_text.append(f"{charging}{charge_level} ")
+                        status_text.append(f"{self._shared.vacuum_battery}%")
                         self._shared.vacuum_bat_charged = False
                     else:
-                        status_text += f" \u00B7 {charge_level} Ready."
+                        status_text.append(f" \u00B7 ")
+                        status_text.append(f"{charge_level} ")
+                        status_text.append("Ready.")
                         self._shared.vacuum_bat_charged = True
                 else:
-                    status_text += (
-                        f" \u00B7 {charge_level} {self._shared.vacuum_battery}%"
+                    status_text.append(f" \u00B7 ")
+                    status_text.append(f"{charge_level}")
+                    status_text.append(f" {self._shared.vacuum_battery}%")
+                if text_size >= 50:
+                    text_pixels = sum(len(text) for text in status_text)
+                    text_size = int(
+                        (text_size_coverage * text_img.width) // text_pixels
                     )
-                text_pixels = len(status_text)
-                text_size = int((text_size_coverage * text_img.width) // text_pixels)
         return status_text, text_size
 
     async def async_draw_image_text(
-        self, pil_img: PilPNG, color: Color, img_top: bool = True
+        self, pil_img: PilPNG, color: Color, font: str, img_top: bool = True
     ) -> PilPNG:
         """Draw text on the image."""
         if pil_img is not None:
             text, size = self.get_status_text(pil_img)
             Draw.status_text(
-                image=pil_img, size=size, color=color, status=text, position=img_top
+                image=pil_img,
+                size=size,
+                color=color,
+                status=text,
+                path_font=font,
+                position=img_top,
             )
         return pil_img
 
-    def process_status_text(self, pil_img: PilPNG, color: Color, img_top: bool = True):
+    def process_status_text(
+        self, pil_img: PilPNG, color: Color, font: str, img_top: bool = True
+    ):
         """Async function to process the image data from the Vacuum Json data."""
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         try:
             result = loop.run_until_complete(
-                self.async_draw_image_text(pil_img, color, img_top)
+                self.async_draw_image_text(pil_img, color, font, img_top)
             )
         finally:
             loop.close()
@@ -283,6 +311,7 @@ class CameraProcessor:
                     self.process_status_text,
                     pil_img,
                     color,
+                    self._shared.vacuum_status_font,
                     self._shared.vacuum_status_position,
                 )
                 for pil_img in pil_img_list

@@ -94,6 +94,7 @@ async def update_options(bk_options, new_options):
         "show_vac_status",
         "vac_status_size",
         "vac_status_position",
+        "vac_status_font",
         "get_svg_file",
         "enable_www_snapshots",
         "color_charger",
