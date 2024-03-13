@@ -1,7 +1,7 @@
 """
 Class Camera Shared.
 Keep the data between the modules.
-Version 1.5.9-rc2
+Version 1.6.0
 """
 
 import logging
@@ -25,8 +25,10 @@ class CameraShared(object):
         self.last_image = None  # Last image received
         self.image_size = None  # Image size
         self.image_auto_zoom: bool = False  # Auto zoom image
+        self.image_zoom_lock_ratio: bool = True  # Zoom lock ratio
         self.image_ref_height: int = 0  # Image reference height
         self.image_ref_width: int = 0  # Image reference width
+        self.image_aspect_ratio: str = "None"  # Change Image aspect ratio
         self.image_grab = True  # Grab image from MQTT
         self.image_rotate: int = 0  # Rotate image
         self.drawing_limit: float = 0.0  # Drawing CPU limit
@@ -40,14 +42,14 @@ class CameraShared(object):
         self.charger_position = None  # Vacuum Charger position
         self.show_vacuum_state = None  # Show vacuum state on the map
         self.vacuum_status_font: str = (
-            "/custom_components/valetudo_vacuum_camera/utils/fonts/FiraSans.ttf"  # Font
+            "custom_components/valetudo_vacuum_camera/utils/fonts/FiraSans.ttf"  # Font
         )
         self.vacuum_status_size: int = 50  # Vacuum status size
         self.vacuum_status_position: bool = True  # Vacuum status text image top
         self.snapshot_take = False  # Take snapshot
         self.vacuum_error = None  # Vacuum error
         self.vac_json_id = None  # Vacuum json id
-        self.margins = None  # Image margins
+        self.margins = "100"  # Image margins
         self.export_svg = False  # Export SVG
         self.svg_path = None  # SVG Export path
         self.file_name = ""  # vacuum friendly name as File name

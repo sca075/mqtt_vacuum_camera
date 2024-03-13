@@ -1,5 +1,5 @@
 """
-Multiprocessing module (version v1.5.9-rc2)
+Multiprocessing module (version v1.6.0)
 This module provide the image multiprocessing in order to
 avoid the overload of the main_thread of Home Assistant.
 """
@@ -324,30 +324,3 @@ class CameraProcessor:
             result = None
 
         return result
-
-
-"""
-run_async_process_valetudo_data for MultiProcessing working mode.
-It was tested and it works. It will be at the moment not used.
-There is still no data coming back form the called function.
-
-
-# async def run_async_process_valetudo_data(self, parsed_json):
-#     num_processes = 1
-#     parsed_json_list = [parsed_json for _ in range(num_processes)]
-#     loop = get_event_loop()
-#
-#     with concurrent.futures.ProcessPoolExecutor() as executor:
-#         tasks = [
-#             loop.run_in_executor(executor, self.process_valetudo_data, parsed_json)
-#             for parsed_json in parsed_json_list
-#         ]
-#         images = await gather(*tasks)
-#
-#     result = None
-#     if isinstance(images, list) and len(images) > 0:
-#         _LOGGER.debug(f"got {len(images)} elements list..")
-#         result = images[0]
-#
-#     return result
-"""

@@ -89,8 +89,10 @@ from .const import (
     COLOR_TEXT,
     COLOR_WALL,
     COLOR_ZONE_CLEAN,
+    CONF_ASPECT_RATIO,
     CONF_AUTO_ZOOM,
-    CONF_EXPORT_SVG,
+    CONF_ZOOM_LOCK_RATIO,
+    # CONF_EXPORT_SVG,
     CONF_SNAPSHOTS_ENABLE,
     CONF_VAC_STAT,
     CONF_VAC_STAT_FONT,
@@ -116,7 +118,7 @@ VACUUM_SCHEMA = vol.Schema(
 
 
 class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
-    VERSION = 2.3
+    VERSION = 2.4
 
     def __init__(self):
         self.data = {}
@@ -154,8 +156,10 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             self.options.update(
                 {
                     "rotate_image": "0",
-                    "margins": "150",
+                    "margins": "100",
+                    "aspect_ratio": "None",
                     "auto_zoom": False,
+                    "zoom_lock_ratio": True,
                     "show_vac_status": False,
                     "vac_status_font": "custom_components/valetudo_vacuum_camera/utils/fonts/FiraSans.ttf",
                     "vac_status_size": 50,
@@ -297,24 +301,52 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 ],
                 mode=SelectSelectorMode.DROPDOWN,
             )
+            rotation_selector = SelectSelectorConfig(
+                options=[
+                    {"label": "0", "value": "0"},
+                    {"label": "90", "value": "90"},
+                    {"label": "180", "value": "180"},
+                    {"label": "270", "value": "270"},
+                ],
+                mode=SelectSelectorMode.DROPDOWN,
+            )
+            aspec_ratio_selector = SelectSelectorConfig(
+                options=[
+                    {'label': 'Original Ratio.', 'value': 'None'},
+                    {'label': '1:1', 'value': '1, 1'},
+                    {'label': '2:1', 'value': '2, 1'},
+                    {'label': '3:2', 'value': '3, 2'},
+                    {'label': '5:4', 'value': '5, 4'},
+                    {'label': '9:16', 'value': '9, 16'},
+                    {'label': '16:9', 'value': '16, 9'},
+                ],
+                mode=SelectSelectorMode.DROPDOWN,
+            )
 
-            # data_schema = {"camera_config_action": SelectSelector(menu_keys)}
             self.IMG_SCHEMA = vol.Schema(
                 {
                     vol.Required(
                         ATTR_ROTATE, default=config_entry.options.get("rotate_image")
-                    ): vol.In(["0", "90", "180", "270"]),
+                    ): SelectSelector(rotation_selector),
                     vol.Optional(
                         ATTR_MARGINS, default=config_entry.options.get("margins")
                     ): cv.string,
+                    vol.Required(
+                        CONF_ASPECT_RATIO,
+                        default=config_entry.options.get("aspect_ratio")
+                    ): SelectSelector(aspec_ratio_selector),
                     vol.Optional(
                         CONF_AUTO_ZOOM,
                         default=config_entry.options.get("auto_zoom"),
                     ): BooleanSelector(),
                     vol.Optional(
-                        CONF_EXPORT_SVG,
-                        default=config_entry.options.get(CONF_EXPORT_SVG, False),
+                        CONF_ZOOM_LOCK_RATIO,
+                        default=config_entry.options.get("zoom_lock_ratio"),
                     ): BooleanSelector(),
+                    # vol.Optional(
+                    #     CONF_EXPORT_SVG,
+                    #     default=config_entry.options.get(CONF_EXPORT_SVG, False),
+                    # ): BooleanSelector(),
                     vol.Optional(
                         CONF_SNAPSHOTS_ENABLE,
                         default=config_entry.options.get(CONF_SNAPSHOTS_ENABLE, True),
@@ -591,13 +623,15 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         """
         Images Options Configuration
         """
+        # "get_svg_file": user_input.get(CONF_EXPORT_SVG),
         if user_input is not None:
             self.options.update(
                 {
                     "rotate_image": user_input.get(ATTR_ROTATE),
                     "margins": user_input.get(ATTR_MARGINS),
+                    "aspect_ratio": user_input.get(CONF_ASPECT_RATIO),
                     "auto_zoom": user_input.get(CONF_AUTO_ZOOM),
-                    "get_svg_file": user_input.get(CONF_EXPORT_SVG),
+                    "zoom_lock_ratio": user_input.get(CONF_ZOOM_LOCK_RATIO),
                     "enable_www_snapshots": user_input.get(CONF_SNAPSHOTS_ENABLE),
                 }
             )

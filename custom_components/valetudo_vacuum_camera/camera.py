@@ -1,5 +1,5 @@
 """
-Camera Version v1.5.9
+Camera Version v1.6.0
 Image Processing Threading implemented on Version 1.5.7.
 """
 
@@ -90,6 +90,8 @@ from .const import (
     COLOR_WALL,
     COLOR_ZONE_CLEAN,
     CONF_AUTO_ZOOM,
+    CONF_ASPECT_RATIO,
+    CONF_ZOOM_LOCK_RATIO,
     CONF_EXPORT_SVG,
     CONF_SNAPSHOTS_ENABLE,
     CONF_VAC_STAT,
@@ -206,6 +208,8 @@ class ValetudoCamera(Camera):
         self._cpu_percent = None
         self._shared.export_svg = device_info.get(CONF_EXPORT_SVG)
         self._shared.image_auto_zoom = device_info.get(CONF_AUTO_ZOOM)
+        self._shared.image_zoom_lock_ratio = device_info.get(CONF_ZOOM_LOCK_RATIO)
+        self._shared.image_aspect_ratio = device_info.get(CONF_ASPECT_RATIO)
         self._shared.image_rotate = int(device_info.get(ATTR_ROTATE, 0))
         self._shared.margins = int(device_info.get(ATTR_MARGINS, 150))
         self._shared.show_vacuum_state = device_info.get(CONF_VAC_STAT)

@@ -25,14 +25,16 @@
       "image_opt": {
         "data": {
           "rotate_image": "Rotate",
-          "margins": "150",
+          "margins": "Image Margins.",
           "auto_zoom": "Enable Auto Zoom",
-          "get_svg_file": "Export SVG base layer.",
+          "zoom_lock_ratio": "Lock Aspect Ratio.",
+          "aspect_ratio": "Image Aspect Ratio.",
           "enable_www_snapshots": "Export PNG snapshots."
         },
         "data_description": {
           "rotate_image": "Degree 0, 90, 180, 270",
-          "margins": "Auto Crop Margins in pixels."
+          "margins": "Auto Trim Margins in pixels.",
+          "aspect_ratio": "Image Aspect Ratio."
         },
         "description": "Camera Image Options",
         "title": "Image Options"

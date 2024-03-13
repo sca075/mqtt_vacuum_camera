@@ -187,6 +187,8 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
         old_options = {**config_entry.options}
         if len(old_options) != 0:
             tmp_option = {
+                "aspect_ratio": "None",
+                "zoom_lock_ratio": True,
                 "vac_status_font": "custom_components/valetudo_vacuum_camera/utils/fonts/FiraSans.ttf",
                 "vac_status_size": 50,
                 "vac_status_position": True,

@@ -3,7 +3,7 @@ Collections of Drawing Utility
 Drawable is part of the Image_Handler
 used functions to draw the elements on the Numpy Array
 that is actually our camera frame.
-Version 1.5.9-rc2
+Version 1.6.0
 """
 
 import logging

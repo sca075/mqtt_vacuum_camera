@@ -1,6 +1,6 @@
 """Constants for the valetudo_vacuum_camera integration."""
 
-"""Version 1.5.9"""
+"""Version 1.6.0"""
 
 """Required in Config_Flow"""
 PLATFORMS = ["camera"]
@@ -13,6 +13,7 @@ ATTR_TRIM_TOP = "trim_top"
 ATTR_TRIM_BOTTOM = "trim_bottom"
 ATTR_TRIM_LEFT = "trim_left"
 ATTR_TRIM_RIGHT = "trim_right"
+CONF_ASPECT_RATIO = "aspect_ratio"
 CONF_VAC_STAT = "show_vac_status"
 CONF_VAC_STAT_SIZE = "vac_status_size"
 CONF_VAC_STAT_POS = "vac_status_position"
@@ -27,6 +28,7 @@ CONF_VACUUM_IDENTIFIERS = "vacuum_identifiers"
 CONF_SNAPSHOTS_ENABLE = "enable_www_snapshots"
 CONF_EXPORT_SVG = "get_svg_file"
 CONF_AUTO_ZOOM = "auto_zoom"
+CONF_ZOOM_LOCK_RATIO = "zoom_lock_ratio"
 ICON = "mdi:camera"
 NAME = "Valetudo Vacuum Camera"
 
