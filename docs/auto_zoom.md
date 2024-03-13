@@ -10,9 +10,14 @@
 ***Default:***  Disable
 
 ***Description:*** If the vacuum supports the segments and those are properly configured also in the card, when the
-vacuum enters the room to clean the Camera will zoom the image on that room.
+vacuum enters the room to clean the Camera will zoom the image on that room. The full zoom will change the aspect ratio of the image.
+Below exaple of how looks the dashboad when the ratio isn't locked.
 
-https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/b27cafb4-549a-4957-9548-2aa4cc07c8cd
+https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/99fc5b9b-20a5-4458-8f5c-1dda874a9da5
+
+With the Lock Aspect Ratio function the image is displayed with the selected ratio (this is at orinal image ratio).
+
+https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/6930e76a-9c66-4f81-b824-003698160ffd
 
 ***Note:*** The zoom works only when the vacuum is in “cleaning” state. In all other states the image returns
 automatically to the floor plan. If the auto zoom is disabled the floor map is displayed normally, cleaned or in clean
