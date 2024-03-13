@@ -1,5 +1,5 @@
 # From our manifest.json for our custom component
-pillow==9.5.0
+pillow==10.2.0
 numpy==1.23.2
 svgwrite==1.4.3
 janus==1.0.0

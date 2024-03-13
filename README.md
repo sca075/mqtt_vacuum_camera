@@ -59,11 +59,7 @@ For further details on how the camera operates and how you can contribute, refer
 
 
 ### How to install:
-
-Via [HACS](https://hacs.xyz//setup/download) please follow. The instructions in [here](./docs/install.md) show detailed
-steps and will help to set up the camera also without HACS (manual setup). Our setup guide also includes **important**
-informations on how to setup
-the [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
+Via [HACS](https://hacs.xyz//setup/download) please follow. The instructions in [here](./docs/install.md) show detailed steps and will help to set up the camera also without HACS (manual setup). Our setup guide also includes **important** informations on how to setup the [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
 
 ### Features: 
 <details><summary> We here List what this camera offers as futures.</summary>
@@ -95,11 +91,7 @@ the [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMach
 
 
 ## Notes:
-
-- This integration is developed and tested using a PI4 with Home Assistant OS fully
-  updated [to the last version](https://www.home-assistant.io/faq/release/), this allows us to confirm that the
-  component is working properly with Home Assistant. Tested also on ProxMox and Docker Supervised "production"
-  enviroment (fully setup home installation).
+- This integration is developed and tested using a PI4 with Home Assistant OS fully updated [to the last version](https://www.home-assistant.io/faq/release/), this allows us to confirm that the component is working properly with Home Assistant. Tested also on ProxMox and Docker Supervised "production" enviroment (fully setup home installation).
 ### Tanks to:
 - [@PiotrMachowski](https://github.com/PiotrMachowski) inspiring this integration and his amazing work.
 - [@Hypfer](https://github.com/Hypfer) for freeing the vacuums from the clouds and continuously improve our vacuums :)
