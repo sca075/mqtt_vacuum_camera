@@ -4,7 +4,8 @@
 
 ![Screenshot 2024-03-09 at 21 18 47](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/02787561-6c1b-4db7-9960-fd8f3e911161)
 
-![Screenshot 2024-03-09 at 21 20 48](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/7d98c2e9-700f-49cc-b6c5-d43b11f7baef)
+![Screenshot 2024-03-13 at 17 14 10](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/390a5a85-3091-40b0-9846-c0bc9c6db93d)
+
 
 ***Default:***  Disable
 
