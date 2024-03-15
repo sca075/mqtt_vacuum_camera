@@ -1,0 +1,211 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "vacuum_entity": "Identifikátor entity vysavače",
+          "vacuum_config_entry": "Konfigurační data vysavače",
+          "vacuum_map": "Téma vysavače",
+          "vacuum_identifiers": "MQTT identifikátor vysavače",
+          "unique_id": ""
+        },
+        "data_description": {
+          "vacuum_entity": "Identifikátor entity vysavače"
+        },
+        "description": "Nastavení kamery.",
+        "title": "Nastavení kamery Valetudo"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Možnosti kamery Valetudo",
+        "description": "Možné změny:",
+        "data": {
+          "camera_config_action": "Akce"
+        }
+      },
+      "image_opt": {
+        "data": {
+          "rotate_image": "Otočit",
+          "margins": "150",
+          "auto_zoom": "Povolit automatické zvětšení",
+          "get_svg_file": "Exportovat SVG základní vrstvu.",
+          "enable_www_snapshots": "Exportovat PNG snímky."
+        },
+        "data_description": {
+          "rotate_image": "Stupeň 0, 90, 180, 270",
+          "margins": "Automaticky oříznout okraje v pixelech."
+        },
+        "description": "Možnosti obrazu kamery",
+        "title": "Možnosti obrazu"
+      },
+      "status_text": {
+        "data": {
+          "show_vac_status": "Zobrazit stav vysavače.",
+          "vac_status_font": "Písmo",
+          "vac_status_size": "Velikost textu",
+          "vac_status_position": "Pozice textu: Dole(Vypnuto)",
+          "color_text": "[255, 255, 255]"
+        },
+        "data_description": {
+          "vac_status_font": "Písmo textu, výchozí je Fira Serif.",
+          "vac_status_size": "Velikost textu, výchozí je 50.",
+          "color_text": "Barva textu stavu vysavače."
+        },
+        "description": "Možnosti obrázku",
+        "title": "Možnosti textu stavu"
+      },
+      "base_colours": {
+        "data": {
+          "color_charger": "[255, 128, 0]",
+          "color_move": "[238, 247, 255]",
+          "color_wall": "[255, 255, 0]",
+          "color_robot": "[255, 255, 204]",
+          "color_go_to": "[0, 255, 0]",
+          "color_no_go": "[255, 0, 0]",
+          "color_zone_clean": "[255, 255, 255]",
+          "color_background": "[0, 125, 255]",
+          "add_base_alpha": "Konfigurovat průhlednost:"
+        },
+        "data_description": {
+          "color_charger": "Barva nabíječky.",
+          "color_move": "Barva pohybu.",
+          "color_wall": "Barva zdi.",
+          "color_robot": "Barva robota.",
+          "color_go_to": "Barva přechodu.",
+          "color_no_go": "Barva zakázané oblasti.",
+          "color_zone_clean": "Barva čisté zóny.",
+          "color_background": "Barva pozadí."
+        },
+        "description": "Možnosti barev kamery.",
+        "title": "Základní barvy nastavení"
+      },
+      "alpha_1": {
+        "data": {
+          "alpha_charger": "Průhlednost nabíječky   ",
+          "alpha_move": "Průhlednost pohybu     ",
+          "alpha_wall": "Průhlednost zdi     ",
+          "alpha_robot": "Průhlednost robota     ",
+          "alpha_go_to": "Průhlednost oblasti přechodu",
+          "alpha_no_go": "Průhlednost oblasti zakázaného pohybu",
+          "alpha_zone_clean": "Průhlednost oblasti čisté zóny",
+          "alpha_background": "Průhlednost pozadí",
+          "alpha_text": "Průhlednost textu      "
+        },
+        "description": "Možnosti kamery. Alfa 1",
+        "title": "Alfa kanál základních barev"
+      },
+      "rooms_colours_1": {
+        "data": {
+          "color_room_0": "[135, 206, 250]",
+          "color_room_1": "[176, 226, 255]",
+          "color_room_2": "[165, 105, 18]",
+          "color_room_3": "[164, 211, 238]",
+          "color_room_4": "[141, 182, 205]",
+          "color_room_5": "[96, 123, 139]",
+          "color_room_6": "[224, 255, 255]",
+          "color_room_7": "[209, 238, 238]",
+          "add_room_1_alpha": "Konfigurovat průhlednost:"
+        },
+        "data_description": {
+          "color_room_0": "Místnost 1, barva podlahy.",
+          "color_room_1": "Místnost 2",
+          "color_room_2": "Místnost 3",
+          "color_room_3": "Místnost 4",
+          "color_room_4": "Místnost 5",
+          "color_room_5": "Místnost 6",
+          "color_room_6": "Místnost 7",
+          "color_room_7": "Místnost 8"
+        },
+        "description": "Možnosti barev kamery.",
+        "title": "Místnosti 1 až 8 barvy"
+      },
+      "rooms_colours_2": {
+        "data": {
+          "color_room_8": "[180, 205, 205]",
+          "color_room_9": "[122, 139, 139]",
+          "color_room_10": "[175, 238, 238]",
+          "color_room_11": "[84, 153, 199]",
+          "color_room_12": "[133, 193, 233]",
+          "color_room_13": "[245, 176, 65]",
+          "color_room_14": "[82, 190, 128]",
+          "color_room_15": "[72, 201, 176]",
+          "add_room_2_alpha": "Konfigurovat průhlednost:"
+        },
+        "data_description": {
+          "color_room_8": "Místnost 9",
+          "color_room_9": "Místnost 10",
+          "color_room_10": "Místnost 11",
+          "color_room_11": "Místnost 12",
+          "color_room_12": "Místnost 13",
+          "color_room_13": "Místnost 14",
+          "color_room_14": "Místnost 15",
+          "color_room_15": "Místnost 16"
+        },
+        "description": "Možnosti barev kamery.",
+        "title": "Místnosti 9 až 15 barvy"
+      },
+      "alpha_2": {
+        "data": {
+          "alpha_room_0": "Místnost 1, barva podlahy.",
+          "alpha_room_1": "Místnost 2",
+          "alpha_room_2": "Místnost 3",
+          "alpha_room_3": "Místnost 4",
+          "alpha_room_4": "Místnost 5",
+          "alpha_room_5": "Místnost 6",
+          "alpha_room_6": "Místnost 7",
+          "alpha_room_7": "Místnost 8"
+        },
+        "description": "Možnosti kamery. Alfa 2",
+        "title": "Alfa kanál místností barev"
+      },
+      "alpha_3": {
+        "data": {
+          "alpha_room_8": "Místnost 9",
+          "alpha_room_9": "Místnost 10",
+          "alpha_room_10": "Místnost 11",
+          "alpha_room_11": "Místnost 12",
+          "alpha_room_12": "Místnost 13",
+          "alpha_room_13": "Místnost 14",
+          "alpha_room_14": "Místnost 15",
+          "alpha_room_15": "Místnost 16"
+        },
+        "description": "Možnosti kamery. Alfa 3",
+        "title": "Alfa kanál místností barev"
+      }
+    }
+  },
+  "selector": {
+    "camera_config_action": {
+      "options": {
+        "opt_1": "Konfigurovat obraz",
+        "opt_2": "Konfigurovat obecné barvy",
+        "opt_3": "Barvy místností 1 až 8",
+        "opt_4": "Barvy místností 9 až 16",
+        "opt_5": "Zkopírovat záznamy kamery do www"
+      }
+    }
+  },
+  "services": {
+    "turn_off": {
+      "name": "[%key:common::action::turn_off%]",
+      "description": "Vypne kameru."
+    },
+    "turn_on": {
+      "name": "[%key:common::action::turn_on%]",
+      "description": "Zapne kameru."
+    },
+    "snapshot": {
+      "name": "Vyfotit snímek",
+      "description": "Vyfotí snímek z kamery.",
+      "fields": {
+        "filename": {
+          "name": "Název souboru",
+          "description": "Šablona názvu souboru. Dostupná proměnná je `entity_id`."
+        }
+      }
+    }
+  }
+}

@@ -1,5 +1,5 @@
 """
-Version 1.5.9-rc2
+Version 1.5.9
 - Removed the PNG decode, the json is extracted from map-data instead of map-data hass.
 - Tested no influence on the camera performance.
 - Added gzip library used in Valetudo RE data compression.
@@ -15,7 +15,7 @@ from homeassistant.components import mqtt
 from homeassistant.core import callback
 from homeassistant.helpers.storage import STORAGE_DIR
 
-from custom_components.valetudo_vacuum_camera.valetudo.valetudore.rrparser import (
+from custom_components.valetudo_vacuum_camera.valetudo.rand256.rrparser import (
     RRMapParser,
 )
 
@@ -108,6 +108,7 @@ class ValetudoConnector:
     async def get_vacuum_connection_state(self) -> bool:
         """Return the vacuum connection state."""
         if self._mqtt_vac_connect_state != "ready":
+            _LOGGER.info(f"{self._shared.file_name} not ready, not connected to MQTT.")
             return False
         return True
 

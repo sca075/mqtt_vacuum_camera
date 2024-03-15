@@ -2,7 +2,7 @@
 Image Handler Module.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Last Changed on Version: 1.5.9
+Last Changed on Version: 1.6.0
 """
 
 from __future__ import annotations
@@ -12,10 +12,8 @@ import json
 import logging
 
 import numpy as np
-import svgwrite
 from PIL import Image, ImageOps
 from psutil_home_assistant import PsutilWrapper as ProcInspector
-from svgwrite import shapes
 
 from custom_components.valetudo_vacuum_camera.types import (
     CalibrationPoints,
@@ -82,6 +80,8 @@ class MapImageHandler(object):
         self.trim_left = None  # memory stored trims calculated once.
         self.trim_right = None  # memory stored trims calculated once.
         self.trim_up = None  # memory stored trims calculated once.
+        self.offset_x = 0  # offset x for the aspect ratio.
+        self.offset_y = 0  # offset y for the aspect ratio.
 
     async def async_auto_trim_and_zoom_image(
         self,
@@ -147,23 +147,23 @@ class MapImageHandler(object):
                         f"{self.shared.file_name}: Background colour not detected at rotation {rotate}."
                     )
                     pos_0 = 0
-                    self.crop_area = (
+                    self.crop_area = [
                         pos_0,
                         pos_0,
                         image_array.shape[1],
                         image_array.shape[0],
-                    )
+                    ]
                     self.img_size = (image_array.shape[1], image_array.shape[0])
                     del trimmed_width, trimmed_height
                     return image_array
 
                 # Store Crop area of the original image_array we will use from the next frame.
-                self.auto_crop = (
+                self.auto_crop = [
                     self.trim_left,
                     self.trim_up,
                     self.trim_right,
                     self.trim_down,
-                )
+                ]
             if (
                 zoom
                 and self.shared.vacuum_state == "cleaning"
@@ -188,23 +188,23 @@ class MapImageHandler(object):
             # Rotate the cropped image based on the given angle
             if rotate == 90:
                 rotated = np.rot90(trimmed, 1)
-                self.crop_area = (
+                self.crop_area = [
                     self.trim_left,
                     self.trim_up,
                     self.trim_right,
                     self.trim_down,
-                )
+                ]
             elif rotate == 180:
                 rotated = np.rot90(trimmed, 2)
                 self.crop_area = self.auto_crop
             elif rotate == 270:
                 rotated = np.rot90(trimmed, 3)
-                self.crop_area = (
+                self.crop_area = [
                     self.trim_left,
                     self.trim_up,
                     self.trim_right,
                     self.trim_down,
-                )
+                ]
             else:
                 rotated = trimmed
                 self.crop_area = self.auto_crop
@@ -212,7 +212,7 @@ class MapImageHandler(object):
             _LOGGER.debug(
                 f"{self.shared.file_name}: Auto Trim Box data: {self.crop_area}"
             )
-            self.crop_img_size = (rotated.shape[1], rotated.shape[0])
+            self.crop_img_size = [rotated.shape[1], rotated.shape[0]]
             _LOGGER.debug(
                 f"{self.shared.file_name}: Auto Trimmed image size: {self.crop_img_size}"
             )
@@ -542,20 +542,6 @@ class MapImageHandler(object):
 
                     _LOGGER.info(f"{self.shared.file_name}: Completed base Layers")
                     self.img_base_layer = await self.async_copy_array(img_np_array)
-                    if self.shared.export_svg and self.frame_number == 0:
-                        # loop = asyncio.get_event_loop()
-                        # svg_img = asyncio.run_coroutine_threadsafe(
-                        #         self.async_numpy_array_to_svg(
-                        #             base_layer=self.img_base_layer,
-                        #             colours_list=rooms_list,
-                        #             color_background=color_background
-                        #         ),
-                        #         loop
-                        #     )
-                        self.shared.export_svg = False
-                        self.svg_wait = True
-                    else:
-                        self.svg_wait = False
                 self.frame_number += 1
                 if (self.frame_number > 1024) or (new_frame_hash != self.img_hash):
                     self.frame_number = 0
@@ -629,20 +615,41 @@ class MapImageHandler(object):
                 return None
             # Convert the numpy array to a PIL image
             pil_img = Image.fromarray(img_np_array, mode="RGBA")
-            if self.svg_wait and self.frame_number == 1:
-                # svg_img.result(90)
-                # svg_img.add_done_callback(lambda future: future.result())
-                self.svg_wait = False
             del img_np_array
             # reduce the image size if the zoomed image is bigger then the original.
             if (
                 self.shared.image_auto_zoom
                 and self.shared.vacuum_state == "cleaning"
                 and self.zooming
+                and self.shared.image_zoom_lock_ratio
+                or self.shared.image_aspect_ratio != "None"
             ):
-                width = self.shared.image_ref_width + self.shared.margins
-                height = self.shared.image_ref_height + self.shared.margins
-                return ImageOps.fit(pil_img, (width, height))
+                width = self.shared.image_ref_width
+                height = self.shared.image_ref_height
+                if self.shared.image_aspect_ratio != "None":
+                    wsf, hsf = [
+                        int(x) for x in self.shared.image_aspect_ratio.split(",")
+                    ]
+                    new_aspect_ratio = wsf / hsf
+                    aspect_ratio = width / height
+                    if aspect_ratio > new_aspect_ratio:
+                        new_width = int(pil_img.height * new_aspect_ratio)
+                        new_height = pil_img.height
+                    else:
+                        new_width = pil_img.width
+                        new_height = int(pil_img.width / new_aspect_ratio)
+                    resized = ImageOps.pad(pil_img, (new_width, new_height))
+                    self.crop_img_size[0], self.crop_img_size[1] = (
+                        await self.async_map_coordinates_offset(
+                            wsf, hsf, new_width, new_height
+                        )
+                    )
+                    _LOGGER.debug(
+                        f"{self.shared.file_name}: Image Aspect Ratio ({wsf}, {hsf}): {new_width}x{new_height}"
+                    )
+                    return resized
+                else:
+                    return ImageOps.pad(pil_img, (width, height))
             return pil_img
         except Exception as e:
             _LOGGER.warning(
@@ -799,16 +806,31 @@ class MapImageHandler(object):
         rotation_angle = self.shared.image_rotate
         _LOGGER.info(f"Getting {self.shared.file_name} Calibrations points.")
         # Calculate the calibration points in the vacuum coordinate system
-
+        # self.crop_area[2] -= self.offset_x
+        # self.crop_area[3] -= self.offset_y
         vacuum_points = [
-            {"x": self.crop_area[0], "y": self.crop_area[1]},  # Top-left corner 0
-            {"x": self.crop_area[2], "y": self.crop_area[1]},  # Top-right corner 1
-            {"x": self.crop_area[2], "y": self.crop_area[3]},  # Bottom-right corner 2
             {
-                "x": self.crop_area[0],
-                "y": self.crop_area[3],
+                "x": self.crop_area[0] + self.offset_x,
+                "y": self.crop_area[1] + self.offset_y,
+            },  # Top-left corner 0
+            {
+                "x": self.crop_area[2] - self.offset_x,
+                "y": self.crop_area[1] + self.offset_y,
+            },  # Top-right corner 1
+            {
+                "x": self.crop_area[2] - self.offset_x,
+                "y": self.crop_area[3] - self.offset_y,
+            },  # Bottom-right corner 2
+            {
+                "x": self.crop_area[0] + self.offset_x,
+                "y": self.crop_area[3] - self.offset_y,
             },  # Bottom-left corner (optional)3
         ]
+
+        # Apply the offset to each vacuum coordinate
+        # for point in vacuum_points:
+        #     point["x"] = int(point["x"] * self.offset_x)
+        #     point["y"] = int(point["y"] * self.offset_y)
 
         # Define the map points (fixed)
         map_points = [
@@ -848,14 +870,12 @@ class MapImageHandler(object):
         for vacuum_point, map_point in zip(vacuum_points, map_points):
             calibration_point = {"vacuum": vacuum_point, "map": map_point}
             calibration_data.append(calibration_point)
-            # self.shared.attr_calibration_points = calibration_data
         del vacuum_points, map_points, calibration_point, rotation_angle  # free memory.
         return calibration_data
 
     async def async_copy_array(self, original_array: np.ndarray) -> np.ndarray:
         """Copy the array."""
         _LOGGER.info(f"{self.shared.file_name}: Copying the array.")
-        # copied_array = (this should save memory) np.copy(original_array)
         return np.copy(original_array)
 
     async def calculate_array_hash(self, layers: json, active: list[int] = None) -> str:
@@ -873,113 +893,88 @@ class MapImageHandler(object):
             hash_value = None
         return hash_value
 
-    async def async_trim_and_resize_image(
-        self,
-        base_layer: np.ndarray,
-        color_background: Color,
-        margins: int,
-        image_rotate: int,
-    ) -> np.ndarray:
-        """Trim and resize the image. This function is part of the SVG creation process."""
-        swg_img_np = await self.async_auto_trim_and_zoom_image(
-            base_layer, color_background, margins, image_rotate
+    async def async_map_coordinates_offset(
+        self, wsf: int, hsf: int, width: int, height: int
+    ) -> tuple[int, int]:
+        """
+        Convert the coordinates to the map.
+        :param wsf: Width scale factor.
+        :param hsf: Height scale factor.
+        :param width: Width of the image.
+        :param height: Height of the image.
+        """
+
+        rotation = self.shared.image_rotate
+
+        _LOGGER.debug(f"Image Size: Width: {width} Height: {height}")
+        _LOGGER.debug(
+            f"Image Crop Size: Width: {self.crop_img_size[0]} Height: {self.crop_img_size[1]}"
         )
-        temp_png = Image.fromarray(swg_img_np, mode="RGBA")
-        temp_png_resize = temp_png.resize((640, 480))
-        result = np.array(temp_png_resize)
-        return result
-
-    async def async_draw_shapes(self, dwg: svgwrite.Drawing, coordinates_data):
-        """Draw the shapes on the SVG image."""
-        # todo: refactor this function
-        for color_data, coordinates_list in coordinates_data:
-            # If there's only one point, draw a circle
-            points_str = " ".join([f"{x},{y}" for x, y in coordinates_list])
-            points = [tuple(map(int, point.split(","))) for point in points_str.split()]
-            sorted_coordinates = sorted(points, key=lambda coord: coord[0])
-            poly_points = self.simplify_polygon(sorted_coordinates)
-            if poly_points is []:
-                continue
-            if len(poly_points) == 1:
-                x, y = poly_points[0]
-                dwg.add(
-                    dwg.circle(
-                        center=(int(x), int(y)),
-                        r=1,
-                        fill=f"rgb({color_data[0]}, "
-                        f"{color_data[1]}, {color_data[2]})",
-                    )
-                )
-            else:
-                # If there are multiple points, check if it's a closed shape
-                is_closed = poly_points[0] == poly_points[-1]
-                # Use Polyline for open shapes, and Polygon for closed shapes
-                if is_closed:
-                    points = poly_points
-                    dwg.add(
-                        shapes.Polygon(
-                            points=points,
-                            fill=f"rgb({color_data[0]}, {color_data[1]},"
-                            f" {color_data[2]})",
-                        )
-                    )
-                else:
-                    dwg.add(
-                        shapes.Polyline(
-                            points=poly_points,
-                            fill="none",
-                            stroke=f"rgb({color_data[0]}, {color_data[1]}, {color_data[2]})",
-                        )
-                    )
-
-    async def async_numpy_array_to_svg(
-        self, base_layer, colours_list, color_background
-    ):
-        """Convert the numpy array to an SVG image."""
-        # Create an SVG image 640 * 480
-        dwg = svgwrite.Drawing(
-            self.shared.svg_path, profile="tiny", size=("640px", "480px")
-        )
-
-        # Define a separate async function for trimming and resizing the image
-        async def trim_and_resize_image_async():
-            """Trim and resize the image warped."""
-            return await self.async_trim_and_resize_image(
-                base_layer,
-                color_background,
-                self.shared.margins,
-                self.shared.image_rotate,
+        if wsf == 1 and hsf == 1:
+            if rotation == 0 or rotation == 180:
+                self.offset_y = (width - self.crop_img_size[0]) // 2
+                self.offset_x = self.crop_img_size[1] - height
+            elif rotation == 90 or rotation == 270:
+                self.offset_y = (self.crop_img_size[0] - width) // 2
+                self.offset_x = self.crop_img_size[1] - height
+            _LOGGER.debug(
+                f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
             )
-
-        _LOGGER.debug("SVG from Numpy data start.")
-        trimmed_and_resized_image = await trim_and_resize_image_async()
-        coordinates_result = await self.data.async_extract_color_coordinates(
-            trimmed_and_resized_image, colours_list
-        )
-        await self.async_draw_shapes(dwg, coordinates_result)
-        dwg.save()
-
-    @staticmethod
-    def simplify_polygon(sorted_coordinates):
-        """Simplify the polygon to avoid a huge SVG."""
-        # todo: refactor this function
-
-        simplified_coordinates = []
-
-        i = 0
-        while i < len(sorted_coordinates):
-            start_point = sorted_coordinates[i]
-            current_y = start_point[0]
-
-            # Find the end of the run with the same y-coordinate
-            while i < len(sorted_coordinates) and sorted_coordinates[i][0] == current_y:
-                i += 1
-
-            # Add the first and last points of the run to the simplified list
-            simplified_coordinates.append(start_point)
-            if i < len(sorted_coordinates):
-                simplified_coordinates.append(sorted_coordinates[i - 1])
-
-        # simplified_coordinates.append(simplified_coordinates[0])
-
-        return simplified_coordinates
+            return width, height
+        elif wsf == 2 and hsf == 1:
+            if rotation == 0 or rotation == 180:
+                self.offset_y = width - self.crop_img_size[0]
+                self.offset_x = height - self.crop_img_size[1]
+            elif rotation == 90 or rotation == 270:
+                self.offset_x = width - self.crop_img_size[0]
+                self.offset_y = height - self.crop_img_size[1]
+            _LOGGER.debug(
+                f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
+            )
+            return width, height
+        elif wsf == 3 and hsf == 2:
+            if rotation == 0 or rotation == 180:
+                self.offset_x = (width - self.crop_img_size[0]) // 2
+                self.offset_y = height - self.crop_img_size[1]
+            elif rotation == 90 or rotation == 270:
+                self.offset_y = (self.crop_img_size[0] - width) // 2
+                self.offset_x = self.crop_img_size[1] - height
+            _LOGGER.debug(
+                f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
+            )
+            return width, height
+        elif wsf == 5 and hsf == 4:
+            if rotation == 0 or rotation == 180:
+                self.offset_y = (width - self.crop_img_size[0]) // 2
+                self.offset_x = self.crop_img_size[1] - height
+            elif rotation == 90 or rotation == 270:
+                self.offset_y = (self.crop_img_size[0] - width) // 2
+                self.offset_x = self.crop_img_size[1] - height
+            _LOGGER.debug(
+                f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
+            )
+            return width, height
+        elif wsf == 9 and hsf == 16:
+            if rotation == 0 or rotation == 180:
+                self.offset_y = width - self.crop_img_size[0]
+                self.offset_x = height - self.crop_img_size[1]
+            elif rotation == 90 or rotation == 270:
+                self.offset_x = width - self.crop_img_size[0]
+                self.offset_y = height - self.crop_img_size[1]
+            _LOGGER.debug(
+                f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
+            )
+            return width, height
+        elif wsf == 16 and hsf == 9:
+            if rotation == 0 or rotation == 180:
+                self.offset_y = width - self.crop_img_size[0]
+                self.offset_x = height - self.crop_img_size[1]
+            elif rotation == 90 or rotation == 270:
+                self.offset_x = width - self.crop_img_size[0]
+                self.offset_y = height - self.crop_img_size[1]
+            _LOGGER.debug(
+                f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
+            )
+            return width, height
+        else:
+            return width, height

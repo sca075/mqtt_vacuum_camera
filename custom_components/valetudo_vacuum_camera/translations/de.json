@@ -27,18 +27,31 @@
           "rotate_image": "Drehen",
           "margins": "150",
           "auto_zoom": "Auto-Zoom aktivieren",
-          "show_vac_status": "Vakuumstatus anzeigen.",
-          "color_text": "[255, 255, 255]",
           "get_svg_file": "Exportieren Grundschicht SVG.",
           "enable_www_snapshots": "Exportieren PNG-Schnappschüsse."
         },
         "data_description": {
           "rotate_image": "Grad 0, 90, 180, 270",
-          "margins": "Automatische Zuschneideränder in Pixeln.",
-          "color_text": "Vakuumstatus-Textfarbe."
+          "margins": "Automatische Zuschneideränder in Pixeln."
         },
         "description": "Kamerabildoptionen",
         "title": "Bildoptionen"
+      },
+      "status_text": {
+        "data": {
+          "show_vac_status": "Staubsaugerstatus anzeigen.",
+          "vac_status_font": "Schriftart",
+          "vac_status_size": "Textgröße",
+          "vac_status_position": "Textposition: Unten(Aus)",
+          "color_text": "[255, 255, 255]"
+        },
+        "data_description": {
+          "vac_status_font": "Textschriftart, Standard ist Fira Serif.",
+          "vac_status_size": "Textgröße, Standard ist 50.",
+          "color_text": "Farbe des Staubsaugerstatus-Textes."
+        },
+        "description": "Bildoptionen",
+        "title": "Status Textoptionen"
       },
       "base_colours": {
         "data": {

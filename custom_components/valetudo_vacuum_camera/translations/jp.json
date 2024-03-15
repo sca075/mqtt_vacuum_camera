@@ -28,17 +28,30 @@
           "margins": "150",
           "auto_zoom": "自動ズームを有効にする",
           "show_vac_status": "掃除機ステータスを表示する。",
-          "color_text": "[255, 255, 255]",
-          "get_svg_file": "SVGベースレイヤーをエクスポートする。",
           "enable_www_snapshots": "PNGスナップショットをエクスポートする。"
         },
         "data_description": {
           "rotate_image": "度数 0、90、180、270",
-          "margins": "ピクセル単位の自動クロップマージン。",
-          "color_text": "掃除機ステータステキストの色。"
+          "margins": "ピクセル単位の自動クロップマージン。"
         },
         "description": "カメラ画像オプション",
         "title": "画像オプション"
+      },
+      "status_text": {
+        "data": {
+          "show_vac_status": "掃除機のステータスを表示する。",
+          "vac_status_font": "フォント",
+          "vac_status_size": "テキストサイズ",
+          "vac_status_position": "テキスト位置：下部(オフ)",
+          "color_text": "[255, 255, 255]"
+        },
+        "data_description": {
+          "vac_status_font": "テキストのフォント、デフォルトは Fira Serif。",
+          "vac_status_size": "テキストサイズ、デフォルトは 50。",
+          "color_text": "掃除機のステータステキストの色。"
+        },
+        "description": "画像オプション",
+        "title": "ステータステキストオプション"
       },
       "base_colours": {
         "data": {

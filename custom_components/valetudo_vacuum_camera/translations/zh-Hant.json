@@ -27,18 +27,31 @@
           "rotate_image": "旋轉",
           "margins": "150",
           "auto_zoom": "启用自动缩放",
-          "show_vac_status": "顯示掃地機狀態。",
-          "color_text": "[255, 255, 255]",
           "get_svg_file": "匯出SVG基礎層。",
           "enable_www_snapshots": "匯出PNG快照。"
         },
         "data_description": {
           "rotate_image": "度數 0、90、180、270",
-          "margins": "以像素為單位的自動裁剪邊緣。",
-          "color_text": "掃地機狀態文字顏色。"
+          "margins": "以像素為單位的自動裁剪邊緣。"
         },
         "description": "攝影機圖像選項",
         "title": "圖像選項"
+      },
+      "status_text": {
+        "data": {
+          "show_vac_status": "顯示吸塵器狀態。",
+          "vac_status_font": "字型",
+          "vac_status_size": "文字大小",
+          "vac_status_position": "文字位置：底部(關閉)",
+          "color_text": "[255, 255, 255]"
+        },
+        "data_description": {
+          "vac_status_font": "文字字型，默認為 Fira Serif。",
+          "vac_status_size": "文字大小，默認為 50。",
+          "color_text": "吸塵器狀態文字顏色。"
+        },
+        "description": "圖像選項",
+        "title": "狀態文字選項"
       },
       "base_colours": {
         "data": {

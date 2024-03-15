@@ -1,0 +1,211 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "vacuum_entity": "Идентификатор Сущности Пылесоса",
+          "vacuum_config_entry": "Данные Конфигурации Пылесоса",
+          "vacuum_map": "Тема Пылесоса",
+          "vacuum_identifiers": "Идентификатор MQTT Пылесоса",
+          "unique_id": ""
+        },
+        "data_description": {
+          "vacuum_entity": "Идентификатор Сущности Пылесоса"
+        },
+        "description": "Настройка Камеры.",
+        "title": "Настройка Камеры Valetudo"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Опции Камеры Valetudo",
+        "description": "Возможные Изменения:",
+        "data": {
+          "camera_config_action": "Действие"
+        }
+      },
+      "image_opt": {
+        "data": {
+          "rotate_image": "Поворот",
+          "margins": "150",
+          "auto_zoom": "Включить Автоматическое Масштабирование",
+          "get_svg_file": "Экспорт SVG базового слоя.",
+          "enable_www_snapshots": "Экспорт PNG снимков."
+        },
+        "data_description": {
+          "rotate_image": "Градус 0, 90, 180, 270",
+          "margins": "Автоматические Поля Отсечения в пикселях."
+        },
+        "description": "Опции Изображения Камеры",
+        "title": "Опции Изображения"
+      },
+      "status_text": {
+        "data": {
+          "show_vac_status": "Показывать статус пылесоса.",
+          "vac_status_font": "Шрифт",
+          "vac_status_size": "Размер текста",
+          "vac_status_position": "Позиция текста: Внизу(Выкл)",
+          "color_text": "[255, 255, 255]"
+        },
+        "data_description": {
+          "vac_status_font": "Шрифт текста, по умолчанию Fira Serif.",
+          "vac_status_size": "Размер текста, по умолчанию 50.",
+          "color_text": "Цвет текста статуса пылесоса."
+        },
+        "description": "Настройки изображения",
+        "title": "Настройки текста статуса"
+      },
+      "base_colours": {
+        "data": {
+          "color_charger": "[255, 128, 0]",
+          "color_move": "[238, 247, 255]",
+          "color_wall": "[255, 255, 0]",
+          "color_robot": "[255, 255, 204]",
+          "color_go_to": "[0, 255, 0]",
+          "color_no_go": "[255, 0, 0]",
+          "color_zone_clean": "[255, 255, 255]",
+          "color_background": "[0, 125, 255]",
+          "add_base_alpha": "Настройка Прозрачности:"
+        },
+        "data_description": {
+          "color_charger": "Цвет Зарядного Устройства.",
+          "color_move": "Цвет Движения.",
+          "color_wall": "Цвет Стены.",
+          "color_robot": "Цвет Робота.",
+          "color_go_to": "Цвет Для Перехода.",
+          "color_no_go": "Цвет Запретной Зоны.",
+          "color_zone_clean": "Цвет Зоны Очистки.",
+          "color_background": "Цвет Фона."
+        },
+        "description": "Опции Цветов Камеры.",
+        "title": "Настройка Основных Цветов"
+      },
+      "alpha_1": {
+        "data": {
+          "alpha_charger": "Прозрачность Зарядного Устройства   ",
+          "alpha_move": "Прозрачность Движения     ",
+          "alpha_wall": "Прозрачность Стены     ",
+          "alpha_robot": "Прозрачность Робота     ",
+          "alpha_go_to": "Прозрачность Перехода",
+          "alpha_no_go": "Прозрачность Запретной Зоны",
+          "alpha_zone_clean": "Прозрачность Зоны Очистки",
+          "alpha_background": "Прозрачность Фона",
+          "alpha_text": "Прозрачность Текста      "
+        },
+        "description": "Опции Камеры. Альфа 1",
+        "title": "Альфа Канал Основных Цветов"
+      },
+      "rooms_colours_1": {
+        "data": {
+          "color_room_0": "[135, 206, 250]",
+          "color_room_1": "[176, 226, 255]",
+          "color_room_2": "[165, 105, 18]",
+          "color_room_3": "[164, 211, 238]",
+          "color_room_4": "[141, 182, 205]",
+          "color_room_5": "[96, 123, 139]",
+          "color_room_6": "[224, 255, 255]",
+          "color_room_7": "[209, 238, 238]",
+          "add_room_1_alpha": "Настройка Прозрачности:"
+        },
+        "data_description": {
+          "color_room_0": "Комната 1, цвет пола.",
+          "color_room_1": "Комната 2",
+          "color_room_2": "Комната 3",
+          "color_room_3": "Комната 4",
+          "color_room_4": "Комната 5",
+          "color_room_5": "Комната 6",
+          "color_room_6": "Комната 7",
+          "color_room_7": "Комната 8"
+        },
+        "description": "Опции Цветов Камеры.",
+        "title": "Комнаты 1 до 8 Цвета"
+      },
+      "rooms_colours_2": {
+        "data": {
+          "color_room_8": "[180, 205, 205]",
+          "color_room_9": "[122, 139, 139]",
+          "color_room_10": "[175, 238, 238]",
+          "color_room_11": "[84, 153, 199]",
+          "color_room_12": "[133, 193, 233]",
+          "color_room_13": "[245, 176, 65]",
+          "color_room_14": "[82, 190, 128]",
+          "color_room_15": "[72, 201, 176]",
+          "add_room_2_alpha": "Настройка Прозрачности:"
+        },
+        "data_description": {
+          "color_room_8": "Комната 9",
+          "color_room_9": "Комната 10",
+          "color_room_10": "Комната 11",
+          "color_room_11": "Комната 12",
+          "color_room_12": "Комната 13",
+          "color_room_13": "Комната 14",
+          "color_room_14": "Комната 15",
+          "color_room_15": "Комната 16"
+        },
+        "description": "Опции Цветов Камеры.",
+        "title": "Комнаты 9 до 15 Цвета"
+      },
+      "alpha_2": {
+        "data": {
+          "alpha_room_0": "Комната 1, цвет пола.",
+          "alpha_room_1": "Комната 2",
+          "alpha_room_2": "Комната 3",
+          "alpha_room_3": "Комната 4",
+          "alpha_room_4": "Комната 5",
+          "alpha_room_5": "Комната 6",
+          "alpha_room_6": "Комната 7",
+          "alpha_room_7": "Комната 8"
+        },
+        "description": "Опции Камеры. Альфа 2",
+        "title": "Альфа Канал Цветов Комнат"
+      },
+      "alpha_3": {
+        "data": {
+          "alpha_room_8": "Комната 9",
+          "alpha_room_9": "Комната 10",
+          "alpha_room_10": "Комната 11",
+          "alpha_room_11": "Комната 12",
+          "alpha_room_12": "Комната 13",
+          "alpha_room_13": "Комната 14",
+          "alpha_room_14": "Комната 15",
+          "alpha_room_15": "Комната 16"
+        },
+        "description": "Опции Камеры. Альфа 3",
+        "title": "Альфа Канал Цветов Комнат"
+      }
+    }
+  },
+  "selector": {
+    "camera_config_action": {
+      "options": {
+        "opt_1": "Настроить Изображение",
+        "opt_2": "Настроить Общие Цвета",
+        "opt_3": "Цвета Комнат 1 до 8",
+        "opt_4": "Цвета Комнат 9 до 16",
+        "opt_5": "Скопировать Логи Камеры в www"
+      }
+    }
+  },
+  "services": {
+    "turn_off": {
+      "name": "[%key:common::action::turn_off%]",
+      "description": "Отключает камеру."
+    },
+    "turn_on": {
+      "name": "[%key:common::action::turn_on%]",
+      "description": "Включает камеру."
+    },
+    "snapshot": {
+      "name": "Сделать снимок",
+      "description": "Делает снимок с камеры.",
+      "fields": {
+        "filename": {
+          "name": "Имя файла",
+          "description": "Шаблон имени файла. Доступная переменная `entity_id`."
+        }
+      }
+    }
+  }
+}

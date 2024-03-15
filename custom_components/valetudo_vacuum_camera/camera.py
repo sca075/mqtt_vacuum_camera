@@ -1,5 +1,5 @@
 """
-Camera Version v1.5.9
+Camera Version v1.6.0
 Image Processing Threading implemented on Version 1.5.7.
 """
 
@@ -90,9 +90,14 @@ from .const import (
     COLOR_WALL,
     COLOR_ZONE_CLEAN,
     CONF_AUTO_ZOOM,
+    CONF_ASPECT_RATIO,
+    CONF_ZOOM_LOCK_RATIO,
     CONF_EXPORT_SVG,
     CONF_SNAPSHOTS_ENABLE,
     CONF_VAC_STAT,
+    CONF_VAC_STAT_FONT,
+    CONF_VAC_STAT_POS,
+    CONF_VAC_STAT_SIZE,
     CONF_VACUUM_CONNECTION_STRING,
     CONF_VACUUM_ENTITY_ID,
     CONF_VACUUM_IDENTIFIERS,
@@ -181,9 +186,7 @@ class ValetudoCamera(Camera):
             self.snapshot_img = (
                 f"{self._directory_path}/{STORAGE_DIR}/{self._shared.file_name}.png"
             )
-            self.log_file = (
-                f"{self._directory_path}/www/snapshot_{self._shared.file_name}.zip"
-            )
+            self.log_file = f"{self._directory_path}/www/{self._shared.file_name}.zip"
             self._shared.svg_path = (
                 f"{self._directory_path}/www/{self._shared.file_name}.svg"
             )
@@ -205,9 +208,14 @@ class ValetudoCamera(Camera):
         self._cpu_percent = None
         self._shared.export_svg = device_info.get(CONF_EXPORT_SVG)
         self._shared.image_auto_zoom = device_info.get(CONF_AUTO_ZOOM)
+        self._shared.image_zoom_lock_ratio = device_info.get(CONF_ZOOM_LOCK_RATIO)
+        self._shared.image_aspect_ratio = device_info.get(CONF_ASPECT_RATIO)
         self._shared.image_rotate = int(device_info.get(ATTR_ROTATE, 0))
         self._shared.margins = int(device_info.get(ATTR_MARGINS, 150))
         self._shared.show_vacuum_state = device_info.get(CONF_VAC_STAT)
+        self._shared.vacuum_status_font = device_info.get(CONF_VAC_STAT_FONT)
+        self._shared.vacuum_status_size = device_info.get(CONF_VAC_STAT_SIZE)
+        self._shared.vacuum_status_position = device_info.get(CONF_VAC_STAT_POS)
         if not self._shared.show_vacuum_state:
             self._shared.show_vacuum_state = False
         # If not configured, default to True for compatibility
@@ -432,7 +440,7 @@ class ValetudoCamera(Camera):
             self._shared.vacuum_state = "disconnected"
         else:
             if self._shared.vacuum_state == "disconnected":
-                self._shared.vacuum_state = "idle"
+                self._shared.vacuum_state = "connected"
             else:
                 self._shared.vacuum_state = await self._mqtt.get_vacuum_status()
         pid = os.getpid()  # Start to log the CPU usage of this PID.
@@ -451,6 +459,7 @@ class ValetudoCamera(Camera):
                 or self._shared.vacuum_state == "moving"
                 or self._shared.vacuum_state == "returning"
                 or self._shared.vacuum_state == "disconnected"
+                or self._shared.vacuum_state == "connected"
                 or not self._shared.vacuum_bat_charged  # text update use negative logic
             ):
                 # grab the image from MQTT.

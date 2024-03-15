@@ -1,4 +1,4 @@
-"""config_flow ver.1.5.9
+"""config_flow ver.1.6.0
 IMPORTANT: When adding new options to the camera
 it will be mandatory to update const.py update_options.
 Format of the new constants must be CONST_NAME = "const_name" update also
@@ -89,10 +89,15 @@ from .const import (
     COLOR_TEXT,
     COLOR_WALL,
     COLOR_ZONE_CLEAN,
+    CONF_ASPECT_RATIO,
     CONF_AUTO_ZOOM,
-    CONF_EXPORT_SVG,
+    CONF_ZOOM_LOCK_RATIO,
+    # CONF_EXPORT_SVG,
     CONF_SNAPSHOTS_ENABLE,
     CONF_VAC_STAT,
+    CONF_VAC_STAT_FONT,
+    CONF_VAC_STAT_POS,
+    CONF_VAC_STAT_SIZE,
     CONF_VACUUM_CONFIG_ENTRY_ID,
     CONF_VACUUM_ENTITY_ID,
     DOMAIN,
@@ -113,7 +118,7 @@ VACUUM_SCHEMA = vol.Schema(
 
 
 class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
-    VERSION = 2.3
+    VERSION = 2.4
 
     def __init__(self):
         self.data = {}
@@ -151,9 +156,14 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             self.options.update(
                 {
                     "rotate_image": "0",
-                    "margins": "150",
+                    "margins": "100",
+                    "aspect_ratio": "None",
                     "auto_zoom": False,
+                    "zoom_lock_ratio": True,
                     "show_vac_status": False,
+                    "vac_status_font": "custom_components/valetudo_vacuum_camera/utils/fonts/FiraSans.ttf",
+                    "vac_status_size": 50,
+                    "vac_status_position": True,
                     "get_svg_file": False,
                     "enable_www_snapshots": False,
                     "color_charger": [255, 128, 0],
@@ -253,33 +263,117 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 "max": 255.0,  # Maximum value
                 "step": 1.0,  # Step value
             }
+            config_size: NumberSelectorConfig = {
+                "min": 5,  # Minimum value
+                "max": 60,  # Maximum value
+                "step": 5,  # Step value
+            }
+            font_selector = SelectSelectorConfig(
+                options=[
+                    {
+                        "label": "Fira Sans",
+                        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/FiraSans.ttf",
+                    },
+                    {
+                        "label": "Inter",
+                        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/Inter-VF.ttf",
+                    },
+                    {
+                        "label": "M Plus Regular",
+                        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/MPLUSRegular.ttf",
+                    },
+                    {
+                        "label": "Noto Sans CJKhk",
+                        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/NotoSansCJKhk-VF.ttf",
+                    },
+                    {
+                        "label": "Noto Kufi Arabic",
+                        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/NotoKufiArabic-VF.ttf",
+                    },
+                    {
+                        "label": "Noto Sans Khojki",
+                        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/NotoSansKhojki.ttf",
+                    },
+                    {
+                        "label": "Lato Regular",
+                        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/Lato-Regular.ttf",
+                    },
+                ],
+                mode=SelectSelectorMode.DROPDOWN,
+            )
+            rotation_selector = SelectSelectorConfig(
+                options=[
+                    {"label": "0", "value": "0"},
+                    {"label": "90", "value": "90"},
+                    {"label": "180", "value": "180"},
+                    {"label": "270", "value": "270"},
+                ],
+                mode=SelectSelectorMode.DROPDOWN,
+            )
+            aspec_ratio_selector = SelectSelectorConfig(
+                options=[
+                    {'label': 'Original Ratio.', 'value': 'None'},
+                    {'label': '1:1', 'value': '1, 1'},
+                    {'label': '2:1', 'value': '2, 1'},
+                    {'label': '3:2', 'value': '3, 2'},
+                    {'label': '5:4', 'value': '5, 4'},
+                    {'label': '9:16', 'value': '9, 16'},
+                    {'label': '16:9', 'value': '16, 9'},
+                ],
+                mode=SelectSelectorMode.DROPDOWN,
+            )
+
             self.IMG_SCHEMA = vol.Schema(
                 {
                     vol.Required(
                         ATTR_ROTATE, default=config_entry.options.get("rotate_image")
-                    ): vol.In(["0", "90", "180", "270"]),
+                    ): SelectSelector(rotation_selector),
                     vol.Optional(
                         ATTR_MARGINS, default=config_entry.options.get("margins")
                     ): cv.string,
+                    vol.Required(
+                        CONF_ASPECT_RATIO,
+                        default=config_entry.options.get("aspect_ratio")
+                    ): SelectSelector(aspec_ratio_selector),
                     vol.Optional(
                         CONF_AUTO_ZOOM,
                         default=config_entry.options.get("auto_zoom"),
                     ): BooleanSelector(),
                     vol.Optional(
-                        CONF_VAC_STAT,
-                        default=config_entry.options.get("show_vac_status"),
+                        CONF_ZOOM_LOCK_RATIO,
+                        default=config_entry.options.get("zoom_lock_ratio"),
                     ): BooleanSelector(),
-                    vol.Optional(
-                        COLOR_TEXT, default=config_entry.options.get("color_text")
-                    ): ColorRGBSelector(),
-                    vol.Optional(
-                        CONF_EXPORT_SVG,
-                        default=config_entry.options.get(CONF_EXPORT_SVG, False),
-                    ): BooleanSelector(),
+                    # vol.Optional(
+                    #     CONF_EXPORT_SVG,
+                    #     default=config_entry.options.get(CONF_EXPORT_SVG, False),
+                    # ): BooleanSelector(),
                     vol.Optional(
                         CONF_SNAPSHOTS_ENABLE,
                         default=config_entry.options.get(CONF_SNAPSHOTS_ENABLE, True),
                     ): BooleanSelector(),
+                }
+            )
+            self.TEXT_OPTIONS_SCHEMA = vol.Schema(
+                {
+                    vol.Optional(
+                        CONF_VAC_STAT,
+                        default=config_entry.options.get("show_vac_status"),
+                    ): BooleanSelector(),
+                    vol.Optional(
+                        CONF_VAC_STAT_FONT,
+                        default=config_entry.options.get("vac_status_font"),
+                    ): SelectSelector(font_selector),
+                    vol.Optional(
+                        CONF_VAC_STAT_SIZE,
+                        default=config_entry.options.get("vac_status_size"),
+                    ): NumberSelector(config_size),
+                    vol.Optional(
+                        CONF_VAC_STAT_POS,
+                        default=config_entry.options.get("vac_status_position"),
+                    ): BooleanSelector(),
+                    vol.Optional(
+                        COLOR_TEXT, default=config_entry.options.get("color_text")
+                    ): ColorRGBSelector(),
                 }
             )
             self.COLOR_BASE_SCHEMA = vol.Schema(
@@ -485,12 +579,14 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 if next_action == "opt_1":
                     return await self.async_step_image_opt()
                 elif next_action == "opt_2":
-                    return await self.async_step_base_colours()
+                    return await self.async_step_status_text()
                 elif next_action == "opt_3":
-                    return await self.async_step_rooms_colours_1()
+                    return await self.async_step_base_colours()
                 elif next_action == "opt_4":
-                    return await self.async_step_rooms_colours_2()
+                    return await self.async_step_rooms_colours_1()
                 elif next_action == "opt_5":
+                    return await self.async_step_rooms_colours_2()
+                elif next_action == "opt_6":
                     return await self.async_download_logs()
                 elif next_action == "More Options":
                     """
@@ -505,10 +601,11 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         menu_keys = SelectSelectorConfig(
             options=[
                 {"label": "configure_image", "value": "opt_1"},
-                {"label": "configure_general_colours", "value": "opt_2"},
-                {"label": "configure_rooms_colours_1", "value": "opt_3"},
-                {"label": "configure_rooms_colours_2", "value": "opt_4"},
-                {"label": "copy_camera_logs_to_www", "value": "opt_5"},
+                {"label": "configure_status_text", "value": "opt_2"},
+                {"label": "configure_general_colours", "value": "opt_3"},
+                {"label": "configure_rooms_colours_1", "value": "opt_4"},
+                {"label": "configure_rooms_colours_2", "value": "opt_5"},
+                {"label": "copy_camera_logs_to_www", "value": "opt_6"},
             ],
             mode=SelectSelectorMode.LIST,
             translation_key="camera_config_action",
@@ -526,15 +623,15 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         """
         Images Options Configuration
         """
+        # "get_svg_file": user_input.get(CONF_EXPORT_SVG),
         if user_input is not None:
             self.options.update(
                 {
                     "rotate_image": user_input.get(ATTR_ROTATE),
                     "margins": user_input.get(ATTR_MARGINS),
+                    "aspect_ratio": user_input.get(CONF_ASPECT_RATIO),
                     "auto_zoom": user_input.get(CONF_AUTO_ZOOM),
-                    "show_vac_status": user_input.get(CONF_VAC_STAT),
-                    "color_text": user_input.get(COLOR_TEXT),
-                    "get_svg_file": user_input.get(CONF_EXPORT_SVG),
+                    "zoom_lock_ratio": user_input.get(CONF_ZOOM_LOCK_RATIO),
                     "enable_www_snapshots": user_input.get(CONF_SNAPSHOTS_ENABLE),
                 }
             )
@@ -544,6 +641,29 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="image_opt",
             data_schema=self.IMG_SCHEMA,
+            description_placeholders=self.options,
+        )
+
+    async def async_step_status_text(self, user_input: Optional[Dict[str, Any]] = None):
+        """
+        Images Status Text Configuration
+        """
+        if user_input is not None:
+            self.options.update(
+                {
+                    "show_vac_status": user_input.get(CONF_VAC_STAT),
+                    "vac_status_font": user_input.get(CONF_VAC_STAT_FONT),
+                    "vac_status_size": user_input.get(CONF_VAC_STAT_SIZE),
+                    "vac_status_position": user_input.get(CONF_VAC_STAT_POS),
+                    "color_text": user_input.get(COLOR_TEXT),
+                }
+            )
+
+            return await self.async_step_opt_save()
+
+        return self.async_show_form(
+            step_id="status_text",
+            data_schema=self.TEXT_OPTIONS_SCHEMA,
             description_placeholders=self.options,
         )
 
