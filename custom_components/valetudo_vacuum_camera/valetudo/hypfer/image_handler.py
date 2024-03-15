@@ -80,6 +80,8 @@ class MapImageHandler(object):
         self.trim_left = None  # memory stored trims calculated once.
         self.trim_right = None  # memory stored trims calculated once.
         self.trim_up = None  # memory stored trims calculated once.
+        self.offset_x = 0  # offset x for the aspect ratio.
+        self.offset_y = 0  # offset y for the aspect ratio.
 
     async def async_auto_trim_and_zoom_image(
         self,
@@ -145,23 +147,23 @@ class MapImageHandler(object):
                         f"{self.shared.file_name}: Background colour not detected at rotation {rotate}."
                     )
                     pos_0 = 0
-                    self.crop_area = (
+                    self.crop_area = [
                         pos_0,
                         pos_0,
                         image_array.shape[1],
                         image_array.shape[0],
-                    )
+                    ]
                     self.img_size = (image_array.shape[1], image_array.shape[0])
                     del trimmed_width, trimmed_height
                     return image_array
 
                 # Store Crop area of the original image_array we will use from the next frame.
-                self.auto_crop = (
+                self.auto_crop = [
                     self.trim_left,
                     self.trim_up,
                     self.trim_right,
                     self.trim_down,
-                )
+                ]
             if (
                 zoom
                 and self.shared.vacuum_state == "cleaning"
@@ -186,23 +188,23 @@ class MapImageHandler(object):
             # Rotate the cropped image based on the given angle
             if rotate == 90:
                 rotated = np.rot90(trimmed, 1)
-                self.crop_area = (
+                self.crop_area = [
                     self.trim_left,
                     self.trim_up,
                     self.trim_right,
                     self.trim_down,
-                )
+                ]
             elif rotate == 180:
                 rotated = np.rot90(trimmed, 2)
                 self.crop_area = self.auto_crop
             elif rotate == 270:
                 rotated = np.rot90(trimmed, 3)
-                self.crop_area = (
+                self.crop_area = [
                     self.trim_left,
                     self.trim_up,
                     self.trim_right,
                     self.trim_down,
-                )
+                ]
             else:
                 rotated = trimmed
                 self.crop_area = self.auto_crop
@@ -637,8 +639,11 @@ class MapImageHandler(object):
                         new_width = pil_img.width
                         new_height = int(pil_img.width / new_aspect_ratio)
                     resized = ImageOps.pad(pil_img, (new_width, new_height))
-                    self.crop_img_size[0] = resized.width
-                    self.crop_img_size[1] = resized.height
+                    self.crop_img_size[0], self.crop_img_size[1] = (
+                        await self.async_map_coordinates_offset(
+                            wsf, hsf, new_width, new_height
+                        )
+                    )
                     _LOGGER.debug(
                         f"{self.shared.file_name}: Image Aspect Ratio ({wsf}, {hsf}): {new_width}x{new_height}"
                     )
@@ -801,16 +806,31 @@ class MapImageHandler(object):
         rotation_angle = self.shared.image_rotate
         _LOGGER.info(f"Getting {self.shared.file_name} Calibrations points.")
         # Calculate the calibration points in the vacuum coordinate system
-
+        # self.crop_area[2] -= self.offset_x
+        # self.crop_area[3] -= self.offset_y
         vacuum_points = [
-            {"x": self.crop_area[0], "y": self.crop_area[1]},  # Top-left corner 0
-            {"x": self.crop_area[2], "y": self.crop_area[1]},  # Top-right corner 1
-            {"x": self.crop_area[2], "y": self.crop_area[3]},  # Bottom-right corner 2
             {
-                "x": self.crop_area[0],
-                "y": self.crop_area[3],
+                "x": self.crop_area[0] + self.offset_x,
+                "y": self.crop_area[1] + self.offset_y,
+            },  # Top-left corner 0
+            {
+                "x": self.crop_area[2] - self.offset_x,
+                "y": self.crop_area[1] + self.offset_y,
+            },  # Top-right corner 1
+            {
+                "x": self.crop_area[2] - self.offset_x,
+                "y": self.crop_area[3] - self.offset_y,
+            },  # Bottom-right corner 2
+            {
+                "x": self.crop_area[0] + self.offset_x,
+                "y": self.crop_area[3] - self.offset_y,
             },  # Bottom-left corner (optional)3
         ]
+
+        # Apply the offset to each vacuum coordinate
+        # for point in vacuum_points:
+        #     point["x"] = int(point["x"] * self.offset_x)
+        #     point["y"] = int(point["y"] * self.offset_y)
 
         # Define the map points (fixed)
         map_points = [
@@ -872,3 +892,89 @@ class MapImageHandler(object):
         else:
             hash_value = None
         return hash_value
+
+    async def async_map_coordinates_offset(
+        self, wsf: int, hsf: int, width: int, height: int
+    ) -> tuple[int, int]:
+        """
+        Convert the coordinates to the map.
+        :param wsf: Width scale factor.
+        :param hsf: Height scale factor.
+        :param width: Width of the image.
+        :param height: Height of the image.
+        """
+
+        rotation = self.shared.image_rotate
+
+        _LOGGER.debug(f"Image Size: Width: {width} Height: {height}")
+        _LOGGER.debug(
+            f"Image Crop Size: Width: {self.crop_img_size[0]} Height: {self.crop_img_size[1]}"
+        )
+        if wsf == 1 and hsf == 1:
+            if rotation == 0 or rotation == 180:
+                self.offset_y = (width - self.crop_img_size[0]) // 2
+                self.offset_x = self.crop_img_size[1] - height
+            elif rotation == 90 or rotation == 270:
+                self.offset_y = (self.crop_img_size[0] - width) // 2
+                self.offset_x = self.crop_img_size[1] - height
+            _LOGGER.debug(
+                f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
+            )
+            return width, height
+        elif wsf == 2 and hsf == 1:
+            if rotation == 0 or rotation == 180:
+                self.offset_y = width - self.crop_img_size[0]
+                self.offset_x = height - self.crop_img_size[1]
+            elif rotation == 90 or rotation == 270:
+                self.offset_x = width - self.crop_img_size[0]
+                self.offset_y = height - self.crop_img_size[1]
+            _LOGGER.debug(
+                f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
+            )
+            return width, height
+        elif wsf == 3 and hsf == 2:
+            if rotation == 0 or rotation == 180:
+                self.offset_x = (width - self.crop_img_size[0]) // 2
+                self.offset_y = height - self.crop_img_size[1]
+            elif rotation == 90 or rotation == 270:
+                self.offset_y = (self.crop_img_size[0] - width) // 2
+                self.offset_x = self.crop_img_size[1] - height
+            _LOGGER.debug(
+                f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
+            )
+            return width, height
+        elif wsf == 5 and hsf == 4:
+            if rotation == 0 or rotation == 180:
+                self.offset_y = (width - self.crop_img_size[0]) // 2
+                self.offset_x = self.crop_img_size[1] - height
+            elif rotation == 90 or rotation == 270:
+                self.offset_y = (self.crop_img_size[0] - width) // 2
+                self.offset_x = self.crop_img_size[1] - height
+            _LOGGER.debug(
+                f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
+            )
+            return width, height
+        elif wsf == 9 and hsf == 16:
+            if rotation == 0 or rotation == 180:
+                self.offset_y = width - self.crop_img_size[0]
+                self.offset_x = height - self.crop_img_size[1]
+            elif rotation == 90 or rotation == 270:
+                self.offset_x = width - self.crop_img_size[0]
+                self.offset_y = height - self.crop_img_size[1]
+            _LOGGER.debug(
+                f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
+            )
+            return width, height
+        elif wsf == 16 and hsf == 9:
+            if rotation == 0 or rotation == 180:
+                self.offset_y = width - self.crop_img_size[0]
+                self.offset_x = height - self.crop_img_size[1]
+            elif rotation == 90 or rotation == 270:
+                self.offset_x = width - self.crop_img_size[0]
+                self.offset_y = height - self.crop_img_size[1]
+            _LOGGER.debug(
+                f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
+            )
+            return width, height
+        else:
+            return width, height
