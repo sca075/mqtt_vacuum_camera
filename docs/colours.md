@@ -2,9 +2,8 @@
 
 ***Category:*** Camera Configuration - Colours - From General to Rooms colours.
 
-![Screenshot 2024-03-09 at 21 18 47](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/02787561-6c1b-4db7-9960-fd8f3e911161)
+![Screenshot 2024-03-16 at 09 52 45](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/bc6db2ee-9a12-48fa-b5de-9cbab1b4e2de)
 
-REPLACE IT WITH THE NEW SCREENSHOT.
 
 ***Description:***
 By selecting the option to be configured (submitting the operation to do) is possible to:
@@ -20,5 +19,5 @@ By selecting the option to be configured (submitting the operation to do) is pos
 
 - It is possible to set up the [transparency](./transparency.md) for each colour at the end of the page by clicking on
   submit.
-
-ADD THE NEW SCREENSHOT.
+  
+![Screenshot 2024-03-16 at 09 58 35](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/6d276689-cd8e-4948-ba82-5027a9be3902)
