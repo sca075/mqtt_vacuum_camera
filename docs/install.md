@@ -34,15 +34,15 @@ The camera entity created will have the same friendly name of your vacuum + "cam
 
 ### Manual Setup.
 If you want to install this camera manually without HACS:
-Check the last release available and replace it (at current v1.5.9)
+Check the last release available and REPLACE_IT (at current v1.5.9)
 To install this integration manually you have to download valetudo_vacuum_camera.zip and extract its contents to config/custom_components/valetudo_vacuum_camera directory:
 
 ```
 mkdir -p custom_components/valetudo_vacuum_camera
 cd custom_components/valetudo_vacuum_camera
 wget https://github.com/sca075/valetudo_vacuum_camera/archive/refs/tags/v.1.5.9.zip
-unzip valetudo_vacuum_camera_v1.5.0.zip
-rm valetudo_vacuum_camera_v1.5.0.zip
+unzip valetudo_vacuum_camera_v1.5.9.zip
+rm valetudo_vacuum_camera_v1.5.9.zip
 ```
 
 Once the files are in the right place, you will need to restart Home Assistant to have the integration available. Once Home Assistant will reload, please go in (plase press CTRL clicking the link this would open the link in a different tab of your browser) [**Settings** -> **Devices & Services **](https://my.home-assistant.io/redirect/config_flow_start/?domain=valetudo_vacuum_camera) then please confirm to add the integration.
@@ -57,43 +57,39 @@ calibration_source:
   camera: true 
 ```
 
-**Warning: You need to use the internal_variables** as Valetudo is using MQTT is necessary to set in the card the topic.
+**Warning: You need to use the internal_variables**: As Valetudo is using MQTT is necessary to set in the card the
+topic.
 *Your topic can be obtained also from the camera attributes vacuum_topic.*
 
 ![Screenshot 2023-10-24 at 18 25 59](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/080b7bcb-19f1-4415-870f-2285329e7ce9)
 
-### Note: "your_topic" must be replaced with what you can find it in the camera attributes.
+***Note: "YOUR_TOPIC_HERE" must be replaced with what you can find it in the camera attributes. The vaulue is Case
+Sensitve.***
 ```
 internal_variables: 
-  topic: valetudo/your_topic  
+  topic: valetudo/YOUR_TOPIC_HERE  
 ```
 
 We did agree and work with the author of the card, we guess soon a [new version of the card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card/actions/runs/7005593157) will be released.
 Those settings for the internal_variables will be automatically setup in the card as soon the vacuum and camera will be setup in the card.
 
+### Camera Configuration:
 
-### Configuration:
+**This integration is not configuring the Vacuums**, you need to configure the vacuum in the vacuum UI. Also, it is not
+possible to change the Images options form the vacuum UI.
+This project runs in parallel, is not a fork of the original Valetudo project you selected.
 
-The Options menu since V1.5.0 was redesigned in order to feet as much is possible a mobile phone.
+It is possible to **configure the camera via the Home Assistant UI**, as we aim to extract the Vacuums maps in the Home
+Assistant UI.
+The camera entity created will have the same friendly name of YOUR_VACUUM_camera at the end.
 
-![Screenshot 2023-12-11 at 12 12 02](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/e0466d11-a803-4f56-ba29-5ef761c859f5)
+To configure the Camera Options use Home Assistant "Settings" -> "Devices & Services" -> "Valetudo Vacuum Camera" in
+the "Integration" tab.
 
+The setup of the options of the camera include:
 
-By selecting the option to be configured (submitting the operation to do) is possible to:
-- Set up the Image Options.
-
-![Screenshot 2023-12-18 at 23 32 57](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/91f7bdbd-0354-4f65-8229-a5e64df824c8)
-
-
-- Change the Base Colours.
-
-![Screenshot 2023-12-18 at 23 33 42](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/e301ecba-2608-499f-92c5-197b62400d70)
-
-
-- Change the Rooms Colours (in total 16 colours) if you use a vacuum that do not support the segments (rooms) the Room 1
-is the floor colour. 
-
-![Screenshot 2023-12-18 at 23 34 05](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/24fbad4d-3cef-474f-9a27-9ada411ad6d3)
-
-
-- It is possible to set up the [transparency](./transparency.md) for each colour at the end of the page by clicking on submit.
+- [**Image Options**](./docs/images_options.md)
+- [**Configure Status Text**](./docs/status_text.md)
+- [**Configure the Colours**](./docs/colours.md)
+- [**Export the logs of this integration**](./docs/snapshots.md) (we filter the logs of the camera only as we don't want
+  to know what you run on your instance of Home Assistant)

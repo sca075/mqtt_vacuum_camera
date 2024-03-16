@@ -73,7 +73,7 @@ Via [HACS](https://hacs.xyz//setup/download) please follow. The instructions in 
    target:
      entity_id: camera.valetudo_your_vacuum_camera
    data:
-     filename: /config/www/vacuum.png
+     filename: /config/www/REPLACE_ME.png
    ```
 5) **Change the image options** directly form the Home Assistant integration UI with a simple click on the integration configuration.
    - **Image Rotation**: 0, 90, 180, 270 (default is 0).
