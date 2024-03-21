@@ -742,10 +742,13 @@ class MapImageHandler(object):
                     "angle": angle,
                     "in_room": self.robot_in_room["room"],
                 }
-                if self.active_zones and self.robot_in_room["id"] < len(
+                if (
                     self.active_zones
-                ):
+                    and self.robot_in_room["id"] < len(self.active_zones) - 1
+                ):  # issue #100 Index out of range.
                     self.zooming = bool(self.active_zones[self.robot_in_room["id"] + 1])
+                else:
+                    self.zooming = False
                 return temp
         # else we need to search and use the async method.
         if self.rooms_pos:
@@ -806,8 +809,7 @@ class MapImageHandler(object):
         rotation_angle = self.shared.image_rotate
         _LOGGER.info(f"Getting {self.shared.file_name} Calibrations points.")
         # Calculate the calibration points in the vacuum coordinate system
-        # self.crop_area[2] -= self.offset_x
-        # self.crop_area[3] -= self.offset_y
+
         vacuum_points = [
             {
                 "x": self.crop_area[0] + self.offset_x,
@@ -826,11 +828,6 @@ class MapImageHandler(object):
                 "y": self.crop_area[3] - self.offset_y,
             },  # Bottom-left corner (optional)3
         ]
-
-        # Apply the offset to each vacuum coordinate
-        # for point in vacuum_points:
-        #     point["x"] = int(point["x"] * self.offset_x)
-        #     point["y"] = int(point["y"] * self.offset_y)
 
         # Define the map points (fixed)
         map_points = [
