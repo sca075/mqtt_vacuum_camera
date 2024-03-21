@@ -265,8 +265,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             }
             config_size: NumberSelectorConfig = {
                 "min": 5,  # Minimum value
-                "max": 60,  # Maximum value
-                "step": 5,  # Step value
+                "max": 51,  # Maximum value
+                "step": 1,  # Step value
             }
             font_selector = SelectSelectorConfig(
                 options=[
