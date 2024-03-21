@@ -23,7 +23,7 @@ margins. This value add the pixels at each side of the image. Default is 100 pix
 
 ***3.*** Aspect Ratio.
 
-The aspect ratio of an image after [pre-processing](./docs/croping_trimming.md)  should be 2:1. Anyway as per the layout
+The aspect ratio of an image after [pre-processing](https://github.com/sca075/valetudo_vacuum_camera/blob/main/docs/croping_trimming.md)  should be 2:1. Anyway as per the layout
 differ on each floor, it could be possible it would result on different aspect ratio. This option allows to select the
 desired aspect ratio of the images. The aspect ratio is the ratio of the width to the height of the image.
 By default, the Camera use the Original Ratio of the image.
@@ -33,7 +33,8 @@ Be sure to **_lock the aspect ratio_**  if you want to keep the selected aspect 
 
 ***3.*** Auto Zoom and Lock Aspect Ratio.
 
-[Auto Zooming the room (segment)](./docs/auto_zoom.md) when the vacuum is cleaning it. The full zoom will change the
+[Auto Zooming the room (segment)](
+https://github.com/sca075/valetudo_vacuum_camera/blob/main/docs/auto_zoom.md) when the vacuum is cleaning it. The full zoom will change the
 aspect ratio of the image. This why it is possible to lock the aspect ratio of the image to keep the selected ratio and
 preserve the Dashboards layout.
 Independently from the Auto Zoom as above **Lock Aspect Ratio** should be active when selecting the desired image Aspect
@@ -45,7 +46,7 @@ Ratio.
 
 The camera will shoot automatically snapshots of the maps and save them in the folder `www` of the Home Assistant. The
 images are saved in PNG format and named like this example `snapshot_your_vacuum.png`. Disabling this function will
-delete and do not save in the images in `www` folder. See [Snapshots](./docs/snapshots.md) for more details.
+delete and do not save in the images in `www` folder. See [Snapshots](https://github.com/sca075/valetudo_vacuum_camera/blob/main/docs/docs/snapshots.md) for more details.
 
 ![Screenshot 2024-03-13 at 17 19 15](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/52a47822-9588-4a8d-9d7f-adaf1a6e2f90)
 

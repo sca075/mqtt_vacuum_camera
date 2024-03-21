@@ -87,9 +87,9 @@ To configure the Camera Options use Home Assistant "Settings" -> "Devices & Serv
 the "Integration" tab.
 
 The setup of the options of the camera include:
-
-- [**Image Options**](./docs/images_options.md)
-- [**Configure Status Text**](./docs/status_text.md)
-- [**Configure the Colours**](./docs/colours.md)
-- [**Export the logs of this integration**](./docs/snapshots.md) (we filter the logs of the camera only as we don't want
+https://github.com/sca075/valetudo_vacuum_camera/blob/main/docs/images_options.md
+- [**Image Options**](https://github.com/sca075/valetudo_vacuum_camera/blob/main/docs/images_options.md)
+- [**Configure Status Text**](https://github.com/sca075/valetudo_vacuum_camera/blob/main/docs/status_text.md)
+- [**Configure the Colours**](https://github.com/sca075/valetudo_vacuum_camera/blob/main/docs/colours.md)
+- [**Export the logs of this integration**](https://github.com/sca075/valetudo_vacuum_camera/blob/main/docs/snapshots.md) (we filter the logs of the camera only as we don't want
   to know what you run on your instance of Home Assistant)
