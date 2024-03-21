@@ -114,13 +114,6 @@ class CameraProcessor:
                         ) = await self._re_handler.get_rooms_attributes(destinations)
                     if self._shared.map_rooms:
                         _LOGGER.debug("State attributes rooms updated")
-                if self._shared.show_vacuum_state:
-                    self._re_handler.draw.status_text(
-                        pil_img,
-                        50,
-                        self._shared.user_colors[8],
-                        self._shared.file_name + ": " + self._shared.vacuum_state,
-                    )
 
                 if self._shared.attr_calibration_points is None:
                     self._shared.attr_calibration_points = (
@@ -128,6 +121,7 @@ class CameraProcessor:
                     )
 
                 self._shared.vac_json_id = self._re_handler.get_json_id()
+
                 if not self._shared.charger_position:
                     self._shared.charger_position = (
                         self._re_handler.get_charger_position()
@@ -202,6 +196,11 @@ class CameraProcessor:
     """
 
     def load_translations(self, language: str) -> JsonType:
+        """
+        Load the user selected language json file and return it.
+        @param language:
+        @return: json format
+        """
         with open(f"{language}.json", "r") as file:
             translations = json.load(file)
         return translations

@@ -162,8 +162,8 @@ class ValetudoCamera(Camera):
     def __init__(self, hass, device_info):
         super().__init__()
         self.hass = hass
-        self._attr_model = "Valetudo Vacuum Camera"
-        self._attr_brand = "Valetudo Vacuums"
+        self._attr_model = "Valetudo Vacuums"
+        self._attr_brand = "Valetudo Vacuum Camera"
         self._attr_name = "Camera"
         self._attr_is_on = True
         self._directory_path = os.getcwd()  # get Home Assistant path

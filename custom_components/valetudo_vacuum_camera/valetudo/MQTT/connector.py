@@ -64,11 +64,11 @@ class ValetudoConnector:
                 _LOGGER.debug(
                     f"{self._file_name}: Processing {data_type} data from MQTT."
                 )
-                if self._img_payload:
+                if data_type == "Hypfer":
                     json_data = zlib.decompress(payload).decode("utf-8")
                     result = json.loads(json_data)
                 else:
-                    payload_decompressed = gzip.decompress(payload).decode("utf-8")
+                    payload_decompressed = gzip.decompress(payload)
                     self._rrm_json = self._rrm_data.parse_data(
                         payload=payload_decompressed, pixels=True
                     )
@@ -202,6 +202,7 @@ class ValetudoConnector:
                 tmp_data = json.loads(self._payload)
                 self._mqtt_vac_re_stat = tmp_data.get("state", None)
                 self._mqtt_vac_battery_level = tmp_data.get("battery_level", None)
+                self._mqtt_vac_connect_state = "ready"
                 _LOGGER.info(
                     f"{self._mqtt_topic}: Received vacuum {self._mqtt_vac_re_stat} status."
                 )

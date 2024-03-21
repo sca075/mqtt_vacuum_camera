@@ -12,7 +12,7 @@ import logging
 import uuid
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageOps
 
 from custom_components.valetudo_vacuum_camera.types import (
     Color,
@@ -58,6 +58,9 @@ class ReImageHandler(object):
         self.trim_left = None  # Trim left
         self.trim_right = None  # Trim right
         self.trim_up = None  # Trim up
+        self.zooming = False  # Zooming flag
+        self.offset_x = 0  # offset x for the aspect ratio.
+        self.offset_y = 0  # offset y for the aspect ratio.
 
     async def auto_crop_and_trim_array(
         self,
@@ -150,44 +153,56 @@ class ReImageHandler(object):
             )
             del center_x, center_y, trim_d, trim_u, trim_l, trim_r
             # Store Crop area of the original image_array we will use from the next frame.
-            self.auto_crop = (
+            self.auto_crop = [
                 self.trim_left,
                 self.trim_up,
                 self.trim_right,
                 self.trim_down,
+            ]
+        if self.shared.vacuum_state == "cleaning" and self.shared.image_auto_zoom:
+            # Zoom the image based on the robot's position.
+            _LOGGER.debug(
+                f"{self.shared.file_name}: Zooming the image on room {self.robot_in_room['room']}."
             )
-        # Apply the auto-calculated trims to the rotated image
-        trimmed = image_array[
-            self.auto_crop[1] : self.auto_crop[3], self.auto_crop[0] : self.auto_crop[2]
-        ]
+            trim_left = self.robot_in_room["left"] - margin_size
+            trim_right = self.robot_in_room["right"] + margin_size
+            trim_up = self.robot_in_room["up"] - margin_size
+            trim_down = self.robot_in_room["down"] + margin_size
+            trimmed = image_array[trim_up:trim_down, trim_left:trim_right]
+        else:
+            # Apply the auto-calculated trims to the rotated image
+            trimmed = image_array[
+                self.auto_crop[1] : self.auto_crop[3],
+                self.auto_crop[0] : self.auto_crop[2],
+            ]
         del image_array
         # Rotate the cropped image based on the given angle
         if rotate == 90:
             rotated = np.rot90(trimmed, 1)
-            self.crop_area = (
+            self.crop_area = [
                 self.trim_left,
                 self.trim_up,
                 self.trim_right,
                 self.trim_down,
-            )
+            ]
         elif rotate == 180:
             rotated = np.rot90(trimmed, 2)
             self.crop_area = self.auto_crop
         elif rotate == 270:
             rotated = np.rot90(trimmed, 3)
-            self.crop_area = (
+            self.crop_area = [
                 self.trim_left,
                 self.trim_up,
                 self.trim_right,
                 self.trim_down,
-            )
+            ]
         else:
             rotated = trimmed
             self.crop_area = self.auto_crop
         del trimmed
-        _LOGGER.debug("Auto Crop and Trim Box data: %s", self.crop_area)
-        self.crop_img_size = (rotated.shape[1], rotated.shape[0])
-        _LOGGER.debug("Auto Crop and Trim image size: %s", self.crop_img_size)
+        _LOGGER.debug("Auto Trim Box data: %s", self.crop_area)
+        self.crop_img_size = [rotated.shape[1], rotated.shape[0]]
+        _LOGGER.debug("Trimmed image size: %s", self.crop_img_size)
         return rotated
 
     def extract_room_properties(self, json_data: JsonType, destinations: JsonType):
@@ -495,6 +510,44 @@ class ReImageHandler(object):
                 )
                 pil_img = Image.fromarray(img_np_array, mode="RGBA")
                 del img_np_array  # unload memory
+                # reduce the image size if the zoomed image is bigger then the original.
+                if (
+                    self.shared.image_auto_zoom
+                    and self.shared.vacuum_state == "cleaning"
+                    and self.zooming
+                    and self.shared.image_zoom_lock_ratio
+                    or self.shared.image_aspect_ratio != "None"
+                ):
+                    width = pil_img.width
+                    height = pil_img.height
+                    if (
+                        self.shared.image_aspect_ratio != "None"
+                        and width > 0
+                        and height > 0
+                    ):
+                        wsf, hsf = [
+                            int(x) for x in self.shared.image_aspect_ratio.split(",")
+                        ]
+                        new_aspect_ratio = wsf / hsf
+                        aspect_ratio = width / height
+                        if aspect_ratio > new_aspect_ratio:
+                            new_width = int(pil_img.height * new_aspect_ratio)
+                            new_height = pil_img.height
+                        else:
+                            new_width = pil_img.width
+                            new_height = int(pil_img.width / new_aspect_ratio)
+                        resized = ImageOps.pad(pil_img, (new_width, new_height))
+                        self.crop_img_size[0], self.crop_img_size[1] = (
+                            await self.async_map_coordinates_offset(
+                                wsf, hsf, new_width, new_height
+                            )
+                        )
+                        _LOGGER.debug(
+                            f"{self.shared.file_name}: Image Aspect Ratio ({wsf}, {hsf}): {new_width}x{new_height}"
+                        )
+                        return resized
+                    else:
+                        return ImageOps.pad(pil_img, (width, height))
                 return pil_img
 
         except Exception as e:
@@ -554,6 +607,10 @@ class ReImageHandler(object):
                     "in_room": self.robot_in_room["room"],
                 }
                 return temp
+            # if self.active_zones and self.robot_in_room["id"] < len(
+            #         self.active_zones
+            # ):
+            #     self.zooming = bool(self.active_zones[self.robot_in_room["id"] + 1])
         # else we need to search and use the async method.
         _LOGGER.debug("The robot changed room.. searching..")
         for room in self.rooms_pos:
@@ -599,20 +656,20 @@ class ReImageHandler(object):
 
             vacuum_points = [
                 {
-                    "x": (self.crop_area[0] * 10),
-                    "y": (self.crop_area[1] * 10),
+                    "x": ((self.crop_area[0] + self.offset_x) * 10),
+                    "y": ((self.crop_area[1] + self.offset_y) * 10),
                 },  # Top-left corner 0
                 {
-                    "x": (self.crop_area[2] * 10),
-                    "y": (self.crop_area[1] * 10),
+                    "x": ((self.crop_area[2] - self.offset_x) * 10),
+                    "y": ((self.crop_area[1] + self.offset_y) * 10),
                 },  # Top-right corner 1
                 {
-                    "x": (self.crop_area[2] * 10),
-                    "y": (self.crop_area[3] * 10),
+                    "x": ((self.crop_area[2] - self.offset_x) * 10),
+                    "y": ((self.crop_area[3] - self.offset_y) * 10),
                 },  # Bottom-right corner 2
                 {
-                    "x": (self.crop_area[0] * 10),
-                    "y": (self.crop_area[3] * 10),
+                    "x": ((self.crop_area[0] + self.offset_x) * 10),
+                    "y": ((self.crop_area[3] - self.offset_y) * 10),
                 },  # Bottom-left corner (optional)3
             ]
 
@@ -659,8 +716,93 @@ class ReImageHandler(object):
         else:
             return self.calibration_data
 
+    async def async_map_coordinates_offset(
+        self, wsf: int, hsf: int, width: int, height: int
+    ) -> tuple[int, int]:
+        """
+        Convert the coordinates to the map.
+        :param wsf: Width scale factor.
+        :param hsf: Height scale factor.
+        :param width: Width of the image.
+        :param height: Height of the image.
+        """
+
+        rotation = self.shared.image_rotate
+
+        _LOGGER.debug(f"Image Size: Width: {width} Height: {height}")
+        _LOGGER.debug(
+            f"Image Crop Size: Width: {self.crop_img_size[0]} Height: {self.crop_img_size[1]}"
+        )
+        if wsf == 1 and hsf == 1:
+            if rotation == 0 or rotation == 180:
+                self.offset_y = (width - self.crop_img_size[0]) // 2
+                self.offset_x = self.crop_img_size[1] - height
+            elif rotation == 90 or rotation == 270:
+                self.offset_y = (self.crop_img_size[0] - width) // 2
+                self.offset_x = self.crop_img_size[1] - height
+            _LOGGER.debug(
+                f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
+            )
+            return width, height
+        elif wsf == 2 and hsf == 1:
+            if rotation == 0 or rotation == 180:
+                self.offset_y = width - self.crop_img_size[0]
+                self.offset_x = height - self.crop_img_size[1]
+            elif rotation == 90 or rotation == 270:
+                self.offset_x = width - self.crop_img_size[0]
+                self.offset_y = height - self.crop_img_size[1]
+            _LOGGER.debug(
+                f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
+            )
+            return width, height
+        elif wsf == 3 and hsf == 2:
+            if rotation == 0 or rotation == 180:
+                self.offset_x = (width - self.crop_img_size[0]) // 2
+                self.offset_y = height - self.crop_img_size[1]
+            elif rotation == 90 or rotation == 270:
+                self.offset_y = (self.crop_img_size[0] - width) // 2
+                self.offset_x = self.crop_img_size[1] - height
+            _LOGGER.debug(
+                f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
+            )
+            return width, height
+        elif wsf == 5 and hsf == 4:
+            if rotation == 0 or rotation == 180:
+                self.offset_y = (width - self.crop_img_size[0]) // 2
+                self.offset_x = self.crop_img_size[1] - height
+            elif rotation == 90 or rotation == 270:
+                self.offset_y = (self.crop_img_size[0] - width) // 2
+                self.offset_x = self.crop_img_size[1] - height
+            _LOGGER.debug(
+                f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
+            )
+            return width, height
+        elif wsf == 9 and hsf == 16:
+            if rotation == 0 or rotation == 180:
+                self.offset_y = width - self.crop_img_size[0]
+                self.offset_x = height - self.crop_img_size[1]
+            elif rotation == 90 or rotation == 270:
+                self.offset_x = width - self.crop_img_size[0]
+                self.offset_y = height - self.crop_img_size[1]
+            _LOGGER.debug(
+                f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
+            )
+            return width, height
+        elif wsf == 16 and hsf == 9:
+            if rotation == 0 or rotation == 180:
+                self.offset_y = width - self.crop_img_size[0]
+                self.offset_x = height - self.crop_img_size[1]
+            elif rotation == 90 or rotation == 270:
+                self.offset_x = width - self.crop_img_size[0]
+                self.offset_y = height - self.crop_img_size[1]
+            _LOGGER.debug(
+                f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
+            )
+            return width, height
+        else:
+            return width, height
+
     async def async_copy_array(self, original_array: NumpyArray) -> NumpyArray:
         """Copy the numpy array."""
         _LOGGER.debug(f"{self.shared.file_name}: Copying the array.")
-        copied_array = np.copy(original_array)
-        return copied_array
+        return np.copy(original_array)
