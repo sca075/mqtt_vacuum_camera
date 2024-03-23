@@ -181,10 +181,11 @@
     "camera_config_action": {
       "options": {
         "opt_1": "Konfigurovat obraz",
-        "opt_2": "Konfigurovat obecné barvy",
-        "opt_3": "Barvy místností 1 až 8",
-        "opt_4": "Barvy místností 9 až 16",
-        "opt_5": "Zkopírovat záznamy kamery do www"
+        "opt_2": "Konfigurace textu stavu",
+        "opt_3": "Konfigurovat obecné barvy",
+        "opt_4": "Barvy místností 1 až 8",
+        "opt_5": "Barvy místností 9 až 16",
+        "opt_6": "Zkopírovat záznamy kamery do www"
       }
     }
   },

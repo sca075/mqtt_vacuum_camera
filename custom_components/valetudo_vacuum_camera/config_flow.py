@@ -312,13 +312,13 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             )
             aspec_ratio_selector = SelectSelectorConfig(
                 options=[
-                    {'label': 'Original Ratio.', 'value': 'None'},
-                    {'label': '1:1', 'value': '1, 1'},
-                    {'label': '2:1', 'value': '2, 1'},
-                    {'label': '3:2', 'value': '3, 2'},
-                    {'label': '5:4', 'value': '5, 4'},
-                    {'label': '9:16', 'value': '9, 16'},
-                    {'label': '16:9', 'value': '16, 9'},
+                    {"label": "Original Ratio.", "value": "None"},
+                    {"label": "1:1", "value": "1, 1"},
+                    {"label": "2:1", "value": "2, 1"},
+                    {"label": "3:2", "value": "3, 2"},
+                    {"label": "5:4", "value": "5, 4"},
+                    {"label": "9:16", "value": "9, 16"},
+                    {"label": "16:9", "value": "16, 9"},
                 ],
                 mode=SelectSelectorMode.DROPDOWN,
             )
@@ -333,7 +333,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     ): cv.string,
                     vol.Required(
                         CONF_ASPECT_RATIO,
-                        default=config_entry.options.get("aspect_ratio")
+                        default=config_entry.options.get("aspect_ratio"),
                     ): SelectSelector(aspec_ratio_selector),
                     vol.Optional(
                         CONF_AUTO_ZOOM,

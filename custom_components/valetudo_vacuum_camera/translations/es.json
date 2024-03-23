@@ -31,7 +31,6 @@
           "rotate_image": "Rotar",
           "margins": "150",
           "auto_zoom": "Activar el zoom automático",
-          "get_svg_file": "Exportar capa base SVG.",
           "enable_www_snapshots": "Exportar instantáneas PNG."
         },
         "data_description": {
