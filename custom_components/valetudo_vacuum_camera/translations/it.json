@@ -27,7 +27,6 @@
           "rotate_image": "Ruotare",
           "margins": "150",
           "auto_zoom": "Abilita Zoom Automatico",
-          "get_svg_file": "Esporta SVG del layer basilare.",
           "enable_www_snapshots": "Esporta snapshot PNG."
         },
         "data_description": {
@@ -177,10 +176,11 @@
     "camera_config_action": {
       "options": {
         "opt_1": "Configurazione dell''' Immagine",
-        "opt_2": "Colori Generali",
-        "opt_3": "Colori Stanze da 1 a 8",
-        "opt_4": "Colori Stanze da 9 a 16",
-        "opt_5": "Copia i logs nella cartella www"
+        "opt_2": "Configura Testo di Stato",
+        "opt_3": "Colori Generali",
+        "opt_4": "Colori Stanze da 1 a 8",
+        "opt_5": "Colori Stanze da 9 a 16",
+        "opt_6": "Copia i logs nella cartella www"
       }
     }
   },

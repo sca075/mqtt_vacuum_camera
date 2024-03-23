@@ -27,7 +27,6 @@
           "rotate_image": "旋轉",
           "margins": "150",
           "auto_zoom": "启用自动缩放",
-          "get_svg_file": "匯出SVG基礎層。",
           "enable_www_snapshots": "匯出PNG快照。"
         },
         "data_description": {
@@ -177,10 +176,11 @@
     "camera_config_action": {
       "options": {
         "opt_1": "設定圖像",
-        "opt_2": "設定一般顏色",
-        "opt_3": "設定房間1至8的顏色",
-        "opt_4": "設定房間9至16的顏色",
-        "opt_5": "將攝影機日誌複製到www"
+        "opt_2": "配置狀態文字",
+        "opt_3": "設定一般顏色",
+        "opt_4": "設定房間1至8的顏色",
+        "opt_5": "設定房間9至16的顏色",
+        "opt_6": "將攝影機日誌複製到www"
       }
     }
   },

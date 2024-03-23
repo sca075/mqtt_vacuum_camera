@@ -176,10 +176,11 @@
     "camera_config_action": {
       "options": {
         "opt_1": "Skonfiguruj Obraz",
-        "opt_2": "Konfiguruj kolory ogólne",
-        "opt_3": "Kolory pokoi od 1 do 8",
-        "opt_4": "Kolory pokoi od 9 do 16",
-        "opt_5": "Kopiuj dzienniki kamery do www"
+        "opt_2": "Konfiguruj tekst statusu",
+        "opt_3": "Konfiguruj kolory ogólne",
+        "opt_4": "Kolory pokoi od 1 do 8",
+        "opt_5": "Kolory pokoi od 9 do 16",
+        "opt_6": "Kopiuj dzienniki kamery do www"
       }
     }
   },

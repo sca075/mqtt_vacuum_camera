@@ -27,7 +27,6 @@
           "rotate_image": "Drehen",
           "margins": "150",
           "auto_zoom": "Auto-Zoom aktivieren",
-          "get_svg_file": "Exportieren Grundschicht SVG.",
           "enable_www_snapshots": "Exportieren PNG-Schnappschüsse."
         },
         "data_description": {
@@ -177,10 +176,11 @@
     "camera_config_action": {
       "options": {
         "opt_1": "Bild konfigurieren",
-        "opt_2": "Allgemeine Farben konfigurieren",
-        "opt_3": "Farben für Zimmer 1 bis 8",
-        "opt_4": "Farben für Zimmer 9 bis 16",
-        "opt_5": "Kameraprotokolle in www kopieren"
+        "opt_2": "Status Text Konfigurieren",
+        "opt_3": "Allgemeine Farben konfigurieren",
+        "opt_4": "Farben für Zimmer 1 bis 8",
+        "opt_5": "Farben für Zimmer 9 bis 16",
+        "opt_6": "Kameraprotokolle in www kopieren"
       }
     }
   },

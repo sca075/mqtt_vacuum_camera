@@ -31,7 +31,6 @@
           "rotate_image": "Roter",
           "margins": "150",
           "auto_zoom": "Aktiver automatisk zoom",
-          "get_svg_file": "Eksporter SVG base lag.",
           "enable_www_snapshots": "Eksporter PNG øyeblikksbilder."
         },
         "data_description": {
@@ -181,10 +180,11 @@
     "camera_config_action": {
       "options": {
         "opt_1": "Konfigurer bilde",
-        "opt_2": "Konfigurer generelle farger",
-        "opt_3": "Farger Rom 1 til 8",
-        "opt_4": "Farger Rom 9 til 16",
-        "opt_5": "Kopier kamera logger til www"
+        "opt_2": "Konfigurer status Tekst",
+        "opt_3": "Konfigurer generelle farger",
+        "opt_4": "Farger Rom 1 til 8",
+        "opt_5": "Farger Rom 9 til 16",
+        "opt_6": "Kopier kamera logger til www"
       }
     }
   },
