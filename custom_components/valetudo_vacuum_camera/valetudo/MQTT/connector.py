@@ -1,5 +1,5 @@
 """
-Version 1.5.9
+Version: v2024.04.01
 - Removed the PNG decode, the json is extracted from map-data instead of map-data hass.
 - Tested no influence on the camera performance.
 - Added gzip library used in Valetudo RE data compression.
@@ -24,7 +24,7 @@ _QOS = 0
 
 
 class ValetudoConnector:
-    """Valetudo MQTT Connector."""
+    """Valetudo Camera MQTT Connector."""
 
     def __init__(self, mqtt_topic, hass, camera_shared):
         self._hass = hass
@@ -67,12 +67,14 @@ class ValetudoConnector:
                 if data_type == "Hypfer":
                     json_data = zlib.decompress(payload).decode("utf-8")
                     result = json.loads(json_data)
-                else:
+                elif data_type == "Rand256":
                     payload_decompressed = gzip.decompress(payload)
                     self._rrm_json = self._rrm_data.parse_data(
                         payload=payload_decompressed, pixels=True
                     )
                     result = self._rrm_json
+                else:
+                    result = None
 
                 _LOGGER.info(
                     f"{self._file_name}: Extraction of {data_type} JSON Complete."
@@ -112,7 +114,7 @@ class ValetudoConnector:
             return False
         return True
 
-    async def get_destinations(self):
+    async def get_destinations(self) -> any:
         """Return the destinations used only for Rand256."""
         return self._rrm_destinations
 
@@ -133,95 +135,158 @@ class ValetudoConnector:
             elif self._rrm_payload:
                 file_data = self._rrm_payload
             with open(
-                f"{str(os.getcwd())}/{STORAGE_DIR}/{file_name}.raw",
+                f"{str(os.getcwd())}/{STORAGE_DIR}/valetudo_camera/{file_name}.raw",
                 "wb",
             ) as file:
                 file.write(file_data)
             _LOGGER.info(f"Saved image data from MQTT in {file_name}.raw!")
 
+    async def rand256_handle_image_payload(self, msg):
+        """
+        Handle new MQTT messages.
+        map-data is for Rand256.
+        """
+        if not self._data_in:
+            _LOGGER.info(
+                f"Received Valetudo RE {self._mqtt_topic} image data from MQTT"
+            )
+            self._rrm_payload = (
+                msg.payload
+            )  # RRM Image data update the received payload
+            self._data_in = True
+            self._is_rrm = True
+            if self._do_it_once:
+                _LOGGER.debug(
+                    "Do it once.. request destinations to: %s", self._mqtt_topic
+                )
+                await self.rrm_publish_destinations()
+                self._do_it_once = False
+
+    async def hypfer_handle_image_data(self, msg) -> None:
+        """
+        Handle new MQTT messages.
+        MapData/map_data is for Hypfer.
+        @param msg: MQTT message
+        """
+        if not self._data_in:
+            _LOGGER.info(f"Received {self._file_name} image data from MQTT")
+            self._img_payload = msg.payload
+            self._data_in = True
+            self._is_rrm = False
+
+    async def hypfer_handle_status_payload(self, msg) -> None:
+        """
+        Handle new MQTT messages.
+        /StatusStateAttribute/status" is for Hypfer.
+        @param msg: MQTT message
+        """
+        self._payload = msg.payload
+        if self._payload:
+            self._mqtt_vac_stat = bytes.decode(self._payload, "utf-8")
+            _LOGGER.info(
+                f"{self._file_name}: Received vacuum {self._mqtt_vac_stat} status."
+            )
+            if self._mqtt_vac_stat != "docked":
+                self._ignore_data = False
+
+    async def hypfer_handle_connect_state(self, msg) -> None:
+        """
+        Handle new MQTT messages.
+        /$state is for Hypfer.
+        @param msg: MQTT message
+        """
+        self._payload = msg.payload
+        if self._payload:
+            self._mqtt_vac_connect_state = bytes.decode(self._payload, "utf-8")
+            _LOGGER.info(
+                f"{self._mqtt_topic}: Received vacuum connection status: {self._mqtt_vac_connect_state}."
+            )
+        if self._ignore_data and self._mqtt_vac_connect_state != "ready":
+            self._ignore_data = False
+            self._data_in = True
+
+    async def hypfer_handle_battery_level(self, msg) -> None:
+        """
+        Handle new MQTT messages.
+        /BatteryStateAttribute/level is for Hypfer.
+        @param msg: MQTT message
+        """
+        self._payload = msg.payload
+        if self._payload:
+            self._mqtt_vac_battery_level = int(bytes.decode(self._payload, "utf-8"))
+            _LOGGER.info(
+                f"{self._file_name}: Received vacuum battery level: {self._mqtt_vac_battery_level }%."
+            )
+
+    async def rand256_handle_statuses(self, msg) -> None:
+        """
+        Handle new MQTT messages.
+        /state of ValetudoRe.
+        @param msg: MQTT message
+        """
+        self._payload = msg.payload
+        if self._payload:
+            tmp_data = json.loads(self._payload)
+            self._mqtt_vac_connect_state = "ready"  # the vacuum is connected.
+            self._mqtt_vac_re_stat = tmp_data.get("state", None)
+            self._mqtt_vac_battery_level = tmp_data.get("battery_level", None)
+            _LOGGER.info(
+                f"{self._file_name}: Received vacuum {self._mqtt_vac_re_stat} status "
+                f"and battery level: {self._mqtt_vac_battery_level}%."
+            )
+            if (
+                self._mqtt_vac_stat != "docked"
+                or int(self._mqtt_vac_battery_level) <= 100
+            ):
+                # self._ignore_data = False
+                self._data_in = True
+
+    async def hypfer_handle_errors(self, msg) -> None:
+        """
+        Handle new MQTT messages.
+        /StatusStateAttribute/error_description is for Hypfer.
+        @param msg: MQTT message
+        """
+        self._payload = msg.payload
+        self._mqtt_vac_err = bytes.decode(msg.payload, "utf-8")
+        _LOGGER.info(f"{self._mqtt_topic}: Received vacuum Error: {self._mqtt_vac_err}")
+
+    async def rand256_handle_destinations(self, msg) -> None:
+        self._payload = msg.payload
+        tmp_data = bytes.decode(msg.payload, "utf-8")
+        self._rrm_destinations = tmp_data
+        _LOGGER.info(
+            f"{self._file_name}: Received vacuum destinations: {self._rrm_destinations}"
+        )
+
     @callback
     async def async_message_received(self, msg) -> None:
         """
         Handle new MQTT messages.
-        MapData/map_data is for Hypfer, and map-data is for ValetudoRe.
+        MapData/map_data is for Hypfer, and map-data is for Rand256.
         """
         self._rcv_topic = msg.topic
         if self._rcv_topic == f"{self._mqtt_topic}/map_data":
-            if not self._data_in:
-                _LOGGER.info(
-                    f"Received Valetudo RE {self._mqtt_topic} image data from MQTT"
-                )
-                self._rrm_payload = (
-                    msg.payload
-                )  # RRM Image data update the received payload
-                self._data_in = True
-                self._is_rrm = True
-                if self._do_it_once:
-                    _LOGGER.debug(
-                        "Do it once.. request destinations to: %s", self._mqtt_topic
-                    )
-                    await self.rrm_publish_destinations()
-                    self._do_it_once = False
+            await self.rand256_handle_image_payload(msg)
         elif (self._rcv_topic == f"{self._mqtt_topic}/MapData/map-data") and (
             not self._ignore_data
         ):
-            if not self._data_in:
-                _LOGGER.info(f"Received {self._file_name} image data from MQTT")
-                self._img_payload = msg.payload
-                self._data_in = True
-                self._is_rrm = False
+            await self.hypfer_handle_image_data(msg)
         elif self._rcv_topic == f"{self._mqtt_topic}/StatusStateAttribute/status":
-            self._payload = msg.payload
-            if self._payload:
-                self._mqtt_vac_stat = bytes.decode(self._payload, "utf-8")
-                _LOGGER.info(
-                    f"{self._file_name}: Received vacuum {self._mqtt_vac_stat} status."
-                )
-                if self._mqtt_vac_stat != "docked":
-                    self._ignore_data = False
+            await self.hypfer_handle_status_payload(msg)
         elif self._rcv_topic == f"{self._mqtt_topic}/$state":
-            self._payload = msg.payload
-            if self._payload:
-                self._mqtt_vac_connect_state = bytes.decode(self._payload, "utf-8")
-                _LOGGER.info(
-                    f"{self._mqtt_topic}: Received vacuum connection status: {self._mqtt_vac_connect_state}."
-                )
-            if self._ignore_data and self._mqtt_vac_connect_state != "ready":
-                self._ignore_data = False
-                self._data_in = True
+            await self.hypfer_handle_connect_state(msg)
         elif self._rcv_topic == f"{self._mqtt_topic}/BatteryStateAttribute/level":
-            self._payload = msg.payload
-            if self._payload:
-                self._mqtt_vac_battery_level = int(bytes.decode(self._payload, "utf-8"))
-                _LOGGER.info(
-                    f"{self._file_name}: Received vacuum battery level: {self._mqtt_vac_battery_level }%."
-                )
+            await self.hypfer_handle_battery_level(msg)
         elif self._rcv_topic == f"{self._mqtt_topic}/state":  # for ValetudoRe
-            self._payload = msg.payload
-            if self._payload:
-                tmp_data = json.loads(self._payload)
-                self._mqtt_vac_re_stat = tmp_data.get("state", None)
-                self._mqtt_vac_battery_level = tmp_data.get("battery_level", None)
-                self._mqtt_vac_connect_state = "ready"
-                _LOGGER.info(
-                    f"{self._mqtt_topic}: Received vacuum {self._mqtt_vac_re_stat} status."
-                )
+            await self.rand256_handle_statuses(msg)
         elif (
             self._rcv_topic
             == f"{self._mqtt_topic}/StatusStateAttribute/error_description"
         ):
-            self._payload = msg.payload
-            self._mqtt_vac_err = bytes.decode(msg.payload, "utf-8")
-            _LOGGER.info(
-                f"{self._mqtt_topic}: Received vacuum Error: {self._mqtt_vac_err}"
-            )
+            await self.hypfer_handle_errors(msg)
         elif self._rcv_topic == f"{self._mqtt_topic}/destinations":
-            self._payload = msg.payload
-            tmp_data = bytes.decode(msg.payload, "utf-8")
-            self._rrm_destinations = tmp_data
-            _LOGGER.info(
-                f"{self._file_name}: Received vacuum destinations: {self._rrm_destinations}"
-            )
+            await self.rand256_handle_destinations(msg)
 
     async def async_subscribe_to_topics(self) -> None:
         """Subscribe to the MQTT topics for Hypfer and ValetudoRe."""

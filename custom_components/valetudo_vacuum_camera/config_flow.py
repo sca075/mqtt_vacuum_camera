@@ -1,4 +1,4 @@
-"""config_flow ver.1.6.0
+"""config_flow v2024.04.01
 IMPORTANT: When adding new options to the camera
 it will be mandatory to update const.py update_options.
 Format of the new constants must be CONST_NAME = "const_name" update also
@@ -860,7 +860,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         ha_storage = STORAGE_DIR
         camera_id = self.unique_id.split("_")
         file_name = camera_id[0].lower() + ".zip"
-        source_path = ha_dir + "/" + ha_storage + "/" + file_name
+        source_path = ha_dir + "/" + ha_storage + "/valetudo_camera/" + file_name
         destination_path = ha_dir + "/" + "www" + "/" + file_name
         if user_input is None:
             shutil.copy(source_path, destination_path)

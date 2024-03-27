@@ -1,5 +1,6 @@
 """
-Camera Version v1.6.0
+Camera
+Version: v2024.04.01
 Image Processing Threading implemented on Version 1.5.7.
 """
 
@@ -167,7 +168,6 @@ class ValetudoCamera(Camera):
         self._attr_name = "Camera"
         self._attr_is_on = True
         self._directory_path = os.getcwd()  # get Home Assistant path
-        self._snapshots = Snapshots(f"{self._directory_path}/{STORAGE_DIR}")
         self._shared = CameraShared()  # Camera Shared data between threads.
         self._mqtt_listen_topic = device_info.get(CONF_VACUUM_CONNECTION_STRING)
         if self._mqtt_listen_topic:
@@ -183,13 +183,12 @@ class ValetudoCamera(Camera):
                 f"{round((ProcInsp().psutil.virtual_memory().available / (1024 * 1024)), 1)}"
                 f" and In Use: {round((ProcInsp().psutil.virtual_memory().used / (1024 * 1024)), 1)}"
             )
-            self.snapshot_img = (
-                f"{self._directory_path}/{STORAGE_DIR}/{self._shared.file_name}.png"
-            )
-            self.log_file = f"{self._directory_path}/www/{self._shared.file_name}.zip"
-            self._shared.svg_path = (
-                f"{self._directory_path}/www/{self._shared.file_name}.svg"
-            )
+            self._storage_path = f"{self._directory_path}/{STORAGE_DIR}/valetudo_camera"
+            if not os.path.exists(self._storage_path):
+                os.makedirs(self._storage_path)
+            self._snapshots = Snapshots(self._storage_path)
+            self.snapshot_img = f"{self._storage_path}/{self._shared.file_name}.png"
+            self.log_file = f"{self._storage_path}/{self._shared.file_name}.zip"
             self._attr_unique_id = device_info.get(
                 CONF_UNIQUE_ID,
                 get_vacuum_unique_id_from_mqtt_topic(self._mqtt_listen_topic),
@@ -396,7 +395,7 @@ class ValetudoCamera(Camera):
             if self._enable_snapshots:
                 if os.path.isfile(self.snapshot_img):
                     shutil.copy(
-                        f"{self._directory_path}/{STORAGE_DIR}/{self._shared.file_name}.png",
+                        f"{self._storage_path}/{self._shared.file_name}.png",
                         f"{self._directory_path}/www/snapshot_{self._shared.file_name}.png",
                     )
                 _LOGGER.info(f"{self._shared.file_name}: Camera Snapshot saved on WWW!")

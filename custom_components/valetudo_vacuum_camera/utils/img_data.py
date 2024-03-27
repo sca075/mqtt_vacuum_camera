@@ -3,7 +3,7 @@ Collections of Json and List routines
 ImageData is part of the Image_Handler
 used functions to search data in the json
 provided for the creation of the new camera frame
-Last changes on Version: 1.5.7.1
+Version: v2024.04
 """
 
 import logging
@@ -45,15 +45,15 @@ class ImageData:
 
     @staticmethod
     def sublist(lst, n):
-        """ Sub lists of specific n number of elements """
-        return [lst[i: i + n] for i in range(0, len(lst), n)]
+        """Sub lists of specific n number of elements"""
+        return [lst[i : i + n] for i in range(0, len(lst), n)]
 
     @staticmethod
     def sublist_join(lst, n):
-        """ Join the lists in a unique list of n elements """
+        """Join the lists in a unique list of n elements"""
         arr = np.array(lst)
         num_windows = len(lst) - n + 1
-        result = [arr[i: i + n].tolist() for i in range(num_windows)]
+        result = [arr[i : i + n].tolist() for i in range(num_windows)]
         return result
 
     """ 
@@ -80,7 +80,7 @@ class ImageData:
                 if layer_type == "floor":
                     active_list.append(0)
                 if layer_type == "segment":
-                    active_list.append(int(active_type['active']))
+                    active_list.append(int(active_type["active"]))
 
             for value in json_obj.items():
                 ImageData.find_layers(value, layer_dict, active_list)
@@ -164,14 +164,16 @@ class ImageData:
     """
 
     @staticmethod
-    def from_rrm_to_compressed_pixels(pixel_data, image_width=0, image_height=0, image_top=0, image_left=0):
+    def from_rrm_to_compressed_pixels(
+        pixel_data, image_width=0, image_height=0, image_top=0, image_left=0
+    ):
         compressed_pixels = []
 
         tot_pixels = 0
         current_x, current_y, count = None, None, 0
         for index in pixel_data:
             x = (index % image_width) + image_left
-            y = ((image_height-1) - (index // image_width)) + image_top
+            y = ((image_height - 1) - (index // image_width)) + image_top
 
             if current_x == x and current_y == y:
                 count += 1
@@ -186,8 +188,8 @@ class ImageData:
 
     @staticmethod
     def calculate_max_x_y(coord_array):
-        max_x = -float('inf')
-        max_y = -float('inf')
+        max_x = -float("inf")
+        max_y = -float("inf")
 
         for x, y, count in coord_array:
             max_x = max(max_x, x)
@@ -205,7 +207,7 @@ class ImageData:
             if i % 2 == 0:
                 transformed_points.append(round(p / 10))
             else:
-                transformed_points.append(round((dimension_mm-p) / 10))
+                transformed_points.append(round((dimension_mm - p) / 10))
         return transformed_points
 
     @staticmethod
@@ -229,12 +231,13 @@ class ImageData:
     def get_rrm_goto_predicted_path(json_data):
         try:
             predicted_path = json_data.get("goto_predicted_path", {})
-            points = predicted_path['points']
+            points = predicted_path["points"]
         except KeyError:
             return None
         else:
             predicted_path = ImageData.sublist_join(
-                ImageData.rrm_valetudo_path_array(points), 2)
+                ImageData.rrm_valetudo_path_array(points), 2
+            )
         return predicted_path
 
     @staticmethod
@@ -298,7 +301,7 @@ class ImageData:
                         zone_data[3] // 10,
                         zone_data[0] // 10,
                         zone_data[3] // 10,
-                        ],
+                    ],
                     "type": "zone_clean",
                 }
                 formatted_zones.append(formatted_zone)
@@ -315,7 +318,7 @@ class ImageData:
                         zone_data[5] // 10,
                         zone_data[6] // 10,
                         zone_data[7] // 10,
-                        ],
+                    ],
                     "type": "no_go_area",
                 }
                 formatted_zones.append(formatted_zone)
@@ -326,11 +329,7 @@ class ImageData:
     def rrm_valetudo_lines(coordinates):
         formatted_lines = []
         for lines in coordinates:
-            line = [lines[0] // 10,
-                    lines[1] // 10,
-                    lines[2] // 10,
-                    lines[3] // 10
-                    ]
+            line = [lines[0] // 10, lines[1] // 10, lines[2] // 10, lines[3] // 10]
             formatted_lines.append(line)
         return formatted_lines
 
@@ -374,7 +373,9 @@ class ImageData:
         return img.get("pixels", {}).get("walls", [])
 
     @staticmethod
-    def get_rrm_segments(json_data, size_x, size_y, pos_top, pos_left, out_lines: bool = False):
+    def get_rrm_segments(
+        json_data, size_x, size_y, pos_top, pos_left, out_lines: bool = False
+    ):
         img = ImageData.get_rrm_image(json_data)
         seg_data = img.get("segments", [])
         seg_ids = seg_data.get("id")
@@ -382,16 +383,20 @@ class ImageData:
         outlines = []
         count_seg = 0
         for id_seg in seg_ids:
-            tmp_data = seg_data.get("pixels_seg_"+str(id_seg))
+            tmp_data = seg_data.get("pixels_seg_" + str(id_seg))
             segments.append(
-                ImageData.from_rrm_to_compressed_pixels(tmp_data,
-                                                        image_width=size_x,
-                                                        image_height=size_y,
-                                                        image_top=pos_top,
-                                                        image_left=pos_left)
+                ImageData.from_rrm_to_compressed_pixels(
+                    tmp_data,
+                    image_width=size_x,
+                    image_height=size_y,
+                    image_top=pos_top,
+                    image_left=pos_left,
+                )
             )
             if out_lines:
-                outlines.append(ImageData.get_rrm_max_min_rooms_coordinates(segments[count_seg]))
+                outlines.append(
+                    ImageData.get_rrm_max_min_rooms_coordinates(segments[count_seg])
+                )
             count_seg += 1
         if count_seg > 0:
             if out_lines:
@@ -426,7 +431,10 @@ class ImageData:
             max_y = max(max_y, y)  # Update max y coordinate
             min_x = min(min_x, x)  # Update min x coordinate
             min_y = min(min_y, y)  # Update min y coordinate
-        return (((max_x * 5)*10), ((max_y * 5)*10)), (((min_x * 5)*10), ((min_y * 5)*10))
+        return (((max_x * 5) * 10), ((max_y * 5) * 10)), (
+            ((min_x * 5) * 10),
+            ((min_y * 5) * 10),
+        )
 
     @staticmethod
     def convert_negative_angle(angle):
