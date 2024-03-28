@@ -1,0 +1,15 @@
+{
+  "entity_component": {
+    "_": {
+      "default": "mdi:video",
+      "state": {
+        "off": "mdi:video-off"
+      }
+    }
+  },
+  "services": {
+    "snapshot": "mdi:camera",
+    "turn_off": "mdi:video-off",
+    "turn_on": "mdi:video"
+  }
+}
