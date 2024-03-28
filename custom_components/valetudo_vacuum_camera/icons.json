@@ -1,7 +1,7 @@
 {
   "entity_component": {
     "valetudo_vacuum_camera": {
-      "default": "mdi:video",
+      "default": "mdi:video"
       }
     }
   },
