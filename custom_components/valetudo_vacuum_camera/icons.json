@@ -1,9 +1,4 @@
 {
-  "entity_component": {
-    "valetudo_vacuum_camera": {
-      "default": "mdi:video"
-    }
-  },
   "services": {
     "reload": "mdi:reload",
     "snapshot": "mdi:camera",
