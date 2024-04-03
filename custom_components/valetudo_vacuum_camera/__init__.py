@@ -1,11 +1,15 @@
 """valetudo vacuum camera"""
 
+import glob
 import logging
+import os
+import shutil
 
 from homeassistant import config_entries, core
 from homeassistant.components import mqtt
 from homeassistant.const import CONF_UNIQUE_ID, Platform
 from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.helpers.storage import STORAGE_DIR
 
 from custom_components.valetudo_vacuum_camera.common import (
     get_device_info,
@@ -181,6 +185,7 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
             )
 
     if config_entry.version == 2.3:
+        await move_data_to_valetudo_camera()
         old_data = {**config_entry.data}
         new_data = {"vacuum_config_entry": old_data["vacuum_config_entry"]}
         _LOGGER.debug(dict(new_data))
@@ -199,6 +204,20 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
             hass.config_entries.async_update_entry(
                 config_entry, data=new_data, options=new_options
             )
+    if config_entry.version == 2.4:
+        _LOGGER.debug(
+            "Starting migration data from .storage to valetudo_camera folder."
+        )
+        await move_data_to_valetudo_camera()
+        old_data = {**config_entry.data}
+        new_data = {"vacuum_config_entry": old_data["vacuum_config_entry"]}
+        _LOGGER.debug(dict(new_data))
+        old_options = {**config_entry.options}
+        if len(old_options) != 0:
+            config_entry.version = 3.0
+            hass.config_entries.async_update_entry(
+                config_entry, data=new_data, options=old_options
+            )
         else:
             _LOGGER.error(
                 "Please REMOVE and SETUP the Camera again. Error in migration process!!"
@@ -206,7 +225,7 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
             return False
 
     _LOGGER.info(
-        "Migration to config entry version %s successful", config_entry.version
+        f"Migration to config entry version %s successful {config_entry.version}"
     )
     return True
 
@@ -273,3 +292,29 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
         return False
     hass.data.setdefault(DOMAIN, {})
     return True
+
+
+async def move_data_to_valetudo_camera():
+    """Move files from .storage folder to valetudo_camera folder."""
+    # Define the paths
+    storage_folder = os.path.join(os.getcwd(), STORAGE_DIR)
+    valetudo_camera_folder = os.path.join(storage_folder, "valetudo_camera")
+
+    # Create the valetudo_camera folder if it doesn't exist
+    if not os.path.exists(valetudo_camera_folder):
+        os.makedirs(valetudo_camera_folder)
+        _LOGGER.debug("Created valetudo_camera folder.")
+
+        file_patterns = ["*.zip", "*.png", "*.log", "*.raw"]
+
+        # Move files matching the patterns to the valetudo_camera folder
+        for pattern in file_patterns:
+            files_to_move = glob.glob(os.path.join(storage_folder, pattern))
+            for file_path in files_to_move:
+                file_name = os.path.basename(file_path)
+                destination_path = os.path.join(valetudo_camera_folder, file_name)
+                if os.path.exists(file_path):
+                    shutil.move(file_path, destination_path)
+                    _LOGGER.debug(f"Moved {file_name} to valetudo_camera folder.")
+                else:
+                    _LOGGER.debug(f"File {file_name} not found in .storage folder.")

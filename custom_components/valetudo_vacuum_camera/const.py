@@ -1,6 +1,6 @@
 """Constants for the valetudo_vacuum_camera integration."""
 
-"""Version 1.6.0"""
+"""Version v2024.04"""
 
 """Required in Config_Flow"""
 PLATFORMS = ["camera"]

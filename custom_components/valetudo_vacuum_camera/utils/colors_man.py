@@ -1,4 +1,7 @@
-"""Colors RGBA Version 1.4.3"""
+"""
+Colors RGBA
+Version: v2024.04
+"""
 
 import logging
 

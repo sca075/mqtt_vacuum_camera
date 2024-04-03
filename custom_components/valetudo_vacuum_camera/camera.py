@@ -1,5 +1,6 @@
 """
-Camera Version v1.6.0
+Camera
+Version: v2024.04.01
 Image Processing Threading implemented on Version 1.5.7.
 """
 
@@ -167,7 +168,6 @@ class ValetudoCamera(Camera):
         self._attr_name = "Camera"
         self._attr_is_on = True
         self._directory_path = os.getcwd()  # get Home Assistant path
-        self._snapshots = Snapshots(f"{self._directory_path}/{STORAGE_DIR}")
         self._shared = CameraShared()  # Camera Shared data between threads.
         self._mqtt_listen_topic = device_info.get(CONF_VACUUM_CONNECTION_STRING)
         if self._mqtt_listen_topic:
@@ -183,13 +183,10 @@ class ValetudoCamera(Camera):
                 f"{round((ProcInsp().psutil.virtual_memory().available / (1024 * 1024)), 1)}"
                 f" and In Use: {round((ProcInsp().psutil.virtual_memory().used / (1024 * 1024)), 1)}"
             )
-            self.snapshot_img = (
-                f"{self._directory_path}/{STORAGE_DIR}/{self._shared.file_name}.png"
-            )
-            self.log_file = f"{self._directory_path}/www/{self._shared.file_name}.zip"
-            self._shared.svg_path = (
-                f"{self._directory_path}/www/{self._shared.file_name}.svg"
-            )
+            self._storage_path = f"{self._directory_path}/{STORAGE_DIR}/valetudo_camera"
+            self._snapshots = Snapshots(self._storage_path)
+            self.snapshot_img = f"{self._storage_path}/{self._shared.file_name}.png"
+            self.log_file = f"{self._storage_path}/{self._shared.file_name}.zip"
             self._attr_unique_id = device_info.get(
                 CONF_UNIQUE_ID,
                 get_vacuum_unique_id_from_mqtt_topic(self._mqtt_listen_topic),
@@ -396,7 +393,7 @@ class ValetudoCamera(Camera):
             if self._enable_snapshots:
                 if os.path.isfile(self.snapshot_img):
                     shutil.copy(
-                        f"{self._directory_path}/{STORAGE_DIR}/{self._shared.file_name}.png",
+                        f"{self._storage_path}/{self._shared.file_name}.png",
                         f"{self._directory_path}/www/snapshot_{self._shared.file_name}.png",
                     )
                 _LOGGER.info(f"{self._shared.file_name}: Camera Snapshot saved on WWW!")
@@ -473,7 +470,12 @@ class ValetudoCamera(Camera):
                 )
             try:
                 parsed_json = await self._mqtt.update_data(self._shared.image_grab)
-                if parsed_json[1]:
+                if not parsed_json:
+                    self._vac_json_available = "Error"
+                    self.Image = await self.async_pil_to_bytes(self.empty_if_no_data())
+                    raise ValueError
+
+                if parsed_json[1] == "Rand256":
                     self._shared.is_rand = True
                     self._rrm_data = parsed_json[0]
                 else:
