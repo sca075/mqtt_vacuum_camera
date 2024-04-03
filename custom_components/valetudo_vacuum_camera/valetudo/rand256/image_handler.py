@@ -2,7 +2,7 @@
 Image Handler Module for Valetudo Re Vacuums.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Version: v2024.04.01
+Version: v2024.04.0
 """
 
 from __future__ import annotations
@@ -19,6 +19,8 @@ from custom_components.valetudo_vacuum_camera.types import (
     NumpyArray,
     PilPNG,
     JsonType,
+    RobotPosition,
+    RoomsProperties,
 )
 from custom_components.valetudo_vacuum_camera.utils.colors_man import color_grey
 from custom_components.valetudo_vacuum_camera.utils.drawable import Drawable
@@ -54,6 +56,7 @@ class ReImageHandler(object):
         self.room_propriety = None  # Room propriety data
         self.rooms_pos = None  # Rooms position data
         self.shared = camera_shared  # Shared data
+        self.active_zones = None  # Active zones
         self.trim_down = None  # Trim down
         self.trim_left = None  # Trim left
         self.trim_right = None  # Trim right
@@ -68,6 +71,7 @@ class ReImageHandler(object):
         detect_colour: Color,
         margin_size: int = 0,
         rotate: int = 0,
+        zoom: bool = False,
     ) -> NumpyArray:
         """
         Automatically crops and trims a numpy array and returns the processed image.
@@ -159,22 +163,26 @@ class ReImageHandler(object):
                 self.trim_right,
                 self.trim_down,
             ]
-        if self.shared.vacuum_state == "cleaning" and self.shared.image_auto_zoom:
-            # Zoom the image based on the robot's position.
-            _LOGGER.debug(
-                f"{self.shared.file_name}: Zooming the image on room {self.robot_in_room['room']}."
-            )
-            trim_left = self.robot_in_room["left"] - margin_size
-            trim_right = self.robot_in_room["right"] + margin_size
-            trim_up = self.robot_in_room["up"] - margin_size
-            trim_down = self.robot_in_room["down"] + margin_size
-            trimmed = image_array[trim_up:trim_down, trim_left:trim_right]
-        else:
-            # Apply the auto-calculated trims to the rotated image
-            trimmed = image_array[
-                self.auto_crop[1] : self.auto_crop[3],
-                self.auto_crop[0] : self.auto_crop[2],
-            ]
+        # if (
+        #     zoom
+        #     and self.shared.vacuum_state == "cleaning"
+        #     and self.shared.image_auto_zoom
+        # ):
+        #     # Zoom the image based on the robot's position.
+        #     _LOGGER.debug(
+        #         f"{self.shared.file_name}: Zooming the image on room {self.robot_in_room['room']}."
+        #     )
+        #     trim_left = (self.robot_in_room["left"] // 10) # - margin_size
+        #     trim_right = (self.robot_in_room["right"] // 10)  # + margin_size
+        #     trim_up = (self.robot_in_room["up"] // 10) # - margin_size
+        #     trim_down = (self.robot_in_room["down"] // 10) # + margin_size
+        #     trimmed = image_array[trim_up:trim_down, trim_left:trim_right]
+        # else:
+        # Apply the auto-calculated trims to the rotated image
+        trimmed = image_array[
+            self.auto_crop[1] : self.auto_crop[3],
+            self.auto_crop[0] : self.auto_crop[2],
+        ]
         del image_array
         # Rotate the cropped image based on the given angle
         if rotate == 90:
@@ -297,8 +305,8 @@ class ReImageHandler(object):
         self,
         m_json: JsonType,  # json data
         destinations: None = None,  # MQTT destinations for labels
-        # drawing_limit: float = 0.0,
     ) -> PilPNG or None:
+        """Generate Images from the json data."""
         color_wall: Color = self.shared.user_colors[0]
         color_no_go: Color = self.shared.user_colors[6]
         color_go_to: Color = self.shared.user_colors[7]
@@ -307,6 +315,7 @@ class ReImageHandler(object):
         color_move: Color = self.shared.user_colors[4]
         color_background: Color = self.shared.user_colors[3]
         color_zone_clean: Color = self.shared.user_colors[1]
+        self.active_zones = self.shared.rand256_active_zone
 
         try:
             if m_json is not None:
@@ -361,7 +370,7 @@ class ReImageHandler(object):
                             "angle": robot_position_angle,
                         }
                     else:
-                        self.robot_pos = await self.get_robot_in_room(
+                        self.robot_pos = await self.async_get_robot_in_room(
                             (robot_position[0] * 10),
                             (robot_position[1] * 10),
                             robot_position_angle,
@@ -403,15 +412,33 @@ class ReImageHandler(object):
                                 img_np_array, pixels, pixel_size, room_color
                             )
                         # drawing segments floor
+                        room_id = 0
+                        rooms_list = [color_wall]
                         if segments:
                             for pixels in segments:
-                                room_id += 1
-                                if room_id > 15:
-                                    room_id = 0
                                 room_color = self.shared.rooms_colors[room_id]
+                                rooms_list.append(room_color)
+                                if (
+                                    self.active_zones
+                                    and len(self.active_zones) > room_id
+                                    and self.active_zones[room_id] == 1
+                                ):
+                                    room_color = (
+                                        ((2 * room_color[0]) + color_zone_clean[0])
+                                        // 3,
+                                        ((2 * room_color[1]) + color_zone_clean[1])
+                                        // 3,
+                                        ((2 * room_color[2]) + color_zone_clean[2])
+                                        // 3,
+                                        ((2 * room_color[3]) + color_zone_clean[3])
+                                        // 3,
+                                    )
                                 img_np_array = await self.draw.from_json_to_image(
                                     img_np_array, pixels, pixel_size, room_color
                                 )
+                                room_id += 1
+                                if room_id > 15:
+                                    room_id = 0
 
                     _LOGGER.info(self.shared.file_name + ": Completed floor Layers")
                     # Drawing walls.
@@ -432,8 +459,7 @@ class ReImageHandler(object):
                             destinations
                         )
                         if self.rooms_pos:
-                            _LOGGER.debug("we have rooms..")
-                            self.robot_pos = await self.get_robot_in_room(
+                            self.robot_pos = await self.async_get_robot_in_room(
                                 (robot_position[0] * 10),
                                 (robot_position[1] * 10),
                                 robot_position_angle,
@@ -507,6 +533,7 @@ class ReImageHandler(object):
                     color_background,
                     int(self.shared.margins),
                     int(self.shared.image_rotate),
+                    self.zooming,
                 )
                 pil_img = Image.fromarray(img_np_array, mode="RGBA")
                 del img_np_array  # unload memory
@@ -577,7 +604,9 @@ class ReImageHandler(object):
         """Return the json id."""
         return self.json_id
 
-    async def get_rooms_attributes(self, destinations: JsonType = None) -> any:
+    async def get_rooms_attributes(
+        self, destinations: JsonType = None
+    ) -> RoomsProperties:
         """Return the rooms attributes."""
         if self.room_propriety:
             return self.room_propriety
@@ -590,38 +619,11 @@ class ReImageHandler(object):
                 _LOGGER.debug("Got Rooms Attributes.")
         return self.room_propriety
 
-    async def get_robot_in_room(self, robot_x: int, robot_y: int, angle: float) -> any:
-        """Return the robot in room data."""
+    async def async_get_robot_in_room(
+        self, robot_x: int, robot_y: int, angle: float
+    ) -> RobotPosition:
+        """Get the robot position and return in what room is."""
         if self.robot_in_room:
-            if (
-                (self.robot_in_room["left"] >= robot_x)
-                and (self.robot_in_room["right"] <= robot_x)
-            ) and (
-                (self.robot_in_room["up"] >= robot_y)
-                and (self.robot_in_room["down"] <= robot_y)
-            ):
-                temp = {
-                    "x": robot_x,
-                    "y": robot_y,
-                    "angle": angle,
-                    "in_room": self.robot_in_room["room"],
-                }
-                return temp
-            # if self.active_zones and self.robot_in_room["id"] < len(
-            #         self.active_zones
-            # ):
-            #     self.zooming = bool(self.active_zones[self.robot_in_room["id"] + 1])
-        # else we need to search and use the async method.
-        _LOGGER.debug("The robot changed room.. searching..")
-        for room in self.rooms_pos:
-            corners = room["corners"]
-            self.robot_in_room = {
-                "left": corners[0][0],
-                "right": corners[2][0],
-                "up": corners[0][1],
-                "down": corners[2][1],
-                "room": room["name"],
-            }
             # Check if the robot coordinates are inside the room's corners
             if (
                 (self.robot_in_room["left"] >= robot_x)
@@ -636,14 +638,66 @@ class ReImageHandler(object):
                     "angle": angle,
                     "in_room": self.robot_in_room["room"],
                 }
-                _LOGGER.debug("Robot is inside %s", self.robot_in_room["room"])
-                del room, corners, robot_x, robot_y  # free memory.
+                if (
+                    self.active_zones
+                    and self.robot_in_room["id"] < len(self.active_zones) - 1
+                ):  # issue #100 Index out of range.
+                    self.zooming = bool(self.active_zones[self.robot_in_room["id"]])
+                else:
+                    self.zooming = False
                 return temp
-        del room, corners, robot_x, robot_y  # free memory.
-        _LOGGER.debug("Robot is not inside any room")
-        self.robot_in_room = None
-        # If the robot is not inside any room, return None or a default value
-        return self.robot_in_room
+        # else we need to search and use the async method
+        _LOGGER.debug(f"{self.shared.file_name} changed room.. searching..")
+        room_count = 0
+        last_room = None
+        if self.rooms_pos:
+            if self.robot_in_room:
+                last_room = self.robot_in_room
+            for room in self.rooms_pos:
+                corners = room["corners"]
+                _LOGGER.debug(corners)
+                _LOGGER.debug(f"{robot_x}, {robot_y}")
+                self.robot_in_room = {
+                    "id": room_count,
+                    "left": corners[0][0],
+                    "right": corners[2][0],
+                    "up": corners[0][1],
+                    "down": corners[2][1],
+                    "room": room["name"],
+                }
+                room_count += 1
+                # Check if the robot coordinates are inside the room's corners
+                if (
+                    (self.robot_in_room["left"] >= robot_x)
+                    and (self.robot_in_room["right"] <= robot_x)
+                ) and (
+                    (self.robot_in_room["up"] >= robot_y)
+                    and (self.robot_in_room["down"] <= robot_y)
+                ):
+                    temp = {
+                        "x": robot_x,
+                        "y": robot_y,
+                        "angle": angle,
+                        "in_room": self.robot_in_room["room"],
+                    }
+                    _LOGGER.debug(
+                        f"{self.shared.file_name} is in {self.robot_in_room['room']}"
+                    )
+                    del room, corners, robot_x, robot_y  # free memory.
+                    return temp
+            del room, corners  # free memory.
+            _LOGGER.debug(
+                f"{self.shared.file_name} not located within Camera Rooms coordinates."
+            )
+            self.zooming = False
+            self.robot_in_room = last_room
+            temp = {
+                "x": robot_x,
+                "y": robot_y,
+                "angle": angle,
+                "in_room": self.robot_in_room["room"],
+            }
+            return temp
 
     def get_calibration_data(self, rotation_angle: int = 0) -> any:
         """Return the map calibration data."""

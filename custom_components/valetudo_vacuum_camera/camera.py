@@ -184,8 +184,6 @@ class ValetudoCamera(Camera):
                 f" and In Use: {round((ProcInsp().psutil.virtual_memory().used / (1024 * 1024)), 1)}"
             )
             self._storage_path = f"{self._directory_path}/{STORAGE_DIR}/valetudo_camera"
-            if not os.path.exists(self._storage_path):
-                os.makedirs(self._storage_path)
             self._snapshots = Snapshots(self._storage_path)
             self.snapshot_img = f"{self._storage_path}/{self._shared.file_name}.png"
             self.log_file = f"{self._storage_path}/{self._shared.file_name}.zip"
@@ -472,7 +470,12 @@ class ValetudoCamera(Camera):
                 )
             try:
                 parsed_json = await self._mqtt.update_data(self._shared.image_grab)
-                if parsed_json[1]:
+                if not parsed_json:
+                    self._vac_json_available = "Error"
+                    self.Image = await self.async_pil_to_bytes(self.empty_if_no_data())
+                    raise ValueError
+
+                if parsed_json[1] == "Rand256":
                     self._shared.is_rand = True
                     self._rrm_data = parsed_json[0]
                 else:

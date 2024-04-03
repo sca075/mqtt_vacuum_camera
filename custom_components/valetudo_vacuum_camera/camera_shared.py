@@ -1,7 +1,7 @@
 """
 Class Camera Shared.
 Keep the data between the modules.
-Version: v2024.04
+Version: v2024.04.0
 """
 
 import logging
@@ -20,6 +20,7 @@ class CameraShared(object):
     def __init__(self):
         self.frame_number: int = 0  # camera Frame number
         self.destinations: list = []  # MQTT rand destinations
+        self.rand256_active_zone: list = []  # Active zone for rand256
         self.is_rand: bool = False  # MQTT rand data
         self._new_mqtt_message = False  # New MQTT message
         self.last_image = None  # Last image received

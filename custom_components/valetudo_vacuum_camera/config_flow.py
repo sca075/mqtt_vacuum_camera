@@ -1,4 +1,4 @@
-"""config_flow v2024.04.01
+"""config_flow v2024.04.0
 IMPORTANT: When adding new options to the camera
 it will be mandatory to update const.py update_options.
 Format of the new constants must be CONST_NAME = "const_name" update also
@@ -118,7 +118,7 @@ VACUUM_SCHEMA = vol.Schema(
 
 
 class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
-    VERSION = 2.4
+    VERSION = 3.0
 
     def __init__(self):
         self.data = {}
@@ -218,7 +218,10 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     "alpha_room_15": 255.0,
                 }
             )
-
+            # create the path for storing the snapshots.
+            storage_path = f"{os.getcwd()}/{STORAGE_DIR}/valetudo_camera"
+            if not os.path.exists(storage_path):
+                os.makedirs(storage_path)
             # Finally set up the entry.
             _, vacuum_device = get_device_info(
                 self.data[CONF_VACUUM_CONFIG_ENTRY_ID], self.hass
