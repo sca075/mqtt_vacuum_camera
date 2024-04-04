@@ -266,9 +266,9 @@ class ReImageHandler(object):
         for zone in zones_data:
             zone_name = zone.get("name")
             coordinates = zone.get("coordinates")
-            coordinates[0].pop()
-            x1, y1, x2, y2 = coordinates[0]
-            if coordinates:
+            if coordinates and len(coordinates) > 0:
+                coordinates[0].pop()
+                x1, y1, x2, y2 = coordinates[0]
                 zone_properties[zone_name] = {
                     "zones": coordinates,
                     "name": zone_name,
@@ -279,9 +279,9 @@ class ReImageHandler(object):
         id_count = 1
         for point in points_data:
             point_name = point.get("name")
-            coordinates = point.get("coordinates")
-            x1, y1 = coordinates
-            if coordinates:
+            if coordinates and len(coordinates) > 0:
+                coordinates = point.get("coordinates")
+                x1, y1 = coordinates
                 point_properties[id_count] = {
                     "position": coordinates,
                     "name": point_name,
@@ -655,8 +655,6 @@ class ReImageHandler(object):
                 last_room = self.robot_in_room
             for room in self.rooms_pos:
                 corners = room["corners"]
-                _LOGGER.debug(corners)
-                _LOGGER.debug(f"{robot_x}, {robot_y}")
                 self.robot_in_room = {
                     "id": room_count,
                     "left": corners[0][0],
