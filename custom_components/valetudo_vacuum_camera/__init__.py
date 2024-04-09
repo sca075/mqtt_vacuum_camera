@@ -297,7 +297,7 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
 async def move_data_to_valetudo_camera():
     """Move files from .storage folder to valetudo_camera folder."""
     # Define the paths
-     storage_folder = f"{os.getcwd()}/{STORAGE_DIR}) 
+     storage_folder = f"{os.getcwd()}/{STORAGE_DIR}" 
      valetudo_camera_folder = f"{storage_folder}/valetudo_camera"
 
     # Create the valetudo_camera folder if it doesn't exist
