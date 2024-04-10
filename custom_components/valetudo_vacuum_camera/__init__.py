@@ -297,24 +297,28 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
 async def move_data_to_valetudo_camera():
     """Move files from .storage folder to valetudo_camera folder."""
     # Define the paths
-    storage_folder = f"{os.getcwd()}/{STORAGE_DIR}" 
-    valetudo_camera_folder = f"{storage_folder}/valetudo_camera"
-
-    # Create the valetudo_camera folder if it doesn't exist
-    if not os.path.exists(valetudo_camera_folder):
-        os.makedirs(valetudo_camera_folder)
-        _LOGGER.debug("Created valetudo_camera folder.")
-
-        file_patterns = ["*.zip", "*.png", "*.log", "*.raw"]
-
+    # create the path for storing the snapshots.
+    ha_dir = os.getcwd()
+    storage_path = f"{ha_dir}/{STORAGE_DIR}"
+    if not os.path.exists(storage_path):
+        storage_folder = f"{storage_path}/valetudo_vacuum_camera"
+        _LOGGER.debug(f"Creating the {storage_folder} path.")
+        try:
+            os.mkdir(storage_folder)
+        except FileExistsError as e:
+            _LOGGER.debug(f"Error {e} creating the path {storage_folder}.")
         # Move files matching the patterns to the valetudo_camera folder
-        for pattern in file_patterns:
-            files_to_move = glob.glob(os.path.join(storage_folder, pattern))
-            for file_path in files_to_move:
-                file_name = os.path.basename(file_path)
-                destination_path = os.path.join(valetudo_camera_folder, file_name)
-                if os.path.exists(file_path):
-                    shutil.move(file_path, destination_path)
-                    _LOGGER.debug(f"Moved {file_name} to valetudo_camera folder.")
-                else:
-                    _LOGGER.debug(f"File {file_name} not found in .storage folder.")
+        finally:
+            file_patterns = ["*.zip", "*.png", "*.log", "*.raw"]
+            for pattern in file_patterns:
+                files_to_move = glob.glob(os.path.join(storage_folder, pattern))
+                for file_path in files_to_move:
+                    file_name = os.path.basename(file_path)
+                    destination_path = os.path.join(storage_folder, file_name)
+                    if os.path.exists(file_path):
+                        shutil.move(file_path, destination_path)
+                        _LOGGER.debug(f"Moved {file_name} to valetudo_camera folder.")
+                    else:
+                        _LOGGER.debug(f"File {file_name} not found in .storage folder.")
+    else:
+        _LOGGER.debug(f"{storage_path} do not exists.")
