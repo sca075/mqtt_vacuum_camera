@@ -219,9 +219,16 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 }
             )
             # create the path for storing the snapshots.
-            storage_path = f"{os.getcwd()}/{STORAGE_DIR}/valetudo_camera"
+            ha_dir = os.getcwd()
+            storage_path = f"{ha_dir}/{STORAGE_DIR}"
             if not os.path.exists(storage_path):
-                os.makedirs(storage_path)
+                _LOGGER.debug(f"Creating the {storage_path} path.")
+                try:
+                    os.mkdir(f"{storage_path}/valetudo_camera")
+                except FileExistsError as e:
+                    _LOGGER.debug(f"Error {e} creating the path {storage_path}/valetudo_camera")
+            else:
+                _LOGGER.debug(f"Storage {storage_path} path not found.")
             # Finally set up the entry.
             _, vacuum_device = get_device_info(
                 self.data[CONF_VACUUM_CONFIG_ENTRY_ID], self.hass
