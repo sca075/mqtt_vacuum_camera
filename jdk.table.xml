@@ -3,14 +3,14 @@
     <jdk version="2">
       <name value="Python 3.9 (Valetudo_Map_Extractor_V2)" />
       <type value="Python SDK" />
-      <version value="Python 3.9.1" />
+      <version value="Python 3.12.2" />
       <homePath value="$USER_HOME$/PycharmProjects/Valetudo_Map_Extractor_V2/.venv/bin/python" />
       <roots>
         <classPath>
           <root type="composite">
-            <root url="file:///Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9" type="simple" />
-            <root url="file:///Library/Frameworks/Python.framework/Versions/3.9/lib/python3.9/lib-dynload" type="simple" />
-            <root url="file://$USER_HOME$/PycharmProjects/Valetudo_Map_Extractor_V2/.venv/lib/python3.9/site-packages" type="simple" />
+            <root url="file:///Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12" type="simple" />
+            <root url="file:///Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/lib-dynload" type="simple" />
+            <root url="file://$USER_HOME$/PycharmProjects/Valetudo_Map_Extractor_V2/.venv/lib/python3.12/site-packages" type="simple" />
             <root url="file://$USER_HOME$/Library/Caches/JetBrains/PyCharmCE2024.1/python_stubs/1515498562" type="simple" />
             <root url="file://$APPLICATION_HOME_DIR$/plugins/python-ce/helpers/python-skeletons" type="simple" />
             <root url="file://$APPLICATION_HOME_DIR$/plugins/python-ce/helpers/typeshed/stdlib" type="simple" />
