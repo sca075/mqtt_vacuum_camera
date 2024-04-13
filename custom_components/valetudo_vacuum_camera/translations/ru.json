@@ -186,17 +186,19 @@
         "opt_5": "Цвета Комнат 9 до 16",
         "opt_6": "Скопировать Логи Камеры в www"
       }
+    },
+    "vacuum_status": {
+      "options": {
+        "connected": "Подключено",
+        "disconnected": "Отключено",
+        "charging": "Заряжается",
+        "cleaning": "Чистка",
+        "docked": "Пришвартован",
+        "idle": "В режиме ожидания",
+        "paused": "Приостановлено",
+        "returning": "Возвращение"
+      }
     }
-  },
-  "vacuum_status": {
-    "connected": "Подключено",
-    "disconnected": "Отключено",
-    "charging": "Заряжается",
-    "cleaning": "Чистка",
-    "docked": "Пришвартован",
-    "idle": "В режиме ожидания",
-    "paused": "Приостановлено",
-    "returning": "Возвращение"
   },
   "services": {
     "turn_off": {

@@ -525,7 +525,7 @@ class ValetudoCamera(Camera):
                             else:
                                 await self.take_snapshot(parsed_json, pil_img)
                     # clean up
-                    del pil_img,
+                    del (pil_img,)
                     _LOGGER.debug(f"{self._shared.file_name}: Image update complete")
                     processing_time = round((time.perf_counter() - start_time), 3)
                     # Adjust the frame interval to the processing time.
@@ -666,11 +666,16 @@ class ValetudoCamera(Camera):
         active_user_id = None
         users = await self.hass.auth.async_get_users()
         for user in users:
-            if user.name.lower() not in ['home assistant content', 'supervisor'] and user.is_active:
+            if (
+                user.name.lower() not in ["home assistant content", "supervisor"]
+                and user.is_active
+            ):
                 active_user_id = user.id
                 break
 
-        file_path = f"{self.hass.config.path(STORAGE_DIR)}/frontend.user_data_{active_user_id}"
+        file_path = (
+            f"{self.hass.config.path(STORAGE_DIR)}/frontend.user_data_{active_user_id}"
+        )
 
         try:
             with open(file_path, "r") as file:

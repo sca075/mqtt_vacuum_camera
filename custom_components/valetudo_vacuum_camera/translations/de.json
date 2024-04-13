@@ -182,17 +182,19 @@
         "opt_5": "Farben für Zimmer 9 bis 16",
         "opt_6": "Kameraprotokolle in www kopieren"
       }
+    },
+    "vacuum_status": {
+      "options": {
+        "connected": "Verbunden",
+        "disconnected": "Getrennt",
+        "charging": "Lädt",
+        "cleaning": "Reinigung",
+        "docked": "Angedockt",
+        "idle": "Inaktiv",
+        "paused": "Angehalten",
+        "returning": "Rückkehr"
+      }
     }
-  },
-  "vacuum_status": {
-    "connected": "Verbunden",
-    "disconnected": "Getrennt",
-    "charging": "Lädt",
-    "cleaning": "Reinigung",
-    "docked": "Angedockt",
-    "idle": "Inaktiv",
-    "paused": "Angehalten",
-    "returning": "Rückkehr"
   },
   "services": {
     "turn_off": {

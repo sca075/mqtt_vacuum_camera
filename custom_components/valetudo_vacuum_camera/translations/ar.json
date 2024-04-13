@@ -186,17 +186,19 @@
         "opt_5": "ألوان الغرف 9 إلى 16",
         "opt_6": "نسخ سجلات الكاميرا إلى www"
       }
+    },
+    "vacuum_status": {
+      "options": {
+        "connected": "متصل",
+        "disconnected": "غير متصل",
+        "charging": "يشحن",
+        "cleaning": "ينظف",
+        "docked": "مرسوم",
+        "idle": "خمول",
+        "paused": "متوقف مؤقتا",
+        "returning": "العودة"
+      }
     }
-  },
-  "vacuum_status": {
-    "connected": "متصل",
-    "disconnected": "غير متصل",
-    "charging": "يشحن",
-    "cleaning": "ينظف",
-    "docked": "مرسوم",
-    "idle": "خمول",
-    "paused": "متوقف مؤقتا",
-    "returning": "العودة"
   },
   "services": {
     "turn_off": {

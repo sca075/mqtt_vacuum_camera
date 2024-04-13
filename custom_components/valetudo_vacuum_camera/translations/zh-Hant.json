@@ -182,17 +182,19 @@
         "opt_5": "設定房間9至16的顏色",
         "opt_6": "將攝影機日誌複製到www"
       }
+    },
+    "vacuum_status": {
+      "options": {
+        "connected": "已連線",
+        "disconnected": "未連線",
+        "charging": "充電中",
+        "cleaning": "清潔中",
+        "docked": "已停靠",
+        "idle": "閒置",
+        "paused": "暫停",
+        "returning": "返回中"
+      }
     }
-  },
-  "vacuum_status": {
-    "connected": "已連線",
-    "disconnected": "未連線",
-    "charging": "充電中",
-    "cleaning": "清潔中",
-    "docked": "已停靠",
-    "idle": "閒置",
-    "paused": "暫停",
-    "returning": "返回中"
   },
   "services": {
     "turn_off": {

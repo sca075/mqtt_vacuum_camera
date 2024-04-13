@@ -187,17 +187,19 @@
         "opt_5": "Barvy místností 9 až 16",
         "opt_6": "Zkopírovat záznamy kamery do www"
       }
+    },
+    "vacuum_status": {
+      "options": {
+        "connected": "Připojeno",
+        "disconnected": "Odpojeno",
+        "charging": "Nabíjení",
+        "cleaning": "Čištění",
+        "docked": "Začal",
+        "idle": "Nečinný",
+        "paused": "Pozastaveno",
+        "returning": "Vracení"
+      }
     }
-  },
-  "vacuum_status": {
-    "connected": "Připojeno",
-    "disconnected": "Odpojeno",
-    "charging": "Nabíjení",
-    "cleaning": "Čištění",
-    "docked": "Začal",
-    "idle": "Nečinný",
-    "paused": "Pozastaveno",
-    "returning": "Vracení"
   },
   "services": {
     "turn_off": {

@@ -186,17 +186,19 @@
         "opt_5": "Farger Rom 9 til 16",
         "opt_6": "Kopier kamera logger til www"
       }
+    },
+    "vacuum_status": {
+      "options": {
+        "connected": "Tilkoblet",
+        "disconnected": "Frakoblet",
+        "charging": "Lading",
+        "cleaning": "Rengjøring",
+        "docked": "Dokket",
+        "idle": "Inaktiv",
+        "paused": "Pause",
+        "returning": "Retur"
+      }
     }
-  },
-  "vacuum_status": {
-    "connected": "Tilkoblet",
-    "disconnected": "Frakoblet",
-    "charging": "Lading",
-    "cleaning": "Rengjøring",
-    "docked": "Dokket",
-    "idle": "Inaktiv",
-    "paused": "Pause",
-    "returning": "Retur"
   },
   "services": {
     "turn_off": {

@@ -174,17 +174,19 @@
         "description": "Options de la caméra. Alpha 3",
         "title": "Couleurs de base du canal alpha des pièces"
       }
+    },
+    "vacuum_status": {
+      "options": {
+        "connected": "Connecté",
+        "disconnected": "Déconnecté",
+        "charging": "En charge",
+        "cleaning": "Nettoyage",
+        "docked": "À quai",
+        "idle": "Inactif",
+        "paused": "En pause",
+        "returning": "Retour"
+      }
     }
-  },
-  "vacuum_status": {
-    "connected": "Connecté",
-    "disconnected": "Déconnecté",
-    "charging": "En charge",
-    "cleaning": "Nettoyage",
-    "docked": "À quai",
-    "idle": "Inactif",
-    "paused": "En pause",
-    "returning": "Retour"
   },
   "selector": {
     "camera_config_action": {

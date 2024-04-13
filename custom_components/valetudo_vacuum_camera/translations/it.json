@@ -172,16 +172,6 @@
       }
     }
   },
-  "vacuum_status": {
-    "connected": "Collegato",
-    "disconnected": "Disconnesso",
-    "charging": "Caricamento",
-    "cleaning": "Pulizia",
-    "docked": "In carica",
-    "idle": "Inattivo",
-    "paused": "In pausa",
-    "returning": "Ritorno"
-  },
   "selector": {
     "camera_config_action": {
       "options": {
@@ -191,6 +181,18 @@
         "opt_4": "Colori Stanze da 1 a 8",
         "opt_5": "Colori Stanze da 9 a 16",
         "opt_6": "Copia i logs nella cartella www"
+      }
+    },
+    "vacuum_status": {
+      "options": {
+        "connected": "Collegato",
+        "disconnected": "Disconnesso",
+        "charging": "Caricamento",
+        "cleaning": "Pulizia",
+        "docked": "In carica",
+        "idle": "Inattivo",
+        "paused": "In pausa",
+        "returning": "Ritorno"
       }
     }
   },

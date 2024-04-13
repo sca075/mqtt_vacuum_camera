@@ -222,10 +222,10 @@ class CameraProcessor:
         """
         _LOGGER.debug(f"Language: {language}")
         translations = self.load_translations(language)
-        if translations and "vacuum_status" in translations:
-            return translations["vacuum_status"]
-        else:
-            return None
+        vacuum_status_options = (
+            translations.get("selector", {}).get("vacuum_status", {}).get("options", {})
+        )
+        return vacuum_status_options
 
     def translate_vacuum_status(self) -> str:
         """Return the translated status."""
@@ -250,9 +250,7 @@ class CameraProcessor:
         charging = "\u2211"  # unicode Charging symbol
         vacuum_state = self.translate_vacuum_status()
         if self._shared.show_vacuum_state:
-            status_text = [
-                f"{self._shared.file_name}: {vacuum_state}"
-            ]
+            status_text = [f"{self._shared.file_name}: {vacuum_state}"]
             if not self._shared.vacuum_connection:
                 status_text = [f"{self._shared.file_name}: Disconnected from MQTT?"]
             else:

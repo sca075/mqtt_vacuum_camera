@@ -186,17 +186,19 @@
         "opt_5": "Kleuren Kamers 9 tot 16",
         "opt_6": "Kopieer Camera Logs naar www"
       }
+    },
+    "vacuum_status": {
+      "options": {
+        "connected": "Verbonden",
+        "disconnected": "Losgekoppeld",
+        "charging": "Opladen",
+        "cleaning": "Reinigen",
+        "docked": "Gedockt",
+        "idle": "Inactief",
+        "paused": "Gepauzeerd",
+        "returning": "Terugkerend"
+      }
     }
-  },
-  "vacuum_status": {
-    "connected": "Verbonden",
-    "disconnected": "Losgekoppeld",
-    "charging": "Opladen",
-    "cleaning": "Reinigen",
-    "docked": "Gedockt",
-    "idle": "Inactief",
-    "paused": "Gepauzeerd",
-    "returning": "Terugkerend"
   },
   "services": {
     "turn_off": {
