@@ -12,5 +12,5 @@
         "numpy",
         "svgwrite==1.4.3"
     ],
-    "version": "2024.04.1"
+    "version": "2024.04.2"
 }

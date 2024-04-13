@@ -185,7 +185,6 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
             )
 
     if config_entry.version == 2.3:
-        await move_data_to_valetudo_camera()
         old_data = {**config_entry.data}
         new_data = {"vacuum_config_entry": old_data["vacuum_config_entry"]}
         _LOGGER.debug(dict(new_data))
@@ -208,7 +207,7 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
         _LOGGER.debug(
             "Starting migration data from .storage to valetudo_camera folder."
         )
-        await move_data_to_valetudo_camera()
+        await move_data_to_valetudo_camera(hass.config.path(STORAGE_DIR))
         old_data = {**config_entry.data}
         new_data = {"vacuum_config_entry": old_data["vacuum_config_entry"]}
         _LOGGER.debug(dict(new_data))
@@ -294,21 +293,18 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
     return True
 
 
-async def move_data_to_valetudo_camera():
+async def move_data_to_valetudo_camera(storage):
     """Move files from .storage folder to valetudo_camera folder."""
-    # Define the paths
-    # create the path for storing the snapshots.
-    ha_dir = os.getcwd()
-    storage_path = f"{ha_dir}/{STORAGE_DIR}"
-    if not os.path.exists(storage_path):
-        storage_folder = f"{storage_path}/valetudo_vacuum_camera"
+    if os.path.exists(storage):
+        storage_folder = f"{storage}/valetudo_camera"
         _LOGGER.debug(f"Creating the {storage_folder} path.")
         try:
             os.mkdir(storage_folder)
-        except FileExistsError as e:
-            _LOGGER.debug(f"Error {e} creating the path {storage_folder}.")
+        except FileExistsError:
+            _LOGGER.debug(f"Path {storage_folder} already exist.")
         # Move files matching the patterns to the valetudo_camera folder
-        finally:
+        else:
+
             file_patterns = ["*.zip", "*.png", "*.log", "*.raw"]
             for pattern in file_patterns:
                 files_to_move = glob.glob(os.path.join(storage_folder, pattern))
@@ -321,4 +317,4 @@ async def move_data_to_valetudo_camera():
                     else:
                         _LOGGER.debug(f"File {file_name} not found in .storage folder.")
     else:
-        _LOGGER.debug(f"{storage_path} do not exists.")
+        _LOGGER.warning(f"{storage} do not exists.")

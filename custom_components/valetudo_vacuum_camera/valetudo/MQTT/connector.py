@@ -5,15 +5,14 @@ Version: v2024.04.0
 - Added gzip library used in Valetudo RE data compression.
 """
 
-import gzip
 import json
 import logging
-import os
-import zlib
 
 from homeassistant.components import mqtt
 from homeassistant.core import callback
 from homeassistant.helpers.storage import STORAGE_DIR
+from zlib_ng import gzip_ng as gzip
+from zlib_ng import zlib_ng as zlib
 
 from custom_components.valetudo_vacuum_camera.valetudo.rand256.rrparser import (
     RRMapParser,
@@ -85,7 +84,7 @@ class ValetudoConnector:
             else:
                 _LOGGER.info(
                     f"No image data from {self._mqtt_topic},"
-                    f"vacuum in { self._mqtt_vac_stat} status."
+                    f"vacuum in {self._mqtt_vac_stat} status."
                 )
                 self._ignore_data = True
                 self._data_in = False
@@ -139,7 +138,8 @@ class ValetudoConnector:
             elif self._rrm_payload:
                 file_data = self._rrm_payload
             with open(
-                f"{str(os.getcwd())}/{STORAGE_DIR}/valetudo_camera/{file_name}.raw",
+                f"{self._hass.config.path(STORAGE_DIR)}"
+                f"/valetudo_camera/{file_name}.raw",
                 "wb",
             ) as file:
                 file.write(file_data)
@@ -207,7 +207,7 @@ class ValetudoConnector:
         if self._payload:
             self._mqtt_vac_battery_level = int(bytes.decode(self._payload, "utf-8"))
             _LOGGER.info(
-                f"{self._file_name}: Received vacuum battery level: {self._mqtt_vac_battery_level }%."
+                f"{self._file_name}: Received vacuum battery level: {self._mqtt_vac_battery_level}%."
             )
 
     async def rand256_handle_image_payload(self, msg):
@@ -235,7 +235,10 @@ class ValetudoConnector:
         self._payload = msg.payload
         if self._payload:
             tmp_data = json.loads(self._payload)
-            self._mqtt_vac_connect_state = "ready"  # the vacuum is connected.
+            # if self._rrm_payload:
+            #     self._mqtt_vac_connect_state = "ready"  # the vacuum is connected.
+            # else:
+            #     self._mqtt_vac_connect_state = "init"  # the vacuum is connected.
             self._mqtt_vac_re_stat = tmp_data.get("state", None)
             self._mqtt_vac_battery_level = tmp_data.get("battery_level", None)
             _LOGGER.info(
@@ -332,7 +335,7 @@ class ValetudoConnector:
                 f"{self._mqtt_topic}/StatusStateAttribute/status",
                 f"{self._mqtt_topic}/StatusStateAttribute/error_description",
                 f"{self._mqtt_topic}/$state",
-                f"{self._mqtt_topic }/BatteryStateAttribute/level",
+                f"{self._mqtt_topic}/BatteryStateAttribute/level",
                 f"{self._mqtt_topic}/map_data",  # added for ValetudoRe
                 f"{self._mqtt_topic}/state",  # added for ValetudoRe
                 f"{self._mqtt_topic}/destinations",  # added for ValetudoRe

@@ -182,6 +182,18 @@
         "opt_5": "Kolory pokoi od 9 do 16",
         "opt_6": "Kopiuj dzienniki kamery do www"
       }
+    },
+    "vacuum_status": {
+      "options": {
+        "connected": "Podłączony",
+        "disconnected": "Rozłączony",
+        "charging": "Ładowanie",
+        "cleaning": "Czyszczenie",
+        "docked": "Zacumowany",
+        "idle": "Bezczynny",
+        "paused": "Wstrzymany",
+        "returning": "Powracanie"
+      }
     }
   },
   "services": {

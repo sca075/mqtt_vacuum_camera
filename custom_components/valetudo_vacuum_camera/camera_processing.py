@@ -1,6 +1,6 @@
 """
 Multiprocessing module
-Version: v2024.04.0
+Version: v2024.04.2
 This module provide the image multiprocessing in order to
 avoid the overload of the main_thread of Home Assistant.
 """
@@ -32,6 +32,9 @@ class CameraProcessor:
         self._map_handler = MapImageHandler(camera_shared)
         self._re_handler = ReImageHandler(camera_shared)
         self._shared = camera_shared
+        self._translations_path = self.hass.config.path(
+            f"custom_components/valetudo_vacuum_camera/translations/"
+        )
 
     async def async_process_valetudo_data(self, parsed_json: JsonType) -> PilPNG | None:
         """
@@ -199,11 +202,16 @@ class CameraProcessor:
     def load_translations(self, language: str) -> JsonType:
         """
         Load the user selected language json file and return it.
-        @param language:
+        @param language:self.hass.config.path(f"custom_components/valetudo_vacuum_camera/translations/
         @return: json format
         """
-        with open(f"{language}.json", "r") as file:
-            translations = json.load(file)
+        file_name = f"{language}.json"
+        file_path = f"{self._translations_path}/{file_name}"
+        try:
+            with open(file_path, "r") as file:
+                translations = json.load(file)
+        except FileNotFoundError:
+            return None
         return translations
 
     def get_vacuum_status_translation(self, language: str) -> any:
@@ -212,11 +220,22 @@ class CameraProcessor:
         @param language: String IT, PL, DE, ES, FR, EN.
         @return: Json data or None.
         """
+        _LOGGER.debug(f"Language: {language}")
         translations = self.load_translations(language)
-        if "vacuum_status" in translations:
-            return translations["vacuum_status"]
+        vacuum_status_options = (
+            translations.get("selector", {}).get("vacuum_status", {}).get("options", {})
+        )
+        return vacuum_status_options
+
+    def translate_vacuum_status(self) -> str:
+        """Return the translated status."""
+        status = self._shared.vacuum_state
+        language = self._shared.user_language
+        translations = self.get_vacuum_status_translation(language)
+        if translations is not None and status in translations:
+            return translations[status]
         else:
-            return None
+            return status.capitalize()
 
     def get_status_text(self, text_img: PilPNG) -> tuple[list[str], int]:
         """
@@ -229,10 +248,9 @@ class CameraProcessor:
         text_size = self._shared.vacuum_status_size  # default text size
         charge_level = "\u03DE"  # unicode Koppa symbol
         charging = "\u2211"  # unicode Charging symbol
+        vacuum_state = self.translate_vacuum_status()
         if self._shared.show_vacuum_state:
-            status_text = [
-                f"{self._shared.file_name}: {self._shared.vacuum_state.capitalize()}"
-            ]
+            status_text = [f"{self._shared.file_name}: {vacuum_state}"]
             if not self._shared.vacuum_connection:
                 status_text = [f"{self._shared.file_name}: Disconnected from MQTT?"]
             else:

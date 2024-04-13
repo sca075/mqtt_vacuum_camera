@@ -186,6 +186,18 @@
         "opt_5": "Colores de las habitaciones 9 a 16",
         "opt_6": "Copiar registros de cámara a www"
       }
+    },
+    "vacuum_status": {
+      "options": {
+        "connected": "Conectado",
+        "disconnected": "Desconectado",
+        "charging": "Cargando",
+        "cleaning": "Limpiando",
+        "docked": "Acoplado",
+        "idle": "Inactivo",
+        "paused": "En pausa",
+        "returning": "Regresando"
+      }
     }
   },
   "services": {
