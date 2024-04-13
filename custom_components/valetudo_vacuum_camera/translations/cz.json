@@ -189,6 +189,16 @@
       }
     }
   },
+  "vacuum_status": {
+    "connected": "Připojeno",
+    "disconnected": "Odpojeno",
+    "charging": "Nabíjení",
+    "cleaning": "Čištění",
+    "docked": "Začal",
+    "idle": "Nečinný",
+    "paused": "Pozastaveno",
+    "returning": "Vracení"
+  },
   "services": {
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",

@@ -176,6 +176,16 @@
       }
     }
   },
+  "vacuum_status": {
+    "connected": "Conectado",
+    "disconnected": "Desconectado",
+    "charging": "Cargando",
+    "cleaning": "Limpiando",
+    "docked": "Acoplado",
+    "idle": "Inactivo",
+    "paused": "En pausa",
+    "returning": "Regresando"
+  },
   "selector": {
     "camera_config_action": {
       "options": {

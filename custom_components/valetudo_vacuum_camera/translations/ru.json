@@ -188,6 +188,16 @@
       }
     }
   },
+  "vacuum_status": {
+    "connected": "Подключено",
+    "disconnected": "Отключено",
+    "charging": "Заряжается",
+    "cleaning": "Чистка",
+    "docked": "Пришвартован",
+    "idle": "В режиме ожидания",
+    "paused": "Приостановлено",
+    "returning": "Возвращение"
+  },
   "services": {
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",

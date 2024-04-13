@@ -187,6 +187,16 @@
       }
     }
   },
+  "vacuum_status": {
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "charging": "Charging",
+    "cleaning": "Cleaning",
+    "docked": "Docked",
+    "idle": "Idle",
+    "paused": "Paused",
+    "returning": "Returning"
+  },
   "services": {
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",

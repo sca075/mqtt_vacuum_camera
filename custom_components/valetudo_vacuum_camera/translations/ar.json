@@ -188,6 +188,16 @@
       }
     }
   },
+  "vacuum_status": {
+    "connected": "متصل",
+    "disconnected": "غير متصل",
+    "charging": "يشحن",
+    "cleaning": "ينظف",
+    "docked": "مرسوم",
+    "idle": "خمول",
+    "paused": "متوقف مؤقتا",
+    "returning": "العودة"
+  },
   "services": {
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",

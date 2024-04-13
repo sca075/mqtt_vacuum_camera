@@ -184,6 +184,16 @@
       }
     }
   },
+  "vacuum_status": {
+    "connected": "Podłączony",
+    "disconnected": "Rozłączony",
+    "charging": "Ładowanie",
+    "cleaning": "Czyszczenie",
+    "docked": "Zacumowany",
+    "idle": "Bezczynny",
+    "paused": "Wstrzymany",
+    "returning": "Powracanie"
+  },
   "services": {
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",

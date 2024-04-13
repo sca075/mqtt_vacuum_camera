@@ -1,7 +1,7 @@
 """
 Class Camera Shared.
 Keep the data between the modules.
-Version: v2024.04.0
+Version: v2024.04.2
 """
 
 import logging
@@ -60,6 +60,7 @@ class CameraShared(object):
         self.map_pred_points = None  # Predefined points data
         self.map_new_path = None  # New path data
         self.map_old_path = None  # Old path data
+        self.user_language = None  # User language
 
     def update_user_colors(self, user_colors):
         """Update the user colors."""

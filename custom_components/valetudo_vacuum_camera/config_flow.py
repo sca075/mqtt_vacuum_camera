@@ -1,4 +1,4 @@
-"""config_flow v2024.04.0
+"""config_flow v2024.04.2
 IMPORTANT: When adding new options to the camera
 it will be mandatory to update const.py update_options.
 Format of the new constants must be CONST_NAME = "const_name" update also
@@ -92,7 +92,6 @@ from .const import (
     CONF_ASPECT_RATIO,
     CONF_AUTO_ZOOM,
     CONF_ZOOM_LOCK_RATIO,
-    # CONF_EXPORT_SVG,
     CONF_SNAPSHOTS_ENABLE,
     CONF_VAC_STAT,
     CONF_VAC_STAT_FONT,
@@ -219,9 +218,15 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 }
             )
             # create the path for storing the snapshots.
-            storage_path = f"{os.getcwd()}/{STORAGE_DIR}/valetudo_camera"
+            storage_path = f"{self.hass.config.path(STORAGE_DIR)}/valetudo_camera"
             if not os.path.exists(storage_path):
-                os.makedirs(storage_path)
+                _LOGGER.debug(f"Creating the {storage_path} path.")
+                try:
+                    os.mkdir(storage_path)
+                except FileExistsError as e:
+                    _LOGGER.debug(f"Error {e} creating the path {storage_path}")
+            else:
+                _LOGGER.debug(f"Storage {storage_path} path found.")
             # Finally set up the entry.
             _, vacuum_device = get_device_info(
                 self.data[CONF_VACUUM_CONFIG_ENTRY_ID], self.hass
@@ -859,14 +864,18 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         Copy the logs from .storage to www config folder.
         """
         user_input = None
-        ha_dir = os.getcwd()
-        ha_storage = STORAGE_DIR
+        ha_dir = self.hass.config.path()
+        ha_storage = self.hass.config.path(STORAGE_DIR)
         camera_id = self.unique_id.split("_")
         file_name = camera_id[0].lower() + ".zip"
-        source_path = ha_dir + "/" + ha_storage + "/valetudo_camera/" + file_name
-        destination_path = ha_dir + "/" + "www" + "/" + file_name
+        source_path = f"{ha_storage}/valetudo_camera/{file_name}"
+        destination_path = f"{ha_dir}/www/{file_name}"
         if user_input is None:
-            shutil.copy(source_path, destination_path)
+            if os.path.exists(source_path):
+                _LOGGER.info(f"Logs {file_name} found in {source_path}")
+                shutil.copy(source_path, destination_path)
+            else:
+                _LOGGER.debug(f"Logs {file_name} not found in {source_path}")
             return await self.async_step_init()
         return self.async_show_form(step_id="download")
 

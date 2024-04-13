@@ -188,6 +188,16 @@
       }
     }
   },
+  "vacuum_status": {
+    "connected": "Verbonden",
+    "disconnected": "Losgekoppeld",
+    "charging": "Opladen",
+    "cleaning": "Reinigen",
+    "docked": "Gedockt",
+    "idle": "Inactief",
+    "paused": "Gepauzeerd",
+    "returning": "Terugkerend"
+  },
   "services": {
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",

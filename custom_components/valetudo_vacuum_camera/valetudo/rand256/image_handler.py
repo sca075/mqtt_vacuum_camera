@@ -2,7 +2,7 @@
 Image Handler Module for Valetudo Re Vacuums.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Version: v2024.04.0
+Version: v2024.04.2
 """
 
 from __future__ import annotations
@@ -62,6 +62,7 @@ class ReImageHandler(object):
         self.trim_right = None  # Trim right
         self.trim_up = None  # Trim up
         self.zooming = False  # Zooming flag
+        self.file_name = self.shared.file_name  # File name
         self.offset_x = 0  # offset x for the aspect ratio.
         self.offset_y = 0  # offset y for the aspect ratio.
 
@@ -71,7 +72,6 @@ class ReImageHandler(object):
         detect_colour: Color,
         margin_size: int = 0,
         rotate: int = 0,
-        zoom: bool = False,
     ) -> NumpyArray:
         """
         Automatically crops and trims a numpy array and returns the processed image.
@@ -80,8 +80,6 @@ class ReImageHandler(object):
             _LOGGER.debug(
                 f"Image original size: {image_array.shape[1]}, {image_array.shape[0]}"
             )
-            center_x = image_array.shape[1] // 2
-            center_y = image_array.shape[0] // 2
             # Find the coordinates of the first occurrence of a non-background color
             nonzero_coords = np.column_stack(
                 np.where(image_array != list(detect_colour))
@@ -133,29 +131,9 @@ class ReImageHandler(object):
                     image_array.shape[1],
                     image_array.shape[0],
                 )
-                _LOGGER.debug(self.crop_area)
                 self.img_size = (image_array.shape[1], image_array.shape[0])
                 del trimmed_width, trimmed_height
                 return image_array
-            # Calculate the cropping sizes after that the trim is apply
-            crop_area = trimmed_height * trimmed_width
-            origin_area = image_array.shape[1] * image_array.shape[0]
-            crop_percentage = 100 - round((origin_area / crop_area), 2)
-            crop_size = (int(min(center_x, center_y) * crop_percentage) / 100) / 100
-            _LOGGER.debug(
-                "Calculated image reduction of {:.2f}% with crop size {:.2f}%".format(
-                    crop_percentage, crop_size
-                )
-            )
-            del (
-                crop_size,
-                crop_percentage,
-                origin_area,
-                crop_area,
-                trimmed_width,
-                trimmed_height,
-            )
-            del center_x, center_y, trim_d, trim_u, trim_l, trim_r
             # Store Crop area of the original image_array we will use from the next frame.
             self.auto_crop = [
                 self.trim_left,
@@ -163,21 +141,6 @@ class ReImageHandler(object):
                 self.trim_right,
                 self.trim_down,
             ]
-        # if (
-        #     zoom
-        #     and self.shared.vacuum_state == "cleaning"
-        #     and self.shared.image_auto_zoom
-        # ):
-        #     # Zoom the image based on the robot's position.
-        #     _LOGGER.debug(
-        #         f"{self.shared.file_name}: Zooming the image on room {self.robot_in_room['room']}."
-        #     )
-        #     trim_left = (self.robot_in_room["left"] // 10) # - margin_size
-        #     trim_right = (self.robot_in_room["right"] // 10)  # + margin_size
-        #     trim_up = (self.robot_in_room["up"] // 10) # - margin_size
-        #     trim_down = (self.robot_in_room["down"] // 10) # + margin_size
-        #     trimmed = image_array[trim_up:trim_down, trim_left:trim_right]
-        # else:
         # Apply the auto-calculated trims to the rotated image
         trimmed = image_array[
             self.auto_crop[1] : self.auto_crop[3],
@@ -213,7 +176,9 @@ class ReImageHandler(object):
         _LOGGER.debug("Trimmed image size: %s", self.crop_img_size)
         return rotated
 
-    def extract_room_properties(self, json_data: JsonType, destinations: JsonType):
+    def extract_room_properties(
+        self, json_data: JsonType, destinations: JsonType
+    ) -> RoomsProperties:
         """Extract the room properties."""
         unsorted_id = ImageData.get_rrm_segments_ids(json_data)
         size_x, size_y = ImageData.get_rrm_image_size(json_data)
@@ -279,6 +244,7 @@ class ReImageHandler(object):
         id_count = 1
         for point in points_data:
             point_name = point.get("name")
+            coordinates = point.get("coordinates")
             if coordinates and len(coordinates) > 0:
                 coordinates = point.get("coordinates")
                 x1, y1 = coordinates
@@ -319,13 +285,11 @@ class ReImageHandler(object):
 
         try:
             if m_json is not None:
-                _LOGGER.info(
-                    self.shared.file_name + ":Composing the image for the camera."
-                )
+                _LOGGER.info(self.file_name + ":Composing the image for the camera.")
                 # buffer json data
                 self.json_data = m_json
                 if self.room_propriety:
-                    _LOGGER.info(self.shared.file_name + ": Supporting Rooms Cleaning!")
+                    _LOGGER.info(self.file_name + ": Supporting Rooms Cleaning!")
                 size_x, size_y = self.data.get_rrm_image_size(m_json)
                 ##########################
                 self.img_size = {
@@ -385,13 +349,11 @@ class ReImageHandler(object):
                 pixel_size = 5
                 room_id = 0
                 if self.frame_number == 0:
-                    _LOGGER.info(
-                        self.shared.file_name + ": Empty image with background color"
-                    )
+                    _LOGGER.info(self.file_name + ": Empty image with background color")
                     img_np_array = await self.draw.create_empty_image(
                         5120, 5120, color_background
                     )
-                    _LOGGER.info(self.shared.file_name + ": Overlapping Layers")
+                    _LOGGER.info(self.file_name + ": Overlapping Layers")
                     # this below are floor data
                     pixels = self.data.from_rrm_to_compressed_pixels(
                         floor_data,
@@ -440,7 +402,7 @@ class ReImageHandler(object):
                                 if room_id > 15:
                                     room_id = 0
 
-                    _LOGGER.info(self.shared.file_name + ": Completed floor Layers")
+                    _LOGGER.info(self.file_name + ": Completed floor Layers")
                     # Drawing walls.
                     walls = self.data.from_rrm_to_compressed_pixels(
                         walls_data,
@@ -453,7 +415,7 @@ class ReImageHandler(object):
                         img_np_array = await self.draw.from_json_to_image(
                             img_np_array, walls, pixel_size, color_wall
                         )
-                        _LOGGER.info(self.shared.file_name + ": Completed base Layers")
+                        _LOGGER.info(self.file_name + ": Completed base Layers")
                     if (room_id > 0) and not self.room_propriety:
                         self.room_propriety = await self.get_rooms_attributes(
                             destinations
@@ -469,9 +431,7 @@ class ReImageHandler(object):
                 # If there is a zone clean we draw it now.
                 self.frame_number += 1
                 img_np_array = await self.async_copy_array(self.img_base_layer)
-                _LOGGER.debug(
-                    self.shared.file_name + ": Frame number %s", self.frame_number
-                )
+                _LOGGER.debug(self.file_name + ": Frame number %s", self.frame_number)
                 if self.frame_number > 5:
                     self.frame_number = 0
                 # All below will be drawn each time
@@ -521,19 +481,17 @@ class ReImageHandler(object):
                         robot_position[1],
                         robot_position_angle,
                         color_robot,
-                        self.shared.file_name,
+                        self.file_name,
                     )
                 _LOGGER.debug(
-                    self.shared.file_name
-                    + " Auto cropping the image with rotation: %s",
-                    int(self.shared.image_rotate),
+                    f"{self.file_name}:"
+                    f" Auto cropping the image with rotation {int(self.shared.image_rotate)}"
                 )
                 img_np_array = await self.auto_crop_and_trim_array(
                     img_np_array,
                     color_background,
                     int(self.shared.margins),
                     int(self.shared.image_rotate),
-                    self.zooming,
                 )
                 pil_img = Image.fromarray(img_np_array, mode="RGBA")
                 del img_np_array  # unload memory
@@ -541,7 +499,6 @@ class ReImageHandler(object):
                 if (
                     self.shared.image_auto_zoom
                     and self.shared.vacuum_state == "cleaning"
-                    and self.zooming
                     and self.shared.image_zoom_lock_ratio
                     or self.shared.image_aspect_ratio != "None"
                 ):
@@ -570,7 +527,7 @@ class ReImageHandler(object):
                             )
                         )
                         _LOGGER.debug(
-                            f"{self.shared.file_name}: Image Aspect Ratio ({wsf}, {hsf}): {new_width}x{new_height}"
+                            f"{self.file_name}: Image Aspect Ratio ({wsf}, {hsf}): {new_width}x{new_height}"
                         )
                         return resized
                     else:
@@ -579,7 +536,7 @@ class ReImageHandler(object):
 
         except Exception as e:
             _LOGGER.warning(
-                f"{self.shared.file_name} : Error in get_image_from_json: {e}",
+                f"{self.file_name} : Error in get_image_from_json: {e}",
                 exc_info=True,
             )
             return None
@@ -638,16 +595,9 @@ class ReImageHandler(object):
                     "angle": angle,
                     "in_room": self.robot_in_room["room"],
                 }
-                if (
-                    self.active_zones
-                    and self.robot_in_room["id"] < len(self.active_zones) - 1
-                ):  # issue #100 Index out of range.
-                    self.zooming = bool(self.active_zones[self.robot_in_room["id"]])
-                else:
-                    self.zooming = False
                 return temp
         # else we need to search and use the async method
-        _LOGGER.debug(f"{self.shared.file_name} changed room.. searching..")
+        _LOGGER.debug(f"{self.file_name} changed room.. searching..")
         room_count = 0
         last_room = None
         if self.rooms_pos:
@@ -679,13 +629,13 @@ class ReImageHandler(object):
                         "in_room": self.robot_in_room["room"],
                     }
                     _LOGGER.debug(
-                        f"{self.shared.file_name} is in {self.robot_in_room['room']}"
+                        f"{self.file_name} is in {self.robot_in_room['room']}"
                     )
                     del room, corners, robot_x, robot_y  # free memory.
                     return temp
             del room, corners  # free memory.
             _LOGGER.debug(
-                f"{self.shared.file_name} not located within Camera Rooms coordinates."
+                f"{self.file_name} not located within Camera Rooms coordinates."
             )
             self.zooming = False
             self.robot_in_room = last_room
@@ -702,7 +652,7 @@ class ReImageHandler(object):
         if not self.calibration_data:
             self.calibration_data = []
             self.img_rotate = rotation_angle
-            _LOGGER.info("Getting Calibrations points %s", self.crop_area)
+            _LOGGER.info(f"Getting Calibrations points {self.crop_area}")
             # Calculate the calibration points in the vacuum coordinate system
             # Valetudo Re version need corrections of the coordinates and are implemented with *10
 
@@ -783,7 +733,7 @@ class ReImageHandler(object):
 
         _LOGGER.debug(f"Image Size: Width: {width} Height: {height}")
         _LOGGER.debug(
-            f"Image Crop Size: Width: {self.crop_img_size[0]} Height: {self.crop_img_size[1]}"
+            f"Trimmed Image Size: Width: {self.crop_img_size[0]} Height: {self.crop_img_size[1]}"
         )
         if wsf == 1 and hsf == 1:
             if rotation == 0 or rotation == 180:
@@ -856,5 +806,5 @@ class ReImageHandler(object):
 
     async def async_copy_array(self, original_array: NumpyArray) -> NumpyArray:
         """Copy the numpy array."""
-        _LOGGER.debug(f"{self.shared.file_name}: Copying the array.")
+        _LOGGER.debug(f"{self.file_name}: Copying the array.")
         return np.copy(original_array)

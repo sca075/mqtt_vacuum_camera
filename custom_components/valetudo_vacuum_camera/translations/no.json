@@ -188,6 +188,16 @@
       }
     }
   },
+  "vacuum_status": {
+    "connected": "Tilkoblet",
+    "disconnected": "Frakoblet",
+    "charging": "Lading",
+    "cleaning": "Rengjøring",
+    "docked": "Dokket",
+    "idle": "Inaktiv",
+    "paused": "Pause",
+    "returning": "Retur"
+  },
   "services": {
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",

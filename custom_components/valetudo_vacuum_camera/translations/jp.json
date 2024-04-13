@@ -185,6 +185,16 @@
       }
     }
   },
+  "vacuum_status": {
+    "connected": "接続されました",
+    "disconnected": "切断されました",
+    "charging": "充電中",
+    "cleaning": "クリーニング中",
+    "docked": "ドッキング",
+    "idle": "アイドル",
+    "paused": "一時停止",
+    "returning": "戻る"
+  },
   "services": {
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",

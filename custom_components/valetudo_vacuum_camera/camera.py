@@ -1,6 +1,6 @@
 """
 Camera
-Version: v2024.04.01
+Version: v2024.04.02
 Image Processing Threading implemented on Version 1.5.7.
 """
 
@@ -167,7 +167,7 @@ class ValetudoCamera(Camera):
         self._attr_brand = "Valetudo Vacuum Camera"
         self._attr_name = "Camera"
         self._attr_is_on = True
-        self._directory_path = os.getcwd()  # get Home Assistant path
+        self._directory_path = self.hass.config.path()  # get Home Assistant path
         self._shared = CameraShared()  # Camera Shared data between threads.
         self._mqtt_listen_topic = device_info.get(CONF_VACUUM_CONNECTION_STRING)
         if self._mqtt_listen_topic:
@@ -183,7 +183,9 @@ class ValetudoCamera(Camera):
                 f"{round((ProcInsp().psutil.virtual_memory().available / (1024 * 1024)), 1)}"
                 f" and In Use: {round((ProcInsp().psutil.virtual_memory().used / (1024 * 1024)), 1)}"
             )
-            self._storage_path = f"{self._directory_path}/{STORAGE_DIR}/valetudo_camera"
+            self._storage_path = f"{self.hass.config.path(STORAGE_DIR)}/valetudo_camera"
+            if not os.path.exists(self._storage_path):
+                self._storage_path = f"{self._directory_path}/{STORAGE_DIR}"
             self._snapshots = Snapshots(self._storage_path)
             self.snapshot_img = f"{self._storage_path}/{self._shared.file_name}.png"
             self.log_file = f"{self._storage_path}/{self._shared.file_name}.zip"
@@ -422,6 +424,8 @@ class ValetudoCamera(Camera):
 
     async def async_update(self):
         """Camera Frame Update."""
+        # Get the active user language
+        self._shared.user_language = await self.get_active_user_id()
         # check and update the vacuum reported state
         if not self._mqtt:
             _LOGGER.debug(f"{self._shared.file_name}: No MQTT data available.")
@@ -515,12 +519,13 @@ class ValetudoCamera(Camera):
                     self.Image = await self.async_pil_to_bytes(pil_img)
                     # take a snapshot if we meet the conditions.
                     if self._shared.snapshot_take:
-                        if self._shared.is_rand:
-                            await self.take_snapshot(self._rrm_data, pil_img)
-                        else:
-                            await self.take_snapshot(parsed_json, pil_img)
+                        if pil_img:
+                            if self._shared.is_rand:
+                                await self.take_snapshot(self._rrm_data, pil_img)
+                            else:
+                                await self.take_snapshot(parsed_json, pil_img)
                     # clean up
-                    del pil_img
+                    del pil_img,
                     _LOGGER.debug(f"{self._shared.file_name}: Image update complete")
                     processing_time = round((time.perf_counter() - start_time), 3)
                     # Adjust the frame interval to the processing time.
@@ -652,3 +657,29 @@ class ValetudoCamera(Camera):
             )
         except (ValueError, IndexError, UnboundLocalError) as e:
             _LOGGER.error("Error while populating colors: %s", e)
+
+    async def get_active_user_id(self) -> Optional[str]:
+        """
+        Get the active user id from the frontend user data file.
+        Return the language of the active user.
+        """
+        active_user_id = None
+        users = await self.hass.auth.async_get_users()
+        for user in users:
+            if user.name.lower() not in ['home assistant content', 'supervisor'] and user.is_active:
+                active_user_id = user.id
+                break
+
+        file_path = f"{self.hass.config.path(STORAGE_DIR)}/frontend.user_data_{active_user_id}"
+
+        try:
+            with open(file_path, "r") as file:
+                data = json.load(file)
+                language = data["data"]["language"]["language"]
+                return language
+        except FileNotFoundError:
+            _LOGGER.info("User ID File not found: %s", file_path)
+            return "en"
+        except KeyError:
+            _LOGGER.info("User ID Language not found: %s", file_path)
+            return "en"
