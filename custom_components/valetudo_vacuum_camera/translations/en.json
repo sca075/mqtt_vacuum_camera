@@ -185,17 +185,19 @@
         "opt_5": "Colours Rooms 9 to 16",
         "opt_6": "Copy Camera Logs to www"
       }
+    },
+    "vacuum_status": {
+      "options": {
+        "connected": "Connected",
+        "disconnected": "Disconnected",
+        "charging": "Charging",
+        "cleaning": "Cleaning",
+        "docked": "Docked",
+        "idle": "Idle",
+        "paused": "Paused",
+        "returning": "Returning"
+      }
     }
-  },
-  "vacuum_status": {
-    "connected": "Connected",
-    "disconnected": "Disconnected",
-    "charging": "Charging",
-    "cleaning": "Cleaning",
-    "docked": "Docked",
-    "idle": "Idle",
-    "paused": "Paused",
-    "returning": "Returning"
   },
   "services": {
     "turn_off": {
