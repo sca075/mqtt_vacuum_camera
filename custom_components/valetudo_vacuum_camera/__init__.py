@@ -304,6 +304,7 @@ async def move_data_to_valetudo_camera(storage):
             _LOGGER.debug(f"Path {storage_folder} already exist.")
         # Move files matching the patterns to the valetudo_camera folder
         else:
+
             file_patterns = ["*.zip", "*.png", "*.log", "*.raw"]
             for pattern in file_patterns:
                 files_to_move = glob.glob(os.path.join(storage_folder, pattern))

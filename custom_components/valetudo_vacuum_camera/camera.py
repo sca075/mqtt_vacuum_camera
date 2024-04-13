@@ -20,6 +20,7 @@ from typing import Any, Optional
 import voluptuous as vol
 from PIL import Image
 from homeassistant import config_entries, core
+
 # from homeassistant.core import Event, HomeAssistant, ServiceCall, callback
 from homeassistant.components.camera import PLATFORM_SCHEMA, Camera, CameraEntityFeature
 from homeassistant.const import CONF_NAME, CONF_UNIQUE_ID
@@ -676,7 +677,6 @@ class ValetudoCamera(Camera):
         file_path = (
             f"{self.hass.config.path(STORAGE_DIR)}/frontend.user_data_{active_user_id}"
         )
-
         try:
             with open(file_path, "r") as file:
                 data = json.load(file)
