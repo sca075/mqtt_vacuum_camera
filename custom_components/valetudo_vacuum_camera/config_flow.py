@@ -1,4 +1,4 @@
-"""config_flow v2024.04.2
+"""config_flow 2024.04.3
 IMPORTANT: When adding new options to the camera
 it will be mandatory to update const.py update_options.
 Format of the new constants must be CONST_NAME = "const_name" update also
@@ -90,6 +90,10 @@ from .const import (
     COLOR_WALL,
     COLOR_ZONE_CLEAN,
     CONF_ASPECT_RATIO,
+    CONF_OFFSET_TOP,
+    CONF_OFFSET_BOTTOM,
+    CONF_OFFSET_LEFT,
+    CONF_OFFSET_RIGHT,
     CONF_AUTO_ZOOM,
     CONF_ZOOM_LOCK_RATIO,
     CONF_SNAPSHOTS_ENABLE,
@@ -103,6 +107,7 @@ from .const import (
     IS_ALPHA,
     IS_ALPHA_R1,
     IS_ALPHA_R2,
+    IS_OFFSET,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -157,6 +162,10 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     "rotate_image": "0",
                     "margins": "100",
                     "aspect_ratio": "None",
+                    "offset_top": 0,
+                    "offset_bottom": 0,
+                    "offset_left": 0,
+                    "offset_right": 0,
                     "auto_zoom": False,
                     "zoom_lock_ratio": True,
                     "show_vac_status": False,
@@ -261,6 +270,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         self.options = {}
         self.bk_options = self.config_entry.options
         self._check_alpha = False
+        self._check_offset = False
         _LOGGER.debug(
             "Options edit in progress.. options before edit: %s", dict(self.bk_options)
         )
@@ -339,6 +349,9 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Optional(
                         ATTR_MARGINS, default=config_entry.options.get("margins")
                     ): cv.string,
+                    vol.Optional(
+                        IS_OFFSET, default=self._check_offset
+                    ): BooleanSelector(),
                     vol.Required(
                         CONF_ASPECT_RATIO,
                         default=config_entry.options.get("aspect_ratio"),
@@ -351,14 +364,26 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         CONF_ZOOM_LOCK_RATIO,
                         default=config_entry.options.get("zoom_lock_ratio"),
                     ): BooleanSelector(),
-                    # vol.Optional(
-                    #     CONF_EXPORT_SVG,
-                    #     default=config_entry.options.get(CONF_EXPORT_SVG, False),
-                    # ): BooleanSelector(),
                     vol.Optional(
                         CONF_SNAPSHOTS_ENABLE,
                         default=config_entry.options.get(CONF_SNAPSHOTS_ENABLE, True),
                     ): BooleanSelector(),
+                }
+            )
+            self.IMG_SCHEMA_2 = vol.Schema(
+                {
+                    vol.Optional(
+                        CONF_OFFSET_TOP, default=config_entry.options.get("offset_top")
+                    ): cv.positive_int,
+                    vol.Optional(
+                        CONF_OFFSET_BOTTOM, default=config_entry.options.get("offset_bottom")
+                    ): cv.positive_int,
+                    vol.Optional(
+                        CONF_OFFSET_LEFT, default=config_entry.options.get("offset_left")
+                    ): cv.positive_int,
+                    vol.Optional(
+                        CONF_OFFSET_RIGHT, default=config_entry.options.get("offset_right")
+                    ): cv.positive_int,
                 }
             )
             self.TEXT_OPTIONS_SCHEMA = vol.Schema(
@@ -643,12 +668,38 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     "enable_www_snapshots": user_input.get(CONF_SNAPSHOTS_ENABLE),
                 }
             )
-
-            return await self.async_step_opt_save()
+            self._check_offset = user_input.get(IS_OFFSET)
+            if self._check_offset:
+                self._check_offset = False
+                return await self.async_step_image_offset()
+            else:
+                return await self.async_step_opt_save()
 
         return self.async_show_form(
             step_id="image_opt",
             data_schema=self.IMG_SCHEMA,
+            description_placeholders=self.options,
+        )
+
+    async def async_step_image_offset(self, user_input: Optional[Dict[str, Any]] = None):
+        """
+        Images Offset Configuration
+        """
+        if user_input is not None:
+            self.options.update(
+                {
+                    "offset_top": user_input.get(CONF_OFFSET_TOP),
+                    "offset_bottom": user_input.get(CONF_OFFSET_BOTTOM),
+                    "offset_left": user_input.get(CONF_OFFSET_LEFT),
+                    "offset_right": user_input.get(CONF_OFFSET_RIGHT),
+                }
+            )
+
+            return await self.async_step_opt_save()
+
+        return self.async_show_form(
+            step_id="image_offset",
+            data_schema=self.IMG_SCHEMA_2,
             description_placeholders=self.options,
         )
 
