@@ -376,13 +376,16 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         CONF_OFFSET_TOP, default=config_entry.options.get("offset_top")
                     ): cv.positive_int,
                     vol.Optional(
-                        CONF_OFFSET_BOTTOM, default=config_entry.options.get("offset_bottom")
+                        CONF_OFFSET_BOTTOM,
+                        default=config_entry.options.get("offset_bottom"),
                     ): cv.positive_int,
                     vol.Optional(
-                        CONF_OFFSET_LEFT, default=config_entry.options.get("offset_left")
+                        CONF_OFFSET_LEFT,
+                        default=config_entry.options.get("offset_left"),
                     ): cv.positive_int,
                     vol.Optional(
-                        CONF_OFFSET_RIGHT, default=config_entry.options.get("offset_right")
+                        CONF_OFFSET_RIGHT,
+                        default=config_entry.options.get("offset_right"),
                     ): cv.positive_int,
                 }
             )
@@ -681,7 +684,9 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             description_placeholders=self.options,
         )
 
-    async def async_step_image_offset(self, user_input: Optional[Dict[str, Any]] = None):
+    async def async_step_image_offset(
+        self, user_input: Optional[Dict[str, Any]] = None
+    ):
         """
         Images Offset Configuration
         """
