@@ -21,7 +21,14 @@ margins. This value add the pixels at each side of the image. Default is 100 pix
 
 ![Screenshot 2024-03-13 at 17 17 13](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/e228fc96-8e95-4be9-af9e-b21a259e8289)
 
-***3.*** Aspect Ratio.
+***3.*** Image offset
+
+The image offset option, will cut the Lidar impefections from the images. This option used with the auto-trim will reduce the image size, that anyway can be keep at desired aspect ratio. The below video explain how to resize the image, the menu values are design to _work at rotation 0_ .
+
+https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/4e1cee93-2ccd-413e-8cfa-79f4dcf76635
+
+
+***4.*** Aspect Ratio.
 
 The aspect ratio of an image after [pre-processing](https://github.com/sca075/valetudo_vacuum_camera/blob/main/docs/croping_trimming.md)  should be 2:1. Anyway as per the layout
 differ on each floor, it could be possible it would result on different aspect ratio. This option allows to select the
@@ -31,7 +38,7 @@ Be sure to **_lock the aspect ratio_**  if you want to keep the selected aspect 
 
 ![Screenshot 2024-03-13 at 17 18 30](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/016e4282-2d4a-4cee-a4b7-b3dbf8558898)
 
-***3.*** Auto Zoom and Lock Aspect Ratio.
+***5.*** Auto Zoom and Lock Aspect Ratio.
 
 [Auto Zooming the room (segment)](
 https://github.com/sca075/valetudo_vacuum_camera/blob/main/docs/auto_zoom.md) when the vacuum is cleaning it. The full zoom will change the
@@ -42,7 +49,7 @@ Ratio.
 
 ![Screenshot 2024-03-13 at 17 14 10](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/fb283c47-12e3-42db-b86e-47f3d0f77efa)
 
-***4.*** Export PNG snapshots.
+***6.*** Export PNG snapshots.
 
 The camera will shoot automatically snapshots of the maps and save them in the folder `www` of the Home Assistant. The
 images are saved in PNG format and named like this example `snapshot_your_vacuum.png`. Disabling this function will
