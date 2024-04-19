@@ -48,10 +48,10 @@
                     "offset_right": "Offset Right"
                 },
                 "data_description": {
-                    "offset_top": "Offset Top",
-                    "offset_bottom": "Offset Bottom",
-                    "offset_left": "Offset Left",
-                    "offset_right": "Offset Right"
+                    "offset_top": "Offset Top rotation 0 in pixels.",
+                    "offset_bottom": "Offset Bottom rotation 0 in pixels.",
+                    "offset_left": "Offset Left rotation 0 in pixels.",
+                    "offset_right": "Offset Right rotation 0 in pixels."
                 },
                 "description": "Camera Image Offset",
                 "title": "Image Offset"

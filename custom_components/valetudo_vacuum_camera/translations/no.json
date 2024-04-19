@@ -3,16 +3,16 @@
     "step": {
       "user": {
         "data": {
-          "vacuum_entity": "Støvsuger enhets-ID",
-          "vacuum_config_entry": "Støvsuger konfigurasjonsdata",
-          "vacuum_map": "Støvsuger emne",
+          "vacuum_entity": "Støvsuger Entitets-ID",
+          "vacuum_config_entry": "Støvsuger Konfigurasjonsdata",
+          "vacuum_map": "Støvsuger Emne",
           "vacuum_identifiers": "Støvsuger MQTT-ID",
           "unique_id": ""
         },
         "data_description": {
-          "vacuum_entity": "Støvsuger enhets-ID"
+          "vacuum_entity": "Støvsuger Entitets-ID"
         },
-        "description": "Kameraoppsett.",
+        "description": "Kamerainnstilling.",
         "title": "Valetudo Kameraoppsett"
       }
     }
@@ -29,32 +29,52 @@
       "image_opt": {
         "data": {
           "rotate_image": "Roter",
-          "margins": "150",
+          "margins": "Bildemarg",
+          "add_offset": "Legg til Forflytning",
           "auto_zoom": "Aktiver automatisk zoom",
-          "enable_www_snapshots": "Eksporter PNG øyeblikksbilder."
+          "zoom_lock_ratio": "Lås Aspektforhold.",
+          "aspect_ratio": "Bildeforhold.",
+          "enable_www_snapshots": "Eksporter PNG-øyeblikksbilder."
         },
         "data_description": {
-          "rotate_image": "Grad 0, 90, 180, 270",
-          "margins": "Automatisk beskjæringsmarginer i piksler."
+          "rotate_image": "Grader 0, 90, 180, 270",
+          "margins": "Automatisk Trim Marg i piksler.",
+          "aspect_ratio": "Bildeforhold."
         },
-        "description": "Kamera bildealternativer",
+        "description": "Kamera Bildealternativer",
         "title": "Bildealternativer"
+      },
+      "image_offset": {
+        "data": {
+          "offset_top": "Forflytning Topp",
+          "offset_bottom": "Forflytning Bunn",
+          "offset_left": "Forflytning Venstre",
+          "offset_right": "Forflytning Høyre"
+        },
+        "data_description": {
+          "offset_top": "Topp forflytning rotasjon 0 i piksler.",
+          "offset_bottom": "Bunn forflytning rotasjon 0 i piksler.",
+          "offset_left": "Venstre forflytning rotasjon 0 i piksler.",
+          "offset_right": "Høyre forflytning rotasjon 0 i piksler."
+        },
+        "description": "Kamera Bilde Forflytning",
+        "title": "Bilde Forflytning"
       },
       "status_text": {
         "data": {
-          "show_vac_status": "Vis støvsugerstatus.",
-          "vac_status_font": "Skrifttype",
+          "show_vac_status": "Vis Støvsugerstatus.",
+          "vac_status_font": "Fira Sans",
           "vac_status_size": "Tekststørrelse",
-          "vac_status_position": "Tekstposisjon: Bunn(Av)",
+          "vac_status_position": "Tekstposisjon: Bunnen (AV)",
           "color_text": "[255, 255, 255]"
         },
         "data_description": {
-          "vac_status_font": "Tekstskrifttype, standard Fira Serif.",
-          "vac_status_size": "Tekststørrelse, standard 50.",
-          "color_text": "Farge på støvsugerstatus-teksten."
+          "vac_status_font": "Tekstfont standard Fira Serif.",
+          "vac_status_size": "Tekststørrelse standard 50.",
+          "color_text": "Støvsugerstatus Tekstfarge."
         },
         "description": "Bildealternativer",
-        "title": "Tekststatusalternativer"
+        "title": "Status Tekst Alternativer"
       },
       "base_colours": {
         "data": {
@@ -66,35 +86,35 @@
           "color_no_go": "[255, 0, 0]",
           "color_zone_clean": "[255, 255, 255]",
           "color_background": "[0, 125, 255]",
-          "add_base_alpha": "Konfigurer gjennomsiktighet:"
+          "add_base_alpha": "Konfigurer Gjennomsiktighet:"
         },
         "data_description": {
           "color_charger": "Laderfarge.",
-          "color_move": "Flytt farge.",
+          "color_move": "Bevegelsesfarge.",
           "color_wall": "Veggfarge.",
           "color_robot": "Robotfarge.",
-          "color_go_to": "Gå til farge.",
-          "color_no_go": "Ikke gå farge.",
-          "color_zone_clean": "Sone ren farge.",
+          "color_go_to": "Gå-til-farge.",
+          "color_no_go": "Ikke-gå-farge.",
+          "color_zone_clean": "Sone rensefarge.",
           "color_background": "Bakgrunnsfarge."
         },
-        "description": "Kamera fargealternativer.",
-        "title": "Basefarger Oppsett"
+        "description": "Kamera Fargealternativer.",
+        "title": "Basisfarger Oppsett"
       },
       "alpha_1": {
         "data": {
           "alpha_charger": "Lader Alpha   ",
-          "alpha_move": "Flytter Alpha     ",
+          "alpha_move": "Bevegelser Alpha     ",
           "alpha_wall": "Vegg Alpha     ",
           "alpha_robot": "Robot Alpha     ",
-          "alpha_go_to": "Gå Til Området Alpha",
+          "alpha_go_to": "Gå til Område Alpha",
           "alpha_no_go": "Ikke Gå Område Alpha",
-          "alpha_zone_clean": "Sone Ren Alpha",
-          "alpha_background": "Bakgrunns Alpha",
+          "alpha_zone_clean": "Sone Rens Alpha",
+          "alpha_background": "Bakgrunn Alpha",
           "alpha_text": "Tekst Alpha      "
         },
-        "description": "Kamera alternativer. Alpha 1",
-        "title": "Alpha Chanel Basefarger"
+        "description": "Kameraalternativer. Alpha 1",
+        "title": "Alfa Kanal Basisfarger"
       },
       "rooms_colours_1": {
         "data": {
@@ -106,7 +126,7 @@
           "color_room_5": "[96, 123, 139]",
           "color_room_6": "[224, 255, 255]",
           "color_room_7": "[209, 238, 238]",
-          "add_room_1_alpha": "Konfigurer gjennomsiktighet:"
+          "add_room_1_alpha": "Konfigurer Gjennomsiktighet:"
         },
         "data_description": {
           "color_room_0": "Rom 1, gulvfarge.",
@@ -118,7 +138,7 @@
           "color_room_6": "Rom 7",
           "color_room_7": "Rom 8"
         },
-        "description": "Kamera fargealternativer.",
+        "description": "Kamera Fargealternativer.",
         "title": "Rom 1 til 8 Farger"
       },
       "rooms_colours_2": {
@@ -131,7 +151,7 @@
           "color_room_13": "[245, 176, 65]",
           "color_room_14": "[82, 190, 128]",
           "color_room_15": "[72, 201, 176]",
-          "add_room_2_alpha": "Konfigurer gjennomsiktighet:"
+          "add_room_2_alpha": "Konfigurer Gjennomsiktighet:"
         },
         "data_description": {
           "color_room_8": "Rom 9",
@@ -143,7 +163,7 @@
           "color_room_14": "Rom 15",
           "color_room_15": "Rom 16"
         },
-        "description": "Kamera fargealternativer.",
+        "description": "Kamera Fargealternativer.",
         "title": "Rom 9 til 15 Farger"
       },
       "alpha_2": {
@@ -157,8 +177,8 @@
           "alpha_room_6": "Rom 7",
           "alpha_room_7": "Rom 8"
         },
-        "description": "Kamera alternativer. Alpha 2",
-        "title": "Alpha Chanel Rom Farger"
+        "description": "Kameraalternativer. Alpha 2",
+        "title": "Alfa Kanal Romfarger"
       },
       "alpha_3": {
         "data": {
@@ -171,32 +191,32 @@
           "alpha_room_14": "Rom 15",
           "alpha_room_15": "Rom 16"
         },
-        "description": "Kamera alternativer. Alpha 3",
-        "title": "Alpha Chanel Rom Farger"
+        "description": "Kameraalternativer. Alpha 3",
+        "title": "Alfa Kanal Romfarger"
       }
     }
   },
   "selector": {
     "camera_config_action": {
       "options": {
-        "opt_1": "Konfigurer bilde",
-        "opt_2": "Konfigurer status Tekst",
-        "opt_3": "Konfigurer generelle farger",
+        "opt_1": "Konfigurer Bilde",
+        "opt_2": "Konfigurer Status Tekst",
+        "opt_3": "Konfigurer Generelle Farger",
         "opt_4": "Farger Rom 1 til 8",
         "opt_5": "Farger Rom 9 til 16",
-        "opt_6": "Kopier kamera logger til www"
+        "opt_6": "Kopier Kameralogger til www"
       }
     },
     "vacuum_status": {
       "options": {
         "connected": "Tilkoblet",
         "disconnected": "Frakoblet",
-        "charging": "Lading",
-        "cleaning": "Rengjøring",
-        "docked": "Dokket",
+        "charging": "Lader",
+        "cleaning": "Renser",
+        "docked": "Fortøyd",
         "idle": "Inaktiv",
-        "paused": "Pause",
-        "returning": "Retur"
+        "paused": "Pauset",
+        "returning": "Returnerer"
       }
     }
   },

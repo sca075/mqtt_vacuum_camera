@@ -9,8 +9,7 @@
     "issue_tracker": "https://github.com/sca075/valetudo_vacuum_camera/issues",
     "requirements": [
         "pillow==10.2.0",
-        "numpy",
-        "svgwrite==1.4.3"
+      "numpy"
     ],
-    "version": "2024.04.2"
+  "version": "2024.04.3"
 }
