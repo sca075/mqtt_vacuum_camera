@@ -122,7 +122,7 @@ VACUUM_SCHEMA = vol.Schema(
 
 
 class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
-    VERSION = 3.0
+    VERSION = 3.1
 
     def __init__(self):
         self.data = {}
