@@ -2,7 +2,7 @@
 Image Handler Module.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Version: 2024.04
+Version: 2024.04.03
 """
 
 from __future__ import annotations
@@ -80,6 +80,10 @@ class MapImageHandler(object):
         self.trim_left = None  # memory stored trims calculated once.
         self.trim_right = None  # memory stored trims calculated once.
         self.trim_up = None  # memory stored trims calculated once.
+        self.offset_top = self.shared.offset_top  # offset top
+        self.offset_bottom = self.shared.offset_down  # offset bottom
+        self.offset_left = self.shared.offset_left  # offset left
+        self.offset_right = self.shared.offset_right  # offset right
         self.offset_x = 0  # offset x for the aspect ratio.
         self.offset_y = 0  # offset y for the aspect ratio.
 
@@ -117,10 +121,10 @@ class MapImageHandler(object):
                     )
                 )
                 # Calculate and store the trims coordinates with margins
-                self.trim_left = int(min_x) - margin_size
-                self.trim_up = int(min_y) - margin_size
-                self.trim_right = int(max_x) + margin_size
-                self.trim_down = int(max_y) + margin_size
+                self.trim_left = int(min_x) + self.offset_left - margin_size
+                self.trim_up = int(min_y) + self.offset_top - margin_size
+                self.trim_right = int(max_x) - self.offset_right + margin_size
+                self.trim_down = int(max_y) - self.offset_bottom + margin_size
                 del min_y, min_x, max_x, max_y
                 _LOGGER.debug(
                     "{}: Calculated trims coordinates right {}, bottom {}, left {}, up {}.".format(

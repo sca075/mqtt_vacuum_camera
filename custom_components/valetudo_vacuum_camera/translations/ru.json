@@ -3,25 +3,25 @@
     "step": {
       "user": {
         "data": {
-          "vacuum_entity": "Идентификатор Сущности Пылесоса",
-          "vacuum_config_entry": "Данные Конфигурации Пылесоса",
-          "vacuum_map": "Тема Пылесоса",
-          "vacuum_identifiers": "Идентификатор MQTT Пылесоса",
+          "vacuum_entity": "Идентификатор устройства пылесоса",
+          "vacuum_config_entry": "Конфигурационные данные устройства пылесоса",
+          "vacuum_map": "Тема устройства пылесоса",
+          "vacuum_identifiers": "Идентификатор устройства пылесоса в MQTT",
           "unique_id": ""
         },
         "data_description": {
-          "vacuum_entity": "Идентификатор Сущности Пылесоса"
+          "vacuum_entity": "Идентификатор устройства пылесоса"
         },
-        "description": "Настройка Камеры.",
-        "title": "Настройка Камеры Valetudo"
+        "description": "Настройка камеры.",
+        "title": "Настройка камеры Valetudo"
       }
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Опции Камеры Valetudo",
-        "description": "Возможные Изменения:",
+        "title": "Опции камеры Valetudo",
+        "description": "Возможные изменения:",
         "data": {
           "camera_config_action": "Действие"
         }
@@ -29,32 +29,52 @@
       "image_opt": {
         "data": {
           "rotate_image": "Поворот",
-          "margins": "150",
-          "auto_zoom": "Включить Автоматическое Масштабирование",
-          "enable_www_snapshots": "Экспорт PNG снимков."
+          "margins": "Маржа изображения",
+          "add_offset": "Добавить смещение",
+          "auto_zoom": "Включить автоматическое масштабирование",
+          "zoom_lock_ratio": "Заблокировать соотношение сторон.",
+          "aspect_ratio": "Соотношение сторон изображения.",
+          "enable_www_snapshots": "Экспортировать снимки в PNG."
         },
         "data_description": {
-          "rotate_image": "Градус 0, 90, 180, 270",
-          "margins": "Автоматические Поля Отсечения в пикселях."
+          "rotate_image": "Градусы 0, 90, 180, 270",
+          "margins": "Автоматическое обрезание маржи в пикселях.",
+          "aspect_ratio": "Соотношение сторон изображения."
         },
-        "description": "Опции Изображения Камеры",
-        "title": "Опции Изображения"
+        "description": "Опции изображения камеры",
+        "title": "Опции изображения"
+      },
+      "image_offset": {
+        "data": {
+          "offset_top": "Смещение вверх",
+          "offset_bottom": "Смещение вниз",
+          "offset_left": "Смещение влево",
+          "offset_right": "Смещение вправо"
+        },
+        "data_description": {
+          "offset_top": "Смещение вверх при повороте 0 в пикселях.",
+          "offset_bottom": "Смещение вниз при повороте 0 в пикселях.",
+          "offset_left": "Смещение влево при повороте 0 в пикселях.",
+          "offset_right": "Смещение вправо при повороте 0 в пикселях."
+        },
+        "description": "Смещение изображения камеры",
+        "title": "Смещение изображения"
       },
       "status_text": {
         "data": {
-          "show_vac_status": "Показывать статус пылесоса.",
-          "vac_status_font": "Шрифт",
+          "show_vac_status": "Показать статус пылесоса.",
+          "vac_status_font": "Fira Sans",
           "vac_status_size": "Размер текста",
-          "vac_status_position": "Позиция текста: Внизу(Выкл)",
+          "vac_status_position": "Позиция текста: Вниз (ВЫКЛ)",
           "color_text": "[255, 255, 255]"
         },
         "data_description": {
-          "vac_status_font": "Шрифт текста, по умолчанию Fira Serif.",
-          "vac_status_size": "Размер текста, по умолчанию 50.",
+          "vac_status_font": "Шрифт текста по умолчанию Fira Serif.",
+          "vac_status_size": "Размер текста по умолчанию 50.",
           "color_text": "Цвет текста статуса пылесоса."
         },
-        "description": "Настройки изображения",
-        "title": "Настройки текста статуса"
+        "description": "Опции изображения",
+        "title": "Опции текста статуса"
       },
       "base_colours": {
         "data": {
@@ -66,35 +86,35 @@
           "color_no_go": "[255, 0, 0]",
           "color_zone_clean": "[255, 255, 255]",
           "color_background": "[0, 125, 255]",
-          "add_base_alpha": "Настройка Прозрачности:"
+          "add_base_alpha": "Настройка прозрачности:"
         },
         "data_description": {
-          "color_charger": "Цвет Зарядного Устройства.",
-          "color_move": "Цвет Движения.",
-          "color_wall": "Цвет Стены.",
-          "color_robot": "Цвет Робота.",
-          "color_go_to": "Цвет Для Перехода.",
-          "color_no_go": "Цвет Запретной Зоны.",
-          "color_zone_clean": "Цвет Зоны Очистки.",
-          "color_background": "Цвет Фона."
+          "color_charger": "Цвет зарядного устройства.",
+          "color_move": "Цвет перемещения.",
+          "color_wall": "Цвет стены.",
+          "color_robot": "Цвет робота.",
+          "color_go_to": "Цвет перехода к.",
+          "color_no_go": "Цвет запрета.",
+          "color_zone_clean": "Цвет чистой зоны.",
+          "color_background": "Цвет фона."
         },
-        "description": "Опции Цветов Камеры.",
-        "title": "Настройка Основных Цветов"
+        "description": "Опции цвета камеры.",
+        "title": "Основные цвета Настройка"
       },
       "alpha_1": {
         "data": {
-          "alpha_charger": "Прозрачность Зарядного Устройства   ",
-          "alpha_move": "Прозрачность Движения     ",
-          "alpha_wall": "Прозрачность Стены     ",
-          "alpha_robot": "Прозрачность Робота     ",
-          "alpha_go_to": "Прозрачность Перехода",
-          "alpha_no_go": "Прозрачность Запретной Зоны",
-          "alpha_zone_clean": "Прозрачность Зоны Очистки",
-          "alpha_background": "Прозрачность Фона",
-          "alpha_text": "Прозрачность Текста      "
+          "alpha_charger": "Альфа Зарядка   ",
+          "alpha_move": "Альфа Перемещение     ",
+          "alpha_wall": "Альфа Стена     ",
+          "alpha_robot": "Альфа Робот     ",
+          "alpha_go_to": "Альфа Перейти к",
+          "alpha_no_go": "Альфа Запретить",
+          "alpha_zone_clean": "Альфа Зона чистки",
+          "alpha_background": "Альфа Фон",
+          "alpha_text": "Альфа Текст      "
         },
-        "description": "Опции Камеры. Альфа 1",
-        "title": "Альфа Канал Основных Цветов"
+        "description": "Опции камеры. Альфа 1",
+        "title": "Канал альфа Базовые цвета"
       },
       "rooms_colours_1": {
         "data": {
@@ -106,7 +126,7 @@
           "color_room_5": "[96, 123, 139]",
           "color_room_6": "[224, 255, 255]",
           "color_room_7": "[209, 238, 238]",
-          "add_room_1_alpha": "Настройка Прозрачности:"
+          "add_room_1_alpha": "Настройка прозрачности:"
         },
         "data_description": {
           "color_room_0": "Комната 1, цвет пола.",
@@ -118,7 +138,7 @@
           "color_room_6": "Комната 7",
           "color_room_7": "Комната 8"
         },
-        "description": "Опции Цветов Камеры.",
+        "description": "Опции цвета камеры.",
         "title": "Комнаты 1 до 8 Цвета"
       },
       "rooms_colours_2": {
@@ -131,7 +151,7 @@
           "color_room_13": "[245, 176, 65]",
           "color_room_14": "[82, 190, 128]",
           "color_room_15": "[72, 201, 176]",
-          "add_room_2_alpha": "Настройка Прозрачности:"
+          "add_room_2_alpha": "Настройка прозрачности:"
         },
         "data_description": {
           "color_room_8": "Комната 9",
@@ -143,7 +163,7 @@
           "color_room_14": "Комната 15",
           "color_room_15": "Комната 16"
         },
-        "description": "Опции Цветов Камеры.",
+        "description": "Опции цвета камеры.",
         "title": "Комнаты 9 до 15 Цвета"
       },
       "alpha_2": {
@@ -157,8 +177,8 @@
           "alpha_room_6": "Комната 7",
           "alpha_room_7": "Комната 8"
         },
-        "description": "Опции Камеры. Альфа 2",
-        "title": "Альфа Канал Цветов Комнат"
+        "description": "Опции камеры. Альфа 2",
+        "title": "Канал альфа Цвета комнат"
       },
       "alpha_3": {
         "data": {
@@ -171,30 +191,30 @@
           "alpha_room_14": "Комната 15",
           "alpha_room_15": "Комната 16"
         },
-        "description": "Опции Камеры. Альфа 3",
-        "title": "Альфа Канал Цветов Комнат"
+        "description": "Опции камеры. Альфа 3",
+        "title": "Канал альфа Цвета комнат"
       }
     }
   },
   "selector": {
     "camera_config_action": {
       "options": {
-        "opt_1": "Настроить Изображение",
-        "opt_2": "Настройка текста статуса",
-        "opt_3": "Настроить Общие Цвета",
-        "opt_4": "Цвета Комнат 1 до 8",
-        "opt_5": "Цвета Комнат 9 до 16",
-        "opt_6": "Скопировать Логи Камеры в www"
+        "opt_1": "Настроить изображение",
+        "opt_2": "Настроить текст статуса",
+        "opt_3": "Настроить общие цвета",
+        "opt_4": "Цвета комнат 1 до 8",
+        "opt_5": "Цвета комнат 9 до 16",
+        "opt_6": "Скопировать журналы камеры в www"
       }
     },
     "vacuum_status": {
       "options": {
         "connected": "Подключено",
         "disconnected": "Отключено",
-        "charging": "Заряжается",
+        "charging": "Зарядка",
         "cleaning": "Чистка",
-        "docked": "Пришвартован",
-        "idle": "В режиме ожидания",
+        "docked": "Задокировано",
+        "idle": "В ожидании",
         "paused": "Приостановлено",
         "returning": "Возвращение"
       }
@@ -203,7 +223,7 @@
   "services": {
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",
-      "description": "Отключает камеру."
+      "description": "Выключает камеру."
     },
     "turn_on": {
       "name": "[%key:common::action::turn_on%]",
@@ -215,7 +235,7 @@
       "fields": {
         "filename": {
           "name": "Имя файла",
-          "description": "Шаблон имени файла. Доступная переменная `entity_id`."
+          "description": "Шаблон имени файла. Доступная переменная: `entity_id`."
         }
       }
     }

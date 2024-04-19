@@ -20,7 +20,6 @@ from typing import Any, Optional
 import voluptuous as vol
 from PIL import Image
 from homeassistant import config_entries, core
-
 # from homeassistant.core import Event, HomeAssistant, ServiceCall, callback
 from homeassistant.components.camera import PLATFORM_SCHEMA, Camera, CameraEntityFeature
 from homeassistant.const import CONF_NAME, CONF_UNIQUE_ID
@@ -92,9 +91,12 @@ from .const import (
     COLOR_WALL,
     COLOR_ZONE_CLEAN,
     CONF_AUTO_ZOOM,
+    CONF_OFFSET_TOP,
+    CONF_OFFSET_BOTTOM,
+    CONF_OFFSET_LEFT,
+    CONF_OFFSET_RIGHT,
     CONF_ASPECT_RATIO,
     CONF_ZOOM_LOCK_RATIO,
-    CONF_EXPORT_SVG,
     CONF_SNAPSHOTS_ENABLE,
     CONF_VAC_STAT,
     CONF_VAC_STAT_FONT,
@@ -206,7 +208,10 @@ class ValetudoCamera(Camera):
         self._vac_json_available = None
         self._shared.attr_calibration_points = None
         self._cpu_percent = None
-        self._shared.export_svg = device_info.get(CONF_EXPORT_SVG)
+        self._shared.offset_top = device_info.get(CONF_OFFSET_TOP, 0)
+        self._shared.offset_down = device_info.get(CONF_OFFSET_BOTTOM, 0)
+        self._shared.offset_left = device_info.get(CONF_OFFSET_LEFT, 0)
+        self._shared.offset_right = device_info.get(CONF_OFFSET_RIGHT, 0)
         self._shared.image_auto_zoom = device_info.get(CONF_AUTO_ZOOM)
         self._shared.image_zoom_lock_ratio = device_info.get(CONF_ZOOM_LOCK_RATIO)
         self._shared.image_aspect_ratio = device_info.get(CONF_ASPECT_RATIO)

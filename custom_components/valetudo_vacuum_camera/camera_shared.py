@@ -51,6 +51,10 @@ class CameraShared(object):
         self.vacuum_error = None  # Vacuum error
         self.vac_json_id = None  # Vacuum json id
         self.margins = "100"  # Image margins
+        self.offset_top = 0  # Image offset top
+        self.offset_down = 0  # Image offset down
+        self.offset_left = 0  # Image offset left
+        self.offset_right = 0  # Image offset right
         self.export_svg = False  # Export SVG
         self.svg_path = None  # SVG Export path
         self.file_name = ""  # vacuum friendly name as File name

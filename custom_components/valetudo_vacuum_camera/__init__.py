@@ -203,6 +203,7 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
             hass.config_entries.async_update_entry(
                 config_entry, data=new_data, options=new_options
             )
+
     if config_entry.version == 2.4:
         _LOGGER.debug(
             "Starting migration data from .storage to valetudo_camera folder."
@@ -216,6 +217,29 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
             config_entry.version = 3.0
             hass.config_entries.async_update_entry(
                 config_entry, data=new_data, options=old_options
+            )
+
+    if config_entry.version == 3.0:
+        if not os.path.exists(
+            os.path.join(hass.config.path(STORAGE_DIR), "valetudo_camera")
+        ):
+            await move_data_to_valetudo_camera(hass.config.path(STORAGE_DIR))
+        old_data = {**config_entry.data}
+        new_data = {"vacuum_config_entry": old_data["vacuum_config_entry"]}
+        _LOGGER.debug(dict(new_data))
+        old_options = {**config_entry.options}
+        if len(old_options) != 0:
+            tmp_option = {
+                "offset_top": 0,
+                "offset_bottom": 0,
+                "offset_left": 0,
+                "offset_right": 0,
+            }
+            new_options = await update_options(old_options, tmp_option)
+            _LOGGER.debug(f"migration data:{dict(new_options)}")
+            config_entry.version = 3.1
+            hass.config_entries.async_update_entry(
+                config_entry, data=new_data, options=new_options
             )
         else:
             _LOGGER.error(

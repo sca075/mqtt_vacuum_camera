@@ -4,7 +4,7 @@
       "user": {
         "data": {
           "vacuum_entity": "Stofzuiger Entiteit ID",
-          "vacuum_config_entry": "Stofzuiger Configuratie Gegevens",
+          "vacuum_config_entry": "Stofzuiger Configuratiegegevens",
           "vacuum_map": "Stofzuiger Onderwerp",
           "vacuum_identifiers": "Stofzuiger MQTT ID",
           "unique_id": ""
@@ -12,8 +12,8 @@
         "data_description": {
           "vacuum_entity": "Stofzuiger Entiteit ID"
         },
-        "description": "Camera Opstelling.",
-        "title": "Valetudo Camera Opstelling"
+        "description": "Camera Setup.",
+        "title": "Valetudo Camera Setup"
       }
     }
   },
@@ -21,40 +21,60 @@
     "step": {
       "init": {
         "title": "Valetudo Camera Opties",
-        "description": "Mogelijke Wijzigingen:",
+        "description": "Mogelijke wijzigingen:",
         "data": {
           "camera_config_action": "Actie"
         }
       },
       "image_opt": {
         "data": {
-          "rotate_image": "Roteren",
-          "margins": "150",
-          "auto_zoom": "Automatisch Zoomen Inschakelen",
-          "enable_www_snapshots": "Exporteer PNG snapshots."
+          "rotate_image": "Roteer",
+          "margins": "Afbeeldingsmarges.",
+          "add_offset": "Afbeelding Verschuiven.",
+          "auto_zoom": "Automatisch Zoomen inschakelen",
+          "zoom_lock_ratio": "Aspectverhouding vergrendelen.",
+          "aspect_ratio": "Afbeeldingsaspectverhouding.",
+          "enable_www_snapshots": "Exporteer PNG-snapshots."
         },
         "data_description": {
-          "rotate_image": "Graad 0, 90, 180, 270",
-          "margins": "Automatische Bijsnijding Marges in pixels."
+          "rotate_image": "Graden 0, 90, 180, 270",
+          "margins": "Automatisch Bijsnijden Marges in pixels.",
+          "aspect_ratio": "Afbeeldingsaspectverhouding."
         },
-        "description": "Camera Beeld Opties",
-        "title": "Beeld Opties"
+        "description": "Camera Afbeelding Opties",
+        "title": "Afbeelding Opties"
+      },
+      "image_offset": {
+        "data": {
+          "offset_top": "Bovenste Verschuiving",
+          "offset_bottom": "Onderste Verschuiving",
+          "offset_left": "Linker Verschuiving",
+          "offset_right": "Rechter Verschuiving"
+        },
+        "data_description": {
+          "offset_top": "Bovenste Verschuiving rotatie 0 in pixels.",
+          "offset_bottom": "Onderste Verschuiving rotatie 0 in pixels.",
+          "offset_left": "Linker Verschuiving rotatie 0 in pixels.",
+          "offset_right": "Rechter Verschuiving rotatie 0 in pixels."
+        },
+        "description": "Camera Afbeelding Verschuiving",
+        "title": "Afbeelding Verschuiving"
       },
       "status_text": {
         "data": {
-          "show_vac_status": "Toon stofzuigerstatus.",
-          "vac_status_font": "Lettertype",
+          "show_vac_status": "Toon Stofzuigerstatus.",
+          "vac_status_font": "Fira Sans",
           "vac_status_size": "Tekstgrootte",
-          "vac_status_position": "Tekstpositie: Onder(Uit)",
+          "vac_status_position": "Tekst Positie: Onderaan(UIT)",
           "color_text": "[255, 255, 255]"
         },
         "data_description": {
-          "vac_status_font": "Lettertype voor tekst, standaard Fira Serif.",
-          "vac_status_size": "Tekstgrootte, standaard 50.",
-          "color_text": "Kleur van de stofzuigerstatus-tekst."
+          "vac_status_font": "Tekstlettertype standaard Fira Serif.",
+          "vac_status_size": "Tekstgrootte standaard 50.",
+          "color_text": "Kleur van de Stofzuigerstatus Tekst."
         },
-        "description": "Beeldopties",
-        "title": "Status Tekstopties"
+        "description": "Afbeelding Opties",
+        "title": "Status Tekst Opties"
       },
       "base_colours": {
         "data": {
@@ -69,17 +89,17 @@
           "add_base_alpha": "Configureer Transparantie:"
         },
         "data_description": {
-          "color_charger": "Oplader kleur.",
-          "color_move": "Beweging kleur.",
-          "color_wall": "Muur kleur.",
-          "color_robot": "Robot kleur.",
-          "color_go_to": "Ga-naar kleur.",
-          "color_no_go": "Niet gaan kleur.",
-          "color_zone_clean": "Zone schoon kleur.",
-          "color_background": "Achtergrond kleur."
+          "color_charger": "Kleur van de Oplader.",
+          "color_move": "Kleur van de Beweging.",
+          "color_wall": "Kleur van de Muur.",
+          "color_robot": "Kleur van de Robot.",
+          "color_go_to": "Kleur van de Ga-naar.",
+          "color_no_go": "Kleur van de Niet-gaan.",
+          "color_zone_clean": "Kleur van de Zone Schoon.",
+          "color_background": "Achtergrondkleur."
         },
-        "description": "Camera Kleuren Opties.",
-        "title": "Basis Kleuren Opstelling"
+        "description": "Camera Kleuropties.",
+        "title": "Basis Kleuren Setup"
       },
       "alpha_1": {
         "data": {
@@ -118,7 +138,7 @@
           "color_room_6": "Kamer 7",
           "color_room_7": "Kamer 8"
         },
-        "description": "Camera Kleuren Opties.",
+        "description": "Camera Kleuropties.",
         "title": "Kamers 1 tot 8 Kleuren"
       },
       "rooms_colours_2": {
@@ -143,7 +163,7 @@
           "color_room_14": "Kamer 15",
           "color_room_15": "Kamer 16"
         },
-        "description": "Camera Kleuren Opties.",
+        "description": "Camera Kleuropties.",
         "title": "Kamers 9 tot 15 Kleuren"
       },
       "alpha_2": {
@@ -179,24 +199,24 @@
   "selector": {
     "camera_config_action": {
       "options": {
-        "opt_1": "Configureer Afbeelding",
+        "opt_1": "Afbeelding Configureren",
         "opt_2": "Status Tekst Configureren",
-        "opt_3": "Configureer Algemene Kleuren",
-        "opt_4": "Kleuren Kamers 1 tot 8",
-        "opt_5": "Kleuren Kamers 9 tot 16",
-        "opt_6": "Kopieer Camera Logs naar www"
+        "opt_3": "Algemene Kleuren Configureren",
+        "opt_4": "Kleuren Kamers 1 tot 8 Configureren",
+        "opt_5": "Kleuren Kamers 9 tot 16 Configureren",
+        "opt_6": "Camera Logs naar www Kopiëren"
       }
     },
     "vacuum_status": {
       "options": {
         "connected": "Verbonden",
-        "disconnected": "Losgekoppeld",
+        "disconnected": "Verbroken",
         "charging": "Opladen",
-        "cleaning": "Reinigen",
-        "docked": "Gedockt",
+        "cleaning": "Aan het Schoonmaken",
+        "docked": "Aangemeerd",
         "idle": "Inactief",
         "paused": "Gepauzeerd",
-        "returning": "Terugkerend"
+        "returning": "Keert Terug"
       }
     }
   },
@@ -210,12 +230,12 @@
       "description": "Schakelt de camera in."
     },
     "snapshot": {
-      "name": "Maak een momentopname",
-      "description": "Maakt een momentopname van een camera.",
+      "name": "Maak Snapshot",
+      "description": "Maakt een snapshot van een camera.",
       "fields": {
         "filename": {
           "name": "Bestandsnaam",
-          "description": "Sjabloon voor een bestandsnaam. Variabele beschikbaar is `entity_id`."
+          "description": "Sjabloon van een bestandsnaam. Beschikbare variabele is `entity_id`."
         }
       }
     }

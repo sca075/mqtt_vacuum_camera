@@ -1,3 +1,8 @@
+"""
+Common functions for the Valetudo Vacuum Camera integration.
+Version: 2024.04.3
+"""
+
 from __future__ import annotations
 
 import logging
@@ -91,6 +96,10 @@ async def update_options(bk_options, new_options):
         "rotate_image",
         "margins",
         "aspect_ratio",
+        "offset_top",
+        "offset_bottom",
+        "offset_left",
+        "offset_right",
         "auto_zoom",
         "zoom_lock_ratio",
         "show_vac_status",

@@ -1,6 +1,6 @@
 """Constants for the valetudo_vacuum_camera integration."""
 
-"""Version v2024.04"""
+"""Version v2024.04.3"""
 
 """Required in Config_Flow"""
 PLATFORMS = ["camera"]
@@ -9,10 +9,10 @@ DEFAULT_NAME = "valetudo vacuum camera"
 ATTR_ROTATE = "rotate_image"
 ATTR_CROP = "crop_image"
 ATTR_MARGINS = "margins"
-ATTR_TRIM_TOP = "trim_top"
-ATTR_TRIM_BOTTOM = "trim_bottom"
-ATTR_TRIM_LEFT = "trim_left"
-ATTR_TRIM_RIGHT = "trim_right"
+CONF_OFFSET_TOP = "offset_top"
+CONF_OFFSET_BOTTOM = "offset_bottom"
+CONF_OFFSET_LEFT = "offset_left"
+CONF_OFFSET_RIGHT = "offset_right"
 CONF_ASPECT_RATIO = "aspect_ratio"
 CONF_VAC_STAT = "show_vac_status"
 CONF_VAC_STAT_SIZE = "vac_status_size"
@@ -38,6 +38,7 @@ CLEANING_SCAN_INTERVAL = 5
 IS_ALPHA = "add_base_alpha"
 IS_ALPHA_R1 = "add_room_1_alpha"
 IS_ALPHA_R2 = "add_room_2_alpha"
+IS_OFFSET = "add_offset"
 
 """Base Colours RGB"""
 COLOR_CHARGER = "color_charger"
