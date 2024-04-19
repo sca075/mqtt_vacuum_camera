@@ -9,9 +9,9 @@
         <option value="Space.CommitStatus" />
       </list>
     </option>
+    <option name="SHOW_CHANGES_FROM_PARENTS" value="true" />
   </component>
   <component name="VcsApplicationSettings">
     <option name="CREATE_CHANGELISTS_AUTOMATICALLY" value="true" />
-    <option name="COMMIT_FROM_LOCAL_CHANGES" value="true" />
   </component>
 </application>
