@@ -288,7 +288,7 @@ class ReImageHandler(object):
         self.active_zones = self.shared.rand256_active_zone
 
         try:
-            if m_json is not None:
+            if (m_json is not None) and (not isinstance(m_json, tuple)):
                 _LOGGER.info(self.file_name + ":Composing the image for the camera.")
                 # buffer json data
                 self.json_data = m_json
