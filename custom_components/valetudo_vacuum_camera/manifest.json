@@ -8,8 +8,8 @@
     "iot_class": "local_polling",
     "issue_tracker": "https://github.com/sca075/valetudo_vacuum_camera/issues",
     "requirements": [
-        "pillow==10.2.0",
-      "numpy"
+        "pillow==10.3.0",
+        "numpy"
     ],
-  "version": "2024.04.3"
+    "version": "2024.04.5"
 }
