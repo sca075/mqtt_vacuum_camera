@@ -30,7 +30,6 @@ from homeassistant.helpers.storage import STORAGE_DIR
 from homeassistant.helpers.typing import (
     ConfigType,
     DiscoveryInfoType,
-    HomeAssistantType,
 )
 from psutil_home_assistant import PsutilWrapper as ProcInsp
 
@@ -143,7 +142,7 @@ async def async_setup_entry(
 
 
 async def async_setup_platform(
-    hass: HomeAssistantType,
+    hass: core.HomeAssistant,
     config: ConfigType,
     async_add_entities: AddEntitiesCallback,
     discovery_info: DiscoveryInfoType | None = None,
