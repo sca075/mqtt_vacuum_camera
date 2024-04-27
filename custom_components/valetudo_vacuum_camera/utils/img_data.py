@@ -158,6 +158,7 @@ class ImageData:
         virtual_walls = []
 
         def find_virtual_walls_recursive(obj):
+            """Find the virtual walls in the json object recursively."""
             if isinstance(obj, dict):
                 if obj.get("__class") == "LineMapEntity":
                     entity_type = obj.get("type")
@@ -175,7 +176,7 @@ class ImageData:
     # Added below in order to support Valetudo Re.
     # This functions read directly the data from the json created
     # from the parser for Valetudo Re. They allow to use the
-    # fuctions to draw the image without changes.
+    # functions to draw the image without changes on the drawing class.
 
     @staticmethod
     def from_rrm_to_compressed_pixels(
@@ -207,6 +208,7 @@ class ImageData:
 
     @staticmethod
     def calculate_max_x_y(coord_array):
+        """Calculate the max and min x and y coordinates."""
         max_x = -float("inf")
         max_y = -float("inf")
 
@@ -218,6 +220,7 @@ class ImageData:
 
     @staticmethod
     def rrm_coordinates_to_valetudo(points):
+        """Transform the coordinates from RRM to Valetudo."""
         transformed_points = []
         dimension_mm = 50 * 1024
         for i, p in enumerate(points):
@@ -229,6 +232,7 @@ class ImageData:
 
     @staticmethod
     def rrm_valetudo_path_array(points):
+        """Transform the path coordinates from RRM to Valetudo."""
         transformed_points = []
         for point in points:
             transformed_x = round(point[0] / 10)
@@ -237,18 +241,21 @@ class ImageData:
         return transformed_points
 
     @staticmethod
-    def get_rrm_image(json_data):
+    def get_rrm_image(json_data: JsonType) -> JsonType:
+        """Get the image data from the json."""
         if isinstance(json_data, tuple):
             return {}
         else:
             return json_data.get("image", {})
 
     @staticmethod
-    def get_rrm_path(json_data):
+    def get_rrm_path(json_data: JsonType) -> JsonType:
+        """Get the path data from the json."""
         return json_data.get("path", {})
 
     @staticmethod
-    def get_rrm_goto_predicted_path(json_data):
+    def get_rrm_goto_predicted_path(json_data: JsonType) -> list or None:
+        """Get the predicted path data from the json."""
         try:
             predicted_path = json_data.get("goto_predicted_path", {})
             points = predicted_path["points"]
@@ -261,26 +268,30 @@ class ImageData:
         return predicted_path
 
     @staticmethod
-    def get_rrm_charger_position(json_data):
+    def get_rrm_charger_position(json_data: JsonType) -> JsonType:
+        """Get the charger position from the json."""
         return json_data.get("charger", {})
 
     @staticmethod
-    def get_rrm_robot_position(json_data):
+    def get_rrm_robot_position(json_data: JsonType) -> JsonType:
+        """Get the robot position from the json."""
         return json_data.get("robot", {})
 
     @staticmethod
-    def get_rrm_robot_angle(json_data):
+    def get_rrm_robot_angle(json_data: JsonType) -> tuple:
+        """Get the robot angle from the json."""
         # todo robot angle require debug.
         # angle = (round(json_data.get("robot_angle", 0) * 3.14) % 360) + 90
-        angle = round(json_data.get("robot_angle", 0))
-        if angle < 0:
-            angle = (360 - angle) + 90
+        angle_c = round(json_data.get("robot_angle", 0))
+        if angle_c < 0:
+            angle = (360 - angle_c) + 90
         else:
-            angle = angle - 90
+            angle = angle_c - 90
         return angle, json_data.get("robot_angle", 0)
 
     @staticmethod
-    def get_rrm_goto_target(json_data):
+    def get_rrm_goto_target(json_data: JsonType) -> list or None:
+        """Get the goto target from the json."""
         try:
             path_data = json_data.get("goto_target", {})
         except KeyError:
@@ -293,19 +304,22 @@ class ImageData:
                 return None
 
     @staticmethod
-    def get_rrm_currently_cleaned_zones(json_data):
+    def get_rrm_currently_cleaned_zones(json_data: JsonType) -> dict:
+        """Get the currently cleaned zones from the json."""
         re_zones = json_data.get("currently_cleaned_zones", [])
         formatted_zones = ImageData.rrm_valetudo_format_zone(re_zones)
         return formatted_zones
 
     @staticmethod
-    def get_rrm_forbidden_zones(json_data):
+    def get_rrm_forbidden_zones(json_data: JsonType) -> dict:
+        """Get the forbidden zones from the json."""
         re_zones = json_data.get("forbidden_zones", [])
         formatted_zones = ImageData.rrm_valetudo_format_zone(re_zones)
         return formatted_zones
 
     @staticmethod
-    def rrm_valetudo_format_zone(coordinates):
+    def rrm_valetudo_format_zone(coordinates: list) -> any:
+        """Format the zones from RRM to Valetudo."""
         formatted_zones = []
         for zone_data in coordinates:
             if len(zone_data) == 4:  # This is a zone_clean (4 coordinates)
@@ -346,7 +360,8 @@ class ImageData:
         return formatted_zones
 
     @staticmethod
-    def rrm_valetudo_lines(coordinates):
+    def rrm_valetudo_lines(coordinates: list) -> list:
+        """Format the lines from RRM to Valetudo."""
         formatted_lines = []
         for lines in coordinates:
             line = [lines[0] // 10, lines[1] // 10, lines[2] // 10, lines[3] // 10]
@@ -354,7 +369,8 @@ class ImageData:
         return formatted_lines
 
     @staticmethod
-    def get_rrm_virtual_walls(json_data):
+    def get_rrm_virtual_walls(json_data: JsonType) -> list or None:
+        """Get the virtual walls from the json."""
         try:
             tmp_data = json_data.get("virtual_walls", [])
         except KeyError:
@@ -363,15 +379,18 @@ class ImageData:
         return virtual_walls
 
     @staticmethod
-    def get_rrm_currently_cleaned_blocks(json_data):
+    def get_rrm_currently_cleaned_blocks(json_data: JsonType) -> list:
+        """Get the currently cleaned blocks from the json."""
         return json_data.get("currently_cleaned_blocks", [])
 
     @staticmethod
-    def get_rrm_forbidden_mop_zones(json_data):
+    def get_rrm_forbidden_mop_zones(json_data: JsonType) -> list:
+        """Get the forbidden mop zones from the json."""
         return json_data.get("forbidden_mop_zones", [])
 
     @staticmethod
-    def get_rrm_image_size(json_data) -> ImageSize:
+    def get_rrm_image_size(json_data: JsonType) -> ImageSize:
+        """Get the image size from the json."""
         if isinstance(json_data, tuple):
             return 0, 0
         else:
@@ -382,18 +401,21 @@ class ImageData:
             return dimensions.get("width", 0), dimensions.get("height", 0)
 
     @staticmethod
-    def get_rrm_image_position(json_data):
+    def get_rrm_image_position(json_data: JsonType) -> tuple:
+        """Get the image position from the json."""
         image = ImageData.get_rrm_image(json_data)
         position = image.get("position", {})
         return position.get("top", 0), position.get("left", 0)
 
     @staticmethod
-    def get_rrm_floor(json_data):
+    def get_rrm_floor(json_data: JsonType) -> list:
+        """Get the floor data from the json."""
         img = ImageData.get_rrm_image(json_data)
         return img.get("pixels", {}).get("floor", [])
 
     @staticmethod
-    def get_rrm_walls(json_data):
+    def get_rrm_walls(json_data: JsonType) -> list:
+        """Get the walls data from the json."""
         img = ImageData.get_rrm_image(json_data)
         return img.get("pixels", {}).get("walls", [])
 
@@ -432,7 +454,8 @@ class ImageData:
             return []
 
     @staticmethod
-    def get_rrm_segments_ids(json_data):
+    def get_rrm_segments_ids(json_data: JsonType) -> list or None:
+        """Get the segments ids from the json."""
         try:
             img = ImageData.get_rrm_image(json_data)
             seg_ids = img.get("segments", {}).get("id", [])
@@ -442,8 +465,8 @@ class ImageData:
 
     @staticmethod
     def get_rrm_max_min_rooms_coordinates(data):
-        # we need to consider that pixel size those coordinates
-        # are only to draw on the map the room area.
+        """we need to consider that pixel size those coordinates
+        are only to draw on the map the room area."""
         if not data:
             return None  # Return None if the input list is empty
         # Initialize variables to store max and min coordinates
@@ -462,9 +485,10 @@ class ImageData:
         )
 
     @staticmethod
-    def convert_negative_angle(angle):
-        angle = angle % 360  # Ensure angle is within 0-359
-        if angle < 0:
-            angle += 360  # Convert negative angle to positive
-        angle = angle + 180  # add offset
+    def convert_negative_angle(angle: int) -> int:
+        """Convert negative angle to positive."""
+        angle_c = angle % 360  # Ensure angle is within 0-359
+        if angle_c < 0:
+            angle_c += 360  # Convert negative angle to positive
+        angle = angle_c + 180  # add offset
         return angle

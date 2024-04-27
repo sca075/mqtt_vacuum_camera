@@ -32,58 +32,8 @@ from .camera_processing import CameraProcessor
 from .camera_shared import CameraShared
 from .common import async_get_active_user_id, get_vacuum_unique_id_from_mqtt_topic
 from .const import (
-    ALPHA_BACKGROUND,
-    ALPHA_CHARGER,
-    ALPHA_GO_TO,
-    ALPHA_MOVE,
-    ALPHA_NO_GO,
-    ALPHA_ROBOT,
-    ALPHA_ROOM_0,
-    ALPHA_ROOM_1,
-    ALPHA_ROOM_2,
-    ALPHA_ROOM_3,
-    ALPHA_ROOM_4,
-    ALPHA_ROOM_5,
-    ALPHA_ROOM_6,
-    ALPHA_ROOM_7,
-    ALPHA_ROOM_8,
-    ALPHA_ROOM_9,
-    ALPHA_ROOM_10,
-    ALPHA_ROOM_11,
-    ALPHA_ROOM_12,
-    ALPHA_ROOM_13,
-    ALPHA_ROOM_14,
-    ALPHA_ROOM_15,
-    ALPHA_TEXT,
-    ALPHA_WALL,
-    ALPHA_ZONE_CLEAN,
     ATTR_MARGINS,
     ATTR_ROTATE,
-    COLOR_BACKGROUND,
-    COLOR_CHARGER,
-    COLOR_GO_TO,
-    COLOR_MOVE,
-    COLOR_NO_GO,
-    COLOR_ROBOT,
-    COLOR_ROOM_0,
-    COLOR_ROOM_1,
-    COLOR_ROOM_2,
-    COLOR_ROOM_3,
-    COLOR_ROOM_4,
-    COLOR_ROOM_5,
-    COLOR_ROOM_6,
-    COLOR_ROOM_7,
-    COLOR_ROOM_8,
-    COLOR_ROOM_9,
-    COLOR_ROOM_10,
-    COLOR_ROOM_11,
-    COLOR_ROOM_12,
-    COLOR_ROOM_13,
-    COLOR_ROOM_14,
-    COLOR_ROOM_15,
-    COLOR_TEXT,
-    COLOR_WALL,
-    COLOR_ZONE_CLEAN,
     CONF_ASPECT_RATIO,
     CONF_AUTO_ZOOM,
     CONF_OFFSET_BOTTOM,
@@ -104,7 +54,7 @@ from .const import (
     PLATFORMS,
 )
 from .snapshots.snapshot import Snapshots
-from .utils.colors_man import add_alpha_to_rgb
+from .utils.colors_man import set_initial_colours
 from .valetudo.MQTT.connector import ValetudoConnector
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
@@ -232,13 +182,9 @@ class ValetudoCamera(Camera):
         if os.path.isfile(self.log_file):
             os.remove(self.log_file)
         self._last_image = None
-        self._rrm_data = False  # Temp. check for rrm data
+        self._rrm_data = False  # Check for rrm data
         # get the colours used in the maps.
-        self.user_colors = None
-        self.user_alpha = None
-        self.rooms_colors = None
-        self.rooms_alpha = None
-        self.set_initial_colour(device_info)
+        set_initial_colours(device_info, self._shared)
         # Create the processor for the camera.
         self.processor = CameraProcessor(self.hass, self._shared)
 
@@ -579,73 +525,3 @@ class ValetudoCamera(Camera):
         bytes_data = buffered.getvalue()
         del buffered, pil_img
         return bytes_data
-
-    def set_initial_colour(self, device_info: dict) -> None:
-        """Set the initial colours for the map."""
-        try:
-            self.user_colors = [
-                device_info.get(COLOR_WALL),
-                device_info.get(COLOR_ZONE_CLEAN),
-                device_info.get(COLOR_ROBOT),
-                device_info.get(COLOR_BACKGROUND),
-                device_info.get(COLOR_MOVE),
-                device_info.get(COLOR_CHARGER),
-                device_info.get(COLOR_NO_GO),
-                device_info.get(COLOR_GO_TO),
-                device_info.get(COLOR_TEXT),
-            ]
-            self.user_alpha = [
-                device_info.get(ALPHA_WALL),
-                device_info.get(ALPHA_ZONE_CLEAN),
-                device_info.get(ALPHA_ROBOT),
-                device_info.get(ALPHA_BACKGROUND),
-                device_info.get(ALPHA_MOVE),
-                device_info.get(ALPHA_CHARGER),
-                device_info.get(ALPHA_NO_GO),
-                device_info.get(ALPHA_GO_TO),
-                device_info.get(ALPHA_TEXT),
-            ]
-            self.rooms_colors = [
-                device_info.get(COLOR_ROOM_0),
-                device_info.get(COLOR_ROOM_1),
-                device_info.get(COLOR_ROOM_2),
-                device_info.get(COLOR_ROOM_3),
-                device_info.get(COLOR_ROOM_4),
-                device_info.get(COLOR_ROOM_5),
-                device_info.get(COLOR_ROOM_6),
-                device_info.get(COLOR_ROOM_7),
-                device_info.get(COLOR_ROOM_8),
-                device_info.get(COLOR_ROOM_9),
-                device_info.get(COLOR_ROOM_10),
-                device_info.get(COLOR_ROOM_11),
-                device_info.get(COLOR_ROOM_12),
-                device_info.get(COLOR_ROOM_13),
-                device_info.get(COLOR_ROOM_14),
-                device_info.get(COLOR_ROOM_15),
-            ]
-            self.rooms_alpha = [
-                device_info.get(ALPHA_ROOM_0),
-                device_info.get(ALPHA_ROOM_1),
-                device_info.get(ALPHA_ROOM_2),
-                device_info.get(ALPHA_ROOM_3),
-                device_info.get(ALPHA_ROOM_4),
-                device_info.get(ALPHA_ROOM_5),
-                device_info.get(ALPHA_ROOM_6),
-                device_info.get(ALPHA_ROOM_7),
-                device_info.get(ALPHA_ROOM_8),
-                device_info.get(ALPHA_ROOM_9),
-                device_info.get(ALPHA_ROOM_10),
-                device_info.get(ALPHA_ROOM_11),
-                device_info.get(ALPHA_ROOM_12),
-                device_info.get(ALPHA_ROOM_13),
-                device_info.get(ALPHA_ROOM_14),
-                device_info.get(ALPHA_ROOM_15),
-            ]
-            self._shared.update_user_colors(
-                add_alpha_to_rgb(self.user_alpha, self.user_colors)
-            )
-            self._shared.update_rooms_colors(
-                add_alpha_to_rgb(self.rooms_alpha, self.rooms_colors)
-            )
-        except (ValueError, IndexError, UnboundLocalError) as e:
-            _LOGGER.error("Error while populating colors: %s", e)

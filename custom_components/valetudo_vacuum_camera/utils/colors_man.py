@@ -1,9 +1,62 @@
 """
 Colors RGBA
-Version: v2024.04
+Version: v2024.05
 """
 
 import logging
+
+from custom_components.valetudo_vacuum_camera.const import (
+    ALPHA_BACKGROUND,
+    ALPHA_CHARGER,
+    ALPHA_GO_TO,
+    ALPHA_MOVE,
+    ALPHA_NO_GO,
+    ALPHA_ROBOT,
+    ALPHA_ROOM_0,
+    ALPHA_ROOM_1,
+    ALPHA_ROOM_2,
+    ALPHA_ROOM_3,
+    ALPHA_ROOM_4,
+    ALPHA_ROOM_5,
+    ALPHA_ROOM_6,
+    ALPHA_ROOM_7,
+    ALPHA_ROOM_8,
+    ALPHA_ROOM_9,
+    ALPHA_ROOM_10,
+    ALPHA_ROOM_11,
+    ALPHA_ROOM_12,
+    ALPHA_ROOM_13,
+    ALPHA_ROOM_14,
+    ALPHA_ROOM_15,
+    ALPHA_TEXT,
+    ALPHA_WALL,
+    ALPHA_ZONE_CLEAN,
+    COLOR_BACKGROUND,
+    COLOR_CHARGER,
+    COLOR_GO_TO,
+    COLOR_MOVE,
+    COLOR_NO_GO,
+    COLOR_ROBOT,
+    COLOR_ROOM_0,
+    COLOR_ROOM_1,
+    COLOR_ROOM_2,
+    COLOR_ROOM_3,
+    COLOR_ROOM_4,
+    COLOR_ROOM_5,
+    COLOR_ROOM_6,
+    COLOR_ROOM_7,
+    COLOR_ROOM_8,
+    COLOR_ROOM_9,
+    COLOR_ROOM_10,
+    COLOR_ROOM_11,
+    COLOR_ROOM_12,
+    COLOR_ROOM_13,
+    COLOR_ROOM_14,
+    COLOR_ROOM_15,
+    COLOR_TEXT,
+    COLOR_WALL,
+    COLOR_ZONE_CLEAN,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -115,3 +168,70 @@ def add_alpha_to_rgb(alpha_channels, rgb_colors):
             result.append(None)
 
     return result
+
+
+def set_initial_colours(device_info: dict, shared_var) -> None:
+    """Set the initial colours for the map."""
+    try:
+        user_colors = [
+            device_info.get(COLOR_WALL),
+            device_info.get(COLOR_ZONE_CLEAN),
+            device_info.get(COLOR_ROBOT),
+            device_info.get(COLOR_BACKGROUND),
+            device_info.get(COLOR_MOVE),
+            device_info.get(COLOR_CHARGER),
+            device_info.get(COLOR_NO_GO),
+            device_info.get(COLOR_GO_TO),
+            device_info.get(COLOR_TEXT),
+        ]
+        user_alpha = [
+            device_info.get(ALPHA_WALL),
+            device_info.get(ALPHA_ZONE_CLEAN),
+            device_info.get(ALPHA_ROBOT),
+            device_info.get(ALPHA_BACKGROUND),
+            device_info.get(ALPHA_MOVE),
+            device_info.get(ALPHA_CHARGER),
+            device_info.get(ALPHA_NO_GO),
+            device_info.get(ALPHA_GO_TO),
+            device_info.get(ALPHA_TEXT),
+        ]
+        rooms_colors = [
+            device_info.get(COLOR_ROOM_0),
+            device_info.get(COLOR_ROOM_1),
+            device_info.get(COLOR_ROOM_2),
+            device_info.get(COLOR_ROOM_3),
+            device_info.get(COLOR_ROOM_4),
+            device_info.get(COLOR_ROOM_5),
+            device_info.get(COLOR_ROOM_6),
+            device_info.get(COLOR_ROOM_7),
+            device_info.get(COLOR_ROOM_8),
+            device_info.get(COLOR_ROOM_9),
+            device_info.get(COLOR_ROOM_10),
+            device_info.get(COLOR_ROOM_11),
+            device_info.get(COLOR_ROOM_12),
+            device_info.get(COLOR_ROOM_13),
+            device_info.get(COLOR_ROOM_14),
+            device_info.get(COLOR_ROOM_15),
+        ]
+        rooms_alpha = [
+            device_info.get(ALPHA_ROOM_0),
+            device_info.get(ALPHA_ROOM_1),
+            device_info.get(ALPHA_ROOM_2),
+            device_info.get(ALPHA_ROOM_3),
+            device_info.get(ALPHA_ROOM_4),
+            device_info.get(ALPHA_ROOM_5),
+            device_info.get(ALPHA_ROOM_6),
+            device_info.get(ALPHA_ROOM_7),
+            device_info.get(ALPHA_ROOM_8),
+            device_info.get(ALPHA_ROOM_9),
+            device_info.get(ALPHA_ROOM_10),
+            device_info.get(ALPHA_ROOM_11),
+            device_info.get(ALPHA_ROOM_12),
+            device_info.get(ALPHA_ROOM_13),
+            device_info.get(ALPHA_ROOM_14),
+            device_info.get(ALPHA_ROOM_15),
+        ]
+        shared_var.update_user_colors(add_alpha_to_rgb(user_alpha, user_colors))
+        shared_var.update_rooms_colors(add_alpha_to_rgb(rooms_alpha, rooms_colors))
+    except (ValueError, IndexError, UnboundLocalError) as e:
+        _LOGGER.error("Error while populating colors: %s", e)
