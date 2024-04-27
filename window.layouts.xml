@@ -1,0 +1,49 @@
+<application>
+  <component name="ToolWindowLayout"><![CDATA[{
+  "layouts": {
+    "Custom": {
+      "v1": [
+        {
+          "id": "Project",
+          "order": 0,
+          "contentUiType": "COMBO",
+          "weight": 0.25
+        },
+        {
+          "id": "Notifications",
+          "order": 0,
+          "anchor": "RIGHT",
+          "weight": 0.25
+        },
+        {
+          "id": "Version Control",
+          "order": 0,
+          "anchor": "BOTTOM"
+        },
+        {
+          "id": "Find",
+          "order": 1,
+          "anchor": "BOTTOM"
+        },
+        {
+          "id": "Run",
+          "order": 2,
+          "anchor": "BOTTOM"
+        },
+        {
+          "id": "Debug",
+          "order": 3,
+          "anchor": "BOTTOM",
+          "weight": 0.4
+        },
+        {
+          "id": "Inspection",
+          "order": 4,
+          "anchor": "BOTTOM",
+          "weight": 0.4
+        }
+      ]
+    }
+  }
+}]]></component>
+</application>
