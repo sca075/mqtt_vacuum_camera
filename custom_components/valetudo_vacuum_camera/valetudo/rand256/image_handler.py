@@ -16,9 +16,9 @@ from PIL import Image, ImageOps
 
 from custom_components.valetudo_vacuum_camera.types import (
     Color,
+    JsonType,
     NumpyArray,
     PilPNG,
-    JsonType,
     RobotPosition,
     RoomsProperties,
 )

@@ -33,7 +33,7 @@ class CameraProcessor:
         self._re_handler = ReImageHandler(camera_shared)
         self._shared = camera_shared
         self._translations_path = self.hass.config.path(
-            f"custom_components/valetudo_vacuum_camera/translations/"
+            "custom_components/valetudo_vacuum_camera/translations/"
         )
 
     async def async_process_valetudo_data(self, parsed_json: JsonType) -> PilPNG | None:
@@ -264,17 +264,17 @@ class CameraProcessor:
                             status_text.append(f" ({in_room})")
                 if self._shared.vacuum_state == "docked":
                     if int(self._shared.vacuum_battery) <= 99:
-                        status_text.append(f" \u00B7 ")
+                        status_text.append(" \u00B7 ")
                         status_text.append(f"{charging}{charge_level} ")
                         status_text.append(f"{self._shared.vacuum_battery}%")
                         self._shared.vacuum_bat_charged = False
                     else:
-                        status_text.append(f" \u00B7 ")
+                        status_text.append(" \u00B7 ")
                         status_text.append(f"{charge_level} ")
                         status_text.append("Ready.")
                         self._shared.vacuum_bat_charged = True
                 else:
-                    status_text.append(f" \u00B7 ")
+                    status_text.append(" \u00B7 ")
                     status_text.append(f"{charge_level}")
                     status_text.append(f" {self._shared.vacuum_battery}%")
                 if text_size >= 50:

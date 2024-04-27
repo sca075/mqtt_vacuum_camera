@@ -1,6 +1,6 @@
 """
 Camera
-Version: v2024.04.02
+Version: v2024.05
 Image Processing Threading implemented on Version 1.5.7.
 """
 
@@ -13,29 +13,24 @@ import platform
 import shutil
 import time
 from datetime import timedelta
-from functools import partial
 from io import BytesIO
 from typing import Any, Optional
 
 import voluptuous as vol
 from PIL import Image
 from homeassistant import config_entries, core
-# from homeassistant.core import Event, HomeAssistant, ServiceCall, callback
 from homeassistant.components.camera import PLATFORM_SCHEMA, Camera, CameraEntityFeature
 from homeassistant.const import CONF_NAME, CONF_UNIQUE_ID
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.reload import async_setup_reload_service
 from homeassistant.helpers.storage import STORAGE_DIR
-from homeassistant.helpers.typing import (
-    ConfigType,
-    DiscoveryInfoType,
-)
+from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from psutil_home_assistant import PsutilWrapper as ProcInsp
 
 from .camera_processing import CameraProcessor
 from .camera_shared import CameraShared
-from .common import get_vacuum_unique_id_from_mqtt_topic
+from .common import async_get_active_user_id, get_vacuum_unique_id_from_mqtt_topic
 from .const import (
     ALPHA_BACKGROUND,
     ALPHA_CHARGER,
@@ -89,13 +84,12 @@ from .const import (
     COLOR_TEXT,
     COLOR_WALL,
     COLOR_ZONE_CLEAN,
+    CONF_ASPECT_RATIO,
     CONF_AUTO_ZOOM,
-    CONF_OFFSET_TOP,
     CONF_OFFSET_BOTTOM,
     CONF_OFFSET_LEFT,
     CONF_OFFSET_RIGHT,
-    CONF_ASPECT_RATIO,
-    CONF_ZOOM_LOCK_RATIO,
+    CONF_OFFSET_TOP,
     CONF_SNAPSHOTS_ENABLE,
     CONF_VAC_STAT,
     CONF_VAC_STAT_FONT,
@@ -104,6 +98,7 @@ from .const import (
     CONF_VACUUM_CONNECTION_STRING,
     CONF_VACUUM_ENTITY_ID,
     CONF_VACUUM_IDENTIFIERS,
+    CONF_ZOOM_LOCK_RATIO,
     DEFAULT_NAME,
     DOMAIN,
     PLATFORMS,
@@ -343,14 +338,6 @@ class ValetudoCamera(Camera):
             device_info = DeviceInfo
         return device_info(identifiers=self._identifiers)
 
-    async def async_camera_image(
-        self, width: int | None = None, height: int | None = None
-    ) -> bytes | None:
-        """Return bytes of camera image."""
-        return await self.hass.async_add_executor_job(
-            partial(self.camera_image, width=self._image_w, height=self._image_h)
-        )
-
     def turn_on(self) -> None:
         """Camera Turn On"""
         # self._attr_is_on = True
@@ -430,7 +417,7 @@ class ValetudoCamera(Camera):
     async def async_update(self):
         """Camera Frame Update."""
         # Get the active user language
-        self._shared.user_language = await self.get_active_user_id()
+        self._shared.user_language = await async_get_active_user_id(self.hass)
         # check and update the vacuum reported state
         if not self._mqtt:
             _LOGGER.debug(f"{self._shared.file_name}: No MQTT data available.")
@@ -662,33 +649,3 @@ class ValetudoCamera(Camera):
             )
         except (ValueError, IndexError, UnboundLocalError) as e:
             _LOGGER.error("Error while populating colors: %s", e)
-
-    async def get_active_user_id(self) -> Optional[str]:
-        """
-        Get the active user id from the frontend user data file.
-        Return the language of the active user.
-        """
-        active_user_id = None
-        users = await self.hass.auth.async_get_users()
-        for user in users:
-            if (
-                user.name.lower() not in ["home assistant content", "supervisor"]
-                and user.is_active
-            ):
-                active_user_id = user.id
-                break
-
-        file_path = (
-            f"{self.hass.config.path(STORAGE_DIR)}/frontend.user_data_{active_user_id}"
-        )
-        try:
-            with open(file_path, "r") as file:
-                data = json.load(file)
-                language = data["data"]["language"]["language"]
-                return language
-        except FileNotFoundError:
-            _LOGGER.info("User ID File not found: %s", file_path)
-            return "en"
-        except KeyError:
-            _LOGGER.info("User ID Language not found: %s", file_path)
-            return "en"

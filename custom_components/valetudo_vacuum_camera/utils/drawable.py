@@ -504,7 +504,7 @@ class Drawable:
         """
         for obstacle_info in obstacle_info_list:
             enter = obstacle_info.get("points", {})
-            label = obstacle_info.get("label", {})
+            # label = obstacle_info.get("label", {})
             center = (enter["x"], enter["y"])
 
             radius = 6

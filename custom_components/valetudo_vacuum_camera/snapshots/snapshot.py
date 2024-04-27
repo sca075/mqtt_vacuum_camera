@@ -1,11 +1,12 @@
-"""Snapshot Version 1.5.7.1"""
+"""Snapshot Version 2024.04.03"""
+
 # Added Errors handling.
 
-import os
 import json
-import zipfile
-import shutil
 import logging
+import os
+import shutil
+import zipfile
 
 _LOGGER = logging.getLogger(__name__)  # Create a logger instance
 
@@ -15,12 +16,14 @@ class Snapshots:
     Snapshots class to save the JSON data and the filtered logs to a ZIP archive.
     We will use this class to save the JSON data and the filtered logs to a ZIP archive.
     """
+
     def __init__(self, storage_path):
         self.storage_path = storage_path
 
     @staticmethod
     def _get_filtered_logs():
-        # Make a copy of home-assistant.log to home-assistant.tmp
+        """Make a copy of home-assistant.log to home-assistant.tmp"""
+
         log_file_path = os.path.join(os.getcwd(), "home-assistant.log")
         tmp_log_file_path = os.path.join(os.getcwd(), "home-assistant.tmp")
 
@@ -94,7 +97,7 @@ class Snapshots:
                     os.remove(raw_file_name)
 
         except Exception as e:
-            _LOGGER.warning("Error while creating ZIP archive: %s", str(e))
+            _LOGGER.warning("Error while creating logs ZIP archive: %s", str(e))
 
         # Clean up the original files
         try:
@@ -113,4 +116,4 @@ class Snapshots:
             self._get_data(file_name, json_data)
             self._zip_snapshot(file_name)
         except Exception as e:
-            _LOGGER.warning("Error while creating snapshot: %s", str(e))
+            _LOGGER.warning("Error while creating logs snapshot: %s", str(e))

@@ -3,21 +3,31 @@ Collections of Json and List routines
 ImageData is part of the Image_Handler
 used functions to search data in the json
 provided for the creation of the new camera frame
-Version: v2024.04
+Version: v2024.05
 """
 
 import logging
 
 import numpy as np
 
+from custom_components.valetudo_vacuum_camera.types import (
+    Colors,
+    ImageSize,
+    JsonType,
+    NumpyArray,
+)
+
 _LOGGER = logging.getLogger(__name__)
 
 
 class ImageData:
+    """Class to handle the image data."""
 
     @staticmethod
-    async def async_extract_color_coordinates(source_array, search_for_colours_list):
-
+    async def async_extract_color_coordinates(
+        source_array: NumpyArray, search_for_colours_list: Colors
+    ) -> list:
+        """Search for specific colors in an image array and return their coordinates."""
         # Initialize an empty list to store color and coordinates tuples
         color_coordinates_list = []
 
@@ -56,15 +66,16 @@ class ImageData:
         result = [arr[i : i + n].tolist() for i in range(num_windows)]
         return result
 
-    """ 
-    The below functions are basically the same ech one
-    of them is allowing filtering and putting together in a
-    list the specific Layers, Paths, Zones and Pints in the 
-    Vacuums Json in parallel.
-    """
+    # The below functions are basically the same ech one
+    # of them is allowing filtering and putting together in a
+    # list the specific Layers, Paths, Zones and Pints in the
+    # Vacuums Json in parallel.
 
     @staticmethod
-    def find_layers(json_obj, layer_dict=None, active_list=None):
+    def find_layers(
+        json_obj: JsonType, layer_dict: dict = None, active_list: list = None
+    ) -> tuple[dict, list]:
+        """Find the layers in the json object."""
         if layer_dict is None:
             layer_dict = {}
         if active_list is None:
@@ -90,7 +101,8 @@ class ImageData:
         return layer_dict, active_list
 
     @staticmethod
-    def find_points_entities(json_obj, entity_dict=None):
+    def find_points_entities(json_obj: JsonType, entity_dict: dict = None) -> dict:
+        """Find the points entities in the json object."""
         if entity_dict is None:
             entity_dict = {}
         if isinstance(json_obj, dict):
@@ -106,7 +118,9 @@ class ImageData:
         return entity_dict
 
     @staticmethod
-    def find_paths_entities(json_obj, entity_dict=None):
+    def find_paths_entities(json_obj: JsonType, entity_dict: dict = None) -> dict:
+        """Find the paths entities in the json object."""
+
         if entity_dict is None:
             entity_dict = {}
         if isinstance(json_obj, dict):
@@ -122,7 +136,8 @@ class ImageData:
         return entity_dict
 
     @staticmethod
-    def find_zone_entities(json_obj, entity_dict=None):
+    def find_zone_entities(json_obj: JsonType, entity_dict: dict = None) -> dict:
+        """Find the zone entities in the json object."""
         if entity_dict is None:
             entity_dict = {}
         if isinstance(json_obj, dict):
@@ -138,7 +153,8 @@ class ImageData:
         return entity_dict
 
     @staticmethod
-    def find_virtual_walls(json_obj):
+    def find_virtual_walls(json_obj: JsonType) -> list:
+        """Find the virtual walls in the json object."""
         virtual_walls = []
 
         def find_virtual_walls_recursive(obj):
@@ -156,17 +172,20 @@ class ImageData:
         find_virtual_walls_recursive(json_obj)
         return virtual_walls
 
-    """ 
-    Added below in order to support Valetudo Re.
-    This functions read directly the data from the json created
-    from the parser for Valetudo Re. They allow to use the 
-    fuctions to draw the image without changes.
-    """
+    # Added below in order to support Valetudo Re.
+    # This functions read directly the data from the json created
+    # from the parser for Valetudo Re. They allow to use the
+    # fuctions to draw the image without changes.
 
     @staticmethod
     def from_rrm_to_compressed_pixels(
-        pixel_data, image_width=0, image_height=0, image_top=0, image_left=0
-    ):
+        pixel_data: list,
+        image_width: int = 0,
+        image_height: int = 0,
+        image_top: int = 0,
+        image_left: int = 0,
+    ) -> list:
+        """Convert the pixel data to compressed pixels."""
         compressed_pixels = []
 
         tot_pixels = 0
@@ -195,9 +214,7 @@ class ImageData:
             max_x = max(max_x, x)
             max_y = max(max_y, y)
 
-        max_x = max_x * 6
-        max_y = max_y * 6
-        return max_x, max_y
+        return (max_x * 6), (max_y * 6)
 
     @staticmethod
     def rrm_coordinates_to_valetudo(points):
@@ -221,7 +238,10 @@ class ImageData:
 
     @staticmethod
     def get_rrm_image(json_data):
-        return json_data.get("image", {})
+        if isinstance(json_data, tuple):
+            return {}
+        else:
+            return json_data.get("image", {})
 
     @staticmethod
     def get_rrm_path(json_data):
@@ -351,10 +371,15 @@ class ImageData:
         return json_data.get("forbidden_mop_zones", [])
 
     @staticmethod
-    def get_rrm_image_size(json_data):
-        image = ImageData.get_rrm_image(json_data)
-        dimensions = image.get("dimensions", {})
-        return dimensions.get("width", 0), dimensions.get("height", 0)
+    def get_rrm_image_size(json_data) -> ImageSize:
+        if isinstance(json_data, tuple):
+            return 0, 0
+        else:
+            image = ImageData.get_rrm_image(json_data)
+            if image == {}:
+                return 0, 0
+            dimensions = image.get("dimensions", {})
+            return dimensions.get("width", 0), dimensions.get("height", 0)
 
     @staticmethod
     def get_rrm_image_position(json_data):
@@ -377,7 +402,7 @@ class ImageData:
         json_data, size_x, size_y, pos_top, pos_left, out_lines: bool = False
     ):
         img = ImageData.get_rrm_image(json_data)
-        seg_data = img.get("segments", [])
+        seg_data = img.get("segments", {})
         seg_ids = seg_data.get("id")
         segments = []
         outlines = []
