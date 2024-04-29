@@ -161,9 +161,9 @@ class ValetudoConnector:
         /StatusStateAttribute/status" is for Hypfer.
         @param msg: MQTT message
         """
-        self._payload = msg.payload
+        self._payload = await self.async_decode_mqtt_payload(msg)
         if self._payload:
-            self._mqtt_vac_stat = self._payload.decode()
+            self._mqtt_vac_stat = self._payload
             _LOGGER.info(
                 f"{self._file_name}: Received vacuum {self._mqtt_vac_stat} status."
             )
@@ -176,7 +176,7 @@ class ValetudoConnector:
         /$state is for Hypfer.
         @param msg: MQTT message
         """
-        self._payload = msg.payload
+        self._payload = await self.async_decode_mqtt_payload(msg)
         if self._payload:
             self._mqtt_vac_connect_state = self._payload
             _LOGGER.info(
@@ -193,7 +193,7 @@ class ValetudoConnector:
         /StatusStateAttribute/error_description is for Hypfer.
         @param msg: MQTT message
         """
-        self._payload = msg.payload
+        self._payload = self.async_decode_mqtt_payload(msg)
         self._mqtt_vac_err = self._payload
         _LOGGER.info(f"{self._mqtt_topic}: Received vacuum Error: {self._mqtt_vac_err}")
 
@@ -203,7 +203,7 @@ class ValetudoConnector:
         /BatteryStateAttribute/level is for Hypfer.
         @param msg: MQTT message
         """
-        self._payload = msg.payload
+        self._payload = await self.async_decode_mqtt_payload(msg)
         if self._payload:
             self._mqtt_vac_battery_level = int(self._payload)
             _LOGGER.info(
@@ -256,7 +256,7 @@ class ValetudoConnector:
         @param msg: MQTT message
         """
         self._payload = msg.payload
-        tmp_data = bytes.decode(msg.payload)
+        tmp_data = await self.async_decode_mqtt_payload(msg)
         self._rrm_destinations = tmp_data
         _LOGGER.info(
             f"{self._file_name}: Received vacuum destinations: {self._rrm_destinations}"
@@ -287,25 +287,9 @@ class ValetudoConnector:
                     room_idx = room_ids[segment_id] - 1  # Adjust index to start from 0
                     self._rrm_active_segments[room_idx] = 1
             self._shared.rand256_active_zone = self._rrm_active_segments
-            await self.rrm_publish_active_segments()
             _LOGGER.debug(
                 f"Active Segments of {self._file_name}: {self._rrm_active_segments}"
             )
-
-    # async def rrm_handle_mqtt_segments(self, msg) -> None:
-    #     """
-    #     Handle new MQTT messages.
-    #     /active_segments is for Rand256 stored in MQTT.
-    #     @param msg: MQTT message
-    #     [*number of rooms]
-    #     """
-    #     received_msg = bytes.decode(msg.payload)
-    #     cleaned_msg = received_msg.strip('[]').replace(' ', '')
-    #     # Split the string by commas
-    #     split_values = cleaned_msg.split(',')
-    #     # Convert each value to integer
-    #     active_segments = [int(value) for value in split_values]
-    #     _LOGGER.debug(f"Active Segments of {self._file_name}: {active_segments}")
 
     @callback
     async def async_message_received(self, msg) -> None:
@@ -337,8 +321,6 @@ class ValetudoConnector:
             await self.rrm_handle_active_segments(msg)
         elif self._rcv_topic == f"{self._mqtt_topic}/destinations":
             await self._hass.async_create_task(self.rand256_handle_destinations(msg))
-        # elif self._rcv_topic == f"{self._mqtt_topic}/active_segments":
-        #     await self.rrm_handle_mqtt_segments(msg)
 
     async def async_subscribe_to_topics(self) -> None:
         """Subscribe to the MQTT topics for Hypfer and ValetudoRe."""
@@ -353,7 +335,6 @@ class ValetudoConnector:
                 f"{self._mqtt_topic}/state",  # added for ValetudoRe
                 f"{self._mqtt_topic}/destinations",  # added for ValetudoRe
                 f"{self._mqtt_topic}/custom_command",  # added for ValetudoRe
-                f"{self._mqtt_topic}/active_segments",  # added for ValetudoRe
             ]:
                 self._unsubscribe_handlers.append(
                     await mqtt.async_subscribe(
@@ -377,30 +358,21 @@ class ValetudoConnector:
             encoding="utf-8",
         )
 
-    async def rrm_publish_active_segments(self) -> None:
-        """
-        Request the destinations from ValetudoRe.
-        Destination is used to gater the room names.
-        It also provides zones and points predefined in the ValetudoRe.
-        """
-        cust_payload = self._rrm_active_segments
-        cust_payload = json.dumps(cust_payload)
-        await mqtt.async_publish(
-            self._hass,
-            self._mqtt_topic + "/active_segments",
-            cust_payload,
-            _QOS,
-            encoding="utf-8",
-        )
-
     async def async_unsubscribe_from_topics(self) -> None:
         """Unsubscribe from all MQTT topics."""
         _LOGGER.debug("Unsubscribing topics!!!")
         map(lambda x: x(), self._unsubscribe_handlers)
 
     @staticmethod
-    def get_test_payload(payload_data) -> None:
-        """Test Payload for testing the Camera."""
-        ValetudoConnector._img_payload = payload_data
-        _LOGGER.debug("Processing Test Data..")
-        ValetudoConnector._data_in = True
+    async def async_decode_mqtt_payload(msg):
+        """Check if we need to decode or not the payload"""
+        if isinstance(msg.payload, bytes):
+            # If it's binary data, decode it
+            payload_str = msg.payload.decode("utf-8")
+            return payload_str
+        elif isinstance(msg.payload, (int, float)):
+            # If it's a number, return it as is
+            return msg.payload
+        else:
+            # If it's already a string or another type, return it as is
+            return msg.payload
