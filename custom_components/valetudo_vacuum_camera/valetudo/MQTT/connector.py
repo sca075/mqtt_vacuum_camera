@@ -178,12 +178,13 @@ class ValetudoConnector:
         """
         self._payload = msg.payload
         if self._payload:
-            self._mqtt_vac_connect_state = self._payload.decode()
+            self._mqtt_vac_connect_state = self._payload
             _LOGGER.info(
                 f"{self._mqtt_topic}: Received vacuum connection status: {self._mqtt_vac_connect_state}."
             )
         if self._ignore_data and self._mqtt_vac_connect_state != "ready":
-            self._ignore_data = True
+            self._mqtt_vac_stat = "disconnected"
+            self._ignore_data = False
             self._data_in = True
 
     async def hypfer_handle_errors(self, msg) -> None:
@@ -193,7 +194,7 @@ class ValetudoConnector:
         @param msg: MQTT message
         """
         self._payload = msg.payload
-        self._mqtt_vac_err = self._payload.decode()
+        self._mqtt_vac_err = self._payload
         _LOGGER.info(f"{self._mqtt_topic}: Received vacuum Error: {self._mqtt_vac_err}")
 
     async def hypfer_handle_battery_level(self, msg) -> None:
