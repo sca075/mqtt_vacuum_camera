@@ -279,15 +279,16 @@ class ImageData:
 
     @staticmethod
     def get_rrm_robot_angle(json_data: JsonType) -> tuple:
-        """Get the robot angle from the json."""
-        # todo robot angle require debug.
-        # angle = (round(json_data.get("robot_angle", 0) * 3.14) % 360) + 90
+        """
+        Get the robot angle from the json.
+        Return the calculated angle and original angle.
+        """
         angle_c = round(json_data.get("robot_angle", 0))
         if angle_c < 0:
-            angle = (360 - angle_c) + 90
+            angle = (360 - angle_c) + 80
         else:
-            angle = angle_c - 90
-        return angle, json_data.get("robot_angle", 0)
+            angle = (180 - angle_c) - 80
+        return angle % 360, json_data.get("robot_angle", 0)
 
     @staticmethod
     def get_rrm_goto_target(json_data: JsonType) -> list or None:
@@ -423,6 +424,7 @@ class ImageData:
     def get_rrm_segments(
         json_data, size_x, size_y, pos_top, pos_left, out_lines: bool = False
     ):
+        """Get the segments data from the json."""
         img = ImageData.get_rrm_image(json_data)
         seg_data = img.get("segments", {})
         seg_ids = seg_data.get("id")
