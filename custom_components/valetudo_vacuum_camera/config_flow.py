@@ -10,13 +10,12 @@ import os
 import shutil
 from typing import Any, Dict, Optional
 
-import homeassistant.helpers.config_validation as cv
-import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.components.vacuum import DOMAIN as ZONE_VACUUM
 from homeassistant.const import CONF_UNIQUE_ID
 from homeassistant.core import callback
 from homeassistant.helpers import entity_registry as er
+import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.selector import (
     BooleanSelector,
     ColorRGBSelector,
@@ -29,6 +28,7 @@ from homeassistant.helpers.selector import (
     SelectSelectorMode,
 )
 from homeassistant.helpers.storage import STORAGE_DIR
+import voluptuous as vol
 
 from .common import (  # get_entity_identifier_from_mqtt,
     get_device_info,

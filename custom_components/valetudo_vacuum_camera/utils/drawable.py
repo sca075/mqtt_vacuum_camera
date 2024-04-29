@@ -9,8 +9,8 @@ Version: v2024.04
 import logging
 import math
 
-import numpy as np
 from PIL import ImageDraw, ImageFont
+import numpy as np
 
 from custom_components.valetudo_vacuum_camera.types import (
     Color,

@@ -1,17 +1,17 @@
 """Snapshot Version 2024.05"""
 
 import asyncio
+from asyncio import gather, get_event_loop
 import concurrent.futures
 import json
 import logging
 import os
 import shutil
 import zipfile
-from asyncio import gather, get_event_loop
 
 from homeassistant.helpers.storage import STORAGE_DIR
 
-from custom_components.valetudo_vacuum_camera.types import Any, PilPNG, JsonType
+from custom_components.valetudo_vacuum_camera.types import Any, JsonType, PilPNG
 
 _LOGGER = logging.getLogger(__name__)  # Create a logger instance
 
