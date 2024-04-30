@@ -11,8 +11,8 @@ import hashlib
 import json
 import logging
 
-import numpy as np
 from PIL import Image, ImageOps
+import numpy as np
 from psutil_home_assistant import PsutilWrapper as ProcInspector
 
 from custom_components.valetudo_vacuum_camera.types import (

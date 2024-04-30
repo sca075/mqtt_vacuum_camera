@@ -1,101 +1,47 @@
 """
 Camera
-Version: v2024.04.02
+Version: v2024.05
 Image Processing Threading implemented on Version 1.5.7.
 """
 
 from __future__ import annotations
 
+import asyncio
+from asyncio import gather, get_event_loop
+import concurrent.futures
+from datetime import timedelta
+from io import BytesIO
 import json
 import logging
 import os
 import platform
-import shutil
 import time
-from datetime import timedelta
-from functools import partial
-from io import BytesIO
 from typing import Any, Optional
 
-import voluptuous as vol
 from PIL import Image
 from homeassistant import config_entries, core
-# from homeassistant.core import Event, HomeAssistant, ServiceCall, callback
 from homeassistant.components.camera import PLATFORM_SCHEMA, Camera, CameraEntityFeature
 from homeassistant.const import CONF_NAME, CONF_UNIQUE_ID
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.reload import async_setup_reload_service
 from homeassistant.helpers.storage import STORAGE_DIR
-from homeassistant.helpers.typing import (
-    ConfigType,
-    DiscoveryInfoType,
-)
+from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from psutil_home_assistant import PsutilWrapper as ProcInsp
+import voluptuous as vol
 
 from .camera_processing import CameraProcessor
 from .camera_shared import CameraShared
-from .common import get_vacuum_unique_id_from_mqtt_topic
+from .common import async_get_active_user_id, get_vacuum_unique_id_from_mqtt_topic
 from .const import (
-    ALPHA_BACKGROUND,
-    ALPHA_CHARGER,
-    ALPHA_GO_TO,
-    ALPHA_MOVE,
-    ALPHA_NO_GO,
-    ALPHA_ROBOT,
-    ALPHA_ROOM_0,
-    ALPHA_ROOM_1,
-    ALPHA_ROOM_2,
-    ALPHA_ROOM_3,
-    ALPHA_ROOM_4,
-    ALPHA_ROOM_5,
-    ALPHA_ROOM_6,
-    ALPHA_ROOM_7,
-    ALPHA_ROOM_8,
-    ALPHA_ROOM_9,
-    ALPHA_ROOM_10,
-    ALPHA_ROOM_11,
-    ALPHA_ROOM_12,
-    ALPHA_ROOM_13,
-    ALPHA_ROOM_14,
-    ALPHA_ROOM_15,
-    ALPHA_TEXT,
-    ALPHA_WALL,
-    ALPHA_ZONE_CLEAN,
     ATTR_MARGINS,
     ATTR_ROTATE,
-    COLOR_BACKGROUND,
-    COLOR_CHARGER,
-    COLOR_GO_TO,
-    COLOR_MOVE,
-    COLOR_NO_GO,
-    COLOR_ROBOT,
-    COLOR_ROOM_0,
-    COLOR_ROOM_1,
-    COLOR_ROOM_2,
-    COLOR_ROOM_3,
-    COLOR_ROOM_4,
-    COLOR_ROOM_5,
-    COLOR_ROOM_6,
-    COLOR_ROOM_7,
-    COLOR_ROOM_8,
-    COLOR_ROOM_9,
-    COLOR_ROOM_10,
-    COLOR_ROOM_11,
-    COLOR_ROOM_12,
-    COLOR_ROOM_13,
-    COLOR_ROOM_14,
-    COLOR_ROOM_15,
-    COLOR_TEXT,
-    COLOR_WALL,
-    COLOR_ZONE_CLEAN,
+    CONF_ASPECT_RATIO,
     CONF_AUTO_ZOOM,
-    CONF_OFFSET_TOP,
     CONF_OFFSET_BOTTOM,
     CONF_OFFSET_LEFT,
     CONF_OFFSET_RIGHT,
-    CONF_ASPECT_RATIO,
-    CONF_ZOOM_LOCK_RATIO,
+    CONF_OFFSET_TOP,
     CONF_SNAPSHOTS_ENABLE,
     CONF_VAC_STAT,
     CONF_VAC_STAT_FONT,
@@ -104,12 +50,13 @@ from .const import (
     CONF_VACUUM_CONNECTION_STRING,
     CONF_VACUUM_ENTITY_ID,
     CONF_VACUUM_IDENTIFIERS,
+    CONF_ZOOM_LOCK_RATIO,
     DEFAULT_NAME,
     DOMAIN,
     PLATFORMS,
 )
 from .snapshots.snapshot import Snapshots
-from .utils.colors_man import add_alpha_to_rgb
+from .utils.colors_man import ColorsManagment
 from .valetudo.MQTT.connector import ValetudoConnector
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
@@ -188,7 +135,6 @@ class ValetudoCamera(Camera):
             self._storage_path = f"{self.hass.config.path(STORAGE_DIR)}/valetudo_camera"
             if not os.path.exists(self._storage_path):
                 self._storage_path = f"{self._directory_path}/{STORAGE_DIR}"
-            self._snapshots = Snapshots(self._storage_path)
             self.snapshot_img = f"{self._storage_path}/{self._shared.file_name}.png"
             self.log_file = f"{self._storage_path}/{self._shared.file_name}.zip"
             self._attr_unique_id = device_info.get(
@@ -197,6 +143,7 @@ class ValetudoCamera(Camera):
             )
         self._mqtt = ValetudoConnector(self._mqtt_listen_topic, self.hass, self._shared)
         self._identifiers = device_info.get(CONF_VACUUM_IDENTIFIERS)
+        self._snapshots = Snapshots(self.hass, self._mqtt, self._shared)
         self.Image = None
         self._image_bk = None  # Backup image for testing.
         self._processing = False
@@ -223,11 +170,11 @@ class ValetudoCamera(Camera):
         if not self._shared.show_vacuum_state:
             self._shared.show_vacuum_state = False
         # If not configured, default to True for compatibility
-        self._enable_snapshots = device_info.get(CONF_SNAPSHOTS_ENABLE)
-        if self._enable_snapshots is None:
-            self._enable_snapshots = True
+        self._shared.enable_snapshots = device_info.get(CONF_SNAPSHOTS_ENABLE)
+        if self._shared.enable_snapshots is None:
+            self._shared.enable_snapshots = True
         # If snapshots are disabled, delete www data
-        if not self._enable_snapshots and os.path.isfile(
+        if not self._shared.enable_snapshots and os.path.isfile(
             f"{self._directory_path}/www/snapshot_{self._shared.file_name}.png"
         ):
             os.remove(
@@ -237,18 +184,15 @@ class ValetudoCamera(Camera):
         if os.path.isfile(self.log_file):
             os.remove(self.log_file)
         self._last_image = None
-        self._rrm_data = False  # Temp. check for rrm data
+        self._rrm_data = False  # Check for rrm data
         # get the colours used in the maps.
-        self.user_colors = None
-        self.user_alpha = None
-        self.rooms_colors = None
-        self.rooms_alpha = None
-        self.set_initial_colour(device_info)
+        self._colours = ColorsManagment(self._shared)
+        self._colours.set_initial_colours(device_info)
         # Create the processor for the camera.
         self.processor = CameraProcessor(self.hass, self._shared)
 
     async def async_added_to_hass(self) -> None:
-        """Handle entity added toHome Assistant."""
+        """Handle entity added to Home Assistant."""
         await self._mqtt.async_subscribe_to_topics()
         self._should_poll = True
         self.async_schedule_update_ha_state(True)
@@ -308,7 +252,7 @@ class ValetudoCamera(Camera):
             "vacuum_json_id": self._shared.vac_json_id,
             "calibration_points": self._shared.attr_calibration_points,
         }
-        if self._enable_snapshots:
+        if self._shared.enable_snapshots:
             attrs["snapshot"] = self._shared.snapshot_take
             attrs["snapshot_path"] = f"/local/snapshot_{self._shared.file_name}.png"
         else:
@@ -342,14 +286,6 @@ class ValetudoCamera(Camera):
 
             device_info = DeviceInfo
         return device_info(identifiers=self._identifiers)
-
-    async def async_camera_image(
-        self, width: int | None = None, height: int | None = None
-    ) -> bytes | None:
-        """Return bytes of camera image."""
-        return await self.hass.async_add_executor_job(
-            partial(self.camera_image, width=self._image_w, height=self._image_h)
-        )
 
     def turn_on(self) -> None:
         """Camera Turn On"""
@@ -385,34 +321,7 @@ class ValetudoCamera(Camera):
 
     async def take_snapshot(self, json_data: Any, image_data: Image.Image) -> None:
         """Camera Automatic Snapshots."""
-        try:
-            # When logger is active.
-            if (_LOGGER.getEffectiveLevel() > 0) and (
-                _LOGGER.getEffectiveLevel() != 30
-            ):
-                # Save mqtt raw data file.
-                if self._mqtt is not None:
-                    await self._mqtt.save_payload(self._shared.file_name)
-                # Write the JSON and data to the file.
-                self._snapshots.data_snapshot(self._shared.file_name, json_data)
-            # Save image ready for snapshot.
-            image_data.save(self.snapshot_img)  # Save the image in .storage
-            if self._enable_snapshots:
-                if os.path.isfile(self.snapshot_img):
-                    shutil.copy(
-                        f"{self._storage_path}/{self._shared.file_name}.png",
-                        f"{self._directory_path}/www/snapshot_{self._shared.file_name}.png",
-                    )
-                _LOGGER.info(f"{self._shared.file_name}: Camera Snapshot saved on WWW!")
-        except IOError:
-            self._shared.snapshot_take = None
-            _LOGGER.warning(
-                f"Error Saving {self._shared.file_name}: Snapshot, will not be available till restart."
-            )
-        else:
-            _LOGGER.debug(
-                f"{self._shared.file_name}: Snapshot acquired during {self._shared.vacuum_state} Vacuum State."
-            )
+        await self._snapshots.run_async_take_snapshot(json_data, image_data)
 
     async def load_test_json(self, file_path: str = None) -> Any:
         """Load a test json."""
@@ -430,13 +339,15 @@ class ValetudoCamera(Camera):
     async def async_update(self):
         """Camera Frame Update."""
         # Get the active user language
-        self._shared.user_language = await self.get_active_user_id()
+        self._shared.user_language = await async_get_active_user_id(self.hass)
         # check and update the vacuum reported state
         if not self._mqtt:
             _LOGGER.debug(f"{self._shared.file_name}: No MQTT data available.")
             # return last/empty image if no MQTT or CPU usage too high.
             pil_img = self.empty_if_no_data()
-            self.Image = await self.async_pil_to_bytes(pil_img)
+            self.Image = await self.hass.async_create_task(
+                self.run_async_pil_to_bytes(pil_img)
+            )
             return self.Image
 
         # If we have data from MQTT, we process the image.
@@ -446,7 +357,7 @@ class ValetudoCamera(Camera):
             self._shared.vacuum_state = "disconnected"
         else:
             if self._shared.vacuum_state == "disconnected":
-                self._shared.vacuum_state = "connected"
+                self._shared.vacuum_state = await self._mqtt.get_vacuum_status()
             else:
                 self._shared.vacuum_state = await self._mqtt.get_vacuum_status()
         pid = os.getpid()  # Start to log the CPU usage of this PID.
@@ -481,7 +392,9 @@ class ValetudoCamera(Camera):
                 parsed_json = await self._mqtt.update_data(self._shared.image_grab)
                 if not parsed_json:
                     self._vac_json_available = "Error"
-                    self.Image = await self.async_pil_to_bytes(self.empty_if_no_data())
+                    self.Image = await self.hass.async_create_task(
+                        self.run_async_pil_to_bytes(self.empty_if_no_data())
+                    )
                     raise ValueError
 
                 if parsed_json[1] == "Rand256":
@@ -521,7 +434,9 @@ class ValetudoCamera(Camera):
                     # On Py4 HA OS is not possible to install the openCV library.
                     # backup the image
                     self._last_image = pil_img
-                    self.Image = await self.async_pil_to_bytes(pil_img)
+                    self.Image = await self.hass.async_create_task(
+                        self.run_async_pil_to_bytes(pil_img)
+                    )
                     # take a snapshot if we meet the conditions.
                     if self._shared.snapshot_take:
                         if pil_img:
@@ -593,102 +508,38 @@ class ValetudoCamera(Camera):
         del buffered, pil_img
         return bytes_data
 
-    def set_initial_colour(self, device_info: dict) -> None:
-        """Set the initial colours for the map."""
+    def process_pil_to_bytes(self, pil_img):
+        """Async function to process the image data from the Vacuum Json data."""
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
         try:
-            self.user_colors = [
-                device_info.get(COLOR_WALL),
-                device_info.get(COLOR_ZONE_CLEAN),
-                device_info.get(COLOR_ROBOT),
-                device_info.get(COLOR_BACKGROUND),
-                device_info.get(COLOR_MOVE),
-                device_info.get(COLOR_CHARGER),
-                device_info.get(COLOR_NO_GO),
-                device_info.get(COLOR_GO_TO),
-                device_info.get(COLOR_TEXT),
-            ]
-            self.user_alpha = [
-                device_info.get(ALPHA_WALL),
-                device_info.get(ALPHA_ZONE_CLEAN),
-                device_info.get(ALPHA_ROBOT),
-                device_info.get(ALPHA_BACKGROUND),
-                device_info.get(ALPHA_MOVE),
-                device_info.get(ALPHA_CHARGER),
-                device_info.get(ALPHA_NO_GO),
-                device_info.get(ALPHA_GO_TO),
-                device_info.get(ALPHA_TEXT),
-            ]
-            self.rooms_colors = [
-                device_info.get(COLOR_ROOM_0),
-                device_info.get(COLOR_ROOM_1),
-                device_info.get(COLOR_ROOM_2),
-                device_info.get(COLOR_ROOM_3),
-                device_info.get(COLOR_ROOM_4),
-                device_info.get(COLOR_ROOM_5),
-                device_info.get(COLOR_ROOM_6),
-                device_info.get(COLOR_ROOM_7),
-                device_info.get(COLOR_ROOM_8),
-                device_info.get(COLOR_ROOM_9),
-                device_info.get(COLOR_ROOM_10),
-                device_info.get(COLOR_ROOM_11),
-                device_info.get(COLOR_ROOM_12),
-                device_info.get(COLOR_ROOM_13),
-                device_info.get(COLOR_ROOM_14),
-                device_info.get(COLOR_ROOM_15),
-            ]
-            self.rooms_alpha = [
-                device_info.get(ALPHA_ROOM_0),
-                device_info.get(ALPHA_ROOM_1),
-                device_info.get(ALPHA_ROOM_2),
-                device_info.get(ALPHA_ROOM_3),
-                device_info.get(ALPHA_ROOM_4),
-                device_info.get(ALPHA_ROOM_5),
-                device_info.get(ALPHA_ROOM_6),
-                device_info.get(ALPHA_ROOM_7),
-                device_info.get(ALPHA_ROOM_8),
-                device_info.get(ALPHA_ROOM_9),
-                device_info.get(ALPHA_ROOM_10),
-                device_info.get(ALPHA_ROOM_11),
-                device_info.get(ALPHA_ROOM_12),
-                device_info.get(ALPHA_ROOM_13),
-                device_info.get(ALPHA_ROOM_14),
-                device_info.get(ALPHA_ROOM_15),
-            ]
-            self._shared.update_user_colors(
-                add_alpha_to_rgb(self.user_alpha, self.user_colors)
-            )
-            self._shared.update_rooms_colors(
-                add_alpha_to_rgb(self.rooms_alpha, self.rooms_colors)
-            )
-        except (ValueError, IndexError, UnboundLocalError) as e:
-            _LOGGER.error("Error while populating colors: %s", e)
+            result = loop.run_until_complete(self.async_pil_to_bytes(pil_img))
+        finally:
+            loop.close()
+        return result
 
-    async def get_active_user_id(self) -> Optional[str]:
-        """
-        Get the active user id from the frontend user data file.
-        Return the language of the active user.
-        """
-        active_user_id = None
-        users = await self.hass.auth.async_get_users()
-        for user in users:
-            if (
-                user.name.lower() not in ["home assistant content", "supervisor"]
-                and user.is_active
-            ):
-                active_user_id = user.id
-                break
+    async def run_async_pil_to_bytes(self, pil_img):
+        """Thread function to process the image data from the Vacuum Json data."""
+        num_processes = 1
+        pil_img_list = [pil_img for _ in range(num_processes)]
+        loop = get_event_loop()
 
-        file_path = (
-            f"{self.hass.config.path(STORAGE_DIR)}/frontend.user_data_{active_user_id}"
-        )
-        try:
-            with open(file_path, "r") as file:
-                data = json.load(file)
-                language = data["data"]["language"]["language"]
-                return language
-        except FileNotFoundError:
-            _LOGGER.info("User ID File not found: %s", file_path)
-            return "en"
-        except KeyError:
-            _LOGGER.info("User ID Language not found: %s", file_path)
-            return "en"
+        with concurrent.futures.ThreadPoolExecutor(
+            max_workers=1, thread_name_prefix=f"{self._shared.file_name}_camera"
+        ) as executor:
+            tasks = [
+                loop.run_in_executor(
+                    executor,
+                    self.process_pil_to_bytes,
+                    pil_img,
+                )
+                for pil_img in pil_img_list
+            ]
+            images = await gather(*tasks)
+
+        if isinstance(images, list) and len(images) > 0:
+            result = images[0]
+        else:
+            result = None
+
+        return result

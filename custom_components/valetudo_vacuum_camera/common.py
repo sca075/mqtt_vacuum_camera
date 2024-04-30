@@ -1,17 +1,20 @@
 """
 Common functions for the Valetudo Vacuum Camera integration.
-Version: 2024.04.3
+Version: 2024.05
 """
 
 from __future__ import annotations
 
+import json
 import logging
+from typing import Optional
 
 from homeassistant.components import mqtt
 from homeassistant.components.mqtt import DOMAIN as MQTT_DOMAIN
 from homeassistant.components.vacuum import DOMAIN as VACUUM_DOMAIN
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr, entity_registry as er
+from homeassistant.helpers.storage import STORAGE_DIR
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -168,3 +171,32 @@ async def update_options(bk_options, new_options):
     # updated_options is a dictionary containing the merged options
     updated_bk_options = updated_options  # or backup_options, as needed
     return updated_bk_options
+
+
+async def async_get_active_user_id(hass) -> Optional[str]:
+    """
+    Get the active user id from the frontend user data file.
+    Return the language of the active user.
+    """
+    active_user_id = None
+    users = await hass.auth.async_get_users()
+    for user in users:
+        if (
+            user.name.lower() not in ["home assistant content", "supervisor"]
+            and user.is_active
+        ):
+            active_user_id = user.id
+            break
+
+    file_path = f"{hass.config.path(STORAGE_DIR)}/frontend.user_data_{active_user_id}"
+    try:
+        with open(file_path, "r") as file:
+            data = json.load(file)
+            language = data["data"]["language"]["language"]
+            return language
+    except FileNotFoundError:
+        _LOGGER.info("User ID File not found: %s", file_path)
+        return "en"
+    except KeyError:
+        _LOGGER.info("User ID Language not found: %s", file_path)
+        return "en"

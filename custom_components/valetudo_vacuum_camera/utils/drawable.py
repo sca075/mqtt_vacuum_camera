@@ -9,8 +9,8 @@ Version: v2024.04
 import logging
 import math
 
-import numpy as np
 from PIL import ImageDraw, ImageFont
+import numpy as np
 
 from custom_components.valetudo_vacuum_camera.types import (
     Color,
@@ -504,7 +504,7 @@ class Drawable:
         """
         for obstacle_info in obstacle_info_list:
             enter = obstacle_info.get("points", {})
-            label = obstacle_info.get("label", {})
+            # label = obstacle_info.get("label", {})
             center = (enter["x"], enter["y"])
 
             radius = 6

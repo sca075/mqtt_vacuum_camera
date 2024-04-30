@@ -1,11 +1,17 @@
-"""Snapshot Version 1.5.7.1"""
-# Added Errors handling.
+"""Snapshot Version 2024.05"""
 
-import os
+import asyncio
+from asyncio import gather, get_event_loop
+import concurrent.futures
 import json
-import zipfile
-import shutil
 import logging
+import os
+import shutil
+import zipfile
+
+from homeassistant.helpers.storage import STORAGE_DIR
+
+from custom_components.valetudo_vacuum_camera.types import Any, JsonType, PilPNG
 
 _LOGGER = logging.getLogger(__name__)  # Create a logger instance
 
@@ -15,14 +21,21 @@ class Snapshots:
     Snapshots class to save the JSON data and the filtered logs to a ZIP archive.
     We will use this class to save the JSON data and the filtered logs to a ZIP archive.
     """
-    def __init__(self, storage_path):
-        self.storage_path = storage_path
 
-    @staticmethod
-    def _get_filtered_logs():
-        # Make a copy of home-assistant.log to home-assistant.tmp
-        log_file_path = os.path.join(os.getcwd(), "home-assistant.log")
-        tmp_log_file_path = os.path.join(os.getcwd(), "home-assistant.tmp")
+    def __init__(self, hass, mqtt, shared):
+        self._mqtt = mqtt
+        self.hass = hass
+        self._shared = shared
+        self._directory_path = self.hass.config.path()
+        self.storage_path = f"{self.hass.config.path(STORAGE_DIR)}/valetudo_camera"
+        if not os.path.exists(self.storage_path):
+            self._storage_path = f"{self._directory_path}/{STORAGE_DIR}"
+        self.snapshot_img = f"{self.storage_path}/{self._shared.file_name}.png"
+
+    def _get_filtered_logs(self):
+        """Make a copy of home-assistant.log to home-assistant.tmp"""
+        log_file_path = os.path.join(self._directory_path, "home-assistant.log")
+        tmp_log_file_path = os.path.join(self._directory_path, "home-assistant.tmp")
 
         try:
             if os.path.exists(log_file_path):
@@ -45,7 +58,7 @@ class Snapshots:
             _LOGGER.warning("Error while processing logs: %s", str(e))
             return ""
 
-    def _get_data(self, file_name, json_data):
+    def _get_data(self, file_name: str, json_data: JsonType) -> None:
         # Create the storage folder if it doesn't exist
         if not os.path.exists(self.storage_path):
             os.makedirs(self.storage_path)
@@ -66,8 +79,8 @@ class Snapshots:
         except Exception as e:
             _LOGGER.warning("Error while saving data: %s", str(e))
 
-    def _zip_snapshot(self, file_name):
-        # Create a ZIP archive
+    def _zip_snapshot(self, file_name: str) -> None:
+        """Create a ZIP archive"""
         zip_file_name = os.path.join(self.storage_path, f"{file_name}.zip")
 
         try:
@@ -94,7 +107,7 @@ class Snapshots:
                     os.remove(raw_file_name)
 
         except Exception as e:
-            _LOGGER.warning("Error while creating ZIP archive: %s", str(e))
+            _LOGGER.warning("Error while creating logs ZIP archive: %s", str(e))
 
         # Clean up the original files
         try:
@@ -113,4 +126,74 @@ class Snapshots:
             self._get_data(file_name, json_data)
             self._zip_snapshot(file_name)
         except Exception as e:
-            _LOGGER.warning("Error while creating snapshot: %s", str(e))
+            _LOGGER.warning("Error while creating logs snapshot: %s", str(e))
+
+    async def async_take_snapshot(self, json_data: Any, image_data: PilPNG) -> None:
+        """Camera Automatic Snapshots."""
+        try:
+            # When logger is active.
+            if (_LOGGER.getEffectiveLevel() > 0) and (
+                _LOGGER.getEffectiveLevel() != 30
+            ):
+                # Save mqtt raw data file.
+                if self._mqtt is not None:
+                    await self._mqtt.save_payload(self._shared.file_name)
+                # Write the JSON and data to the file.
+                self.data_snapshot(self._shared.file_name, json_data)
+            # Save image ready for snapshot.
+            image_data.save(self.snapshot_img)  # Save the image in .storage
+            if self._shared.enable_snapshots:
+                if os.path.isfile(self.snapshot_img):
+                    shutil.copy(
+                        f"{self.storage_path}/{self._shared.file_name}.png",
+                        f"{self._directory_path}/www/snapshot_{self._shared.file_name}.png",
+                    )
+                _LOGGER.info(f"{self._shared.file_name}: Camera Snapshot saved on WWW!")
+        except IOError:
+            self._shared.snapshot_take = None
+            _LOGGER.warning(
+                f"Error Saving {self._shared.file_name}: Snapshot, will not be available till restart."
+            )
+        else:
+            _LOGGER.debug(
+                f"{self._shared.file_name}: Snapshot acquired during {self._shared.vacuum_state} Vacuum State."
+            )
+
+    def process_snapshot(self, json_data: Any, image_data: PilPNG):
+        """Async function to thread the snapshot process."""
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            result = loop.run_until_complete(
+                self.async_take_snapshot(json_data, image_data)
+            )
+        finally:
+            loop.close()
+        return result
+
+    async def run_async_take_snapshot(self, json_data: Any, pil_img: PilPNG) -> None:
+        """Thread function to process the image snapshots."""
+        num_processes = 1
+        pil_img_list = [pil_img for _ in range(num_processes)]
+        loop = get_event_loop()
+
+        with concurrent.futures.ThreadPoolExecutor(
+            max_workers=1, thread_name_prefix=f"{self._shared.file_name}_snapshot"
+        ) as executor:
+            tasks = [
+                loop.run_in_executor(
+                    executor,
+                    self.process_snapshot,
+                    json_data,
+                    pil_img,
+                )
+                for pil_img in pil_img_list
+            ]
+            images = await gather(*tasks)
+
+        if isinstance(images, list) and len(images) > 0:
+            result = images[0]
+        else:
+            result = None
+
+        return result

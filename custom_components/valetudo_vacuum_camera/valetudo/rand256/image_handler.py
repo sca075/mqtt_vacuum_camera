@@ -11,14 +11,14 @@ import json
 import logging
 import uuid
 
-import numpy as np
 from PIL import Image, ImageOps
+import numpy as np
 
 from custom_components.valetudo_vacuum_camera.types import (
     Color,
+    JsonType,
     NumpyArray,
     PilPNG,
-    JsonType,
     RobotPosition,
     RoomsProperties,
 )

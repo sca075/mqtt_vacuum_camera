@@ -10,13 +10,12 @@ import os
 import shutil
 from typing import Any, Dict, Optional
 
-import homeassistant.helpers.config_validation as cv
-import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.components.vacuum import DOMAIN as ZONE_VACUUM
 from homeassistant.const import CONF_UNIQUE_ID
 from homeassistant.core import callback
 from homeassistant.helpers import entity_registry as er
+import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.selector import (
     BooleanSelector,
     ColorRGBSelector,
@@ -29,6 +28,7 @@ from homeassistant.helpers.selector import (
     SelectSelectorMode,
 )
 from homeassistant.helpers.storage import STORAGE_DIR
+import voluptuous as vol
 
 from .common import (  # get_entity_identifier_from_mqtt,
     get_device_info,
@@ -90,12 +90,11 @@ from .const import (
     COLOR_WALL,
     COLOR_ZONE_CLEAN,
     CONF_ASPECT_RATIO,
-    CONF_OFFSET_TOP,
+    CONF_AUTO_ZOOM,
     CONF_OFFSET_BOTTOM,
     CONF_OFFSET_LEFT,
     CONF_OFFSET_RIGHT,
-    CONF_AUTO_ZOOM,
-    CONF_ZOOM_LOCK_RATIO,
+    CONF_OFFSET_TOP,
     CONF_SNAPSHOTS_ENABLE,
     CONF_VAC_STAT,
     CONF_VAC_STAT_FONT,
@@ -103,6 +102,7 @@ from .const import (
     CONF_VAC_STAT_SIZE,
     CONF_VACUUM_CONFIG_ENTRY_ID,
     CONF_VACUUM_ENTITY_ID,
+    CONF_ZOOM_LOCK_RATIO,
     DOMAIN,
     IS_ALPHA,
     IS_ALPHA_R1,

@@ -18,6 +18,7 @@ from custom_components.valetudo_vacuum_camera.common import (
     get_vacuum_unique_id_from_mqtt_topic,
     update_options,
 )
+
 from .const import (
     CONF_MQTT_HOST,
     CONF_MQTT_PASS,

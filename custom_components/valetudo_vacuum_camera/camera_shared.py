@@ -1,7 +1,7 @@
 """
 Class Camera Shared.
 Keep the data between the modules.
-Version: v2024.04.2
+Version: v2024.05
 """
 
 import logging
@@ -57,6 +57,7 @@ class CameraShared(object):
         self.offset_right = 0  # Image offset right
         self.export_svg = False  # Export SVG
         self.svg_path = None  # SVG Export path
+        self.enable_snapshots = False  # Enable snapshots
         self.file_name = ""  # vacuum friendly name as File name
         self.attr_calibration_points = None  # Calibration points of the image
         self.map_rooms = None  # Rooms data from the vacuum
