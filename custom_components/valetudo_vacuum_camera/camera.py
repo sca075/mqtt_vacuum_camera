@@ -6,6 +6,9 @@ Image Processing Threading implemented on Version 1.5.7.
 
 from __future__ import annotations
 
+import asyncio
+from asyncio import gather, get_event_loop
+import concurrent.futures
 from datetime import timedelta
 from io import BytesIO
 import json
@@ -342,7 +345,9 @@ class ValetudoCamera(Camera):
             _LOGGER.debug(f"{self._shared.file_name}: No MQTT data available.")
             # return last/empty image if no MQTT or CPU usage too high.
             pil_img = self.empty_if_no_data()
-            self.Image = await self.async_pil_to_bytes(pil_img)
+            self.Image = await self.hass.async_create_task(
+                self.run_async_pil_to_bytes(pil_img)
+            )
             return self.Image
 
         # If we have data from MQTT, we process the image.
@@ -387,7 +392,9 @@ class ValetudoCamera(Camera):
                 parsed_json = await self._mqtt.update_data(self._shared.image_grab)
                 if not parsed_json:
                     self._vac_json_available = "Error"
-                    self.Image = await self.async_pil_to_bytes(self.empty_if_no_data())
+                    self.Image = await self.hass.async_create_task(
+                        self.run_async_pil_to_bytes(self.empty_if_no_data())
+                    )
                     raise ValueError
 
                 if parsed_json[1] == "Rand256":
@@ -427,7 +434,9 @@ class ValetudoCamera(Camera):
                     # On Py4 HA OS is not possible to install the openCV library.
                     # backup the image
                     self._last_image = pil_img
-                    self.Image = await self.async_pil_to_bytes(pil_img)
+                    self.Image = await self.hass.async_create_task(
+                        self.run_async_pil_to_bytes(pil_img)
+                    )
                     # take a snapshot if we meet the conditions.
                     if self._shared.snapshot_take:
                         if pil_img:
@@ -498,3 +507,39 @@ class ValetudoCamera(Camera):
         bytes_data = buffered.getvalue()
         del buffered, pil_img
         return bytes_data
+
+    def process_pil_to_bytes(self, pil_img):
+        """Async function to process the image data from the Vacuum Json data."""
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            result = loop.run_until_complete(self.async_pil_to_bytes(pil_img))
+        finally:
+            loop.close()
+        return result
+
+    async def run_async_pil_to_bytes(self, pil_img):
+        """Thread function to process the image data from the Vacuum Json data."""
+        num_processes = 1
+        pil_img_list = [pil_img for _ in range(num_processes)]
+        loop = get_event_loop()
+
+        with concurrent.futures.ThreadPoolExecutor(
+            max_workers=1, thread_name_prefix=f"{self._shared.file_name}_camera"
+        ) as executor:
+            tasks = [
+                loop.run_in_executor(
+                    executor,
+                    self.process_pil_to_bytes,
+                    pil_img,
+                )
+                for pil_img in pil_img_list
+            ]
+            images = await gather(*tasks)
+
+        if isinstance(images, list) and len(images) > 0:
+            result = images[0]
+        else:
+            result = None
+
+        return result
