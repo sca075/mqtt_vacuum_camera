@@ -45,15 +45,17 @@ class Drawable:
         layer: NumpyArray, pixels: dict, pixel_size: int, color: Color
     ) -> NumpyArray:
         """Drawing the layers (rooms) from the vacuum json data."""
-        # Create a backup of the array the image
         image_array = layer
-        # Draw rectangles for each point in data
+        # Loop through pixels to find min and max coordinates
         for x, y, z in pixels:
+            col = x * pixel_size
+            row = y * pixel_size
+            # Draw pixels
             for i in range(z):
-                col = (x + i) * pixel_size
-                row = y * pixel_size
-                image_array[row : row + pixel_size, col : col + pixel_size] = color
-        # Convert the image array to a PIL image
+                image_array[
+                    row : row + pixel_size,
+                    col + i * pixel_size : col + (i + 1) * pixel_size,
+                ] = color
         return image_array
 
     @staticmethod

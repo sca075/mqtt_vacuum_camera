@@ -25,7 +25,7 @@ class ImageData:
 
     @staticmethod
     async def async_extract_color_coordinates(
-        source_array: NumpyArray, search_for_colours_list: Colors
+            source_array: NumpyArray, search_for_colours_list: Colors
     ) -> list:
         """Search for specific colors in an image array and return their coordinates."""
         # Initialize an empty list to store color and coordinates tuples
@@ -73,7 +73,7 @@ class ImageData:
 
     @staticmethod
     def find_layers(
-        json_obj: JsonType, layer_dict: dict = None, active_list: list = None
+            json_obj: JsonType, layer_dict: dict = None, active_list: list = None
     ) -> tuple[dict, list]:
         """Find the layers in the json object."""
         if layer_dict is None:
@@ -173,6 +173,25 @@ class ImageData:
         find_virtual_walls_recursive(json_obj)
         return virtual_walls
 
+    @staticmethod
+    async def hypfer_rooms_coordinates(pixels: dict, pixel_size: int) -> tuple:
+        """Extract the room coordinates from the vacuum json data."""
+        # Initialize variables for min and max coordinates
+        min_x = float("inf")
+        max_x = float("-inf")
+        min_y = float("inf")
+        max_y = float("-inf")
+
+        for x, y, z in pixels:
+            col = (x * pixel_size) + 1
+            row = y * pixel_size
+            min_x = min(min_x, col)
+            max_x = max(max_x, col + pixel_size)
+            min_y = min(min_y, row)
+            max_y = max(max_y, row + pixel_size)
+
+        return min_x, min_y, max_x, max_y
+
     # Added below in order to support Valetudo Re.
     # This functions read directly the data from the json created
     # from the parser for Valetudo Re. They allow to use the
@@ -180,11 +199,11 @@ class ImageData:
 
     @staticmethod
     def from_rrm_to_compressed_pixels(
-        pixel_data: list,
-        image_width: int = 0,
-        image_height: int = 0,
-        image_top: int = 0,
-        image_left: int = 0,
+            pixel_data: list,
+            image_width: int = 0,
+            image_height: int = 0,
+            image_top: int = 0,
+            image_left: int = 0,
     ) -> list:
         """Convert the pixel data to compressed pixels."""
         compressed_pixels = []
@@ -336,7 +355,7 @@ class ImageData:
                         zone_data[3] // 10,
                         zone_data[0] // 10,
                         zone_data[3] // 10,
-                    ],
+                        ],
                     "type": "zone_clean",
                 }
                 formatted_zones.append(formatted_zone)
@@ -353,7 +372,7 @@ class ImageData:
                         zone_data[5] // 10,
                         zone_data[6] // 10,
                         zone_data[7] // 10,
-                    ],
+                        ],
                     "type": "no_go_area",
                 }
                 formatted_zones.append(formatted_zone)
@@ -422,7 +441,7 @@ class ImageData:
 
     @staticmethod
     def get_rrm_segments(
-        json_data, size_x, size_y, pos_top, pos_left, out_lines: bool = False
+            json_data, size_x, size_y, pos_top, pos_left, out_lines: bool = False
     ):
         """Get the segments data from the json."""
         img = ImageData.get_rrm_image(json_data)

@@ -182,13 +182,20 @@ class ValetudoConnector:
                 f"{self._mqtt_topic}: Received vacuum connection status: {self._mqtt_vac_connect_state}."
             )
         if self._mqtt_vac_connect_state != "ready":
-            if self._mqtt_vac_connect_state == "disconnected":
-                _LOGGER.warning(
-                    f"{self._mqtt_topic}: Disconnected from MQTT, waiting for connection."
-                )
-            self._mqtt_vac_stat = "disconnected"
-            self._ignore_data = False
-            self._data_in = True
+            self.is_disconnect_vacuum()
+
+    def is_disconnect_vacuum(self):
+        """
+        Disconnect the vacuum detected.
+        Generate a Warning message if the vacuum is disconnected.
+        """
+        if self._mqtt_vac_connect_state == "disconnected":
+            _LOGGER.warning(
+                f"{self._mqtt_topic}: Disconnected from MQTT, waiting for connection."
+            )
+        self._mqtt_vac_stat = "disconnected"
+        self._ignore_data = False
+        self._data_in = True
 
     async def hypfer_handle_errors(self, msg) -> None:
         """
@@ -196,7 +203,7 @@ class ValetudoConnector:
         /StatusStateAttribute/error_description is for Hypfer.
         @param msg: MQTT message
         """
-        self._payload = self.async_decode_mqtt_payload(msg)
+        self._payload = await self.async_decode_mqtt_payload(msg)
         self._mqtt_vac_err = self._payload
         _LOGGER.info(f"{self._mqtt_topic}: Received vacuum Error: {self._mqtt_vac_err}")
 
