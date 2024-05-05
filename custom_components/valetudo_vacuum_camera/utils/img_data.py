@@ -3,7 +3,7 @@ Collections of Json and List routines
 ImageData is part of the Image_Handler
 used functions to search data in the json
 provided for the creation of the new camera frame
-Version: v2024.05
+Version: v2024.05.1
 """
 
 import logging
@@ -172,6 +172,27 @@ class ImageData:
 
         find_virtual_walls_recursive(json_obj)
         return virtual_walls
+
+    @staticmethod
+    async def hypfer_rooms_coordinates(pixels: dict, pixel_size: int) -> tuple:
+        """Extract the room coordinates from the vacuum json data."""
+        # Initialize variables to store max and min coordinates
+        max_x, max_y = pixels[0][0], pixels[0][1]
+        min_x, min_y = pixels[0][0], pixels[0][1]
+        # Iterate through the data list to find max and min coordinates
+        for entry in pixels:
+            x, y, z = entry  # Extract x and y coordinates
+            max_x = max(max_x, x + z)  # Update max x coordinate
+            max_y = max(max_y, y + pixel_size)  # Update max y coordinate
+            min_x = min(min_x, x)  # Update min x coordinate
+            min_y = min(min_y, y)  # Update min y coordinate
+
+        return (
+            min_x * pixel_size,
+            min_y * pixel_size,
+            max_x * pixel_size,
+            max_y * pixel_size,
+        )
 
     # Added below in order to support Valetudo Re.
     # This functions read directly the data from the json created

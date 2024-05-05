@@ -1,5 +1,5 @@
 """
-Version: v2024.05
+Version: v2024.05.1
 - Removed the PNG decode, the json is extracted from map-data instead of map-data-hass.
 - Tested no influence on the camera performance.
 - Added gzip library used in Valetudo RE data compression.
@@ -107,7 +107,6 @@ class ValetudoConnector:
     async def get_vacuum_connection_state(self) -> bool:
         """Return the vacuum connection state."""
         if self._mqtt_vac_connect_state != "ready":
-            _LOGGER.info(f"{self._shared.file_name} not ready, not connected to MQTT.")
             return False
         return True
 
@@ -182,10 +181,21 @@ class ValetudoConnector:
             _LOGGER.info(
                 f"{self._mqtt_topic}: Received vacuum connection status: {self._mqtt_vac_connect_state}."
             )
-        if self._ignore_data and self._mqtt_vac_connect_state != "ready":
-            self._mqtt_vac_stat = "disconnected"
-            self._ignore_data = False
-            self._data_in = True
+        if self._mqtt_vac_connect_state != "ready":
+            self.is_disconnect_vacuum()
+
+    def is_disconnect_vacuum(self):
+        """
+        Disconnect the vacuum detected.
+        Generate a Warning message if the vacuum is disconnected.
+        """
+        if self._mqtt_vac_connect_state == "disconnected":
+            _LOGGER.warning(
+                f"{self._mqtt_topic}: Disconnected from MQTT, waiting for connection."
+            )
+        self._mqtt_vac_stat = "disconnected"
+        self._ignore_data = False
+        self._data_in = True
 
     async def hypfer_handle_errors(self, msg) -> None:
         """
@@ -193,7 +203,7 @@ class ValetudoConnector:
         /StatusStateAttribute/error_description is for Hypfer.
         @param msg: MQTT message
         """
-        self._payload = self.async_decode_mqtt_payload(msg)
+        self._payload = await self.async_decode_mqtt_payload(msg)
         self._mqtt_vac_err = self._payload
         _LOGGER.info(f"{self._mqtt_topic}: Received vacuum Error: {self._mqtt_vac_err}")
 

@@ -35,7 +35,7 @@ PLATFORMS = [Platform.CAMERA]
 
 
 async def options_update_listener(
-    hass: core.HomeAssistant, config_entry: config_entries.ConfigEntry
+        hass: core.HomeAssistant, config_entry: config_entries.ConfigEntry
 ):
     """Handle options update."""
     await hass.config_entries.async_reload(config_entry.entry_id)
@@ -69,7 +69,7 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
                     "Unable to migrate to config entry version 2.0. Could not find a device for %s."
                     + " Please recreate this entry.",
                     mqtt_topic_base,
-                )
+                    )
                 return False
             new_data.update(
                 {
@@ -166,76 +166,43 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
             config_entry, data=new_data, options=new_options
         )
 
-    if config_entry.version == 2.2 or config_entry.version == 2.1:
+    if config_entry.version <= 3.0:
         old_data = {**config_entry.data}
         new_data = {"vacuum_config_entry": old_data["vacuum_config_entry"]}
         _LOGGER.debug(dict(new_data))
         old_options = {**config_entry.options}
         if len(old_options) != 0:
-            tmp_option = {
-                "margins": "150",
-                "auto_zoom": False,
-                "get_svg_file": False,
-                "enable_www_snapshots": True,
-            }
-            new_options = await update_options(old_options, tmp_option)
-            _LOGGER.debug(f"migration data:{dict(new_options)}")
-            config_entry.version = 2.3
-            hass.config_entries.async_update_entry(
-                config_entry, data=new_data, options=new_options
-            )
+            tmp_option = {}
+            if config_entry.version == 3.0:
+                tmp_option = {
+                    "offset_top": 0,
+                    "offset_bottom": 0,
+                    "offset_left": 0,
+                    "offset_right": 0,
+                }
+            elif config_entry.version < 3:
+                tmp_option = {
+                    "margins": "100",
+                    "auto_zoom": False,
+                    "get_svg_file": False,
+                    "enable_www_snapshots": True,
+                    "aspect_ratio": "None",
+                    "zoom_lock_ratio": True,
+                    "vac_status_font": "custom_components/valetudo_vacuum_camera/utils/fonts/FiraSans.ttf",
+                    "vac_status_size": 50,
+                    "vac_status_position": True,
+                    "offset_top": 0,
+                    "offset_bottom": 0,
+                    "offset_left": 0,
+                    "offset_right": 0,
+                }
+                await move_data_to_valetudo_camera(hass.config.path(STORAGE_DIR))
 
-    if config_entry.version == 2.3:
-        old_data = {**config_entry.data}
-        new_data = {"vacuum_config_entry": old_data["vacuum_config_entry"]}
-        _LOGGER.debug(dict(new_data))
-        old_options = {**config_entry.options}
-        if len(old_options) != 0:
-            tmp_option = {
-                "aspect_ratio": "None",
-                "zoom_lock_ratio": True,
-                "vac_status_font": "custom_components/valetudo_vacuum_camera/utils/fonts/FiraSans.ttf",
-                "vac_status_size": 50,
-                "vac_status_position": True,
-            }
-            new_options = await update_options(old_options, tmp_option)
-            _LOGGER.debug(f"migration data:{dict(new_options)}")
-            config_entry.version = 2.4
-            hass.config_entries.async_update_entry(
-                config_entry, data=new_data, options=new_options
-            )
-
-    if config_entry.version == 2.4:
-        _LOGGER.debug(
-            "Starting migration data from .storage to valetudo_camera folder."
-        )
-        await move_data_to_valetudo_camera(hass.config.path(STORAGE_DIR))
-        old_data = {**config_entry.data}
-        new_data = {"vacuum_config_entry": old_data["vacuum_config_entry"]}
-        _LOGGER.debug(dict(new_data))
-        old_options = {**config_entry.options}
-        if len(old_options) != 0:
-            config_entry.version = 3.0
-            hass.config_entries.async_update_entry(
-                config_entry, data=new_data, options=old_options
-            )
-
-    if config_entry.version == 3.0:
-        if not os.path.exists(
-            os.path.join(hass.config.path(STORAGE_DIR), "valetudo_camera")
-        ):
-            await move_data_to_valetudo_camera(hass.config.path(STORAGE_DIR))
-        old_data = {**config_entry.data}
-        new_data = {"vacuum_config_entry": old_data["vacuum_config_entry"]}
-        _LOGGER.debug(dict(new_data))
-        old_options = {**config_entry.options}
-        if len(old_options) != 0:
-            tmp_option = {
-                "offset_top": 0,
-                "offset_bottom": 0,
-                "offset_left": 0,
-                "offset_right": 0,
-            }
+            if tmp_option == {}:
+                _LOGGER.error(
+                    "Please REMOVE and SETUP the Camera again. Error in migration process!!"
+                )
+                return False
             new_options = await update_options(old_options, tmp_option)
             _LOGGER.debug(f"migration data:{dict(new_options)}")
             config_entry.version = 3.1
@@ -249,13 +216,13 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
             return False
 
     _LOGGER.info(
-        f"Migration to config entry version %s successful {config_entry.version}"
+        f"Migration to config entry version successful {config_entry.version}"
     )
     return True
 
 
 async def async_setup_entry(
-    hass: core.HomeAssistant, entry: config_entries.ConfigEntry
+        hass: core.HomeAssistant, entry: config_entries.ConfigEntry
 ) -> bool:
     """Set up platform from a ConfigEntry."""
     hass.data.setdefault(DOMAIN, {})
@@ -296,7 +263,7 @@ async def async_setup_entry(
 
 
 async def async_unload_entry(
-    hass: core.HomeAssistant, entry: config_entries.ConfigEntry
+        hass: core.HomeAssistant, entry: config_entries.ConfigEntry
 ) -> bool:
     """Unload a config entry."""
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
@@ -329,7 +296,6 @@ async def move_data_to_valetudo_camera(storage):
             _LOGGER.debug(f"Path {storage_folder} already exist.")
         # Move files matching the patterns to the valetudo_camera folder
         else:
-
             file_patterns = ["*.zip", "*.png", "*.log", "*.raw"]
             for pattern in file_patterns:
                 files_to_move = glob.glob(os.path.join(storage_folder, pattern))
