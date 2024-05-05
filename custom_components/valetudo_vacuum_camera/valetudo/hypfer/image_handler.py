@@ -88,12 +88,12 @@ class MapImageHandler(object):
         self.offset_y = 0  # offset y for the aspect ratio.
 
     async def async_auto_trim_and_zoom_image(
-        self,
-        image_array,
-        detect_colour,
-        margin_size: int = 0,
-        rotate: int = 0,
-        zoom: bool = False,
+            self,
+            image_array,
+            detect_colour,
+            margin_size: int = 0,
+            rotate: int = 0,
+            zoom: bool = False,
     ):
         """
         Automatically crops and trims a numpy array and returns the processed image.
@@ -169,9 +169,9 @@ class MapImageHandler(object):
                     self.trim_down,
                 ]
             if (
-                zoom
-                and self.shared.vacuum_state == "cleaning"
-                and self.shared.image_auto_zoom
+                    zoom
+                    and self.shared.vacuum_state == "cleaning"
+                    and self.shared.image_auto_zoom
             ):
                 # Zoom the image based on the robot's position.
                 _LOGGER.debug(
@@ -185,9 +185,9 @@ class MapImageHandler(object):
             else:
                 # Apply the auto-calculated trims to the rotated image
                 trimmed = image_array[
-                    self.auto_crop[1] : self.auto_crop[3],
-                    self.auto_crop[0] : self.auto_crop[2],
-                ]
+                          self.auto_crop[1] : self.auto_crop[3],
+                          self.auto_crop[0] : self.auto_crop[2],
+                          ]
             del image_array
             # Rotate the cropped image based on the given angle
             if rotate == 90:
@@ -277,8 +277,8 @@ class MapImageHandler(object):
 
     # noinspection PyUnresolvedReferences
     async def async_get_image_from_json(
-        self,
-        m_json: json | None,
+            self,
+            m_json: json | None,
     ) -> Image.Image | None:
         """Get the image from the JSON data.
         :param m_json: The JSON data from the Vacuum."""
@@ -467,9 +467,9 @@ class MapImageHandler(object):
                                 if layer_type == "segment":
                                     # Check if the room is active and set a modified color
                                     if (
-                                        active
-                                        and len(active) > room_id
-                                        and active[room_id] == 1
+                                            active
+                                            and len(active) > room_id
+                                            and active[room_id] == 1
                                     ):
                                         room_color = (
                                             ((2 * room_color[0]) + color_zone_clean[0])
@@ -622,11 +622,11 @@ class MapImageHandler(object):
             del img_np_array
             # reduce the image size if the zoomed image is bigger then the original.
             if (
-                self.shared.image_auto_zoom
-                and self.shared.vacuum_state == "cleaning"
-                and self.zooming
-                and self.shared.image_zoom_lock_ratio
-                or self.shared.image_aspect_ratio != "None"
+                    self.shared.image_auto_zoom
+                    and self.shared.vacuum_state == "cleaning"
+                    and self.zooming
+                    and self.shared.image_zoom_lock_ratio
+                    or self.shared.image_aspect_ratio != "None"
             ):
                 width = self.shared.image_ref_width
                 height = self.shared.image_ref_height
@@ -730,17 +730,17 @@ class MapImageHandler(object):
         return self.room_propriety
 
     async def async_get_robot_in_room(
-        self, robot_y: int, robot_x: int, angle: float
+            self, robot_y: int, robot_x: int, angle: float
     ) -> RobotPosition:
         """Get the robot position and return in what room is."""
         if self.robot_in_room:
             # Check if the robot coordinates are inside the room's corners
             if (
-                (self.robot_in_room["right"] >= int(robot_x))
-                and (self.robot_in_room["left"] <= int(robot_x))
+                    (self.robot_in_room["right"] >= int(robot_x))
+                    and (self.robot_in_room["left"] <= int(robot_x))
             ) and (
-                (self.robot_in_room["down"] >= int(robot_y))
-                and (self.robot_in_room["up"] <= int(robot_y))
+                    (self.robot_in_room["down"] >= int(robot_y))
+                    and (self.robot_in_room["up"] <= int(robot_y))
             ):
                 temp = {
                     "x": robot_x,
@@ -749,8 +749,8 @@ class MapImageHandler(object):
                     "in_room": self.robot_in_room["room"],
                 }
                 if (
-                    self.active_zones
-                    and self.robot_in_room["id"] < len(self.active_zones) - 1
+                        self.active_zones
+                        and self.robot_in_room["id"] < len(self.active_zones) - 1
                 ):  # issue #100 Index out of range.
                     self.zooming = bool(self.active_zones[self.robot_in_room["id"] + 1])
                 else:
@@ -776,11 +776,11 @@ class MapImageHandler(object):
                 room_count += 1
                 # Check if the robot coordinates are inside the room's corners
                 if (
-                    (self.robot_in_room["right"] >= int(robot_x))
-                    and (self.robot_in_room["left"] <= int(robot_x))
+                        (self.robot_in_room["right"] >= int(robot_x))
+                        and (self.robot_in_room["left"] <= int(robot_x))
                 ) and (
-                    (self.robot_in_room["down"] >= int(robot_y))
-                    and (self.robot_in_room["up"] <= int(robot_y))
+                        (self.robot_in_room["down"] >= int(robot_y))
+                        and (self.robot_in_room["up"] <= int(robot_y))
                 ):
                     temp = {
                         "x": robot_x,
@@ -897,7 +897,7 @@ class MapImageHandler(object):
         return hash_value
 
     async def async_map_coordinates_offset(
-        self, wsf: int, hsf: int, width: int, height: int
+            self, wsf: int, hsf: int, width: int, height: int
     ) -> tuple[int, int]:
         """
         Convert the coordinates to the map.
@@ -915,11 +915,11 @@ class MapImageHandler(object):
         )
         if wsf == 1 and hsf == 1:
             if rotation == 0 or rotation == 180:
-                self.offset_y = (width - self.crop_img_size[0]) // 2
-                self.offset_x = self.crop_img_size[1] - height
+                self.offset_y = (self.crop_img_size[0] - width)
+                self.offset_x = (height - self.crop_img_size[1]) // 2
             elif rotation == 90 or rotation == 270:
-                self.offset_y = (self.crop_img_size[0] - width) // 2
-                self.offset_x = self.crop_img_size[1] - height
+                self.offset_y = (width - self.crop_img_size[0])
+                self.offset_x = (self.crop_img_size[1] - height) // 2
             _LOGGER.debug(
                 f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
             )
@@ -937,22 +937,22 @@ class MapImageHandler(object):
             return width, height
         elif wsf == 3 and hsf == 2:
             if rotation == 0 or rotation == 180:
-                self.offset_x = (width - self.crop_img_size[0]) // 2
-                self.offset_y = height - self.crop_img_size[1]
+                self.offset_y = (width - self.crop_img_size[0])
+                self.offset_x = ((height - self.crop_img_size[1]) // 2) - (self.crop_img_size[1] // 10)
             elif rotation == 90 or rotation == 270:
-                self.offset_y = (self.crop_img_size[0] - width) // 2
-                self.offset_x = self.crop_img_size[1] - height
+                self.offset_y = ((self.crop_img_size[0] - width) // 2)
+                self.offset_x = (self.crop_img_size[1] - height) + ((height // 10) // 2)
             _LOGGER.debug(
                 f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
             )
             return width, height
         elif wsf == 5 and hsf == 4:
             if rotation == 0 or rotation == 180:
-                self.offset_y = (width - self.crop_img_size[0]) // 2
-                self.offset_x = self.crop_img_size[1] - height
+                self.offset_x = ((width - self.crop_img_size[0]) // 2) - (self.crop_img_size[0] // 2)
+                self.offset_y = (self.crop_img_size[1] - height) - (self.crop_img_size[1] // 2)
             elif rotation == 90 or rotation == 270:
-                self.offset_y = (self.crop_img_size[0] - width) // 2
-                self.offset_x = self.crop_img_size[1] - height
+                self.offset_y = ((self.crop_img_size[0] - width) // 2) - 10
+                self.offset_x = (self.crop_img_size[1] - height) + (height // 10)
             _LOGGER.debug(
                 f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
             )
@@ -962,8 +962,8 @@ class MapImageHandler(object):
                 self.offset_y = width - self.crop_img_size[0]
                 self.offset_x = height - self.crop_img_size[1]
             elif rotation == 90 or rotation == 270:
-                self.offset_x = width - self.crop_img_size[0]
-                self.offset_y = height - self.crop_img_size[1]
+                self.offset_x = (width - self.crop_img_size[0]) + (height // 10)
+                self.offset_y = (height - self.crop_img_size[1])
             _LOGGER.debug(
                 f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
             )

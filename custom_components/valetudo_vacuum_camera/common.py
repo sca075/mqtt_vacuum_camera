@@ -162,12 +162,15 @@ async def update_options(bk_options, new_options):
         "alpha_room_14",
         "alpha_room_15",
     ]
-
-    for key in keys_to_update:
-        if key in new_options:
-            updated_options[key] = new_options[key]
-        else:
-            updated_options[key] = bk_options[key]
+    try:
+        for key in keys_to_update:
+            if key in new_options:
+                updated_options[key] = new_options[key]
+            else:
+                updated_options[key] = bk_options[key]
+    except KeyError as e:
+        _LOGGER.warning(f"Error in migrating options, please re-setup the camera: {e}")
+        return bk_options
     # updated_options is a dictionary containing the merged options
     updated_bk_options = updated_options  # or backup_options, as needed
     return updated_bk_options
