@@ -1,9 +1,11 @@
-
 import pytest
+
 # from homeassistant import config_entries, core
 from custom_components.valetudo_vacuum_camera import config_flow
+
 # from unittest.mock import patch
 from unittest import mock
+
 
 @pytest.fixture
 def vacuum_user_input():
@@ -29,9 +31,8 @@ async def test_flow_user_init(hass):
     }
     assert expected == result
 
-async def test_flow_user_creates_config_entry(
-        hass, vacuum_user_input
-):
+
+async def test_flow_user_creates_config_entry(hass, vacuum_user_input):
     """Test the config entry is successfully created."""
     result = await hass.config_entries.flow.async_init(
         config_flow.DOMAIN, context={"source": "user"}

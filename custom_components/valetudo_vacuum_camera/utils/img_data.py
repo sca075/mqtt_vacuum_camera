@@ -174,25 +174,47 @@ class ImageData:
         return virtual_walls
 
     @staticmethod
-    async def hypfer_rooms_coordinates(pixels: dict, pixel_size: int) -> tuple:
-        """Extract the room coordinates from the vacuum json data."""
+    async def get_rooms_coordinates(
+        pixels: list, pixel_size: int = 5, rand: bool = False
+    ) -> tuple:
+        """
+        Extract the room coordinates from the vacuum pixels data.
+        piexels: dict: The pixels data format [[x,y,z], [x1,y1,z1], [xn,yn,zn]].
+        pixel_size: int: The size of the pixel in mm (optional).
+        rand: bool: Return the coordinates in a rand256 format (optional).
+        """
         # Initialize variables to store max and min coordinates
         max_x, max_y = pixels[0][0], pixels[0][1]
         min_x, min_y = pixels[0][0], pixels[0][1]
         # Iterate through the data list to find max and min coordinates
         for entry in pixels:
-            x, y, z = entry  # Extract x and y coordinates
-            max_x = max(max_x, x + z)  # Update max x coordinate
-            max_y = max(max_y, y + pixel_size)  # Update max y coordinate
-            min_x = min(min_x, x)  # Update min x coordinate
-            min_y = min(min_y, y)  # Update min y coordinate
-
-        return (
-            min_x * pixel_size,
-            min_y * pixel_size,
-            max_x * pixel_size,
-            max_y * pixel_size,
-        )
+            if rand:
+                x, y, _ = entry  # Extract x and y coordinates
+                max_x = max(max_x, x)  # Update max x coordinate
+                max_y = max(max_y, y)  # Update max y coordinate
+                min_x = min(min_x, x)  # Update min x coordinate
+                min_y = min(min_y, y)  # Update min y coordinate
+            else:
+                x, y, z = entry  # Extract x and y coordinates
+                max_x = max(max_x, x + z)  # Update max x coordinate
+                max_y = max(max_y, y + pixel_size)  # Update max y coordinate
+                min_x = min(min_x, x)  # Update min x coordinate
+                min_y = min(min_y, y)  # Update min y coordinate
+        if rand:
+            return (
+                (((max_x * pixel_size) * 10), ((max_y * pixel_size) * 10)),
+                (
+                    ((min_x * pixel_size) * 10),
+                    ((min_y * pixel_size) * 10),
+                ),
+            )
+        else:
+            return (
+                min_x * pixel_size,
+                min_y * pixel_size,
+                max_x * pixel_size,
+                max_y * pixel_size,
+            )
 
     # Added below in order to support Valetudo Re.
     # This functions read directly the data from the json created
@@ -465,7 +487,9 @@ class ImageData:
             )
             if out_lines:
                 outlines.append(
-                    ImageData.get_rrm_max_min_rooms_coordinates(segments[count_seg])
+                    ImageData.get_rooms_coordinates(
+                        pixels=segments[count_seg], rand=True
+                    )
                 )
             count_seg += 1
         if count_seg > 0:
@@ -485,27 +509,6 @@ class ImageData:
         except KeyError:
             return None
         return seg_ids
-
-    @staticmethod
-    def get_rrm_max_min_rooms_coordinates(data):
-        """we need to consider that pixel size those coordinates
-        are only to draw on the map the room area."""
-        if not data:
-            return None  # Return None if the input list is empty
-        # Initialize variables to store max and min coordinates
-        max_x, max_y = data[0][0], data[0][1]
-        min_x, min_y = data[0][0], data[0][1]
-        # Iterate through the data list to find max and min coordinates
-        for entry in data:
-            x, y, _ = entry  # Extract x and y coordinates
-            max_x = max(max_x, x)  # Update max x coordinate
-            max_y = max(max_y, y)  # Update max y coordinate
-            min_x = min(min_x, x)  # Update min x coordinate
-            min_y = min(min_y, y)  # Update min y coordinate
-        return (((max_x * 5) * 10), ((max_y * 5) * 10)), (
-            ((min_x * 5) * 10),
-            ((min_y * 5) * 10),
-        )
 
     @staticmethod
     def convert_negative_angle(angle: int) -> int:

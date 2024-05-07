@@ -2,18 +2,16 @@
 Image Handler Module.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Version: 2024.05.1
+Version: 2024.05.2
 """
 
 from __future__ import annotations
 
-import hashlib
 import json
 import logging
 
 from PIL import Image, ImageOps
 import numpy as np
-from psutil_home_assistant import PsutilWrapper as ProcInspector
 
 from custom_components.valetudo_vacuum_camera.types import (
     CalibrationPoints,
@@ -26,30 +24,16 @@ from custom_components.valetudo_vacuum_camera.types import (
 from custom_components.valetudo_vacuum_camera.utils.colors_man import color_grey
 from custom_components.valetudo_vacuum_camera.utils.drawable import Drawable
 from custom_components.valetudo_vacuum_camera.utils.img_data import ImageData
-
-# import asyncio
-
+from custom_components.valetudo_vacuum_camera.valetudo.hypfer.image_draw import (
+    ImageDraw as ImDraw,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
 
-# Custom exception for memory shortage
-class MemoryShortageError(Exception):
-    """Custom exception for memory shortage.
-    :return: Exception message."""
-
-    def __init__(self, message="Not enough memory available"):
-        self.message = message
-        super().__init__(self.message)
-
-
-# noinspection PyTypeChecker,PyUnboundLocalVariable,PyArgumentEqualDefault
 class MapImageHandler(object):
     """Map Image Handler Class.
     This class is used to handle the image data and the drawing of the map."""
-
-    # Number of np.array's * calculated memory usage.
-    MEMORY_WARN_LIMIT = 0  # 0 to disable.
 
     def __init__(self, shared_data):
         """Initialize the Map Image Handler."""
@@ -60,7 +44,6 @@ class MapImageHandler(object):
         self.crop_img_size = None  # size of the image cropped calibration data.
         self.data = ImageData  # imported Image Data Module.
         self.draw = Drawable  # imported Drawing utilities
-        self.frame_number = 0  # image frame number
         self.go_to = None  # vacuum go to data
         self.img_hash = None  # hash of the image calculated to check differences.
         self.img_base_layer = None  # numpy array store the map base layer.
@@ -73,8 +56,9 @@ class MapImageHandler(object):
         self.room_propriety = None  # vacuum segments data.
         self.rooms_pos = None  # vacuum room coordinates / name list.
         self.active_zones = None  # vacuum active zones.
+        self.frame_number = 0  # frame number of the image.
         self.zooming = False  # zooming the image.
-        self.shared = shared_data  # camera shared data.
+        self.shared = shared_data  # camera shared data
         self.svg_wait = False  # SVG image creation wait.
         self.trim_down = None  # memory stored trims calculated once.
         self.trim_left = None  # memory stored trims calculated once.
@@ -86,23 +70,21 @@ class MapImageHandler(object):
         self.offset_right = self.shared.offset_right  # offset right
         self.offset_x = 0  # offset x for the aspect ratio.
         self.offset_y = 0  # offset y for the aspect ratio.
+        self.imd = ImDraw(self)
 
     async def async_auto_trim_and_zoom_image(
-            self,
-            image_array,
-            detect_colour,
-            margin_size: int = 0,
-            rotate: int = 0,
-            zoom: bool = False,
+        self,
+        image_array,
+        detect_colour,
+        margin_size: int = 0,
+        rotate: int = 0,
+        zoom: bool = False,
     ):
         """
         Automatically crops and trims a numpy array and returns the processed image.
         """
         try:
             if not self.auto_crop:
-                _LOGGER.debug(
-                    f"{self.shared.file_name}: Image original size ({image_array.shape[1]}, {image_array.shape[0]})."
-                )
                 # Find the coordinates of the first occurrence of a non-background color
                 nonzero_coords = np.column_stack(
                     np.where(image_array != list(detect_colour))
@@ -126,25 +108,13 @@ class MapImageHandler(object):
                 self.trim_right = int(max_x) - self.offset_right + margin_size
                 self.trim_down = int(max_y) - self.offset_bottom + margin_size
                 del min_y, min_x, max_x, max_y
-                _LOGGER.debug(
-                    "{}: Calculated trims coordinates right {}, bottom {}, left {}, up {}.".format(
-                        self.shared.file_name,
-                        self.trim_right,
-                        self.trim_down,
-                        self.trim_left,
-                        self.trim_up,
-                    )
-                )
+
                 # Calculate the dimensions after trimming using min/max values
                 trimmed_width = max(0, self.trim_right - self.trim_left)
                 trimmed_height = max(0, self.trim_down - self.trim_up)
                 self.shared.image_ref_height = trimmed_height
                 self.shared.image_ref_width = trimmed_width
-                _LOGGER.debug(
-                    "{}: Calculated trimmed image width {} and height {}".format(
-                        self.shared.file_name, trimmed_width, trimmed_height
-                    )
-                )
+
                 # Test if the trims are okay or not
                 if trimmed_height <= margin_size or trimmed_width <= margin_size:
                     _LOGGER.debug(
@@ -169,9 +139,9 @@ class MapImageHandler(object):
                     self.trim_down,
                 ]
             if (
-                    zoom
-                    and self.shared.vacuum_state == "cleaning"
-                    and self.shared.image_auto_zoom
+                zoom
+                and self.shared.vacuum_state == "cleaning"
+                and self.shared.image_auto_zoom
             ):
                 # Zoom the image based on the robot's position.
                 _LOGGER.debug(
@@ -185,13 +155,13 @@ class MapImageHandler(object):
             else:
                 # Apply the auto-calculated trims to the rotated image
                 trimmed = image_array[
-                          self.auto_crop[1] : self.auto_crop[3],
-                          self.auto_crop[0] : self.auto_crop[2],
-                          ]
+                    self.auto_crop[1] : self.auto_crop[3],
+                    self.auto_crop[0] : self.auto_crop[2],
+                ]
             del image_array
             # Rotate the cropped image based on the given angle
             if rotate == 90:
-                rotated = np.rot90(trimmed, 1)
+                rotated = np.rot90(trimmed)
                 self.crop_area = [
                     self.trim_left,
                     self.trim_up,
@@ -222,7 +192,7 @@ class MapImageHandler(object):
             )
 
         except Exception as e:
-            _LOGGER.error(
+            _LOGGER.warning(
                 f"{self.shared.file_name}: Error {e} during auto trim and zoom.",
                 exc_info=True,
             )
@@ -245,8 +215,8 @@ class MapImageHandler(object):
                     compressed_pixels = layer.get("compressedPixels", [])
                     pixels = self.data.sublist(compressed_pixels, 3)
                     # Calculate x and y min/max from compressed pixels
-                    x_min, y_min, x_max, y_max = (
-                        await self.data.hypfer_rooms_coordinates(pixels, pixel_size)
+                    x_min, y_min, x_max, y_max = await self.data.get_rooms_coordinates(
+                        pixels, pixel_size
                     )
                     corners = [
                         (x_min, y_min),
@@ -275,13 +245,17 @@ class MapImageHandler(object):
             self.rooms_pos = None
         return room_properties
 
-    # noinspection PyUnresolvedReferences
+    # noinspection PyUnresolvedReferences,PyUnboundLocalVariable
     async def async_get_image_from_json(
-            self,
-            m_json: json | None,
+        self,
+        m_json: json | None,
     ) -> Image.Image | None:
         """Get the image from the JSON data.
-        :param m_json: The JSON data from the Vacuum."""
+        It uses the ImageDraw class to draw some of the elements of the image.
+        The robot itself will be drawn in this function as per some of the values are needed for other tasks.
+        @param m_json: The JSON data to use to draw the image.
+        @return Image.Image: The image to display.
+        """
         # Initialize the colors.
         color_wall: Color = self.shared.user_colors[0]
         color_no_go: Color = self.shared.user_colors[6]
@@ -291,18 +265,11 @@ class MapImageHandler(object):
         color_move: Color = self.shared.user_colors[4]
         color_background: Color = self.shared.user_colors[3]
         color_zone_clean: Color = self.shared.user_colors[1]
-
         try:
             if m_json is not None:
-                _LOGGER.info(
-                    f"{self.shared.file_name}: Composing the image for the camera."
-                )
                 # buffer json data
                 self.json_data = m_json
-
-                if self.room_propriety and self.frame_number == 0:
-                    _LOGGER.info(f"{self.shared.file_name}: Supporting Rooms Cleaning!")
-
+                # Get the image size from the JSON data
                 size_x = int(m_json["size"]["x"])
                 size_y = int(m_json["size"]["y"])
                 self.img_size = {
@@ -310,288 +277,79 @@ class MapImageHandler(object):
                     "y": size_y,
                     "centre": [(size_x // 2), (size_y // 2)],
                 }
+                # Get the JSON ID from the JSON data
+                self.json_id = await self.imd.async_get_json_id(m_json)
+                # Check entity data
+                entity_dict = await self.imd.async_get_entity_data(m_json)
+                robot_pos, robot_position, robot_position_angle = (
+                    await self.imd.async_get_robot_position(entity_dict)
+                )
 
-                try:
-                    self.json_id = m_json["metaData"]["nonce"]
-                except (ValueError, KeyError) as e:
-                    _LOGGER.debug(f"No JsonID provided: {e}")
-                    self.json_id = None
-                else:
-                    _LOGGER.info(
-                        f"Vacuum JSon ID: {self.json_id} at Frame {self.frame_number}."
-                    )
-
-                # Check path data
-                predicted_path = None
-                predicted_pat2 = None
-                path_pixels = None
-                try:
-                    paths_data = self.data.find_paths_entities(m_json, None)
-                    predicted_path = paths_data.get("predicted_path", [])
-                    path_pixels = paths_data.get("path", [])
-                except KeyError as e:
-                    _LOGGER.info(
-                        f"{self.shared.file_name}: Error extracting paths data: {str(e)}"
-                    )
-                finally:
-                    if predicted_path:
-                        predicted_path = predicted_path[0]["points"]
-                        predicted_path = self.data.sublist(predicted_path, 2)
-                        predicted_pat2 = self.data.sublist_join(predicted_path, 2)
-
-                try:
-                    zone_clean = self.data.find_zone_entities(m_json, None)
-                except (ValueError, KeyError):
-                    zone_clean = None
-                else:
-                    _LOGGER.debug(f"{self.shared.file_name}: Got zones: {zone_clean}")
-
-                try:
-                    virtual_walls = self.data.find_virtual_walls(m_json)
-                except (ValueError, KeyError):
-                    virtual_walls = None
-                else:
-                    _LOGGER.debug(
-                        f"{self.shared.file_name}: Got virtual walls: {virtual_walls}"
-                    )
-
-                try:
-                    entity_dict = self.data.find_points_entities(m_json, None)
-                except (ValueError, KeyError):
-                    entity_dict = None
-                else:
-                    _LOGGER.debug(
-                        f"{self.shared.file_name}: Got the points in the json: {entity_dict}"
-                    )
-
-                robot_position_angle = None
-                robot_position = None
-                robot_pos = None
-                if entity_dict:
-                    try:
-                        robot_pos = entity_dict.get("robot_position")
-                    except KeyError:
-                        _LOGGER.warning("No robot position found.")
-                    else:
-                        if robot_pos:
-                            robot_position = robot_pos[0]["points"]
-                            robot_position_angle = round(
-                                float(robot_pos[0]["metaData"]["angle"]), 1
-                            )
-                            if self.rooms_pos is None:
-                                self.robot_pos = {
-                                    "x": robot_position[0],
-                                    "y": robot_position[1],
-                                    "angle": robot_position_angle,
-                                }
-                            else:
-                                self.robot_pos = await self.async_get_robot_in_room(
-                                    robot_y=(robot_position[1]),
-                                    robot_x=(robot_position[0]),
-                                    angle=robot_position_angle,
-                                )
-
-                            _LOGGER.debug(
-                                f"{self.shared.file_name} Position: {list(self.robot_pos.items())}"
-                            )
-
-                charger_pos = None
-                if entity_dict:
-                    try:
-                        charger_pos = entity_dict.get("charger_location")
-                    except KeyError:
-                        _LOGGER.warning(
-                            f"{self.shared.file_name}: No charger position found."
-                        )
-                    else:
-                        if charger_pos:
-                            charger_pos = charger_pos[0]["points"]
-                            self.charger_pos = {
-                                "x": charger_pos[0],
-                                "y": charger_pos[1],
-                            }
-                        _LOGGER.debug(
-                            f"Charger Position: {list(self.charger_pos.items())} of {self.shared.file_name}"
-                        )
-
-                if entity_dict:
-                    try:
-                        obstacle_data = entity_dict.get("obstacle")
-                    except KeyError:
-                        _LOGGER.info("No obstacle found.")
-                    else:
-                        obstacle_positions = []
-                        if obstacle_data:
-                            for obstacle in obstacle_data:
-                                label = obstacle.get("metaData", {}).get("label")
-                                points = obstacle.get("points", [])
-
-                                if label and points:
-                                    obstacle_pos = {
-                                        "label": label,
-                                        "points": {"x": points[0], "y": points[1]},
-                                    }
-                                    obstacle_positions.append(obstacle_pos)
-
-                        # List of dictionaries containing label and points for each obstacle
-                        _LOGGER.debug("All obstacle positions: %s", obstacle_positions)
-
-                go_to = entity_dict.get("go_to_target")
+                # Get the pixels size and layers from the JSON data
                 pixel_size = int(m_json["pixelSize"])
                 layers, active = self.data.find_layers(m_json["layers"])
-                new_frame_hash = await self.calculate_array_hash(layers, active)
-                self.active_zones = active
+                new_frame_hash = await self.imd.calculate_array_hash(layers, active)
                 if self.frame_number == 0:
                     self.img_hash = new_frame_hash
-                    # The below is drawing the base layer that will be reused at the next frame.
-                    _LOGGER.debug(
-                        f"{self.shared.file_name}: Layers to draw: {layers.keys()}"
-                    )
-                    _LOGGER.info(
-                        f"{self.shared.file_name}: Empty image with background color"
-                    )
+                    # empty image
                     img_np_array = await self.draw.create_empty_image(
                         size_x, size_y, color_background
                     )
-                    _LOGGER.info(f"{self.shared.file_name}: Overlapping Layers")
-                    room_id = 0
-                    rooms_list = [color_wall]
+                    # overlapping layers
                     for layer_type, compressed_pixels_list in layers.items():
-                        for compressed_pixels in compressed_pixels_list:
-                            pixels = self.data.sublist(compressed_pixels, 3)
-                            if layer_type == "segment" or layer_type == "floor":
-                                room_color = self.shared.rooms_colors[room_id]
-                                if layer_type == "segment" or layer_type == "floor":
-                                    room_color = self.shared.rooms_colors[room_id]
-                                    rooms_list.append(room_color)
-                                if layer_type == "segment":
-                                    # Check if the room is active and set a modified color
-                                    if (
-                                            active
-                                            and len(active) > room_id
-                                            and active[room_id] == 1
-                                    ):
-                                        room_color = (
-                                            ((2 * room_color[0]) + color_zone_clean[0])
-                                            // 3,
-                                            ((2 * room_color[1]) + color_zone_clean[1])
-                                            // 3,
-                                            ((2 * room_color[2]) + color_zone_clean[2])
-                                            // 3,
-                                            ((2 * room_color[3]) + color_zone_clean[3])
-                                            // 3,
-                                        )
-                                img_np_array = await self.draw.from_json_to_image(
-                                    img_np_array, pixels, pixel_size, room_color
-                                )
-                                if room_id < 15:
-                                    room_id += 1
-                                else:
-                                    room_id = 0
-                            elif layer_type == "wall":
-                                # Drawing walls.
-                                img_np_array = await self.draw.from_json_to_image(
-                                    img_np_array, pixels, pixel_size, color_wall
-                                )
-                    if virtual_walls:
-                        img_np_array = await self.draw.draw_virtual_walls(
-                            img_np_array, virtual_walls, color_no_go
+                        room_id, img_np_array = await self.imd.async_draw_base_layer(
+                            img_np_array,
+                            compressed_pixels_list,
+                            layer_type,
+                            color_wall,
+                            color_zone_clean,
+                            pixel_size,
                         )
-                    if zone_clean:
-                        try:
-                            no_go_zones = zone_clean.get("no_go_area")
-                        except KeyError:
-                            no_go_zones = None
-
-                        try:
-                            no_mop_zones = zone_clean.get("no_mop_area")
-                        except KeyError:
-                            no_mop_zones = None
-
-                        if no_go_zones:
-                            _LOGGER.info(
-                                f"{self.shared.file_name}: Drawing No Go area."
-                            )
-                            img_np_array = await self.draw.zones(
-                                img_np_array, no_go_zones, color_no_go
-                            )
-                        if no_mop_zones:
-                            _LOGGER.info(
-                                f"{self.shared.file_name}: Drawing No Mop area."
-                            )
-                            img_np_array = await self.draw.zones(
-                                img_np_array, no_mop_zones, color_no_go
-                            )
-                    # charger
-                    if charger_pos:
-                        img_np_array = await self.draw.battery_charger(
-                            img_np_array, charger_pos[0], charger_pos[1], color_charger
-                        )
-
-                    if obstacle_positions:
-                        self.draw.draw_obstacles(
-                            img_np_array, obstacle_positions, color_no_go
-                        )
-
+                    # Draw the virtual walls
+                    img_np_array = await self.imd.async_draw_virtual_walls(
+                        m_json, img_np_array, color_no_go
+                    )
+                    # charger position
+                    img_np_array = await self.imd.async_draw_charger(
+                        img_np_array, entity_dict, color_charger
+                    )
+                    # obstacles
+                    img_np_array = await self.imd.async_draw_obstacle(
+                        img_np_array, entity_dict, color_no_go
+                    )
+                    # robot position
                     if (room_id > 0) and not self.room_propriety:
                         self.room_propriety = await self.async_extract_room_properties(
                             self.json_data
                         )
-                        if self.rooms_pos:
-                            self.robot_pos = await self.async_get_robot_in_room(
+                        if self.rooms_pos and robot_position and robot_position_angle:
+                            self.robot_pos = await self.imd.async_get_robot_in_room(
                                 robot_x=(robot_position[0]),
                                 robot_y=(robot_position[1]),
                                 angle=robot_position_angle,
                             )
-
                     _LOGGER.info(f"{self.shared.file_name}: Completed base Layers")
-                    self.img_base_layer = await self.async_copy_array(img_np_array)
+                    self.img_base_layer = await self.imd.async_copy_array(img_np_array)
                 self.frame_number += 1
                 if (self.frame_number > 1024) or (new_frame_hash != self.img_hash):
                     self.frame_number = 0
                 _LOGGER.debug(
-                    f"{self.shared.file_name}: Frame number %s", self.frame_number
+                    f"{self.shared.file_name}: {self.json_id} at Frame Number: {self.frame_number}"
                 )
-                try:
-                    self.check_memory_with_margin(self.img_base_layer)
-                except MemoryShortageError as e:
-                    _LOGGER.warning(f"Memory shortage error: {e}")
-                    return None
-                img_np_array = await self.async_copy_array(self.img_base_layer)
+                img_np_array = await self.imd.async_copy_array(self.img_base_layer)
                 # All below will be drawn each time
                 # If there is a zone clean we draw it now.
-                if zone_clean:
-                    try:
-                        zones_clean = zone_clean.get("active_zone")
-                    except KeyError:
-                        zones_clean = None
-                    if zones_clean:
-                        _LOGGER.info(f"{self.shared.file_name}: Drawing Zone Clean.")
-                        img_np_array = await self.draw.zones(
-                            img_np_array, zones_clean, color_zone_clean
-                        )
-
-                if go_to:
-                    img_np_array = await self.draw.go_to_flag(
-                        img_np_array,
-                        (go_to[0]["points"][0], go_to[0]["points"][1]),
-                        self.shared.image_rotate,
-                        color_go_to,
-                    )
-                if predicted_pat2:  # draw path prediction
-                    img_np_array = await self.draw.lines(
-                        img_np_array, predicted_pat2, 2, color_grey
-                    )
-                # draw path
-                if path_pixels:
-                    for path in path_pixels:
-                        # Get the points from the current path and extend multiple paths.
-                        points = path.get("points", [])
-                        sublists = self.data.sublist(points, 2)
-                        self.shared.map_new_path = self.data.sublist_join(sublists, 2)
-                        img_np_array = await self.draw.lines(
-                            img_np_array, self.shared.map_new_path, 5, color_move
-                        )
+                img_np_array = await self.imd.async_draw_zones(
+                    m_json, img_np_array, color_zone_clean, color_no_go
+                )
+                # Draw the go_to target flag
+                img_np_array = await self.imd.draw_go_to_flag(
+                    img_np_array, entity_dict, color_go_to
+                )
+                # draw path prediction and path pixels
+                img_np_array = await self.imd.async_draw_paths(
+                    img_np_array, m_json, color_move, color_grey
+                )
                 if self.shared.vacuum_state == "docked":
                     robot_position_angle -= 180
                 if robot_pos:
@@ -603,10 +361,7 @@ class MapImageHandler(object):
                         fill=color_robot,
                         log=self.shared.file_name,
                     )
-                _LOGGER.info(
-                    f"{self.shared.file_name}: Auto trimming the image with rotation:"
-                    f" {int(self.shared.image_rotate)}"
-                )
+                # resize the image
                 img_np_array = await self.async_auto_trim_and_zoom_image(
                     img_np_array,
                     color_background,
@@ -617,16 +372,17 @@ class MapImageHandler(object):
             if img_np_array is None:
                 _LOGGER.warning(f"{self.shared.file_name}: Image array is None.")
                 return None
-            # Convert the numpy array to a PIL image
-            pil_img = Image.fromarray(img_np_array, mode="RGBA")
-            del img_np_array
+            else:
+                # Convert the numpy array to a PIL image
+                pil_img = Image.fromarray(img_np_array, mode="RGBA")
+                del img_np_array
             # reduce the image size if the zoomed image is bigger then the original.
             if (
-                    self.shared.image_auto_zoom
-                    and self.shared.vacuum_state == "cleaning"
-                    and self.zooming
-                    and self.shared.image_zoom_lock_ratio
-                    or self.shared.image_aspect_ratio != "None"
+                self.shared.image_auto_zoom
+                and self.shared.vacuum_state == "cleaning"
+                and self.zooming
+                and self.shared.image_zoom_lock_ratio
+                or self.shared.image_aspect_ratio != "None"
             ):
                 width = self.shared.image_ref_width
                 height = self.shared.image_ref_height
@@ -651,13 +407,23 @@ class MapImageHandler(object):
                     _LOGGER.debug(
                         f"{self.shared.file_name}: Image Aspect Ratio ({wsf}, {hsf}): {new_width}x{new_height}"
                     )
+                    _LOGGER.debug(
+                        f"Frame Completed: {self.shared.file_name}:  Json ID: {self.json_id}"
+                    )
                     return resized
                 else:
+                    _LOGGER.debug(
+                        f"Frame Completed: {self.shared.file_name}:  Json ID: {self.json_id}"
+                    )
                     return ImageOps.pad(pil_img, (width, height))
-            return pil_img
-        except Exception as e:
+            else:
+                _LOGGER.debug(
+                    f"Frame Completed: {self.shared.file_name}:  Json ID: {self.json_id}"
+                )
+                return pil_img
+        except RuntimeError or RuntimeWarning as e:
             _LOGGER.warning(
-                f"{self.shared.file_name} : Error in get_image_from_json: {e}",
+                f"{self.shared.file_name}: Error {e} during image creation.",
                 exc_info=True,
             )
             return None
@@ -682,42 +448,9 @@ class MapImageHandler(object):
         """Return the JSON ID from the image."""
         return self.json_id
 
-    def calculate_memory_usage(self, array: np.ndarray, array_count: int) -> float:
-        """Calculate the memory usage of the array.
-        summing the memory usage of the arrays that will be used.
-        The Numpy array shape is (y, x, 4) where 4 is the RGBA channels.
-        Generally 1 pixel is 16 bytes.
-        """
-        element_size_bytes = array.itemsize * 4  # int32 is 4 bytes
-        total_memory_bytes = array.size * element_size_bytes
-        total_memory_mb = round(((array_count * total_memory_bytes) / (1024 * 1024)), 1)
-        _LOGGER.debug(
-            f"{self.shared.file_name}: Estimated Margin of Memory usage: {total_memory_mb} MiB"
-        )
-        return total_memory_mb
-
-    # Function to check if there is enough available memory with a margin
-    def check_memory_with_margin(self, array: np.ndarray) -> MemoryShortageError:
-        """Check if there is enough available memory with a margin.
-        :raises MemoryShortageError: If there is not enough memory available."""
-        if self.MEMORY_WARN_LIMIT > 0:
-            array_memory_mb = self.calculate_memory_usage(array, self.MEMORY_WARN_LIMIT)
-            available_memory_mb = round(
-                ProcInspector().psutil.virtual_memory().available / (1024 * 1024), 1
-            )
-            _LOGGER.debug(
-                f"{self.shared.file_name}: Available memory: {available_memory_mb} MiB"
-            )
-            if available_memory_mb < array_memory_mb:
-                raise MemoryShortageError(
-                    f"Not enough memory available (Margin: {array_memory_mb} MiB)"
-                )
-        else:
-            return None
-
     async def async_get_rooms_attributes(self) -> RoomsProperties:
         """Get the rooms attributes from the JSON data.
-        :return: The rooms attributes."""
+        :return: The rooms attribute's."""
         if self.room_propriety:
             return self.room_propriety
         if self.json_data:
@@ -728,85 +461,6 @@ class MapImageHandler(object):
             if self.room_propriety:
                 _LOGGER.debug(f"Got {self.shared.file_name} Rooms Attributes.")
         return self.room_propriety
-
-    async def async_get_robot_in_room(
-            self, robot_y: int, robot_x: int, angle: float
-    ) -> RobotPosition:
-        """Get the robot position and return in what room is."""
-        if self.robot_in_room:
-            # Check if the robot coordinates are inside the room's corners
-            if (
-                    (self.robot_in_room["right"] >= int(robot_x))
-                    and (self.robot_in_room["left"] <= int(robot_x))
-            ) and (
-                    (self.robot_in_room["down"] >= int(robot_y))
-                    and (self.robot_in_room["up"] <= int(robot_y))
-            ):
-                temp = {
-                    "x": robot_x,
-                    "y": robot_y,
-                    "angle": angle,
-                    "in_room": self.robot_in_room["room"],
-                }
-                if (
-                        self.active_zones
-                        and self.robot_in_room["id"] < len(self.active_zones) - 1
-                ):  # issue #100 Index out of range.
-                    self.zooming = bool(self.active_zones[self.robot_in_room["id"] + 1])
-                else:
-                    self.zooming = False
-                return temp
-        # else we need to search and use the async method.
-        if self.rooms_pos:
-            _LOGGER.debug(f"{self.shared.file_name} changed room.. searching..")
-            room_count = 0
-            last_room = None
-            if self.robot_in_room:
-                last_room = self.robot_in_room
-            for room in self.rooms_pos:
-                corners = room["corners"]
-                self.robot_in_room = {
-                    "id": room_count,
-                    "left": int(corners[0][0]),
-                    "right": int(corners[2][0]),
-                    "up": int(corners[0][1]),
-                    "down": int(corners[2][1]),
-                    "room": room["name"],
-                }
-                room_count += 1
-                # Check if the robot coordinates are inside the room's corners
-                if (
-                        (self.robot_in_room["right"] >= int(robot_x))
-                        and (self.robot_in_room["left"] <= int(robot_x))
-                ) and (
-                        (self.robot_in_room["down"] >= int(robot_y))
-                        and (self.robot_in_room["up"] <= int(robot_y))
-                ):
-                    temp = {
-                        "x": robot_x,
-                        "y": robot_y,
-                        "angle": angle,
-                        "in_room": self.robot_in_room["room"],
-                    }
-                    _LOGGER.debug(
-                        f"{self.shared.file_name} is in {self.robot_in_room['room']}"
-                    )
-                    del room, corners, robot_x, robot_y  # free memory.
-                    return temp
-            del room, corners  # free memory.
-            _LOGGER.debug(
-                f"{self.shared.file_name} not located within Camera Rooms coordinates."
-            )
-            self.robot_in_room = last_room
-            self.zooming = False
-            temp = {
-                "x": robot_x,
-                "y": robot_y,
-                "angle": angle,
-                "in_room": last_room["room"] if last_room else None,
-            }
-            # If the robot is not inside any room, return a default value
-            return temp
 
     def get_calibration_data(self) -> CalibrationPoints:
         """Get the calibration data from the JSON data.
@@ -876,28 +530,8 @@ class MapImageHandler(object):
         del vacuum_points, map_points, calibration_point, rotation_angle  # free memory.
         return calibration_data
 
-    async def async_copy_array(self, original_array: np.ndarray) -> np.ndarray:
-        """Copy the array."""
-        _LOGGER.info(f"{self.shared.file_name}: Copying the array.")
-        return np.copy(original_array)
-
-    async def calculate_array_hash(self, layers: json, active: list[int] = None) -> str:
-        """Calculate the hash of the image based on the layers and active segments walls."""
-        # todo: refactor this function to thread safe.
-        _LOGGER.info(f"{self.shared.file_name}: Calculating the hash of the image.")
-        if layers and active:
-            data_to_hash = {
-                "layers": len(layers["wall"][0]),
-                "active_segments": tuple(active),
-            }
-            data_json = json.dumps(data_to_hash, sort_keys=True)
-            hash_value = hashlib.sha256(data_json.encode()).hexdigest()
-        else:
-            hash_value = None
-        return hash_value
-
     async def async_map_coordinates_offset(
-            self, wsf: int, hsf: int, width: int, height: int
+        self, wsf: int, hsf: int, width: int, height: int
     ) -> tuple[int, int]:
         """
         Convert the coordinates to the map.
@@ -909,16 +543,12 @@ class MapImageHandler(object):
 
         rotation = self.shared.image_rotate
 
-        _LOGGER.debug(f"Image Size: Width: {width} Height: {height}")
-        _LOGGER.debug(
-            f"Image Crop Size: Width: {self.crop_img_size[0]} Height: {self.crop_img_size[1]}"
-        )
         if wsf == 1 and hsf == 1:
             if rotation == 0 or rotation == 180:
-                self.offset_y = (self.crop_img_size[0] - width)
+                self.offset_y = self.crop_img_size[0] - width
                 self.offset_x = (height - self.crop_img_size[1]) // 2
             elif rotation == 90 or rotation == 270:
-                self.offset_y = (width - self.crop_img_size[0])
+                self.offset_y = width - self.crop_img_size[0]
                 self.offset_x = (self.crop_img_size[1] - height) // 2
             _LOGGER.debug(
                 f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
@@ -937,10 +567,12 @@ class MapImageHandler(object):
             return width, height
         elif wsf == 3 and hsf == 2:
             if rotation == 0 or rotation == 180:
-                self.offset_y = (width - self.crop_img_size[0])
-                self.offset_x = ((height - self.crop_img_size[1]) // 2) - (self.crop_img_size[1] // 10)
+                self.offset_y = width - self.crop_img_size[0]
+                self.offset_x = ((height - self.crop_img_size[1]) // 2) - (
+                    self.crop_img_size[1] // 10
+                )
             elif rotation == 90 or rotation == 270:
-                self.offset_y = ((self.crop_img_size[0] - width) // 2)
+                self.offset_y = (self.crop_img_size[0] - width) // 2
                 self.offset_x = (self.crop_img_size[1] - height) + ((height // 10) // 2)
             _LOGGER.debug(
                 f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
@@ -948,8 +580,12 @@ class MapImageHandler(object):
             return width, height
         elif wsf == 5 and hsf == 4:
             if rotation == 0 or rotation == 180:
-                self.offset_x = ((width - self.crop_img_size[0]) // 2) - (self.crop_img_size[0] // 2)
-                self.offset_y = (self.crop_img_size[1] - height) - (self.crop_img_size[1] // 2)
+                self.offset_x = ((width - self.crop_img_size[0]) // 2) - (
+                    self.crop_img_size[0] // 2
+                )
+                self.offset_y = (self.crop_img_size[1] - height) - (
+                    self.crop_img_size[1] // 2
+                )
             elif rotation == 90 or rotation == 270:
                 self.offset_y = ((self.crop_img_size[0] - width) // 2) - 10
                 self.offset_x = (self.crop_img_size[1] - height) + (height // 10)
@@ -963,7 +599,7 @@ class MapImageHandler(object):
                 self.offset_x = height - self.crop_img_size[1]
             elif rotation == 90 or rotation == 270:
                 self.offset_x = (width - self.crop_img_size[0]) + (height // 10)
-                self.offset_y = (height - self.crop_img_size[1])
+                self.offset_y = height - self.crop_img_size[1]
             _LOGGER.debug(
                 f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
             )
