@@ -49,6 +49,7 @@ class MapImageHandler(object):
         self.data = ImageData  # imported Image Data Module.
         self.draw = Drawable  # imported Drawing utilities
         self.go_to = None  # vacuum go to data
+        self.file_name = shared_data.file_name  # file name of the vacuum.
         self.img_hash = None  # hash of the image calculated to check differences.
         self.img_base_layer = None  # numpy array store the map base layer.
         self.img_size = None  # size of the created image
@@ -123,7 +124,7 @@ class MapImageHandler(object):
                 # Test if the trims are okay or not
                 if trimmed_height <= margin_size or trimmed_width <= margin_size:
                     _LOGGER.debug(
-                        f"{self.shared.file_name}: Background colour not detected at rotation {rotate}."
+                        f"{self.file_name}: Background colour not detected at rotation {rotate}."
                     )
                     pos_0 = 0
                     self.crop_area = [
@@ -152,16 +153,16 @@ class MapImageHandler(object):
             rotated = await self.imu.async_rotate_the_image(trimmed, rotate)
             del trimmed  # Free memory.
             _LOGGER.debug(
-                f"{self.shared.file_name}: Auto Trim Box data: {self.crop_area}"
+                f"{self.file_name}: Auto Trim Box data: {self.crop_area}"
             )
             self.crop_img_size = [rotated.shape[1], rotated.shape[0]]
             _LOGGER.debug(
-                f"{self.shared.file_name}: Auto Trimmed image size: {self.crop_img_size}"
+                f"{self.file_name}: Auto Trimmed image size: {self.crop_img_size}"
             )
 
         except Exception as e:
             _LOGGER.warning(
-                f"{self.shared.file_name}: Error {e} during auto trim and zoom.",
+                f"{self.file_name}: Error {e} during auto trim and zoom.",
                 exc_info=True,
             )
             return None
@@ -207,9 +208,9 @@ class MapImageHandler(object):
                         "y": ((y_min + y_max) // 2),
                     }
         if room_properties != {}:
-            _LOGGER.debug(f"{self.shared.file_name}: Rooms data extracted!")
+            _LOGGER.debug(f"{self.file_name}: Rooms data extracted!")
         else:
-            _LOGGER.debug(f"{self.shared.file_name}: Rooms data not available!")
+            _LOGGER.debug(f"{self.file_name}: Rooms data not available!")
             self.rooms_pos = None
         return room_properties
 
@@ -297,14 +298,15 @@ class MapImageHandler(object):
                                 robot_y=(robot_position[1]),
                                 angle=robot_position_angle,
                             )
-                    _LOGGER.info(f"{self.shared.file_name}: Completed base Layers")
+                    _LOGGER.info(f"{self.file_name}: Completed base Layers")
                     # Copy the new array in base layer.
                     self.img_base_layer = await self.imd.async_copy_array(img_np_array)
+                self.shared.frame_number = self.frame_number
                 self.frame_number += 1
                 if (self.frame_number > 1024) or (new_frame_hash != self.img_hash):
                     self.frame_number = 0
                 _LOGGER.debug(
-                    f"{self.shared.file_name}: {self.json_id} at Frame Number: {self.frame_number}"
+                    f"{self.file_name}: {self.json_id} at Frame Number: {self.frame_number}"
                 )
                 # Copy the base layer to the new image.
                 img_np_array = await self.imd.async_copy_array(self.img_base_layer)
@@ -333,7 +335,7 @@ class MapImageHandler(object):
                         y=robot_position[1],
                         angle=robot_position_angle,
                         fill=color_robot,
-                        log=self.shared.file_name,
+                        log=self.file_name,
                     )
                 # Resize the image
                 img_np_array = await self.async_auto_trim_and_zoom_image(
@@ -345,7 +347,7 @@ class MapImageHandler(object):
                 )
             # If the image is None return None and log the error.
             if img_np_array is None:
-                _LOGGER.warning(f"{self.shared.file_name}: Image array is None.")
+                _LOGGER.warning(f"{self.file_name}: Image array is None.")
                 return None
             else:
                 # Convert the numpy array to a PIL image
@@ -380,25 +382,19 @@ class MapImageHandler(object):
                         )
                     )
                     _LOGGER.debug(
-                        f"{self.shared.file_name}: Image Aspect Ratio ({wsf}, {hsf}): {new_width}x{new_height}"
+                        f"{self.file_name}: Image Aspect Ratio ({wsf}, {hsf}): {new_width}x{new_height}"
                     )
-                    _LOGGER.debug(
-                        f"Frame Completed: {self.shared.file_name}:  Json ID: {self.json_id}"
-                    )
+                    _LOGGER.debug(f"{self.file_name}: Frame Completed.")
                     return resized
                 else:
-                    _LOGGER.debug(
-                        f"Frame Completed: {self.shared.file_name}:  Json ID: {self.json_id}"
-                    )
+                    _LOGGER.debug(f"{self.file_name}: Frame Completed.")
                     return ImageOps.pad(pil_img, (width, height))
             else:
-                _LOGGER.debug(
-                    f"Frame Completed: {self.shared.file_name}:  Json ID: {self.json_id}"
-                )
+                _LOGGER.debug(f"{self.file_name}: Frame Completed.")
                 return pil_img
         except RuntimeError or RuntimeWarning as e:
             _LOGGER.warning(
-                f"{self.shared.file_name}: Error {e} during image creation.",
+                f"{self.file_name}: Error {e} during image creation.",
                 exc_info=True,
             )
             return None
@@ -429,12 +425,12 @@ class MapImageHandler(object):
         if self.room_propriety:
             return self.room_propriety
         if self.json_data:
-            _LOGGER.debug(f"Checking {self.shared.file_name} Rooms data..")
+            _LOGGER.debug(f"Checking {self.file_name} Rooms data..")
             self.room_propriety = await self.async_extract_room_properties(
                 self.json_data
             )
             if self.room_propriety:
-                _LOGGER.debug(f"Got {self.shared.file_name} Rooms Attributes.")
+                _LOGGER.debug(f"Got {self.file_name} Rooms Attributes.")
         return self.room_propriety
 
     def get_calibration_data(self) -> CalibrationPoints:
@@ -442,7 +438,7 @@ class MapImageHandler(object):
         this will create the attribute calibration points."""
         calibration_data = []
         rotation_angle = self.shared.image_rotate
-        _LOGGER.info(f"Getting {self.shared.file_name} Calibrations points.")
+        _LOGGER.info(f"Getting {self.file_name} Calibrations points.")
 
         # Define the map points (fixed)
         map_points = [
