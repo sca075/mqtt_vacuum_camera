@@ -27,6 +27,7 @@ class ImageDraw:
 
     def __init__(self, image_handler):
         self.img_h = image_handler
+        self.file_name = self.img_h.shared.file_name
 
     async def draw_go_to_flag(
         self, np_array: NumpyArray, entity_dict: dict, color_go_to: Color
@@ -93,7 +94,7 @@ class ImageDraw:
         try:
             obstacle_data = entity_dict.get("obstacle")
         except KeyError:
-            _LOGGER.info(f"{self.img_h.shared.file_name} No obstacle found.")
+            _LOGGER.info(f"{self.file_name} No obstacle found.")
         else:
             obstacle_positions = []
             if obstacle_data:
@@ -115,7 +116,7 @@ class ImageDraw:
                     np_array, obstacle_positions, color_no_go
                 )
                 _LOGGER.debug(
-                    f"{self.img_h.shared.file_name} All obstacle positions: %s",
+                    f"{self.file_name} All obstacle positions: %s",
                     obstacle_positions,
                 )
                 return np_array
@@ -132,9 +133,7 @@ class ImageDraw:
         try:
             charger_pos = entity_dict.get("charger_location")
         except KeyError:
-            _LOGGER.warning(
-                f"{self.img_h.shared.file_name}: No charger position found."
-            )
+            _LOGGER.warning(f"{self.file_name}: No charger position found.")
         else:
             if charger_pos:
                 charger_pos = charger_pos[0]["points"]
@@ -175,7 +174,7 @@ class ImageDraw:
         except (ValueError, KeyError):
             zone_clean = None
         else:
-            _LOGGER.info(f"{self.img_h.shared.file_name}: Got zones.")
+            _LOGGER.info(f"{self.file_name}: Got zones.")
         if zone_clean:
             try:
                 zones_active = zone_clean.get("active_zone")
@@ -216,7 +215,7 @@ class ImageDraw:
         except (ValueError, KeyError):
             virtual_walls = None
         else:
-            _LOGGER.info(f"{self.img_h.shared.file_name}: Got virtual walls.")
+            _LOGGER.info(f"{self.file_name}: Got virtual walls.")
         if virtual_walls:
             np_array = await self.img_h.draw.draw_virtual_walls(
                 np_array, virtual_walls, color_no_go
@@ -242,9 +241,7 @@ class ImageDraw:
             predicted_path = paths_data.get("predicted_path", [])
             path_pixels = paths_data.get("path", [])
         except KeyError as e:
-            _LOGGER.warning(
-                f"{self.img_h.shared.file_name}: Error extracting paths data: {str(e)}"
-            )
+            _LOGGER.warning(f"{self.file_name}: Error extracting paths data: {str(e)}")
         finally:
             if predicted_path:
                 predicted_path = predicted_path[0]["points"]
@@ -275,7 +272,7 @@ class ImageDraw:
         except (ValueError, KeyError):
             entity_dict = None
         else:
-            _LOGGER.info(f"{self.img_h.shared.file_name}: Got the points in the json.")
+            _LOGGER.info(f"{self.file_name}: Got the points in the json.")
         return entity_dict
 
     @staticmethod
@@ -295,9 +292,6 @@ class ImageDraw:
             hash_value = hashlib.sha256(data_json.encode()).hexdigest()
         else:
             hash_value = None
-        _LOGGER.info(
-            f"{self.img_h.shared.file_name}: Frame {self.img_h.frame_number} Hash: {hash_value}"
-        )
         return hash_value
 
     async def async_get_robot_in_room(
@@ -362,13 +356,13 @@ class ImageDraw:
                         "in_room": self.img_h.robot_in_room["room"],
                     }
                     _LOGGER.debug(
-                        f"{self.img_h.shared.file_name} is in {self.img_h.robot_in_room['room']}"
+                        f"{self.file_name} is in {self.img_h.robot_in_room['room']}"
                     )
                     del room, corners, robot_x, robot_y  # free memory.
                     return temp
             del room, corners  # free memory.
             _LOGGER.debug(
-                f"{self.img_h.shared.file_name} not located within Camera Rooms coordinates."
+                f"{self.file_name} not located within Camera Rooms coordinates."
             )
             self.img_h.robot_in_room = last_room
             self.img_h.zooming = False
@@ -389,7 +383,7 @@ class ImageDraw:
         try:
             robot_pos = entity_dict.get("robot_position")
         except KeyError:
-            _LOGGER.warning(f"{self.img_h.shared.file_name} No robot position found.")
+            _LOGGER.warning(f"{self.file_name} No robot position found.")
             return None, None, None
         finally:
             if robot_pos:

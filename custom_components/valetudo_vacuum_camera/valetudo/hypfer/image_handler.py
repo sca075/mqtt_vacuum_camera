@@ -18,12 +18,16 @@ from custom_components.valetudo_vacuum_camera.types import (
     ChargerPosition,
     Color,
     ImageSize,
+    NumpyArray,
     RobotPosition,
     RoomsProperties,
 )
 from custom_components.valetudo_vacuum_camera.utils.colors_man import color_grey
 from custom_components.valetudo_vacuum_camera.utils.drawable import Drawable
 from custom_components.valetudo_vacuum_camera.utils.img_data import ImageData
+from custom_components.valetudo_vacuum_camera.valetudo.hypfer.handler_utils import (
+    ImageUtils as ImUtils,
+)
 from custom_components.valetudo_vacuum_camera.valetudo.hypfer.image_draw import (
     ImageDraw as ImDraw,
 )
@@ -45,6 +49,7 @@ class MapImageHandler(object):
         self.data = ImageData  # imported Image Data Module.
         self.draw = Drawable  # imported Drawing utilities
         self.go_to = None  # vacuum go to data
+        self.file_name = shared_data.file_name  # file name of the vacuum.
         self.img_hash = None  # hash of the image calculated to check differences.
         self.img_base_layer = None  # numpy array store the map base layer.
         self.img_size = None  # size of the created image
@@ -71,11 +76,12 @@ class MapImageHandler(object):
         self.offset_x = 0  # offset x for the aspect ratio.
         self.offset_y = 0  # offset y for the aspect ratio.
         self.imd = ImDraw(self)
+        self.imu = ImUtils(self)
 
     async def async_auto_trim_and_zoom_image(
         self,
-        image_array,
-        detect_colour,
+        image_array: NumpyArray,
+        detect_colour: Color = color_grey,
         margin_size: int = 0,
         rotate: int = 0,
         zoom: bool = False,
@@ -118,7 +124,7 @@ class MapImageHandler(object):
                 # Test if the trims are okay or not
                 if trimmed_height <= margin_size or trimmed_width <= margin_size:
                     _LOGGER.debug(
-                        f"{self.shared.file_name}: Background colour not detected at rotation {rotate}."
+                        f"{self.file_name}: Background colour not detected at rotation {rotate}."
                     )
                     pos_0 = 0
                     self.crop_area = [
@@ -138,62 +144,25 @@ class MapImageHandler(object):
                     self.trim_right,
                     self.trim_down,
                 ]
-            if (
-                zoom
-                and self.shared.vacuum_state == "cleaning"
-                and self.shared.image_auto_zoom
-            ):
-                # Zoom the image based on the robot's position.
-                _LOGGER.debug(
-                    f"{self.shared.file_name}: Zooming the image on room {self.robot_in_room['room']}."
-                )
-                trim_left = self.robot_in_room["left"] - margin_size
-                trim_right = self.robot_in_room["right"] + margin_size
-                trim_up = self.robot_in_room["up"] - margin_size
-                trim_down = self.robot_in_room["down"] + margin_size
-                trimmed = image_array[trim_up:trim_down, trim_left:trim_right]
-            else:
-                # Apply the auto-calculated trims to the rotated image
-                trimmed = image_array[
-                    self.auto_crop[1] : self.auto_crop[3],
-                    self.auto_crop[0] : self.auto_crop[2],
-                ]
-            del image_array
+            # If it is needed to zoom the image.
+            trimmed = await self.imu.async_check_if_zoom_is_on(
+                image_array, margin_size, zoom
+            )
+            del image_array  # Free memory.
             # Rotate the cropped image based on the given angle
-            if rotate == 90:
-                rotated = np.rot90(trimmed)
-                self.crop_area = [
-                    self.trim_left,
-                    self.trim_up,
-                    self.trim_right,
-                    self.trim_down,
-                ]
-            elif rotate == 180:
-                rotated = np.rot90(trimmed, 2)
-                self.crop_area = self.auto_crop
-            elif rotate == 270:
-                rotated = np.rot90(trimmed, 3)
-                self.crop_area = [
-                    self.trim_left,
-                    self.trim_up,
-                    self.trim_right,
-                    self.trim_down,
-                ]
-            else:
-                rotated = trimmed
-                self.crop_area = self.auto_crop
-            del trimmed
+            rotated = await self.imu.async_rotate_the_image(trimmed, rotate)
+            del trimmed  # Free memory.
             _LOGGER.debug(
-                f"{self.shared.file_name}: Auto Trim Box data: {self.crop_area}"
+                f"{self.file_name}: Auto Trim Box data: {self.crop_area}"
             )
             self.crop_img_size = [rotated.shape[1], rotated.shape[0]]
             _LOGGER.debug(
-                f"{self.shared.file_name}: Auto Trimmed image size: {self.crop_img_size}"
+                f"{self.file_name}: Auto Trimmed image size: {self.crop_img_size}"
             )
 
         except Exception as e:
             _LOGGER.warning(
-                f"{self.shared.file_name}: Error {e} during auto trim and zoom.",
+                f"{self.file_name}: Error {e} during auto trim and zoom.",
                 exc_info=True,
             )
             return None
@@ -239,9 +208,9 @@ class MapImageHandler(object):
                         "y": ((y_min + y_max) // 2),
                     }
         if room_properties != {}:
-            _LOGGER.debug(f"{self.shared.file_name}: Rooms data extracted!")
+            _LOGGER.debug(f"{self.file_name}: Rooms data extracted!")
         else:
-            _LOGGER.debug(f"{self.shared.file_name}: Rooms data not available!")
+            _LOGGER.debug(f"{self.file_name}: Rooms data not available!")
             self.rooms_pos = None
         return room_properties
 
@@ -277,10 +246,11 @@ class MapImageHandler(object):
                     "y": size_y,
                     "centre": [(size_x // 2), (size_y // 2)],
                 }
-                # Get the JSON ID from the JSON data
+                # Get the JSON ID from the JSON data.
                 self.json_id = await self.imd.async_get_json_id(m_json)
-                # Check entity data
+                # Check entity data.
                 entity_dict = await self.imd.async_get_entity_data(m_json)
+                # Update the Robot position.
                 robot_pos, robot_position, robot_position_angle = (
                     await self.imd.async_get_robot_position(entity_dict)
                 )
@@ -305,19 +275,19 @@ class MapImageHandler(object):
                             color_zone_clean,
                             pixel_size,
                         )
-                    # Draw the virtual walls
+                    # Draw the virtual walls if any.
                     img_np_array = await self.imd.async_draw_virtual_walls(
                         m_json, img_np_array, color_no_go
                     )
-                    # charger position
+                    # Draw charger.
                     img_np_array = await self.imd.async_draw_charger(
                         img_np_array, entity_dict, color_charger
                     )
-                    # obstacles
+                    # Draw obstacles if any.
                     img_np_array = await self.imd.async_draw_obstacle(
                         img_np_array, entity_dict, color_no_go
                     )
-                    # robot position
+                    # Robot and rooms position
                     if (room_id > 0) and not self.room_propriety:
                         self.room_propriety = await self.async_extract_room_properties(
                             self.json_data
@@ -328,40 +298,46 @@ class MapImageHandler(object):
                                 robot_y=(robot_position[1]),
                                 angle=robot_position_angle,
                             )
-                    _LOGGER.info(f"{self.shared.file_name}: Completed base Layers")
+                    _LOGGER.info(f"{self.file_name}: Completed base Layers")
+                    # Copy the new array in base layer.
                     self.img_base_layer = await self.imd.async_copy_array(img_np_array)
+                self.shared.frame_number = self.frame_number
                 self.frame_number += 1
                 if (self.frame_number > 1024) or (new_frame_hash != self.img_hash):
                     self.frame_number = 0
                 _LOGGER.debug(
-                    f"{self.shared.file_name}: {self.json_id} at Frame Number: {self.frame_number}"
+                    f"{self.file_name}: {self.json_id} at Frame Number: {self.frame_number}"
                 )
+                # Copy the base layer to the new image.
                 img_np_array = await self.imd.async_copy_array(self.img_base_layer)
-                # All below will be drawn each time
-                # If there is a zone clean we draw it now.
+                # All below will be drawn at each frame.
+                # Draw zones if any.
                 img_np_array = await self.imd.async_draw_zones(
                     m_json, img_np_array, color_zone_clean, color_no_go
                 )
-                # Draw the go_to target flag
+                # Draw the go_to target flag.
                 img_np_array = await self.imd.draw_go_to_flag(
                     img_np_array, entity_dict, color_go_to
                 )
-                # draw path prediction and path pixels
+                # Draw path prediction and paths.
                 img_np_array = await self.imd.async_draw_paths(
                     img_np_array, m_json, color_move, color_grey
                 )
+                # Check if the robot is docked.
                 if self.shared.vacuum_state == "docked":
+                    # Adjust the robot angle.
                     robot_position_angle -= 180
                 if robot_pos:
+                    # Draw the robot
                     img_np_array = await self.draw.robot(
                         layers=img_np_array,
                         x=robot_position[0],
                         y=robot_position[1],
                         angle=robot_position_angle,
                         fill=color_robot,
-                        log=self.shared.file_name,
+                        log=self.file_name,
                     )
-                # resize the image
+                # Resize the image
                 img_np_array = await self.async_auto_trim_and_zoom_image(
                     img_np_array,
                     color_background,
@@ -369,8 +345,9 @@ class MapImageHandler(object):
                     int(self.shared.image_rotate),
                     self.zooming,
                 )
+            # If the image is None return None and log the error.
             if img_np_array is None:
-                _LOGGER.warning(f"{self.shared.file_name}: Image array is None.")
+                _LOGGER.warning(f"{self.file_name}: Image array is None.")
                 return None
             else:
                 # Convert the numpy array to a PIL image
@@ -405,25 +382,19 @@ class MapImageHandler(object):
                         )
                     )
                     _LOGGER.debug(
-                        f"{self.shared.file_name}: Image Aspect Ratio ({wsf}, {hsf}): {new_width}x{new_height}"
+                        f"{self.file_name}: Image Aspect Ratio ({wsf}, {hsf}): {new_width}x{new_height}"
                     )
-                    _LOGGER.debug(
-                        f"Frame Completed: {self.shared.file_name}:  Json ID: {self.json_id}"
-                    )
+                    _LOGGER.debug(f"{self.file_name}: Frame Completed.")
                     return resized
                 else:
-                    _LOGGER.debug(
-                        f"Frame Completed: {self.shared.file_name}:  Json ID: {self.json_id}"
-                    )
+                    _LOGGER.debug(f"{self.file_name}: Frame Completed.")
                     return ImageOps.pad(pil_img, (width, height))
             else:
-                _LOGGER.debug(
-                    f"Frame Completed: {self.shared.file_name}:  Json ID: {self.json_id}"
-                )
+                _LOGGER.debug(f"{self.file_name}: Frame Completed.")
                 return pil_img
         except RuntimeError or RuntimeWarning as e:
             _LOGGER.warning(
-                f"{self.shared.file_name}: Error {e} during image creation.",
+                f"{self.file_name}: Error {e} during image creation.",
                 exc_info=True,
             )
             return None
@@ -454,12 +425,12 @@ class MapImageHandler(object):
         if self.room_propriety:
             return self.room_propriety
         if self.json_data:
-            _LOGGER.debug(f"Checking {self.shared.file_name} Rooms data..")
+            _LOGGER.debug(f"Checking {self.file_name} Rooms data..")
             self.room_propriety = await self.async_extract_room_properties(
                 self.json_data
             )
             if self.room_propriety:
-                _LOGGER.debug(f"Got {self.shared.file_name} Rooms Attributes.")
+                _LOGGER.debug(f"Got {self.file_name} Rooms Attributes.")
         return self.room_propriety
 
     def get_calibration_data(self) -> CalibrationPoints:
@@ -467,27 +438,7 @@ class MapImageHandler(object):
         this will create the attribute calibration points."""
         calibration_data = []
         rotation_angle = self.shared.image_rotate
-        _LOGGER.info(f"Getting {self.shared.file_name} Calibrations points.")
-        # Calculate the calibration points in the vacuum coordinate system
-
-        vacuum_points = [
-            {
-                "x": self.crop_area[0] + self.offset_x,
-                "y": self.crop_area[1] + self.offset_y,
-            },  # Top-left corner 0
-            {
-                "x": self.crop_area[2] - self.offset_x,
-                "y": self.crop_area[1] + self.offset_y,
-            },  # Top-right corner 1
-            {
-                "x": self.crop_area[2] - self.offset_x,
-                "y": self.crop_area[3] - self.offset_y,
-            },  # Bottom-right corner 2
-            {
-                "x": self.crop_area[0] + self.offset_x,
-                "y": self.crop_area[3] - self.offset_y,
-            },  # Bottom-left corner (optional)3
-        ]
+        _LOGGER.info(f"Getting {self.file_name} Calibrations points.")
 
         # Define the map points (fixed)
         map_points = [
@@ -500,28 +451,8 @@ class MapImageHandler(object):
             {"x": 0, "y": self.crop_img_size[1]},  # Bottom-left corner (optional) 3
         ]
 
-        # Rotate the vacuum points based on the rotation angle
-        if rotation_angle == 90:
-            vacuum_points = [
-                vacuum_points[1],
-                vacuum_points[2],
-                vacuum_points[3],
-                vacuum_points[0],
-            ]
-        elif rotation_angle == 180:
-            vacuum_points = [
-                vacuum_points[2],
-                vacuum_points[3],
-                vacuum_points[0],
-                vacuum_points[1],
-            ]
-        elif rotation_angle == 270:
-            vacuum_points = [
-                vacuum_points[3],
-                vacuum_points[0],
-                vacuum_points[1],
-                vacuum_points[2],
-            ]
+        # Calculate the calibration points in the vacuum coordinate system
+        vacuum_points = self.imu.get_calibration_points(rotation_angle)
 
         # Create the calibration data for each point
         for vacuum_point, map_point in zip(vacuum_points, map_points):
@@ -534,83 +465,30 @@ class MapImageHandler(object):
         self, wsf: int, hsf: int, width: int, height: int
     ) -> tuple[int, int]:
         """
-        Convert the coordinates to the map.
+        Offset the coordinates to the map.
         :param wsf: Width scale factor.
         :param hsf: Height scale factor.
         :param width: Width of the image.
         :param height: Height of the image.
         """
 
-        rotation = self.shared.image_rotate
-
         if wsf == 1 and hsf == 1:
-            if rotation == 0 or rotation == 180:
-                self.offset_y = self.crop_img_size[0] - width
-                self.offset_x = (height - self.crop_img_size[1]) // 2
-            elif rotation == 90 or rotation == 270:
-                self.offset_y = width - self.crop_img_size[0]
-                self.offset_x = (self.crop_img_size[1] - height) // 2
-            _LOGGER.debug(
-                f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
-            )
+            self.imu.set_image_offset_ratio_1_1(width, height)
             return width, height
         elif wsf == 2 and hsf == 1:
-            if rotation == 0 or rotation == 180:
-                self.offset_y = width - self.crop_img_size[0]
-                self.offset_x = height - self.crop_img_size[1]
-            elif rotation == 90 or rotation == 270:
-                self.offset_x = width - self.crop_img_size[0]
-                self.offset_y = height - self.crop_img_size[1]
-            _LOGGER.debug(
-                f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
-            )
+            self.imu.set_image_offset_ratio_2_1(width, height)
             return width, height
         elif wsf == 3 and hsf == 2:
-            if rotation == 0 or rotation == 180:
-                self.offset_y = width - self.crop_img_size[0]
-                self.offset_x = ((height - self.crop_img_size[1]) // 2) - (
-                    self.crop_img_size[1] // 10
-                )
-            elif rotation == 90 or rotation == 270:
-                self.offset_y = (self.crop_img_size[0] - width) // 2
-                self.offset_x = (self.crop_img_size[1] - height) + ((height // 10) // 2)
-            _LOGGER.debug(
-                f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
-            )
+            self.imu.set_image_offset_ratio_3_2(width, height)
             return width, height
         elif wsf == 5 and hsf == 4:
-            if rotation == 0 or rotation == 180:
-                self.offset_x = ((width - self.crop_img_size[0]) // 2) - (
-                    self.crop_img_size[0] // 2
-                )
-                self.offset_y = (self.crop_img_size[1] - height) - (
-                    self.crop_img_size[1] // 2
-                )
-            elif rotation == 90 or rotation == 270:
-                self.offset_y = ((self.crop_img_size[0] - width) // 2) - 10
-                self.offset_x = (self.crop_img_size[1] - height) + (height // 10)
-            _LOGGER.debug(
-                f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
-            )
+            self.imu.set_image_offset_ratio_5_4(width, height)
             return width, height
         elif wsf == 9 and hsf == 16:
-            if rotation == 0 or rotation == 180:
-                self.offset_y = width - self.crop_img_size[0]
-                self.offset_x = height - self.crop_img_size[1]
-            elif rotation == 90 or rotation == 270:
-                self.offset_x = (width - self.crop_img_size[0]) + (height // 10)
-                self.offset_y = height - self.crop_img_size[1]
-            _LOGGER.debug(
-                f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
-            )
+            self.imu.set_image_offset_ratio_9_16(width, height)
             return width, height
         elif wsf == 16 and hsf == 9:
-            if rotation == 0 or rotation == 180:
-                self.offset_y = width - self.crop_img_size[0]
-                self.offset_x = height - self.crop_img_size[1]
-            elif rotation == 90 or rotation == 270:
-                self.offset_x = width - self.crop_img_size[0]
-                self.offset_y = height - self.crop_img_size[1]
+            self.imu.set_image_offset_ratio_16_9(width, height)
             _LOGGER.debug(
                 f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
             )

@@ -39,7 +39,6 @@ async def test_update_success(
         return_value={"title": "My Vacuum Camera"},
     ):
         camera = ValetudoCamera(Camera, {"path": "homeassistant/core"})
-        camera.throttled_camera_image()
         camera.camera_image()
 
     expected = {
