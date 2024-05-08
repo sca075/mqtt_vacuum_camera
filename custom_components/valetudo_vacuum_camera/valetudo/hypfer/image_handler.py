@@ -476,8 +476,6 @@ class MapImageHandler(object):
         :param height: Height of the image.
         """
 
-        rotation = self.shared.image_rotate
-
         if wsf == 1 and hsf == 1:
             self.imu.set_image_offset_ratio_1_1(width, height)
             return width, height
