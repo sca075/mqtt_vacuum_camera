@@ -1,6 +1,6 @@
 """
 Common functions for the Valetudo Vacuum Camera integration.
-Version: 2024.05
+Version: 2024.05.2
 """
 
 from __future__ import annotations
@@ -193,7 +193,7 @@ async def async_get_active_user_id(hass) -> Optional[str]:
 
     file_path = f"{hass.config.path(STORAGE_DIR)}/frontend.user_data_{active_user_id}"
     try:
-        with open(file_path, "r") as file:
+        with open(file_path) as file:
             data = json.load(file)
             language = data["data"]["language"]["language"]
             return language

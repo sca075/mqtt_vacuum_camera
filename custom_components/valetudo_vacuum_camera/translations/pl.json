@@ -204,7 +204,8 @@
         "opt_3": "Skonfiguruj Ogólne Kolory",
         "opt_4": "Kolory Pokoi 1 do 8",
         "opt_5": "Kolory Pokoi 9 do 16",
-        "opt_6": "Skopiuj Dzienniki Kamery do www"
+        "opt_6": "Skopiuj Dzienniki Kamery do www",
+        "opt_7": "Zmień nazwę opcji kolorów"
       }
     },
     "vacuum_status": {

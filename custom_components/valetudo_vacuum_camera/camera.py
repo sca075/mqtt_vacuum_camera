@@ -178,9 +178,7 @@ class ValetudoCamera(Camera):
         if not self._shared.enable_snapshots and os.path.isfile(
             f"{self._directory_path}/www/snapshot_{self._file_name}.png"
         ):
-            os.remove(
-                f"{self._directory_path}/www/snapshot_{self._file_name}.png"
-            )
+            os.remove(f"{self._directory_path}/www/snapshot_{self._file_name}.png")
         # If there is a log zip in www remove it
         if os.path.isfile(self.log_file):
             os.remove(self.log_file)

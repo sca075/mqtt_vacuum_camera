@@ -10,9 +10,7 @@ import logging
 
 from numpy import rot90
 
-from custom_components.valetudo_vacuum_camera.types import (
-    NumpyArray,
-)
+from custom_components.valetudo_vacuum_camera.types import NumpyArray
 
 _LOGGER = logging.getLogger(__name__)
 

@@ -152,9 +152,7 @@ class MapImageHandler(object):
             # Rotate the cropped image based on the given angle
             rotated = await self.imu.async_rotate_the_image(trimmed, rotate)
             del trimmed  # Free memory.
-            _LOGGER.debug(
-                f"{self.file_name}: Auto Trim Box data: {self.crop_area}"
-            )
+            _LOGGER.debug(f"{self.file_name}: Auto Trim Box data: {self.crop_area}")
             self.crop_img_size = [rotated.shape[1], rotated.shape[0]]
             _LOGGER.debug(
                 f"{self.file_name}: Auto Trimmed image size: {self.crop_img_size}"

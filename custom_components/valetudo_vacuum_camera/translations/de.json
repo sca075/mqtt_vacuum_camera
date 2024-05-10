@@ -204,7 +204,8 @@
         "opt_3": "Allgemeine Farben einstellen",
         "opt_4": "Farben für Räume 1 bis 8 einstellen",
         "opt_5": "Farben für Räume 9 bis 16 einstellen",
-        "opt_6": "Kameradaten auf www kopieren"
+        "opt_6": "Kameradaten auf www kopieren",
+        "opt_7": "Farboptionen umbenennen"
       }
     },
     "vacuum_status": {

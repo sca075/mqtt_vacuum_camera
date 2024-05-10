@@ -204,7 +204,8 @@
         "opt_3": "Nastavit obecné barvy",
         "opt_4": "Barvy místností od 1 do 8",
         "opt_5": "Barvy místností od 9 do 16",
-        "opt_6": "Zkopírovat záznamy kamery na www"
+        "opt_6": "Zkopírovat záznamy kamery na www",
+        "opt_7": "Přejmenovat možnosti barev"
       }
     },
     "vacuum_status": {

@@ -58,7 +58,9 @@ class CameraProcessor:
                         await self._map_handler.async_get_rooms_attributes()
                     )
                     if self._shared.map_rooms:
-                        _LOGGER.debug(f"{self._file_name}: State attributes rooms updated")
+                        _LOGGER.debug(
+                            f"{self._file_name}: State attributes rooms updated"
+                        )
 
                 if self._shared.attr_calibration_points is None:
                     self._shared.attr_calibration_points = (
@@ -120,7 +122,9 @@ class CameraProcessor:
                             self._shared.map_pred_points,
                         ) = await self._re_handler.get_rooms_attributes(destinations)
                     if self._shared.map_rooms:
-                        _LOGGER.debug(f"{self._file_name}: State attributes rooms updated")
+                        _LOGGER.debug(
+                            f"{self._file_name}: State attributes rooms updated"
+                        )
 
                 if self._shared.attr_calibration_points is None:
                     self._shared.attr_calibration_points = (
