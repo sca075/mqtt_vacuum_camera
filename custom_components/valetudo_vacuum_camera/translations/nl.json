@@ -204,7 +204,8 @@
         "opt_3": "Algemene Kleuren Configureren",
         "opt_4": "Kleuren Kamers 1 tot 8 Configureren",
         "opt_5": "Kleuren Kamers 9 tot 16 Configureren",
-        "opt_6": "Camera Logs naar www Kopiëren"
+        "opt_6": "Camera Logs naar www Kopiëren",
+        "opt_7": "Kleuropties hernoemen"
       }
     },
     "vacuum_status": {

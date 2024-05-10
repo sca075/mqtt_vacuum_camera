@@ -204,7 +204,8 @@
         "opt_3": "Configurer les Couleurs Générales",
         "opt_4": "Couleurs des Pièces 1 à 8",
         "opt_5": "Couleurs des Pièces 9 à 16",
-        "opt_6": "Copier les Journaux de la Caméra vers www"
+        "opt_6": "Copier les Journaux de la Caméra vers www",
+        "opt_7": "Renommer les options de couleur"
       }
     },
     "vacuum_status": {

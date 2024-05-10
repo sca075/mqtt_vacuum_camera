@@ -1,6 +1,6 @@
 """
 Multiprocessing module
-Version: v2024.05
+Version: v2024.05.2
 This module provide the image multiprocessing in order to
 avoid the overload of the main_thread of Home Assistant.
 """
@@ -32,6 +32,7 @@ class CameraProcessor:
         self._map_handler = MapImageHandler(camera_shared)
         self._re_handler = ReImageHandler(camera_shared)
         self._shared = camera_shared
+        self._file_name = self._shared.file_name
         self._translations_path = self.hass.config.path(
             "custom_components/valetudo_vacuum_camera/translations/"
         )
@@ -57,7 +58,9 @@ class CameraProcessor:
                         await self._map_handler.async_get_rooms_attributes()
                     )
                     if self._shared.map_rooms:
-                        _LOGGER.debug("State attributes rooms updated")
+                        _LOGGER.debug(
+                            f"{self._file_name}: State attributes rooms updated"
+                        )
 
                 if self._shared.attr_calibration_points is None:
                     self._shared.attr_calibration_points = (
@@ -72,6 +75,7 @@ class CameraProcessor:
                     )
 
                 self._shared.current_room = self._map_handler.get_robot_position()
+                self._shared.map_rooms = self._map_handler.room_propriety
 
                 if not self._shared.image_size:
                     self._shared.image_size = self._map_handler.get_img_size()
@@ -88,7 +92,7 @@ class CameraProcessor:
                     ):
                         self._shared.image_grab = False
                         _LOGGER.info(
-                            f"Suspended the camera data processing for: {self._shared.file_name}."
+                            f"Suspended the camera data processing for: {self._file_name}."
                         )
                         # take a snapshot
                         self._shared.snapshot_take = True
@@ -118,7 +122,9 @@ class CameraProcessor:
                             self._shared.map_pred_points,
                         ) = await self._re_handler.get_rooms_attributes(destinations)
                     if self._shared.map_rooms:
-                        _LOGGER.debug("State attributes rooms updated")
+                        _LOGGER.debug(
+                            f"{self._file_name}: State attributes rooms updated"
+                        )
 
                 if self._shared.attr_calibration_points is None:
                     self._shared.attr_calibration_points = (
@@ -142,7 +148,7 @@ class CameraProcessor:
                 ):
                     # suspend image processing if we are at the next frame.
                     _LOGGER.info(
-                        f"Suspended the camera data processing for: {self._shared.file_name}."
+                        f"Suspended the camera data processing for: {self._file_name}."
                     )
                     # take a snapshot
                     self._shared.snapshot_take = True
@@ -176,7 +182,7 @@ class CameraProcessor:
         loop = get_event_loop()
 
         with concurrent.futures.ThreadPoolExecutor(
-            max_workers=1, thread_name_prefix=f"{self._shared.file_name}_camera"
+            max_workers=1, thread_name_prefix=f"{self._file_name}_camera"
         ) as executor:
             tasks = [
                 loop.run_in_executor(executor, self.process_valetudo_data, parsed_json)
@@ -185,7 +191,7 @@ class CameraProcessor:
             images = await gather(*tasks)
 
         if isinstance(images, list) and len(images) > 0:
-            _LOGGER.debug(f"{self._shared.file_name}: Camera frame processed.")
+            _LOGGER.debug(f"{self._file_name}: Camera frame processed.")
             result = images[0]
         else:
             result = None
@@ -204,6 +210,7 @@ class CameraProcessor:
         self, pil_img: PilPNG, color: Color, font: str, img_top: bool = True
     ) -> PilPNG:
         """Draw text on the image."""
+
         if pil_img is not None:
             text, size = self._status_text.get_status_text(pil_img)
             Draw.status_text(
@@ -237,7 +244,7 @@ class CameraProcessor:
         loop = get_event_loop()
 
         with concurrent.futures.ThreadPoolExecutor(
-            max_workers=1, thread_name_prefix=f"{self._shared.file_name}_camera_text"
+            max_workers=1, thread_name_prefix=f"{self._file_name}_camera_text"
         ) as executor:
             tasks = [
                 loop.run_in_executor(

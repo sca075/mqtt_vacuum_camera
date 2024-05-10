@@ -1,10 +1,11 @@
 """
 Common functions for the Valetudo Vacuum Camera integration.
-Version: 2024.05
+Version: 2024.05.2
 """
 
 from __future__ import annotations
 
+import os
 import json
 import logging
 from typing import Optional
@@ -193,7 +194,7 @@ async def async_get_active_user_id(hass) -> Optional[str]:
 
     file_path = f"{hass.config.path(STORAGE_DIR)}/frontend.user_data_{active_user_id}"
     try:
-        with open(file_path, "r") as file:
+        with open(file_path) as file:
             data = json.load(file)
             language = data["data"]["language"]["language"]
             return language
@@ -203,3 +204,94 @@ async def async_get_active_user_id(hass) -> Optional[str]:
     except KeyError:
         _LOGGER.info("User ID Language not found: %s", file_path)
         return "en"
+
+
+def load_language(storage_path: str) -> str:
+    """Load the selected language from the language.json file."""
+    language_file_path = os.path.join(storage_path, "language.json")
+    try:
+        with open(language_file_path) as language_file:
+            data = json.load(language_file)
+            selected_language = data.get("language", {}).get("selected", "")
+            return selected_language
+    except FileNotFoundError:
+        _LOGGER.error("Language file not found.")
+        return ""
+    except json.JSONDecodeError:
+        _LOGGER.error("Error decoding language file.")
+        return ""
+
+
+def load_translations_json(hass, language: str) -> json:
+    """
+    Load the user selected language json file and return it.
+    @param hass: Home Assistant instance.
+    @param language:self.hass.config.path(f"custom_components/valetudo_vacuum_camera/translations/
+    @return: json format
+    """
+    translations_path = hass.config.path(f"custom_components/valetudo_vacuum_camera/translations")
+    file_name = f"{language}.json"
+    file_path = f"{translations_path}/{file_name}"
+    try:
+        with open(file_path) as file:
+            translations = json.load(file)
+    except FileNotFoundError:
+        return None
+    return translations
+
+
+def load_room_data(storage_path: str, vacuum_id: str) -> dict:
+    """Load the room data from the room_data_{vacuum_id}.json file."""
+    data_file_path = os.path.join(storage_path, f"room_data_{vacuum_id}.json")
+    try:
+        with open(data_file_path) as data_file:
+            data = json.load(data_file)
+            return data
+    except FileNotFoundError:
+        _LOGGER.error(f"Room data file not found: {data_file_path}")
+        return {}
+    except json.JSONDecodeError:
+        _LOGGER.error(f"Error decoding room data file: {data_file_path}")
+        return {}
+
+
+async def rename_room_description(hass, storage_path, vacuum_id) -> None:
+    """
+    Add room names to the room descriptions in the translations.
+    """
+    language = load_language(storage_path)
+    edit_path = hass.config.path(
+        f"custom_components/valetudo_vacuum_camera/translations/{language}.json"
+    )
+    data = load_translations_json(hass, language)
+    room_data = load_room_data(storage_path, vacuum_id)
+
+    # Modify the "data_description" keys for rooms_colours_1 and rooms_colours_2
+    for i in range(1, 3):
+        room_key = f"rooms_colours_{i}"
+        start_index = 0 if i == 1 else 8
+        end_index = 8 if i == 1 else 16
+        for j in range(start_index, end_index):
+            if j < len(room_data):
+                room_id, room_info = list(room_data.items())[j]
+                data["options"]["step"][room_key]["data_description"][
+                    f"color_room_{j}"
+                ] = f"RoomID {room_id} {room_info['name']}"
+
+    # Modify the "data" keys for alpha_2 and alpha_3
+    for i in range(2, 4):
+        alpha_key = f"alpha_{i}"
+        start_index = 0 if i == 2 else 8
+        end_index = 8 if i == 2 else 16
+        for j in range(start_index, end_index):
+            if j < len(room_data):
+                room_id, room_info = list(room_data.items())[j]
+                data["options"]["step"][alpha_key]["data"][
+                    f"alpha_room_{j}"
+                ] = f"RoomID {room_id} {room_info['name']}"
+
+    # Write the modified data back to the JSON file
+    with open(edit_path, "w") as file:
+        json.dump(data, file, indent=2)
+    _LOGGER.info("Room names added to the room descriptions in the translations.")
+    return None

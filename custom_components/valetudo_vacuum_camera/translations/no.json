@@ -204,7 +204,8 @@
         "opt_3": "Konfigurer Generelle Farger",
         "opt_4": "Farger Rom 1 til 8",
         "opt_5": "Farger Rom 9 til 16",
-        "opt_6": "Kopier Kameralogger til www"
+        "opt_6": "Kopier Kameralogger til www",
+        "opt_7": "Endre navn på fargealternativer"
       }
     },
     "vacuum_status": {

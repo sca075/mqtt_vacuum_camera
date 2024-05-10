@@ -204,7 +204,8 @@
         "opt_3": "Configurar Colores Generales",
         "opt_4": "Colores de Habitaciones 1 a 8",
         "opt_5": "Colores de Habitaciones 9 a 16",
-        "opt_6": "Copiar Registros de Cámara a www"
+        "opt_6": "Copiar Registros de Cámara a www",
+        "opt_7": "Renombrar opciones de color"
       }
     },
     "vacuum_status": {

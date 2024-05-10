@@ -200,7 +200,8 @@
         "opt_3": "Configure General Colours",
         "opt_4": "Colours Rooms 1 to 8",
         "opt_5": "Colours Rooms 9 to 16",
-        "opt_6": "Copy Camera Logs to www"
+        "opt_6": "Copy Camera Logs to www",
+        "opt_7": "Rename Colour Options"
       }
     },
     "vacuum_status": {

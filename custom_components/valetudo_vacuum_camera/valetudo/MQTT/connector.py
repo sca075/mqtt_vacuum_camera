@@ -1,5 +1,5 @@
 """
-Version: v2024.05.1
+Version: v2024.05.2
 - Removed the PNG decode, the json is extracted from map-data instead of map-data-hass.
 - Tested no influence on the camera performance.
 - Added gzip library used in Valetudo RE data compression.
@@ -182,16 +182,16 @@ class ValetudoConnector:
                 f"{self._mqtt_topic}: Received vacuum connection status: {self._mqtt_vac_connect_state}."
             )
         if self._mqtt_vac_connect_state != "ready":
-            self.is_disconnect_vacuum()
+            await self.is_disconnect_vacuum()
 
-    def is_disconnect_vacuum(self):
+    async def is_disconnect_vacuum(self) -> None:
         """
         Disconnect the vacuum detected.
         Generate a Warning message if the vacuum is disconnected.
         """
         if self._mqtt_vac_connect_state == "disconnected":
             _LOGGER.warning(
-                f"{self._mqtt_topic}: Disconnected from MQTT, waiting for connection."
+                f"{self._mqtt_topic}: Vacuum Disconnected from MQTT, waiting for connection."
             )
         self._mqtt_vac_stat = "disconnected"
         self._ignore_data = False
@@ -378,7 +378,7 @@ class ValetudoConnector:
         """Check if we need to decode or not the payload"""
         if isinstance(msg.payload, bytes):
             # If it's binary data, decode it
-            payload_str = msg.payload.decode("utf-8")
+            payload_str = msg.payload.decode()
             return payload_str
         elif isinstance(msg.payload, (int, float)):
             # If it's a number, return it as is

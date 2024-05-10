@@ -1,4 +1,4 @@
-"""Snapshot Version 2024.05"""
+"""Snapshot Version 2024.05.2"""
 
 import asyncio
 from asyncio import gather, get_event_loop
@@ -31,6 +31,38 @@ class Snapshots:
         if not os.path.exists(self.storage_path):
             self._storage_path = f"{self._directory_path}/{STORAGE_DIR}"
         self.snapshot_img = f"{self.storage_path}/{self._shared.file_name}.png"
+
+    def _get_language(self) -> None:
+        """Get the language from the Home Assistant configuration and save it to a file."""
+        language_code = self._shared.user_language
+        language_data = {"language": {"selected": language_code}}
+        language_file_path = os.path.join(self.storage_path, "language.json")
+
+        try:
+            with open(language_file_path, "w") as language_file:
+                json.dump(language_data, language_file, indent=2)
+            _LOGGER.info(f"User selected language saved to {language_file_path}")
+        except Exception as e:
+            _LOGGER.warning(f"Failed to save user selected language: {e}")
+
+    def _get_room_data(self) -> None:
+        """Get the Camera Rooms data and save it to a file."""
+        un_formated_room_data = self._shared.map_rooms
+        vacuum_id = self._shared.file_name
+        room_data = {}
+        for room_id, room_info in un_formated_room_data.items():
+            room_data[room_id] = {
+                "number": room_info["number"],
+                "name": room_info["name"],
+            }
+        data_file_path = os.path.join(self.storage_path, f"room_data_{vacuum_id}.json")
+        if room_data:
+            try:
+                with open(data_file_path, "w") as language_file:
+                    json.dump(room_data, language_file, indent=2)
+                _LOGGER.info(f"Rooms data of {vacuum_id} saved to {data_file_path}")
+            except Exception as e:
+                _LOGGER.warning(f"Failed to save rooms data of {vacuum_id}: {e}")
 
     def _get_filtered_logs(self):
         """Make a copy of home-assistant.log to home-assistant.tmp"""
@@ -75,6 +107,9 @@ class Snapshots:
             log_file_name = os.path.join(self.storage_path, f"{file_name}.log")
             with open(log_file_name, "w") as log_file:
                 log_file.write(log_data)
+
+            self._get_language()
+            self._get_room_data()
 
         except Exception as e:
             _LOGGER.warning("Error while saving data: %s", str(e))

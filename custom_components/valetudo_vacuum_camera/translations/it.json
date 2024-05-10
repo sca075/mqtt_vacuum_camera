@@ -204,7 +204,8 @@
         "opt_3": "Configura i Colori Generali",
         "opt_4": "Colori delle Stanze da 1 a 8",
         "opt_5": "Colori delle Stanze da 9 a 16",
-        "opt_6": "Copia i Log della Fotocamera in www"
+        "opt_6": "Copia i Log della Fotocamera in www",
+        "opt_7": "Rinomina descrizioni colore"
       }
     },
     "vacuum_status": {

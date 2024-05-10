@@ -1,5 +1,5 @@
 """
-Version: 2024.05
+Version: 2024.05.2
 Status text of the vacuum cleaners.
 Clas to handle the status text of the vacuum cleaners.
 """
@@ -48,7 +48,6 @@ class StatusText:
         @param language: String IT, PL, DE, ES, FR, EN.
         @return: Json data or None.
         """
-        _LOGGER.debug(f"Language: {language}")
         translations = self.load_translations(language)
         vacuum_status_options = (
             translations.get("selector", {}).get("vacuum_status", {}).get("options", {})

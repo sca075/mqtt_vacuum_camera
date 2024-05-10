@@ -1,4 +1,4 @@
-"""config_flow 2024.04.3
+"""config_flow 2024.05.2
 IMPORTANT: When adding new options to the camera
 it will be mandatory to update const.py update_options.
 Format of the new constants must be CONST_NAME = "const_name" update also
@@ -35,6 +35,7 @@ from .common import (  # get_entity_identifier_from_mqtt,
     get_vacuum_mqtt_topic,
     get_vacuum_unique_id_from_mqtt_topic,
     update_options,
+    rename_room_description
 )
 from .const import (
     ALPHA_BACKGROUND,
@@ -155,7 +156,7 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             )
 
             # set the unique_id in the entry configuration
-            await self.async_set_unique_id(unique_id=unique_id, raise_on_progress=True)
+            await self.async_set_unique_id(unique_id=unique_id)
             # set default options
             self.options.update(
                 {
@@ -624,7 +625,9 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     return await self.async_step_rooms_colours_2()
                 elif next_action == "opt_6":
                     return await self.async_download_logs()
-                elif next_action == "More Options":
+                elif next_action == "opt_7":
+                    return await self.async_rename_translations()
+                elif next_action == "more options":
                     """
                     From TAPO custom control component, this is,
                     a great idea of how to simply the configuration
@@ -642,6 +645,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 {"label": "configure_rooms_colours_1", "value": "opt_4"},
                 {"label": "configure_rooms_colours_2", "value": "opt_5"},
                 {"label": "copy_camera_logs_to_www", "value": "opt_6"},
+                {"label": "rename_colours_descriptions", "value": "opt_7"},
             ],
             mode=SelectSelectorMode.LIST,
             translation_key="camera_config_action",
@@ -933,6 +937,24 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             else:
                 _LOGGER.debug(f"Logs {file_name} not found in {source_path}")
             return await self.async_step_init()
+        return self.async_show_form(step_id="download")
+
+    async def async_rename_translations(self):
+        """
+        Copy the logs from .storage to www config folder.
+        """
+        hass = self.hass
+        user_input = None
+        storage_path = self.hass.config.path(STORAGE_DIR, "valetudo_camera")
+        camera_id = self.unique_id.split("_")
+        file_name = camera_id[0].lower()
+        if user_input is None:
+            if self.hass:
+                await rename_room_description(hass, storage_path, file_name)
+                _LOGGER.info("Translations rename will be implemented in 2024.05.3")
+                pass
+            return await self.async_step_init()
+
         return self.async_show_form(step_id="download")
 
     async def async_step_opt_save(self):

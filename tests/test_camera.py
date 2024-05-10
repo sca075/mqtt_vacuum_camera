@@ -1,4 +1,3 @@
-
 import socket
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -15,30 +14,31 @@ def mock_mqtt(hass, mqtt_mock):
 
 def load_mqtt_topic_from_file(file_path):
     """Load MQTT topic from a file."""
-    with open(file_path, 'r') as file:
+    with open(file_path, "r") as file:
         return file.read().strip()
 
 
 @pytest.mark.asyncio
 @pytest.mark.enable_socket
-async def test_update_success(hass, aioclient_mock, socket_enabled, enable_custom_integrations, mock_mqtt):
+async def test_update_success(
+    hass, aioclient_mock, socket_enabled, enable_custom_integrations, mock_mqtt
+):
     """Tests a fully successful async_update."""
     # Load MQTT topic from file
-    mqtt_topic = load_mqtt_topic_from_file('tests/mqtt_data.raw')
+    mqtt_topic = load_mqtt_topic_from_file("tests/mqtt_data.raw")
 
     camera = MagicMock()
     camera.getitem = AsyncMock(
         side_effect=[
-            {
-                "vacuum_entity": "vacuum.my_vacuum",
-                "vacuum_map": "valetudo/my_vacuum"
-            },
+            {"vacuum_entity": "vacuum.my_vacuum", "vacuum_map": "valetudo/my_vacuum"},
         ]
     )
 
-    with patch('custom_components.valetudo_vacuum_camera.camera.ConfigFlowHandler.async_step_user', return_value={'title': 'My Vacuum Camera'}):
+    with patch(
+        "custom_components.valetudo_vacuum_camera.camera.ConfigFlowHandler.async_step_user",
+        return_value={"title": "My Vacuum Camera"},
+    ):
         camera = ValetudoCamera(Camera, {"path": "homeassistant/core"})
-        camera.throttled_camera_image()
         camera.camera_image()
 
     expected = {

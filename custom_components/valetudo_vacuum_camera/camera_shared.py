@@ -1,7 +1,7 @@
 """
 Class Camera Shared.
 Keep the data between the modules.
-Version: v2024.05
+Version: v2024.05.2
 """
 
 import logging
