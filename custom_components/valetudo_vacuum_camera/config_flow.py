@@ -35,6 +35,7 @@ from .common import (  # get_entity_identifier_from_mqtt,
     get_vacuum_mqtt_topic,
     get_vacuum_unique_id_from_mqtt_topic,
     update_options,
+    rename_room_description
 )
 from .const import (
     ALPHA_BACKGROUND,
@@ -109,7 +110,6 @@ from .const import (
     IS_ALPHA_R2,
     IS_OFFSET,
 )
-from .utils.status_text import StatusText
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -272,7 +272,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         self.bk_options = self.config_entry.options
         self._check_alpha = False
         self._check_offset = False
-        self.rename_translations = StatusText.rename_room_description
         _LOGGER.debug(
             "Options edit in progress.. options before edit: %s", dict(self.bk_options)
         )
@@ -944,9 +943,14 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         """
         Copy the logs from .storage to www config folder.
         """
+        hass = self.hass
         user_input = None
+        storage_path = self.hass.config.path(STORAGE_DIR, "valetudo_camera")
+        camera_id = self.unique_id.split("_")
+        file_name = camera_id[0].lower()
         if user_input is None:
             if self.hass:
+                await rename_room_description(hass, storage_path, file_name)
                 _LOGGER.info("Translations rename will be implemented in 2024.05.3")
                 pass
             return await self.async_step_init()
