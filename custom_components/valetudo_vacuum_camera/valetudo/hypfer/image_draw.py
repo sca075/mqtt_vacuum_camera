@@ -1,7 +1,7 @@
 """
 Image Draw Class for Valetudo Hypfer Image Handling.
 This class is used to simplify the ImageHandler class.
-Version: 2024.05.2
+Version: 2024.05.3
 """
 
 from __future__ import annotations
