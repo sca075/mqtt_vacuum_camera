@@ -64,15 +64,15 @@ class ImageDraw:
                     # Check if the room is active and set a modified color
                     if (
                         self.img_h.active_zones
-                        and len(self.img_h.active_zones) > room_id
-                        and self.img_h.active_zones[room_id + 1] == 1
+                        and room_id < (len(self.img_h.active_zones) - 1)
                     ):
-                        room_color = (
-                            ((2 * room_color[0]) + color_zone_clean[0]) // 3,
-                            ((2 * room_color[1]) + color_zone_clean[1]) // 3,
-                            ((2 * room_color[2]) + color_zone_clean[2]) // 3,
-                            ((2 * room_color[3]) + color_zone_clean[3]) // 3,
-                        )
+                        if self.img_h.active_zones[room_id + 1] == 1:
+                            room_color = (
+                                ((2 * room_color[0]) + color_zone_clean[0]) // 3,
+                                ((2 * room_color[1]) + color_zone_clean[1]) // 3,
+                                ((2 * room_color[2]) + color_zone_clean[2]) // 3,
+                                ((2 * room_color[3]) + color_zone_clean[3]) // 3,
+                            )
                 img_np_array = await self.img_h.draw.from_json_to_image(
                     img_np_array, pixels, pixel_size, room_color
                 )
