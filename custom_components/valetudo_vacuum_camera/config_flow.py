@@ -1,4 +1,4 @@
-"""config_flow 2024.05.2
+"""config_flow 2024.05.3
 IMPORTANT: When adding new options to the camera
 it will be mandatory to update const.py update_options.
 Format of the new constants must be CONST_NAME = "const_name" update also
@@ -946,14 +946,14 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         hass = self.hass
         user_input = None
         storage_path = self.hass.config.path(STORAGE_DIR, "valetudo_camera")
+        _LOGGER.debug(f"Looking for Storage Path: {storage_path}")
         camera_id = self.unique_id.split("_")
         file_name = camera_id[0].lower()
-        if user_input is None:
+        if (user_input is None) and self.bk_options:
             if self.hass:
                 await rename_room_description(hass, storage_path, file_name)
-                _LOGGER.info("Translations rename will be implemented in 2024.05.3")
-                pass
-            return await self.async_step_init()
+                self.options = self.bk_options
+            return await self.async_step_opt_save()
 
         return self.async_show_form(step_id="download")
 

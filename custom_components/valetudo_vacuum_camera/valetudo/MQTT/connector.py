@@ -1,5 +1,5 @@
 """
-Version: v2024.05.2
+Version: v2024.05.3
 - Removed the PNG decode, the json is extracted from map-data instead of map-data-hass.
 - Tested no influence on the camera performance.
 - Added gzip library used in Valetudo RE data compression.
@@ -128,7 +128,7 @@ class ValetudoConnector:
         Save payload when available.
         """
         if (self._img_payload and (self._data_in is True)) or (
-            self._rrm_payload is not None
+                self._rrm_payload is not None
         ):
             file_data = b"No data"
             if self._img_payload:
@@ -136,9 +136,9 @@ class ValetudoConnector:
             elif self._rrm_payload:
                 file_data = self._rrm_payload
             with open(
-                f"{self._hass.config.path(STORAGE_DIR)}"
-                f"/valetudo_camera/{file_name}.raw",
-                "wb",
+                    f"{self._hass.config.path(STORAGE_DIR)}"
+                    f"/valetudo_camera/{file_name}.raw",
+                    "wb",
             ) as file:
                 file.write(file_data)
             _LOGGER.info(f"Saved image data from MQTT in {file_name}.raw!")
@@ -181,8 +181,7 @@ class ValetudoConnector:
             _LOGGER.info(
                 f"{self._mqtt_topic}: Received vacuum connection status: {self._mqtt_vac_connect_state}."
             )
-        if self._mqtt_vac_connect_state != "ready":
-            await self.is_disconnect_vacuum()
+        await self.is_disconnect_vacuum()
 
     async def is_disconnect_vacuum(self) -> None:
         """
@@ -193,9 +192,13 @@ class ValetudoConnector:
             _LOGGER.warning(
                 f"{self._mqtt_topic}: Vacuum Disconnected from MQTT, waiting for connection."
             )
-        self._mqtt_vac_stat = "disconnected"
-        self._ignore_data = False
-        self._data_in = True
+            self._mqtt_vac_stat = "disconnected"
+            self._ignore_data = False
+            if self._img_payload:
+                self._data_in = True
+        else:
+            pass
+
 
     async def hypfer_handle_errors(self, msg) -> None:
         """
@@ -253,8 +256,8 @@ class ValetudoConnector:
                 f"and battery level: {self._mqtt_vac_battery_level}%."
             )
             if (
-                self._mqtt_vac_stat != "docked"
-                or int(self._mqtt_vac_battery_level) <= 100
+                    self._mqtt_vac_stat != "docked"
+                    or int(self._mqtt_vac_battery_level) <= 100
             ):
                 self._data_in = True
                 self._is_rrm = True
@@ -311,7 +314,7 @@ class ValetudoConnector:
         if self._rcv_topic == f"{self._mqtt_topic}/map_data":
             await self.rand256_handle_image_payload(msg)
         elif (self._rcv_topic == f"{self._mqtt_topic}/MapData/map-data") and (
-            not self._ignore_data
+                not self._ignore_data
         ):
             await self.hypfer_handle_image_data(msg)
         elif self._rcv_topic == f"{self._mqtt_topic}/StatusStateAttribute/status":
@@ -319,8 +322,8 @@ class ValetudoConnector:
         elif self._rcv_topic == f"{self._mqtt_topic}/$state":
             await self.hypfer_handle_connect_state(msg)
         elif (
-            self._rcv_topic
-            == f"{self._mqtt_topic}/StatusStateAttribute/error_description"
+                self._rcv_topic
+                == f"{self._mqtt_topic}/StatusStateAttribute/error_description"
         ):
             await self.hypfer_handle_errors(msg)
         elif self._rcv_topic == f"{self._mqtt_topic}/BatteryStateAttribute/level":
@@ -366,7 +369,7 @@ class ValetudoConnector:
             cust_payload,
             _QOS,
             encoding="utf-8",
-        )
+            )
 
     async def async_unsubscribe_from_topics(self) -> None:
         """Unsubscribe from all MQTT topics."""
