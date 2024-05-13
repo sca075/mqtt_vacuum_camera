@@ -1,8 +1,7 @@
 <code_scheme name="Default" version="173">
   <codeStyleSettings language="JSON">
     <indentOptions>
-      <option name="INDENT_SIZE" value="4" />
-      <option name="CONTINUATION_INDENT_SIZE" value="4" />
+      <option name="INDENT_SIZE" value="3" />
     </indentOptions>
   </codeStyleSettings>
 </code_scheme>
