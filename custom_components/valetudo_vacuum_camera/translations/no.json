@@ -214,6 +214,7 @@
         "disconnected": "Frakoblet",
         "charging": "Lader",
         "cleaning": "Renser",
+        "moving": "Beveger",
         "docked": "Fortøyd",
         "idle": "Inaktiv",
         "paused": "Pauset",

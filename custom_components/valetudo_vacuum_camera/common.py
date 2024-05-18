@@ -1,13 +1,13 @@
 """
 Common functions for the Valetudo Vacuum Camera integration.
-Version: 2024.05.2
+Version: 2024.05.4
 """
 
 from __future__ import annotations
 
-import os
 import json
 import logging
+import os
 from typing import Optional
 
 from homeassistant.components import mqtt
@@ -21,7 +21,7 @@ _LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 def get_device_info(
-    config_entry_id: str, hass: HomeAssistant
+        config_entry_id: str, hass: HomeAssistant
 ) -> tuple[str, DeviceEntry] | None:
     """
     Fetches the vacuum's entity ID and Device from the
@@ -46,7 +46,7 @@ def get_device_info(
 
 
 def get_entity_identifier_from_mqtt(
-    mqtt_identifier: str, hass: HomeAssistant
+        mqtt_identifier: str, hass: HomeAssistant
 ) -> str | None:
     """
     Fetches the vacuum's entity_registry id from the mqtt topic identifier.
@@ -177,21 +177,32 @@ async def update_options(bk_options, new_options):
     return updated_bk_options
 
 
-async def async_get_active_user_id(hass) -> Optional[str]:
+async def async_find_last_logged_in_user(hass: HomeAssistant) -> Optional[str]:
+    """Search and return the last logged-in user ID."""
+    file_path = f"{hass.config.path(STORAGE_DIR)}/auth"
+    try:
+        with open(file_path) as file:
+            data = json.load(file)
+
+    except FileNotFoundError:
+        _LOGGER.info("User ID File not found: %s", file_path)
+        return None
+
+    # Check if the data is not empty
+    if isinstance(data, dict) and data:
+        # Return the last entry
+        last_one = len(list(data['data']['refresh_tokens']))-1
+        last_user_id = (str(data['data']['refresh_tokens'][last_one]['user_id']))
+        return last_user_id
+
+
+async def async_get_active_user_id(hass: HomeAssistant) -> Optional[str]:
     """
     Get the active user id from the frontend user data file.
     Return the language of the active user.
     """
-    active_user_id = None
-    users = await hass.auth.async_get_users()
-    for user in users:
-        if (
-            user.name.lower() not in ["home assistant content", "supervisor"]
-            and user.is_active
-        ):
-            active_user_id = user.id
-            break
-
+    test = hass.config.language.lower()  # testing
+    active_user_id = await async_find_last_logged_in_user(hass)
     file_path = f"{hass.config.path(STORAGE_DIR)}/frontend.user_data_{active_user_id}"
     try:
         with open(file_path) as file:
@@ -215,7 +226,10 @@ def load_language(storage_path: str) -> str:
             selected_language = data.get("language", {}).get("selected", "")
             return selected_language
     except FileNotFoundError:
-        _LOGGER.error("Language file not found.")
+        _LOGGER.warning(
+            f"Language file not found in {storage_path}. "
+            f"The file will be stored as soon the vacuum is operated"
+        )
         return ""
     except json.JSONDecodeError:
         _LOGGER.error("Error decoding language file.")
@@ -229,7 +243,9 @@ def load_translations_json(hass, language: str) -> json:
     @param language:self.hass.config.path(f"custom_components/valetudo_vacuum_camera/translations/
     @return: json format
     """
-    translations_path = hass.config.path(f"custom_components/valetudo_vacuum_camera/translations")
+    translations_path = hass.config.path(
+        f"custom_components/valetudo_vacuum_camera/translations"
+    )
     file_name = f"{language}.json"
     file_path = f"{translations_path}/{file_name}"
     try:
@@ -240,7 +256,7 @@ def load_translations_json(hass, language: str) -> json:
     return translations
 
 
-def load_room_data(storage_path: str, vacuum_id: str) -> dict:
+async def async_load_room_data(storage_path: str, vacuum_id: str) -> dict:
     """Load the room data from the room_data_{vacuum_id}.json file."""
     data_file_path = os.path.join(storage_path, f"room_data_{vacuum_id}.json")
     try:
@@ -248,14 +264,19 @@ def load_room_data(storage_path: str, vacuum_id: str) -> dict:
             data = json.load(data_file)
             return data
     except FileNotFoundError:
-        _LOGGER.error(f"Room data file not found: {data_file_path}")
+        _LOGGER.warning(
+            f"Room data file not found: {data_file_path}, "
+            f"the file will be created as soon the segment clean will be operated"
+        )
         return {}
     except json.JSONDecodeError:
         _LOGGER.error(f"Error decoding room data file: {data_file_path}")
         return {}
 
 
-async def rename_room_description(hass, storage_path, vacuum_id) -> None:
+async def rename_room_description(
+        hass: HomeAssistant, storage_path: str, vacuum_id: str
+) -> None:
     """
     Add room names to the room descriptions in the translations.
     """
@@ -263,8 +284,15 @@ async def rename_room_description(hass, storage_path, vacuum_id) -> None:
     edit_path = hass.config.path(
         f"custom_components/valetudo_vacuum_camera/translations/{language}.json"
     )
+    _LOGGER.info(f"Editing the translations file: {edit_path}")
     data = load_translations_json(hass, language)
-    room_data = load_room_data(storage_path, vacuum_id)
+    if data is None:
+        _LOGGER.warning(
+            f"Translation for {language} not found."
+            " Please report the missing translation to the author."
+        )
+        data = load_translations_json(hass, "en")
+    room_data = await async_load_room_data(storage_path, vacuum_id)
 
     # Modify the "data_description" keys for rooms_colours_1 and rooms_colours_2
     for i in range(1, 3):
@@ -276,7 +304,7 @@ async def rename_room_description(hass, storage_path, vacuum_id) -> None:
                 room_id, room_info = list(room_data.items())[j]
                 data["options"]["step"][room_key]["data_description"][
                     f"color_room_{j}"
-                ] = f"RoomID {room_id} {room_info['name']}"
+                ] = f"**RoomID {room_id} {room_info['name']}**"
 
     # Modify the "data" keys for alpha_2 and alpha_3
     for i in range(2, 4):
@@ -289,6 +317,7 @@ async def rename_room_description(hass, storage_path, vacuum_id) -> None:
                 data["options"]["step"][alpha_key]["data"][
                     f"alpha_room_{j}"
                 ] = f"RoomID {room_id} {room_info['name']}"
+                # "**text**" is bold as in markdown
 
     # Write the modified data back to the JSON file
     with open(edit_path, "w") as file:

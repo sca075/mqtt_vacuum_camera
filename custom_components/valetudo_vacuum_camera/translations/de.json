@@ -214,6 +214,7 @@
         "disconnected": "Getrennt",
         "charging": "Lädt",
         "cleaning": "Reinigt",
+        "moving": "Bewegend",
         "docked": "Eingedockt",
         "idle": "Inaktiv",
         "paused": "Angehalten",

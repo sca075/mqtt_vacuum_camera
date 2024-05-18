@@ -1,8 +1,8 @@
 {
-  "services": {
-    "reload": "mdi:reload",
-    "snapshot": "mdi:camera",
-    "turn_off": "mdi:video-off",
-    "turn_on": "mdi:video"
-  }
+    "services": {
+        "reload": "mdi:reload",
+        "snapshot": "mdi:camera",
+        "turn_off": "mdi:video-off",
+        "turn_on": "mdi:video"
+    }
 }

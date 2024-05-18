@@ -1,5 +1,5 @@
 """
-Version: 2024.05.2
+Version: 2024.05.4
 Status text of the vacuum cleaners.
 Clas to handle the status text of the vacuum cleaners.
 """
@@ -23,7 +23,7 @@ class StatusText:
     def __init__(self, hass, camera_shared):
         self.hass = hass
         self._shared = camera_shared
-        self._translations_path = self.hass.config.path(
+        self._translations_path = hass.config.path(
             "custom_components/valetudo_vacuum_camera/translations/"
         )
 

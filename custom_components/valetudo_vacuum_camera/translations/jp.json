@@ -210,6 +210,7 @@
         "disconnected": "切断済み",
         "charging": "充電中",
         "cleaning": "掃除中",
+        "moving": "移動中",
         "docked": "ドック済み",
         "idle": "アイドル",
         "paused": "一時停止中",

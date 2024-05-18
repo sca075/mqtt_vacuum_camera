@@ -214,6 +214,7 @@
         "disconnected": "Verbroken",
         "charging": "Opladen",
         "cleaning": "Aan het Schoonmaken",
+        "moving": "Bewegen",
         "docked": "Aangemeerd",
         "idle": "Inactief",
         "paused": "Gepauzeerd",

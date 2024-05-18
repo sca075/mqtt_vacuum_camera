@@ -26,13 +26,13 @@ class Snapshots:
         self._mqtt = mqtt
         self.hass = hass
         self._shared = shared
-        self._directory_path = self.hass.config.path()
-        self.storage_path = f"{self.hass.config.path(STORAGE_DIR)}/valetudo_camera"
+        self._directory_path = hass.config.path()
+        self.storage_path = f"{hass.config.path(STORAGE_DIR)}/valetudo_camera"
         if not os.path.exists(self.storage_path):
             self._storage_path = f"{self._directory_path}/{STORAGE_DIR}"
         self.snapshot_img = f"{self.storage_path}/{self._shared.file_name}.png"
 
-    def _get_language(self) -> None:
+    async def async_get_language(self) -> None:
         """Get the language from the Home Assistant configuration and save it to a file."""
         language_code = self._shared.user_language
         language_data = {"language": {"selected": language_code}}
@@ -45,7 +45,7 @@ class Snapshots:
         except Exception as e:
             _LOGGER.warning(f"Failed to save user selected language: {e}")
 
-    def _get_room_data(self) -> None:
+    async def async_get_room_data(self) -> None:
         """Get the Camera Rooms data and save it to a file."""
         un_formated_room_data = self._shared.map_rooms
         vacuum_id = self._shared.file_name
@@ -64,7 +64,7 @@ class Snapshots:
             except Exception as e:
                 _LOGGER.warning(f"Failed to save rooms data of {vacuum_id}: {e}")
 
-    def _get_filtered_logs(self):
+    async def async_get_filtered_logs(self):
         """Make a copy of home-assistant.log to home-assistant.tmp"""
         log_file_path = os.path.join(self._directory_path, "home-assistant.log")
         tmp_log_file_path = os.path.join(self._directory_path, "home-assistant.tmp")
@@ -76,7 +76,7 @@ class Snapshots:
             filtered_logs = []
 
             if os.path.exists(tmp_log_file_path):
-                with open(tmp_log_file_path, "r") as log_file:
+                with open(tmp_log_file_path) as log_file:
                     for line in log_file:
                         if "custom_components.valetudo_vacuum_camera" in line:
                             filtered_logs.append(line.strip())
@@ -86,11 +86,12 @@ class Snapshots:
 
             return "\n".join(filtered_logs)
 
-        except Exception as e:
-            _LOGGER.warning("Error while processing logs: %s", str(e))
+        except FileNotFoundError as e:
+            _LOGGER.warning("Snapshot Error while processing logs: %s", str(e))
             return ""
 
-    def _get_data(self, file_name: str, json_data: JsonType) -> None:
+    async def async_get_data(self, file_name: str, json_data: JsonType) -> None:
+        """Get the data to compose the snapshot logs."""
         # Create the storage folder if it doesn't exist
         if not os.path.exists(self.storage_path):
             os.makedirs(self.storage_path)
@@ -101,18 +102,18 @@ class Snapshots:
             with open(json_file_name, "w") as json_file:
                 json.dump(json_data, json_file, indent=4)
 
-            log_data = self._get_filtered_logs()
+            log_data = await self.async_get_filtered_logs()
 
             # Save log data to a file
             log_file_name = os.path.join(self.storage_path, f"{file_name}.log")
             with open(log_file_name, "w") as log_file:
                 log_file.write(log_data)
 
-            self._get_language()
-            self._get_room_data()
+            await self.async_get_language()
+            await self.async_get_room_data()
 
         except Exception as e:
-            _LOGGER.warning("Error while saving data: %s", str(e))
+            _LOGGER.warning("Snapshot Error while saving data: %s", str(e))
 
     def _zip_snapshot(self, file_name: str) -> None:
         """Create a ZIP archive"""
@@ -151,14 +152,14 @@ class Snapshots:
         except Exception as e:
             _LOGGER.warning("Error while cleaning up original files: %s", str(e))
 
-    def data_snapshot(self, file_name: str, json_data: any) -> None:
+    async def async_data_snapshot(self, file_name: str, json_data: any) -> None:
         """
         Save JSON data and filtered logs to a ZIP archive.
         :param file_name: Vacuum friendly name
         :param json_data: Vacuum JSON data
         """
         try:
-            self._get_data(file_name, json_data)
+            await self.async_get_data(file_name, json_data)
             self._zip_snapshot(file_name)
         except Exception as e:
             _LOGGER.warning("Error while creating logs snapshot: %s", str(e))
@@ -174,7 +175,7 @@ class Snapshots:
                 if self._mqtt is not None:
                     await self._mqtt.save_payload(self._shared.file_name)
                 # Write the JSON and data to the file.
-                self.data_snapshot(self._shared.file_name, json_data)
+                await self.async_data_snapshot(self._shared.file_name, json_data)
             # Save image ready for snapshot.
             image_data.save(self.snapshot_img)  # Save the image in .storage
             if self._shared.enable_snapshots:

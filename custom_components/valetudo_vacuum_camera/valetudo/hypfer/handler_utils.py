@@ -37,7 +37,7 @@ class ImageUtils:
         ):
             # Zoom the image based on the robot's position.
             _LOGGER.debug(
-                f"{self.file_name}: Zooming the image on room {self.img.robot_in_room['room']}."
+                f"\n{self.file_name}: Zooming the image on room {self.img.robot_in_room['room']}."
             )
             trim_left = self.img.robot_in_room["left"] - margin_size
             trim_right = self.img.robot_in_room["right"] + margin_size
@@ -143,7 +143,7 @@ class ImageUtils:
             self.img.offset_y = width - self.img.crop_img_size[0]
             self.img.offset_x = (self.img.crop_img_size[1] - height) // 2
         _LOGGER.debug(
-            f"{self.file_name} Image Coordinates: "
+            f"\n{self.file_name} Image Coordinates: "
             f"Offset X: {self.img.offset_x} Offset Y: {self.img.offset_y}"
         )
 
@@ -161,7 +161,7 @@ class ImageUtils:
             self.img.offset_y = height - self.img.crop_img_size[1]
 
         _LOGGER.debug(
-            f"{self.file_name} Image Coordinates: "
+            f"\n{self.file_name} Image Coordinates: "
             f"Offset X: {self.img.offset_x} Offset Y: {self.img.offset_y}"
         )
 
@@ -183,7 +183,7 @@ class ImageUtils:
             )
 
         _LOGGER.debug(
-            f"{self.file_name} Image Coordinates: "
+            f"\n{self.file_name} Image Coordinates: "
             f"Offset X: {self.img.offset_x} Offset Y: {self.img.offset_y}"
         )
 
@@ -205,7 +205,7 @@ class ImageUtils:
             self.img.offset_x = (self.img.crop_img_size[1] - height) + (height // 10)
 
         _LOGGER.debug(
-            f"{self.file_name} Image Coordinates: "
+            f"\n{self.file_name} Image Coordinates: "
             f"Offset X: {self.img.offset_x} Offset Y: {self.img.offset_y}"
         )
 
@@ -223,7 +223,7 @@ class ImageUtils:
             self.img.offset_y = height - self.img.crop_img_size[1]
 
         _LOGGER.debug(
-            f"{self.file_name} Image Coordinates: "
+            f"\n{self.file_name} Image Coordinates: "
             f"Offset X: {self.img.offset_x} Offset Y: {self.img.offset_y}"
         )
 
@@ -241,6 +241,6 @@ class ImageUtils:
             self.img.offset_y = height - self.img.crop_img_size[1]
 
         _LOGGER.debug(
-            f"{self.file_name} Image Coordinates: "
+            f"\n{self.file_name} Image Coordinates: "
             f"Offset X: {self.img.offset_x} Offset Y: {self.img.offset_y}"
         )
