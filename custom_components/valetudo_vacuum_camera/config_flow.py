@@ -1,4 +1,4 @@
-"""config_flow 2024.05.3
+"""config_flow 2024.05.4
 IMPORTANT: When adding new options to the camera
 it will be mandatory to update const.py update_options.
 Format of the new constants must be CONST_NAME = "const_name" update also
@@ -34,8 +34,8 @@ from .common import (  # get_entity_identifier_from_mqtt,
     get_device_info,
     get_vacuum_mqtt_topic,
     get_vacuum_unique_id_from_mqtt_topic,
+    rename_room_description,
     update_options,
-    rename_room_description
 )
 from .const import (
     ALPHA_BACKGROUND,

@@ -213,6 +213,7 @@
         "connected": "Подключено",
         "disconnected": "Отключено",
         "charging": "Зарядка",
+        "moving": "Движение",
         "cleaning": "Чистка",
         "docked": "Задокировано",
         "idle": "В ожидании",

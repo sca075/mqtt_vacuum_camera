@@ -59,7 +59,7 @@ class CameraProcessor:
                     )
                     if self._shared.map_rooms:
                         _LOGGER.debug(
-                            f"{self._file_name}: State attributes rooms updated"
+                            f"\n{self._file_name}: State attributes rooms updated"
                         )
 
                 if self._shared.attr_calibration_points is None:
@@ -92,12 +92,12 @@ class CameraProcessor:
                     ):
                         self._shared.image_grab = False
                         _LOGGER.info(
-                            f"Suspended the camera data processing for: {self._file_name}."
+                            f"\nSuspended the camera data processing for: {self._file_name}."
                         )
                         # take a snapshot
                         self._shared.snapshot_take = True
             return pil_img
-        _LOGGER.debug("No Json, returned None.")
+        _LOGGER.debug(f"\n{self._file_name}: No Json, returned None.")
         return None
 
     async def async_process_rand256_data(self, parsed_json: JsonType) -> PilPNG | None:
@@ -123,7 +123,7 @@ class CameraProcessor:
                         ) = await self._re_handler.get_rooms_attributes(destinations)
                     if self._shared.map_rooms:
                         _LOGGER.debug(
-                            f"{self._file_name}: State attributes rooms updated"
+                            f"\n{self._file_name}: State attributes rooms updated"
                         )
 
                 if self._shared.attr_calibration_points is None:
@@ -148,7 +148,7 @@ class CameraProcessor:
                 ):
                     # suspend image processing if we are at the next frame.
                     _LOGGER.info(
-                        f"Suspended the camera data processing for: {self._file_name}."
+                        f"\nSuspended the camera data processing for: {self._file_name}."
                     )
                     # take a snapshot
                     self._shared.snapshot_take = True
@@ -191,7 +191,7 @@ class CameraProcessor:
             images = await gather(*tasks)
 
         if isinstance(images, list) and len(images) > 0:
-            _LOGGER.debug(f"{self._file_name}: Camera frame processed.")
+            _LOGGER.debug(f"\n{self._file_name}: Camera frame processed.")
             result = images[0]
         else:
             result = None

@@ -100,8 +100,8 @@ class MapImageHandler(object):
                 max_y, max_x, dummy = np.max(nonzero_coords, axis=0)
                 del dummy, nonzero_coords
                 _LOGGER.debug(
-                    "{}: Found trims max and min values (y,x) ({}, {}) ({},{})...".format(
-                        self.shared.file_name,
+                    "\n{}: Found trims max and min values (y,x) ({}, {}) ({},{})...".format(
+                        self.file_name,
                         int(max_y),
                         int(max_x),
                         int(min_y),
@@ -124,7 +124,7 @@ class MapImageHandler(object):
                 # Test if the trims are okay or not
                 if trimmed_height <= margin_size or trimmed_width <= margin_size:
                     _LOGGER.debug(
-                        f"{self.file_name}: Background colour not detected at rotation {rotate}."
+                        f"\n{self.file_name}: Background colour not detected at rotation {rotate}."
                     )
                     pos_0 = 0
                     self.crop_area = [
@@ -152,10 +152,10 @@ class MapImageHandler(object):
             # Rotate the cropped image based on the given angle
             rotated = await self.imu.async_rotate_the_image(trimmed, rotate)
             del trimmed  # Free memory.
-            _LOGGER.debug(f"{self.file_name}: Auto Trim Box data: {self.crop_area}")
+            _LOGGER.debug(f"\n{self.file_name}: Auto Trim Box data: {self.crop_area}")
             self.crop_img_size = [rotated.shape[1], rotated.shape[0]]
             _LOGGER.debug(
-                f"{self.file_name}: Auto Trimmed image size: {self.crop_img_size}"
+                f"\n{self.file_name}: Auto Trimmed image size: {self.crop_img_size}"
             )
 
         except Exception as e:
@@ -206,9 +206,9 @@ class MapImageHandler(object):
                         "y": ((y_min + y_max) // 2),
                     }
         if room_properties != {}:
-            _LOGGER.debug(f"{self.file_name}: Rooms data extracted!")
+            _LOGGER.debug(f"\n{self.file_name}: Rooms data extracted!")
         else:
-            _LOGGER.debug(f"{self.file_name}: Rooms data not available!")
+            _LOGGER.debug(f"\n{self.file_name}: Rooms data not available!")
             self.rooms_pos = None
         return room_properties
 
@@ -296,7 +296,7 @@ class MapImageHandler(object):
                                 robot_y=(robot_position[1]),
                                 angle=robot_position_angle,
                             )
-                    _LOGGER.info(f"{self.file_name}: Completed base Layers")
+                    _LOGGER.info(f"\n{self.file_name}: Completed base Layers")
                     # Copy the new array in base layer.
                     self.img_base_layer = await self.imd.async_copy_array(img_np_array)
                 self.shared.frame_number = self.frame_number
@@ -304,7 +304,7 @@ class MapImageHandler(object):
                 if (self.frame_number > 1024) or (new_frame_hash != self.img_hash):
                     self.frame_number = 0
                 _LOGGER.debug(
-                    f"{self.file_name}: {self.json_id} at Frame Number: {self.frame_number}"
+                    f"\n{self.file_name}: {self.json_id} at Frame Number: {self.frame_number}"
                 )
                 # Copy the base layer to the new image.
                 img_np_array = await self.imd.async_copy_array(self.img_base_layer)
@@ -380,15 +380,15 @@ class MapImageHandler(object):
                         )
                     )
                     _LOGGER.debug(
-                        f"{self.file_name}: Image Aspect Ratio ({wsf}, {hsf}): {new_width}x{new_height}"
+                        f"\n{self.file_name}: Image Aspect Ratio ({wsf}, {hsf}): {new_width}x{new_height}"
                     )
-                    _LOGGER.debug(f"{self.file_name}: Frame Completed.")
+                    _LOGGER.debug(f"\n{self.file_name}: Frame Completed.")
                     return resized
                 else:
-                    _LOGGER.debug(f"{self.file_name}: Frame Completed.")
+                    _LOGGER.debug(f"\n{self.file_name}: Frame Completed.")
                     return ImageOps.pad(pil_img, (width, height))
             else:
-                _LOGGER.debug(f"{self.file_name}: Frame Completed.")
+                _LOGGER.debug(f"\n{self.file_name}: Frame Completed.")
                 return pil_img
         except RuntimeError or RuntimeWarning as e:
             _LOGGER.warning(
@@ -423,12 +423,12 @@ class MapImageHandler(object):
         if self.room_propriety:
             return self.room_propriety
         if self.json_data:
-            _LOGGER.debug(f"Checking {self.file_name} Rooms data..")
+            _LOGGER.debug(f"\nChecking {self.file_name} Rooms data..")
             self.room_propriety = await self.async_extract_room_properties(
                 self.json_data
             )
             if self.room_propriety:
-                _LOGGER.debug(f"Got {self.file_name} Rooms Attributes.")
+                _LOGGER.debug(f"\nGot {self.file_name} Rooms Attributes.")
         return self.room_propriety
 
     def get_calibration_data(self) -> CalibrationPoints:
@@ -436,7 +436,7 @@ class MapImageHandler(object):
         this will create the attribute calibration points."""
         calibration_data = []
         rotation_angle = self.shared.image_rotate
-        _LOGGER.info(f"Getting {self.file_name} Calibrations points.")
+        _LOGGER.info(f"\nGetting {self.file_name} Calibrations points.")
 
         # Define the map points (fixed)
         map_points = [
@@ -488,7 +488,7 @@ class MapImageHandler(object):
         elif wsf == 16 and hsf == 9:
             self.imu.set_image_offset_ratio_16_9(width, height)
             _LOGGER.debug(
-                f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
+                f"\nCoordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
             )
             return width, height
         else:

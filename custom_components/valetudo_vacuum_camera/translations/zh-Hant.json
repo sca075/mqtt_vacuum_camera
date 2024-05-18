@@ -214,6 +214,7 @@
         "disconnected": "已斷開連接",
         "charging": "正在充電",
         "cleaning": "正在清理",
+        "moving": "正在移動",
         "docked": "已對接",
         "idle": "空閒",
         "paused": "已暫停",
