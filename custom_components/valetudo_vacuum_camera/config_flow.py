@@ -350,9 +350,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Optional(
                         ATTR_MARGINS, default=config_entry.options.get("margins")
                     ): cv.string,
-                    vol.Optional(
-                        IS_OFFSET, default=self._check_offset
-                    ): BooleanSelector(),
                     vol.Required(
                         CONF_ASPECT_RATIO,
                         default=config_entry.options.get("aspect_ratio"),
@@ -616,17 +613,13 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 if next_action == "opt_1":
                     return await self.async_step_image_opt()
                 elif next_action == "opt_2":
-                    return await self.async_step_status_text()
-                elif next_action == "opt_3":
                     return await self.async_step_base_colours()
-                elif next_action == "opt_4":
+                elif next_action == "opt_3":
                     return await self.async_step_rooms_colours_1()
-                elif next_action == "opt_5":
+                elif next_action == "opt_4":
                     return await self.async_step_rooms_colours_2()
-                elif next_action == "opt_6":
-                    return await self.async_download_logs()
-                elif next_action == "opt_7":
-                    return await self.async_rename_translations()
+                elif next_action == "opt_5":
+                    return await self.async_step_advanced()
                 elif next_action == "more options":
                     """
                     From TAPO custom control component, this is,
@@ -640,12 +633,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         menu_keys = SelectSelectorConfig(
             options=[
                 {"label": "configure_image", "value": "opt_1"},
-                {"label": "configure_status_text", "value": "opt_2"},
-                {"label": "configure_general_colours", "value": "opt_3"},
-                {"label": "configure_rooms_colours_1", "value": "opt_4"},
-                {"label": "configure_rooms_colours_2", "value": "opt_5"},
-                {"label": "copy_camera_logs_to_www", "value": "opt_6"},
-                {"label": "rename_colours_descriptions", "value": "opt_7"},
+                {"label": "configure_general_colours", "value": "opt_2"},
+                {"label": "configure_rooms_colours_1", "value": "opt_3"},
+                {"label": "configure_rooms_colours_2", "value": "opt_4"},
+                {"label": "advanced_options", "value": "opt_5"}
             ],
             mode=SelectSelectorMode.LIST,
             translation_key="camera_config_action",
@@ -655,6 +646,52 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         return self.async_show_form(
             step_id="init",
+            data_schema=vol.Schema(data_schema),
+            errors=errors,
+        )
+
+    async def async_step_advanced(self, user_input=None):
+        """
+        Start the options menu configuration.
+        """
+        _LOGGER.info(f"{self.config_entry.unique_id}: Options Configuration Started.")
+        errors = {}
+        if user_input is not None:
+            if "camera_config_advanced" in user_input:
+                next_action = user_input["camera_config_advanced"]
+                if next_action == "opt_1":
+                    return await self.async_step_image_offset()
+                elif next_action == "opt_2":
+                    return await self.async_step_status_text()
+                elif next_action == "opt_3":
+                    return await self.async_download_logs()
+                elif next_action == "opt_4":
+                    return await self.async_rename_translations()
+                elif next_action == "more options":
+                    """
+                    From TAPO custom control component, this is,
+                    a great idea of how to simply the configuration
+                    simple old style menu ;).
+                    """
+                else:
+                    errors["base"] = "incorrect_options_action"
+
+        # noinspection PyArgumentList
+        menu_keys_1 = SelectSelectorConfig(
+            options=[
+                {"label": "configure_image", "value": "opt_1"},
+                {"label": "configure_status_text", "value": "opt_2"},
+                {"label": "copy_camera_logs_to_www", "value": "opt_3"},
+                {"label": "rename_colours_descriptions", "value": "opt_4"},
+            ],
+            mode=SelectSelectorMode.LIST,
+            translation_key="camera_config_advanced",
+        )
+
+        data_schema = {"camera_config_advanced": SelectSelector(menu_keys_1)}
+
+        return self.async_show_form(
+            step_id="advanced",
             data_schema=vol.Schema(data_schema),
             errors=errors,
         )
@@ -675,12 +712,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     "enable_www_snapshots": user_input.get(CONF_SNAPSHOTS_ENABLE),
                 }
             )
-            self._check_offset = user_input.get(IS_OFFSET)
-            if self._check_offset:
-                self._check_offset = False
-                return await self.async_step_image_offset()
-            else:
-                return await self.async_step_opt_save()
+
+            return await self.async_step_opt_save()
 
         return self.async_show_form(
             step_id="image_opt",

@@ -19,14 +19,18 @@
         "step": {
             "init": {
                 "title": "Valetudo Camera Options",
-                "description": "Possible Changes:",
+                "description": "Standard Options:",
+                "data": {"camera_config_action": "Action"}
+            },
+            "advanced": {
+                "title": "Valetudo Camera Options",
+                "description": "Advanced Options:",
                 "data": {"camera_config_action": "Action"}
             },
             "image_opt": {
                 "data": {
                     "rotate_image": "Rotate",
                     "margins": "Image Margins.",
-                    "add_offset": "Offset Image.",
                     "auto_zoom": "Enable Auto Zoom",
                     "zoom_lock_ratio": "Lock Aspect Ratio.",
                     "aspect_ratio": "Image Aspect Ratio.",
@@ -196,12 +200,18 @@
         "camera_config_action": {
             "options": {
                 "opt_1": "Configure Image",
+                "opt_2": "Configure General Colours",
+                "opt_3": "Colours Rooms 1 to 8",
+                "opt_4": "Colours Rooms 9 to 16",
+                "opt_5": "Advanced Options"
+            }
+        },
+        "camera_config_advanced": {
+            "options": {
+                "opt_1": "Configure Offset Image",
                 "opt_2": "Configure Status Text",
-                "opt_3": "Configure General Colours",
-                "opt_4": "Colours Rooms 1 to 8",
-                "opt_5": "Colours Rooms 9 to 16",
-                "opt_6": "Copy Camera Logs to www",
-                "opt_7": "Rename Colour Options"
+                "opt_3": "Copy Camera Logs to www",
+                "opt_4": "Rename Colour Options"
             }
         },
         "vacuum_status": {

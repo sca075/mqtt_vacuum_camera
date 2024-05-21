@@ -1,4 +1,4 @@
-"""Snapshot Version 2024.05.2"""
+"""Snapshot Version 2024.06.0"""
 
 import asyncio
 from asyncio import gather, get_event_loop
@@ -37,7 +37,8 @@ class Snapshots:
         language_code = self._shared.user_language
         language_data = {"language": {"selected": language_code}}
         language_file_path = os.path.join(self.storage_path, "language.json")
-
+        if os.path.exists(language_file_path):
+            return None
         try:
             with open(language_file_path, "w") as language_file:
                 json.dump(language_data, language_file, indent=2)
@@ -47,15 +48,17 @@ class Snapshots:
 
     async def async_get_room_data(self) -> None:
         """Get the Camera Rooms data and save it to a file."""
-        un_formated_room_data = self._shared.map_rooms
         vacuum_id = self._shared.file_name
+        data_file_path = os.path.join(self.storage_path, f"room_data_{vacuum_id}.json")
+        if os.path.exists(data_file_path):
+            return None
+        un_formated_room_data = self._shared.map_rooms
         room_data = {}
         for room_id, room_info in un_formated_room_data.items():
             room_data[room_id] = {
                 "number": room_info["number"],
                 "name": room_info["name"],
             }
-        data_file_path = os.path.join(self.storage_path, f"room_data_{vacuum_id}.json")
         if room_data:
             try:
                 with open(data_file_path, "w") as language_file:

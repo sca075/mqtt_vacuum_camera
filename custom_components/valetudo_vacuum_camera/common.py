@@ -201,7 +201,7 @@ async def async_get_active_user_id(hass: HomeAssistant) -> Optional[str]:
     Get the active user id from the frontend user data file.
     Return the language of the active user.
     """
-    test = hass.config.language.lower()  # testing
+    ha_language = hass.config.language.lower()  # testing
     active_user_id = await async_find_last_logged_in_user(hass)
     file_path = f"{hass.config.path(STORAGE_DIR)}/frontend.user_data_{active_user_id}"
     try:
