@@ -3,14 +3,14 @@
     "step": {
       "user": {
         "data": {
-          "vacuum_entity": "Støvsuger Entitets-ID",
+          "vacuum_entity": "Støvsuger Entitet ID",
           "vacuum_config_entry": "Støvsuger Konfigurasjonsdata",
           "vacuum_map": "Støvsuger Emne",
-          "vacuum_identifiers": "Støvsuger MQTT-ID",
+          "vacuum_identifiers": "Støvsuger MQTT-id",
           "unique_id": ""
         },
         "data_description": {
-          "vacuum_entity": "Støvsuger Entitets-ID"
+          "vacuum_entity": "Støvsuger Entitet ID"
         },
         "description": "Kamerainnstilling.",
         "title": "Valetudo Kameraoppsett"
@@ -21,60 +21,73 @@
     "step": {
       "init": {
         "title": "Valetudo Kameraalternativer",
-        "description": "Mulige endringer:",
+        "description": "### _Standardalternativer_:",
         "data": {
           "camera_config_action": "Handling"
+        }
+      },
+      "advanced": {
+        "title": "Valetudo Kameraalternativer",
+        "description": "### _Avanserte alternativer_:",
+        "data": {
+          "camera_config_action": "Handling"
+        }
+      },
+      "download_logs": {
+        "title": "Valetudo Kameraloggfil",
+        "description": "### _Kopier loggfiler_:",
+        "data": {
+          "camera_logs_progres": "Hva skal gjøres?"
         }
       },
       "image_opt": {
         "data": {
           "rotate_image": "Roter",
-          "margins": "Bildemarg",
-          "add_offset": "Legg til Forflytning",
+          "margins": "Bildemarginer.",
           "auto_zoom": "Aktiver automatisk zoom",
-          "zoom_lock_ratio": "Lås Aspektforhold.",
-          "aspect_ratio": "Bildeforhold.",
-          "enable_www_snapshots": "Eksporter PNG-øyeblikksbilder."
+          "zoom_lock_ratio": "Lås sideforhold.",
+          "aspect_ratio": "Bilde Sideforhold.",
+          "enable_www_snapshots": "Eksporter PNG-snapshots."
         },
         "data_description": {
           "rotate_image": "Grader 0, 90, 180, 270",
-          "margins": "Automatisk Trim Marg i piksler.",
-          "aspect_ratio": "Bildeforhold."
+          "margins": "Automatisk beskjæringsmarginer i piksler.",
+          "aspect_ratio": "Bilde Sideforhold."
         },
         "description": "Kamera Bildealternativer",
         "title": "Bildealternativer"
       },
       "image_offset": {
         "data": {
-          "offset_top": "Forflytning Topp",
-          "offset_bottom": "Forflytning Bunn",
-          "offset_left": "Forflytning Venstre",
-          "offset_right": "Forflytning Høyre"
+          "offset_top": "Toppoffset",
+          "offset_bottom": "Bunnen offset",
+          "offset_left": "Venstre offset",
+          "offset_right": "Høyre offset"
         },
         "data_description": {
-          "offset_top": "Topp forflytning rotasjon 0 i piksler.",
-          "offset_bottom": "Bunn forflytning rotasjon 0 i piksler.",
-          "offset_left": "Venstre forflytning rotasjon 0 i piksler.",
-          "offset_right": "Høyre forflytning rotasjon 0 i piksler."
+          "offset_top": "Toppoffset rotasjon 0 i piksler.",
+          "offset_bottom": "Bunnen offset rotasjon 0 i piksler.",
+          "offset_left": "Venstre offset rotasjon 0 i piksler.",
+          "offset_right": "Høyre offset rotasjon 0 i piksler."
         },
-        "description": "Kamera Bilde Forflytning",
-        "title": "Bilde Forflytning"
+        "description": "Kamera Bilde Offset",
+        "title": "Bildeoffset"
       },
       "status_text": {
         "data": {
-          "show_vac_status": "Vis Støvsugerstatus.",
+          "show_vac_status": "Vis støvsugerstatus.",
           "vac_status_font": "Fira Sans",
           "vac_status_size": "Tekststørrelse",
           "vac_status_position": "Tekstposisjon: Bunnen (AV)",
           "color_text": "[255, 255, 255]"
         },
         "data_description": {
-          "vac_status_font": "Tekstfont standard Fira Serif.",
+          "vac_status_font": "Tekstskrift standard Fira Serif.",
           "vac_status_size": "Tekststørrelse standard 50.",
           "color_text": "Støvsugerstatus Tekstfarge."
         },
         "description": "Bildealternativer",
-        "title": "Status Tekst Alternativer"
+        "title": "Status Tekstalternativer"
       },
       "base_colours": {
         "data": {
@@ -90,12 +103,12 @@
         },
         "data_description": {
           "color_charger": "Laderfarge.",
-          "color_move": "Bevegelsesfarge.",
+          "color_move": "Flyttefarge.",
           "color_wall": "Veggfarge.",
           "color_robot": "Robotfarge.",
-          "color_go_to": "Gå-til-farge.",
-          "color_no_go": "Ikke-gå-farge.",
-          "color_zone_clean": "Sone rensefarge.",
+          "color_go_to": "Gå til farge.",
+          "color_no_go": "Ikke gå farge.",
+          "color_zone_clean": "Sone rengjøre farge.",
           "color_background": "Bakgrunnsfarge."
         },
         "description": "Kamera Fargealternativer.",
@@ -105,16 +118,16 @@
         "data": {
           "alpha_charger": "Lader Alpha   ",
           "alpha_move": "Bevegelser Alpha     ",
-          "alpha_wall": "Vegg Alpha     ",
+          "alpha_wall": "Vegger Alpha     ",
           "alpha_robot": "Robot Alpha     ",
-          "alpha_go_to": "Gå til Område Alpha",
+          "alpha_go_to": "Gå Til Område Alpha",
           "alpha_no_go": "Ikke Gå Område Alpha",
-          "alpha_zone_clean": "Sone Rens Alpha",
+          "alpha_zone_clean": "Sone Rengjør Alpha",
           "alpha_background": "Bakgrunn Alpha",
           "alpha_text": "Tekst Alpha      "
         },
         "description": "Kameraalternativer. Alpha 1",
-        "title": "Alfa Kanal Basisfarger"
+        "title": "Alpha Kanal Basisfarger"
       },
       "rooms_colours_1": {
         "data": {
@@ -129,7 +142,7 @@
           "add_room_1_alpha": "Konfigurer Gjennomsiktighet:"
         },
         "data_description": {
-          "color_room_0": "Rom 1, gulvfarge.",
+          "color_room_0": "Rom 1",
           "color_room_1": "Rom 2",
           "color_room_2": "Rom 3",
           "color_room_3": "Rom 4",
@@ -168,7 +181,7 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "Rom 1, gulvfarge.",
+          "alpha_room_0": "Rom 1",
           "alpha_room_1": "Rom 2",
           "alpha_room_2": "Rom 3",
           "alpha_room_3": "Rom 4",
@@ -178,7 +191,7 @@
           "alpha_room_7": "Rom 8"
         },
         "description": "Kameraalternativer. Alpha 2",
-        "title": "Alfa Kanal Romfarger"
+        "title": "Alpha Kanal Rom Farger"
       },
       "alpha_3": {
         "data": {
@@ -192,7 +205,7 @@
           "alpha_room_15": "Rom 16"
         },
         "description": "Kameraalternativer. Alpha 3",
-        "title": "Alfa Kanal Romfarger"
+        "title": "Alpha Kanal Rom Farger"
       }
     }
   },
@@ -200,12 +213,24 @@
     "camera_config_action": {
       "options": {
         "opt_1": "Konfigurer Bilde",
+        "opt_2": "Konfigurer Generelle Farger",
+        "opt_3": "Farger Rom 1 til 8",
+        "opt_4": "Farger Rom 9 til 16",
+        "opt_5": "Avanserte Alternativer"
+      }
+    },
+    "camera_config_advanced": {
+      "options": {
+        "opt_1": "Konfigurer Bilde Offset",
         "opt_2": "Konfigurer Status Tekst",
-        "opt_3": "Konfigurer Generelle Farger",
-        "opt_4": "Farger Rom 1 til 8",
-        "opt_5": "Farger Rom 9 til 16",
-        "opt_6": "Kopier Kameralogger til www",
-        "opt_7": "Endre navn på fargealternativer"
+        "opt_3": "Kopier Kamera Logger til www",
+        "opt_4": "Gi nytt navn til Fargealternativer"
+      }
+    },
+    "camera_logs_progres": {
+      "options": {
+        "opt_1": "Kopier Logger til www",
+        "opt_2": "Fjern Logger fra www"
       }
     },
     "vacuum_status": {
@@ -213,12 +238,11 @@
         "connected": "Tilkoblet",
         "disconnected": "Frakoblet",
         "charging": "Lader",
-        "cleaning": "Renser",
-        "moving": "Beveger",
-        "docked": "Fortøyd",
+        "cleaning": "Rengjør",
+        "docked": "Dokket",
         "idle": "Inaktiv",
         "paused": "Pauset",
-        "returning": "Returnerer"
+        "returning": "Vender tilbake"
       }
     }
   },
@@ -232,12 +256,12 @@
       "description": "Slår på kameraet."
     },
     "snapshot": {
-      "name": "Ta øyeblikksbilde",
-      "description": "Tar et øyeblikksbilde fra et kamera.",
+      "name": "Ta snapshot",
+      "description": "Tar et snapshot fra et kamera.",
       "fields": {
         "filename": {
           "name": "Filnavn",
-          "description": "Mal for et filnavn. Variabel tilgjengelig er `entity_id`."
+          "description": "Mal for et filnavn. Variabelen tilgjengelig er `entity_id`."
         }
       }
     }

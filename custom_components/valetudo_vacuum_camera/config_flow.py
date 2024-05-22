@@ -105,15 +105,15 @@ from .const import (
     CONF_VACUUM_CONFIG_ENTRY_ID,
     CONF_VACUUM_ENTITY_ID,
     CONF_ZOOM_LOCK_RATIO,
-    DOMAIN,
     DEFAULT_VALUES,
-    RATIO_VALUES,
-    ROTATION_VALUES,
+    DOMAIN,
+    FONTS_AVAILABLE,
     IS_ALPHA,
     IS_ALPHA_R1,
     IS_ALPHA_R2,
+    RATIO_VALUES,
+    ROTATION_VALUES,
     TEXT_SIZE_VALUES,
-    FONTS_AVAILABLE
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -224,7 +224,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 options=RATIO_VALUES,
                 mode=SelectSelectorMode.DROPDOWN,
             )
-
             self.IMG_SCHEMA = vol.Schema(
                 {
                     vol.Required(
@@ -519,7 +518,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 {"label": "configure_general_colours", "value": "opt_2"},
                 {"label": "configure_rooms_colours_1", "value": "opt_3"},
                 {"label": "configure_rooms_colours_2", "value": "opt_4"},
-                {"label": "advanced_options", "value": "opt_5"}
+                {"label": "advanced_options", "value": "opt_5"},
             ],
             mode=SelectSelectorMode.LIST,
             translation_key="camera_config_action",
@@ -537,7 +536,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         """
         Start the options menu configuration.
         """
-        _LOGGER.info(f"{self.config_entry.unique_id}: Options Configuration Started.")
         errors = {}
         if user_input is not None:
             if "camera_config_advanced" in user_input:
@@ -547,7 +545,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 elif next_action == "opt_2":
                     return await self.async_step_status_text()
                 elif next_action == "opt_3":
-                    return await self.async_download_logs()
+                    return await self.async_step_download_logs()
                 elif next_action == "opt_4":
                     return await self.async_rename_translations()
                 elif next_action == "more options":
@@ -835,25 +833,70 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             description_placeholders=self.options,
         )
 
-    async def async_download_logs(self):
+    async def async_step_logs_move(self):
         """
-        Copy the logs from .storage to www config folder.
+        Move the logs from www config folder to .storage.
         """
-        user_input = None
         ha_dir = self.hass.config.path()
         ha_storage = self.hass.config.path(STORAGE_DIR)
         camera_id = self.unique_id.split("_")
         file_name = camera_id[0].lower() + ".zip"
         source_path = f"{ha_storage}/valetudo_camera/{file_name}"
         destination_path = f"{ha_dir}/www/{file_name}"
-        if user_input is None:
-            if os.path.exists(source_path):
-                _LOGGER.info(f"Logs {file_name} found in {source_path}")
-                shutil.copy(source_path, destination_path)
-            else:
-                _LOGGER.debug(f"Logs {file_name} not found in {source_path}")
-            return await self.async_step_init()
-        return self.async_show_form(step_id="download")
+        if os.path.exists(source_path):
+            _LOGGER.info(f"Logs found in {source_path}")
+            shutil.copy(source_path, destination_path)
+        else:
+            _LOGGER.debug(f"Logs not found in {source_path}")
+        self.options = self.bk_options
+        return await self.async_step_opt_save()
+
+    async def async_step_logs_remove(self):
+        """
+        Remove the logs from www config folder.
+        """
+        ha_dir = self.hass.config.path()
+        camera_id = self.unique_id.split("_")
+        file_name = camera_id[0].lower() + ".zip"
+        destination_path = f"{ha_dir}/www/{file_name}"
+        if os.path.exists(destination_path):
+            _LOGGER.info(f"Logs removed: {destination_path}")
+            os.remove(destination_path)
+        else:
+            _LOGGER.debug(f"Logs not found: {destination_path}")
+        self.options = self.bk_options
+        return await self.async_step_opt_save()
+
+    async def async_step_download_logs(self, user_input=None):
+        """
+        Copy the logs from .storage to www config folder.
+        """
+        errors = {}
+        if user_input is not None:
+            if "camera_logs_progres" in user_input:
+                next_action = user_input["camera_logs_progres"]
+                if next_action == "opt_1":
+                    return await self.async_step_logs_move()
+                elif next_action == "opt_2":
+                    return await self.async_step_logs_remove()
+                elif next_action == "no_action":
+                    ...  # do nothing
+                else:
+                    errors["base"] = "incorrect_options_action"
+        copy_options = SelectSelectorConfig(
+            options=[
+                {"label": "copy_the_logs_to_www", "value": "opt_1"},
+                {"label": "delete_logs_from_www", "value": "opt_2"},
+            ],
+            translation_key="camera_logs_progres",
+            mode=SelectSelectorMode.LIST,
+        )
+        data_schema = {"camera_logs_progres": SelectSelector(copy_options)}
+        return self.async_show_form(
+            step_id="download_logs",
+            data_schema=vol.Schema(data_schema),
+            errors=errors,
+        )
 
     async def async_rename_translations(self):
         """
@@ -871,7 +914,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 self.options = self.bk_options
             return await self.async_step_opt_save()
 
-        return self.async_show_form(step_id="download")
+        return self.async_show_form(step_id="rename_translations")
 
     async def async_step_opt_save(self):
         """

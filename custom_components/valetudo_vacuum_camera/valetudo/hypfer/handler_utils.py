@@ -237,8 +237,8 @@ class ImageUtils:
             self.img.offset_y = width - self.img.crop_img_size[0]
             self.img.offset_x = height - self.img.crop_img_size[1]
         elif rotation == 90 or rotation == 270:
-            self.img.offset_x = (width - self.img.crop_img_size[0])
-            self.img.offset_y = (height - self.img.crop_img_size[1])
+            self.img.offset_x = width - self.img.crop_img_size[0]
+            self.img.offset_y = height - self.img.crop_img_size[1]
 
         _LOGGER.debug(
             f"\n{self.file_name} Image Coordinates at 16:9: "

@@ -21,7 +21,7 @@ _LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 def get_device_info(
-        config_entry_id: str, hass: HomeAssistant
+    config_entry_id: str, hass: HomeAssistant
 ) -> tuple[str, DeviceEntry] | None:
     """
     Fetches the vacuum's entity ID and Device from the
@@ -46,7 +46,7 @@ def get_device_info(
 
 
 def get_entity_identifier_from_mqtt(
-        mqtt_identifier: str, hass: HomeAssistant
+    mqtt_identifier: str, hass: HomeAssistant
 ) -> str | None:
     """
     Fetches the vacuum's entity_registry id from the mqtt topic identifier.
@@ -191,8 +191,8 @@ async def async_find_last_logged_in_user(hass: HomeAssistant) -> Optional[str]:
     # Check if the data is not empty
     if isinstance(data, dict) and data:
         # Return the last entry
-        last_one = len(list(data['data']['refresh_tokens']))-1
-        last_user_id = (str(data['data']['refresh_tokens'][last_one]['user_id']))
+        last_one = len(list(data["data"]["refresh_tokens"])) - 1
+        last_user_id = str(data["data"]["refresh_tokens"][last_one]["user_id"])
         return last_user_id
 
 
@@ -275,7 +275,7 @@ async def async_load_room_data(storage_path: str, vacuum_id: str) -> dict:
 
 
 async def rename_room_description(
-        hass: HomeAssistant, storage_path: str, vacuum_id: str
+    hass: HomeAssistant, storage_path: str, vacuum_id: str
 ) -> None:
     """
     Add room names to the room descriptions in the translations.
