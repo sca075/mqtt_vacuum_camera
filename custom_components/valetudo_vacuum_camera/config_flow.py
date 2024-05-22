@@ -1,6 +1,6 @@
-"""config_flow 2024.05.4
-IMPORTANT: When adding new options to the camera
-it will be mandatory to update const.py update_options.
+"""config_flow 2024.06.0
+IMPORTANT: Maintain code when adding new options to the camera
+it will be mandatory to update const.py and common.py update_options.
 Format of the new constants must be CONST_NAME = "const_name" update also
 sting.json and en.json please.
 """
@@ -61,6 +61,7 @@ from .const import (
     ALPHA_ROOM_14,
     ALPHA_ROOM_15,
     ALPHA_TEXT,
+    ALPHA_VALUES,
     ALPHA_WALL,
     ALPHA_ZONE_CLEAN,
     ATTR_MARGINS,
@@ -105,10 +106,14 @@ from .const import (
     CONF_VACUUM_ENTITY_ID,
     CONF_ZOOM_LOCK_RATIO,
     DOMAIN,
+    DEFAULT_VALUES,
+    RATIO_VALUES,
+    ROTATION_VALUES,
     IS_ALPHA,
     IS_ALPHA_R1,
     IS_ALPHA_R2,
-    IS_OFFSET,
+    TEXT_SIZE_VALUES,
+    FONTS_AVAILABLE
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -158,75 +163,7 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             # set the unique_id in the entry configuration
             await self.async_set_unique_id(unique_id=unique_id)
             # set default options
-            self.options.update(
-                {
-                    "rotate_image": "0",
-                    "margins": "100",
-                    "aspect_ratio": "None",
-                    "offset_top": 0,
-                    "offset_bottom": 0,
-                    "offset_left": 0,
-                    "offset_right": 0,
-                    "auto_zoom": False,
-                    "zoom_lock_ratio": True,
-                    "show_vac_status": False,
-                    "vac_status_font": "custom_components/valetudo_vacuum_camera/utils/fonts/FiraSans.ttf",
-                    "vac_status_size": 50,
-                    "vac_status_position": True,
-                    "get_svg_file": False,
-                    "enable_www_snapshots": False,
-                    "color_charger": [255, 128, 0],
-                    "color_move": [238, 247, 255],
-                    "color_wall": [255, 255, 0],
-                    "color_robot": [255, 255, 204],
-                    "color_go_to": [0, 255, 0],
-                    "color_no_go": [255, 0, 0],
-                    "color_zone_clean": [255, 255, 255],
-                    "color_background": [0, 125, 255],
-                    "color_text": [255, 255, 255],
-                    "alpha_charger": 255.0,
-                    "alpha_move": 255.0,
-                    "alpha_wall": 255.0,
-                    "alpha_robot": 255.0,
-                    "alpha_go_to": 255.0,
-                    "alpha_no_go": 125.0,
-                    "alpha_zone_clean": 125.0,
-                    "alpha_background": 255.0,
-                    "alpha_text": 255.0,
-                    "color_room_0": [135, 206, 250],
-                    "color_room_1": [176, 226, 255],
-                    "color_room_2": [165, 105, 18],
-                    "color_room_3": [164, 211, 238],
-                    "color_room_4": [141, 182, 205],
-                    "color_room_5": [96, 123, 139],
-                    "color_room_6": [224, 255, 255],
-                    "color_room_7": [209, 238, 238],
-                    "color_room_8": [180, 205, 205],
-                    "color_room_9": [122, 139, 139],
-                    "color_room_10": [175, 238, 238],
-                    "color_room_11": [84, 153, 199],
-                    "color_room_12": [133, 193, 233],
-                    "color_room_13": [245, 176, 65],
-                    "color_room_14": [82, 190, 128],
-                    "color_room_15": [72, 201, 176],
-                    "alpha_room_0": 255.0,
-                    "alpha_room_1": 255.0,
-                    "alpha_room_2": 255.0,
-                    "alpha_room_3": 255.0,
-                    "alpha_room_4": 255.0,
-                    "alpha_room_5": 255.0,
-                    "alpha_room_6": 255.0,
-                    "alpha_room_7": 255.0,
-                    "alpha_room_8": 255.0,
-                    "alpha_room_9": 255.0,
-                    "alpha_room_10": 255.0,
-                    "alpha_room_11": 255.0,
-                    "alpha_room_12": 255.0,
-                    "alpha_room_13": 255.0,
-                    "alpha_room_14": 255.0,
-                    "alpha_room_15": 255.0,
-                }
-            )
+            self.options.update(DEFAULT_VALUES)
             # create the path for storing the snapshots.
             storage_path = f"{self.hass.config.path(STORAGE_DIR)}/valetudo_camera"
             if not os.path.exists(storage_path):
@@ -242,10 +179,7 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 self.data[CONF_VACUUM_CONFIG_ENTRY_ID], self.hass
             )
 
-            # Return the data and options to config_entry
-            # This to duplicate the data recreating the options
-            # in the options flow.
-
+            # Return the data and default options to config_entry
             return self.async_create_entry(
                 title=vacuum_device.name + " Camera",
                 data=self.data,
@@ -271,74 +205,23 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         self.options = {}
         self.bk_options = self.config_entry.options
         self._check_alpha = False
-        self._check_offset = False
         _LOGGER.debug(
             "Options edit in progress.. options before edit: %s", dict(self.bk_options)
         )
         options_values = list(self.config_entry.options.values())
         if len(options_values) > 0:
-            config_dict: NumberSelectorConfig = {
-                "min": 0.0,  # Minimum value
-                "max": 255.0,  # Maximum value
-                "step": 1.0,  # Step value
-            }
-            config_size: NumberSelectorConfig = {
-                "min": 5,  # Minimum value
-                "max": 51,  # Maximum value
-                "step": 1,  # Step value
-            }
+            config_dict: NumberSelectorConfig = ALPHA_VALUES
+            config_size: NumberSelectorConfig = TEXT_SIZE_VALUES
             font_selector = SelectSelectorConfig(
-                options=[
-                    {
-                        "label": "Fira Sans",
-                        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/FiraSans.ttf",
-                    },
-                    {
-                        "label": "Inter",
-                        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/Inter-VF.ttf",
-                    },
-                    {
-                        "label": "M Plus Regular",
-                        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/MPLUSRegular.ttf",
-                    },
-                    {
-                        "label": "Noto Sans CJKhk",
-                        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/NotoSansCJKhk-VF.ttf",
-                    },
-                    {
-                        "label": "Noto Kufi Arabic",
-                        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/NotoKufiArabic-VF.ttf",
-                    },
-                    {
-                        "label": "Noto Sans Khojki",
-                        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/NotoSansKhojki.ttf",
-                    },
-                    {
-                        "label": "Lato Regular",
-                        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/Lato-Regular.ttf",
-                    },
-                ],
+                options=FONTS_AVAILABLE,
                 mode=SelectSelectorMode.DROPDOWN,
             )
             rotation_selector = SelectSelectorConfig(
-                options=[
-                    {"label": "0", "value": "0"},
-                    {"label": "90", "value": "90"},
-                    {"label": "180", "value": "180"},
-                    {"label": "270", "value": "270"},
-                ],
+                options=ROTATION_VALUES,
                 mode=SelectSelectorMode.DROPDOWN,
             )
             aspec_ratio_selector = SelectSelectorConfig(
-                options=[
-                    {"label": "Original Ratio.", "value": "None"},
-                    {"label": "1:1", "value": "1, 1"},
-                    {"label": "2:1", "value": "2, 1"},
-                    {"label": "3:2", "value": "3, 2"},
-                    {"label": "5:4", "value": "5, 4"},
-                    {"label": "9:16", "value": "9, 16"},
-                    {"label": "16:9", "value": "16, 9"},
-                ],
+                options=RATIO_VALUES,
                 mode=SelectSelectorMode.DROPDOWN,
             )
 
@@ -978,7 +861,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         """
         hass = self.hass
         user_input = None
-        storage_path = self.hass.config.path(STORAGE_DIR, "valetudo_camera")
+        storage_path = hass.config.path(STORAGE_DIR, "valetudo_camera")
         _LOGGER.debug(f"Looking for Storage Path: {storage_path}")
         camera_id = self.unique_id.split("_")
         file_name = camera_id[0].lower()

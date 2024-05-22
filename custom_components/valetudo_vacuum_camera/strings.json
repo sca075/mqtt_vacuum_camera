@@ -9,7 +9,9 @@
                     "vacuum_identifiers": "Vacuum MQTT id",
                     "unique_id": ""
                 },
-                "data_description": {"vacuum_entity": "Vacuum Entity ID"},
+                "data_description": {
+                    "vacuum_entity": "Vacuum Entity ID"
+                },
                 "description": "Camera Setup.",
                 "title": "Valetudo Camera Setup"
             }
@@ -19,13 +21,17 @@
         "step": {
             "init": {
                 "title": "Valetudo Camera Options",
-                "description": "Standard Options:",
-                "data": {"camera_config_action": "Action"}
+                "description": "### _Standard Options_:",
+                "data": {
+                    "camera_config_action": "Action"
+                }
             },
             "advanced": {
                 "title": "Valetudo Camera Options",
-                "description": "Advanced Options:",
-                "data": {"camera_config_action": "Action"}
+                "description": "### _Advanced Options_:",
+                "data": {
+                    "camera_config_action": "Action"
+                }
             },
             "image_opt": {
                 "data": {
@@ -129,11 +135,11 @@
                     "add_room_1_alpha": "Configure Transparency:"
                 },
                 "data_description": {
-                    "color_room_0": "Room 1, floor color.",
-                    "color_room_1": "Room 2",
-                    "color_room_2": "Room 3",
-                    "color_room_3": "Room 4",
-                    "color_room_4": "Room 5",
+                    "color_room_0": "**RoomID 16 Entrance**",
+                    "color_room_1": "**RoomID 17 Living Room**",
+                    "color_room_2": "**RoomID 18 Kitchen**",
+                    "color_room_3": "**RoomID 19 Bathroom**",
+                    "color_room_4": "**RoomID 20 Bedroom**",
                     "color_room_5": "Room 6",
                     "color_room_6": "Room 7",
                     "color_room_7": "Room 8"
@@ -168,11 +174,11 @@
             },
             "alpha_2": {
                 "data": {
-                    "alpha_room_0": "Room 1, floor color.",
-                    "alpha_room_1": "Room 2",
-                    "alpha_room_2": "Room 3",
-                    "alpha_room_3": "Room 4",
-                    "alpha_room_4": "Room 5",
+                    "alpha_room_0": "RoomID 16 Entrance",
+                    "alpha_room_1": "RoomID 17 Living Room",
+                    "alpha_room_2": "RoomID 18 Kitchen",
+                    "alpha_room_3": "RoomID 19 Bathroom",
+                    "alpha_room_4": "RoomID 20 Bedroom",
                     "alpha_room_5": "Room 6",
                     "alpha_room_6": "Room 7",
                     "alpha_room_7": "Room 8"
