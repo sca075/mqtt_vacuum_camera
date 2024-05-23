@@ -1,7 +1,6 @@
 {
   "name": "Valetudo Vacuum Camera",
-  "zip_release": true,
+  "zip_release": false,
   "render_readme": true,
-  "homeassistant": "2024.4.4",
-  "filename": "valetudo_vacuum_camera.zip"
+  "homeassistant": "2024.4.4"
 }
