@@ -12,6 +12,9 @@ import zipfile
 from homeassistant.helpers.storage import STORAGE_DIR
 
 from custom_components.valetudo_vacuum_camera.types import Any, JsonType, PilPNG
+from custom_components.valetudo_vacuum_camera.utils.users_data import (
+    async_write_languages_json,
+)
 
 _LOGGER = logging.getLogger(__name__)  # Create a logger instance
 
@@ -30,28 +33,14 @@ class Snapshots:
         self.storage_path = f"{hass.config.path(STORAGE_DIR)}/valetudo_camera"
         if not os.path.exists(self.storage_path):
             self._storage_path = f"{self._directory_path}/{STORAGE_DIR}"
-        self.snapshot_img = f"{self.storage_path}/{self._shared.file_name}.png"
-
-    async def async_get_language(self) -> None:
-        """Get the language from the Home Assistant configuration and save it to a file."""
-        language_code = self._shared.user_language
-        language_data = {"language": {"selected": language_code}}
-        language_file_path = os.path.join(self.storage_path, "language.json")
-        if os.path.exists(language_file_path):
-            return None
-        try:
-            with open(language_file_path, "w") as language_file:
-                json.dump(language_data, language_file, indent=2)
-            _LOGGER.info(f"User selected language saved to {language_file_path}")
-        except Exception as e:
-            _LOGGER.warning(f"Failed to save user selected language: {e}")
+        self.file_name = self._shared.file_name
+        self.snapshot_img = f"{self.storage_path}/{self.file_name}.png"
+        self._first_run = True
 
     async def async_get_room_data(self) -> None:
-        """Get the Camera Rooms data and save it to a file."""
-        vacuum_id = self._shared.file_name
+        """Get the Vacuum Rooms data and save it to a file."""
+        vacuum_id = self.file_name
         data_file_path = os.path.join(self.storage_path, f"room_data_{vacuum_id}.json")
-        if os.path.exists(data_file_path):
-            return None
         un_formated_room_data = self._shared.map_rooms
         room_data = {}
         for room_id, room_info in un_formated_room_data.items():
@@ -63,7 +52,7 @@ class Snapshots:
             try:
                 with open(data_file_path, "w") as language_file:
                     json.dump(room_data, language_file, indent=2)
-                _LOGGER.info(f"Rooms data of {vacuum_id} saved to {data_file_path}")
+                _LOGGER.info(f"\nRooms data of {vacuum_id} saved to {data_file_path}")
             except Exception as e:
                 _LOGGER.warning(f"Failed to save rooms data of {vacuum_id}: {e}")
 
@@ -111,9 +100,10 @@ class Snapshots:
             log_file_name = os.path.join(self.storage_path, f"{file_name}.log")
             with open(log_file_name, "w") as log_file:
                 log_file.write(log_data)
-
-            await self.async_get_language()
-            await self.async_get_room_data()
+            if self._first_run:
+                self._first_run = False
+                await async_write_languages_json(self.hass)
+                await self.async_get_room_data()
 
         except Exception as e:
             _LOGGER.warning("Snapshot Error while saving data: %s", str(e))
@@ -176,26 +166,26 @@ class Snapshots:
             ):
                 # Save mqtt raw data file.
                 if self._mqtt is not None:
-                    await self._mqtt.save_payload(self._shared.file_name)
+                    await self._mqtt.save_payload(self.file_name)
                 # Write the JSON and data to the file.
-                await self.async_data_snapshot(self._shared.file_name, json_data)
+                await self.async_data_snapshot(self.file_name, json_data)
             # Save image ready for snapshot.
             image_data.save(self.snapshot_img)  # Save the image in .storage
             if self._shared.enable_snapshots:
                 if os.path.isfile(self.snapshot_img):
                     shutil.copy(
-                        f"{self.storage_path}/{self._shared.file_name}.png",
-                        f"{self._directory_path}/www/snapshot_{self._shared.file_name}.png",
+                        f"{self.storage_path}/{self.file_name}.png",
+                        f"{self._directory_path}/www/snapshot_{self.file_name}.png",
                     )
-                _LOGGER.info(f"{self._shared.file_name}: Camera Snapshot saved on WWW!")
         except IOError:
             self._shared.snapshot_take = None
             _LOGGER.warning(
-                f"Error Saving {self._shared.file_name}: Snapshot, will not be available till restart."
+                f"Error Saving {self.file_name}: Snapshot, will not be available till restart."
             )
         else:
             _LOGGER.debug(
-                f"{self._shared.file_name}: Snapshot acquired during {self._shared.vacuum_state} Vacuum State."
+                f"\n{self.file_name}: Snapshot acquire and saved on WWW during "
+                f"{self._shared.vacuum_state} Vacuum State."
             )
 
     def process_snapshot(self, json_data: Any, image_data: PilPNG):
@@ -217,7 +207,7 @@ class Snapshots:
         loop = get_event_loop()
 
         with concurrent.futures.ThreadPoolExecutor(
-            max_workers=1, thread_name_prefix=f"{self._shared.file_name}_snapshot"
+            max_workers=1, thread_name_prefix=f"{self.file_name}_snapshot"
         ) as executor:
             tasks = [
                 loop.run_in_executor(

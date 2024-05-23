@@ -30,11 +30,10 @@ from homeassistant.helpers.selector import (
 from homeassistant.helpers.storage import STORAGE_DIR
 import voluptuous as vol
 
-from .common import (  # get_entity_identifier_from_mqtt,
+from .common import (
     get_device_info,
     get_vacuum_mqtt_topic,
     get_vacuum_unique_id_from_mqtt_topic,
-    rename_room_description,
     update_options,
 )
 from .const import (
@@ -115,6 +114,7 @@ from .const import (
     ROTATION_VALUES,
     TEXT_SIZE_VALUES,
 )
+from .utils.users_data import async_rename_room_description
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -910,7 +910,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         file_name = camera_id[0].lower()
         if (user_input is None) and self.bk_options:
             if self.hass:
-                await rename_room_description(hass, storage_path, file_name)
+                await async_rename_room_description(hass, storage_path, file_name)
                 self.options = self.bk_options
             return await self.async_step_opt_save()
 

@@ -32,7 +32,7 @@ import voluptuous as vol
 
 from .camera_processing import CameraProcessor
 from .camera_shared import CameraShared
-from .common import async_get_active_user_id, get_vacuum_unique_id_from_mqtt_topic
+from .common import get_vacuum_unique_id_from_mqtt_topic
 from .const import (
     ATTR_MARGINS,
     ATTR_ROTATE,
@@ -57,6 +57,7 @@ from .const import (
 )
 from .snapshots.snapshot import Snapshots
 from .utils.colors_man import ColorsManagment
+from .utils.users_data import async_get_active_user_language
 from .valetudo.MQTT.connector import ValetudoConnector
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
@@ -337,8 +338,6 @@ class ValetudoCamera(Camera):
 
     async def async_update(self):
         """Camera Frame Update."""
-        # Get the active user language
-        self._shared.user_language = await async_get_active_user_id(self.hass)
         # check and update the vacuum reported state
         if not self._mqtt:
             _LOGGER.debug(f"{self._file_name}: No MQTT data available.")
@@ -387,6 +386,9 @@ class ValetudoCamera(Camera):
                 _LOGGER.info(
                     f"{self._file_name}: Camera image data update available: {process_data}"
                 )
+            else:
+                # Get the active user language
+                self._shared.user_language = await async_get_active_user_language(self.hass)
             try:
                 parsed_json = await self._mqtt.update_data(self._shared.image_grab)
                 if not parsed_json:
