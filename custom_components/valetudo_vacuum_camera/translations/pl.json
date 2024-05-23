@@ -3,78 +3,91 @@
     "step": {
       "user": {
         "data": {
-          "vacuum_entity": "ID Encji Odkurzacza",
-          "vacuum_config_entry": "Dane Konfiguracji Odkurzacza",
-          "vacuum_map": "Temat Odkurzacza",
-          "vacuum_identifiers": "ID MQTT Odkurzacza",
+          "vacuum_entity": "Identyfikator encji odkurzacza",
+          "vacuum_config_entry": "Dane konfiguracyjne odkurzacza",
+          "vacuum_map": "Temat odkurzacza",
+          "vacuum_identifiers": "Identyfikator MQTT odkurzacza",
           "unique_id": ""
         },
         "data_description": {
-          "vacuum_entity": "ID Encji Odkurzacza"
+          "vacuum_entity": "Identyfikator encji odkurzacza"
         },
-        "description": "Konfiguracja Kamery.",
-        "title": "Ustawienia Kamery Valetudo"
+        "description": "Konfiguracja kamery.",
+        "title": "Konfiguracja kamery Valetudo"
       }
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Opcje Kamery Valetudo",
-        "description": "Możliwe zmiany:",
+        "title": "Opcje kamery Valetudo",
+        "description": "### _Standardowe opcje_:",
         "data": {
-          "camera_config_action": "Akcja"
+          "camera_config_action": "Działanie"
+        }
+      },
+      "advanced": {
+        "title": "Opcje kamery Valetudo",
+        "description": "### _Zaawansowane opcje_:",
+        "data": {
+          "camera_config_action": "Działanie"
+        }
+      },
+      "download_logs": {
+        "title": "Plik dziennika kamery Valetudo",
+        "description": "### _Kopiowanie plików dziennika_:",
+        "data": {
+          "camera_logs_progres": "Co zrobić?"
         }
       },
       "image_opt": {
         "data": {
           "rotate_image": "Obróć",
-          "margins": "Marginesy Obrazu",
-          "add_offset": "Dodaj Przesunięcie",
-          "auto_zoom": "Włącz Automatyczne Powiększanie",
-          "zoom_lock_ratio": "Zablokuj Proporcje.",
-          "aspect_ratio": "Proporcje Obrazu.",
+          "margins": "Marginesy obrazu.",
+          "auto_zoom": "Włącz automatyczne przybliżanie",
+          "zoom_lock_ratio": "Zablokuj proporcje.",
+          "aspect_ratio": "Proporcje obrazu.",
           "enable_www_snapshots": "Eksportuj migawki PNG."
         },
         "data_description": {
           "rotate_image": "Stopnie 0, 90, 180, 270",
-          "margins": "Automatyczne Przycinanie Marginesów w pikselach.",
-          "aspect_ratio": "Proporcje Obrazu."
+          "margins": "Automatyczne przycinanie marginesów w pikselach.",
+          "aspect_ratio": "Proporcje obrazu."
         },
-        "description": "Opcje Obrazu Kamery",
-        "title": "Opcje Obrazu"
+        "description": "Opcje obrazu kamery",
+        "title": "Opcje obrazu"
       },
       "image_offset": {
         "data": {
-          "offset_top": "Przesunięcie Góra",
-          "offset_bottom": "Przesunięcie Dół",
-          "offset_left": "Przesunięcie Lewo",
-          "offset_right": "Przesunięcie Prawo"
+          "offset_top": "Górny offset",
+          "offset_bottom": "Dolny offset",
+          "offset_left": "Lewy offset",
+          "offset_right": "Prawy offset"
         },
         "data_description": {
-          "offset_top": "Przesunięcie Góra obrót 0 w pikselach.",
-          "offset_bottom": "Przesunięcie Dół obrót 0 w pikselach.",
-          "offset_left": "Przesunięcie Lewo obrót 0 w pikselach.",
-          "offset_right": "Przesunięcie Prawo obrót 0 w pikselach."
+          "offset_top": "Górny offset obrót 0 w pikselach.",
+          "offset_bottom": "Dolny offset obrót 0 w pikselach.",
+          "offset_left": "Lewy offset obrót 0 w pikselach.",
+          "offset_right": "Prawy offset obrót 0 w pikselach."
         },
-        "description": "Przesunięcie Obrazu Kamery",
-        "title": "Przesunięcie Obrazu"
+        "description": "Przesunięcie obrazu kamery",
+        "title": "Przesunięcie obrazu"
       },
       "status_text": {
         "data": {
-          "show_vac_status": "Pokaż Status Odkurzacza.",
+          "show_vac_status": "Pokaż status odkurzacza.",
           "vac_status_font": "Fira Sans",
-          "vac_status_size": "Rozmiar Tekstu",
-          "vac_status_position": "Pozycja Tekstu: Dół (WYŁ)",
+          "vac_status_size": "Rozmiar tekstu",
+          "vac_status_position": "Pozycja tekstu: Na dole (WYŁ)",
           "color_text": "[255, 255, 255]"
         },
         "data_description": {
-          "vac_status_font": "Czcionka Tekstu domyślnie Fira Serif.",
+          "vac_status_font": "Czcionka tekstu domyślnie Fira Serif.",
           "vac_status_size": "Domyślny rozmiar tekstu 50.",
-          "color_text": "Kolor Tekstu Statusu Odkurzacza."
+          "color_text": "Kolor tekstu statusu odkurzacza."
         },
-        "description": "Opcje Obrazu",
-        "title": "Opcje Tekstu Statusu"
+        "description": "Opcje obrazu",
+        "title": "Opcje tekstu statusu"
       },
       "base_colours": {
         "data": {
@@ -89,32 +102,32 @@
           "add_base_alpha": "Skonfiguruj Przezroczystość:"
         },
         "data_description": {
-          "color_charger": "Kolor Ładowarki.",
-          "color_move": "Kolor Ruchu.",
-          "color_wall": "Kolor Ściany.",
-          "color_robot": "Kolor Robota.",
-          "color_go_to": "Kolor Przejdź do.",
-          "color_no_go": "Kolor Zakazu.",
-          "color_zone_clean": "Kolor Czyszczonej Strefy.",
-          "color_background": "Kolor Tła."
+          "color_charger": "Kolor ładowarki.",
+          "color_move": "Kolor ruchu.",
+          "color_wall": "Kolor ściany.",
+          "color_robot": "Kolor robota.",
+          "color_go_to": "Kolor przechodzenia do.",
+          "color_no_go": "Kolor zakazu.",
+          "color_zone_clean": "Kolor czyszczenia strefy.",
+          "color_background": "Kolor tła."
         },
-        "description": "Opcje Kolorów Kamery.",
-        "title": "Kolory Podstawowe Konfiguracja"
+        "description": "Opcje kolorów kamery.",
+        "title": "Ustawienia Kolorów Podstawowych"
       },
       "alpha_1": {
         "data": {
-          "alpha_charger": "Alfa Ładowarka   ",
-          "alpha_move": "Alfa Ruchy     ",
-          "alpha_wall": "Alfa Ściany     ",
-          "alpha_robot": "Alfa Robot     ",
-          "alpha_go_to": "Przejdź Do Alfa",
-          "alpha_no_go": "Zakaz Przejdź Alfa",
-          "alpha_zone_clean": "Czyszczona Strefa Alfa",
-          "alpha_background": "Tło Alfa",
-          "alpha_text": "Tekst Alfa      "
+          "alpha_charger": "Ładowarka Alpha   ",
+          "alpha_move": "Ruchy Alpha     ",
+          "alpha_wall": "Ściany Alpha     ",
+          "alpha_robot": "Robot Alpha     ",
+          "alpha_go_to": "Przejdź do Obszaru Alpha",
+          "alpha_no_go": "Obszar Bez Przejścia Alpha",
+          "alpha_zone_clean": "Strefa Czyszczenia Alpha",
+          "alpha_background": "Tło Alpha",
+          "alpha_text": "Tekst Alpha      "
         },
-        "description": "Opcje Kamery. Alfa 1",
-        "title": "Kanał Alfa Kolory Podstawowe"
+        "description": "Opcje kamery. Alpha 1",
+        "title": "Kolory Alfa Kanału Podstawowe"
       },
       "rooms_colours_1": {
         "data": {
@@ -129,7 +142,7 @@
           "add_room_1_alpha": "Skonfiguruj Przezroczystość:"
         },
         "data_description": {
-          "color_room_0": "Pokój 1, kolor podłogi.",
+          "color_room_0": "Pokój 1",
           "color_room_1": "Pokój 2",
           "color_room_2": "Pokój 3",
           "color_room_3": "Pokój 4",
@@ -138,7 +151,7 @@
           "color_room_6": "Pokój 7",
           "color_room_7": "Pokój 8"
         },
-        "description": "Opcje Kolorów Kamery.",
+        "description": "Opcje kolorów kamery.",
         "title": "Pokoje 1 do 8 Kolory"
       },
       "rooms_colours_2": {
@@ -163,12 +176,12 @@
           "color_room_14": "Pokój 15",
           "color_room_15": "Pokój 16"
         },
-        "description": "Opcje Kolorów Kamery.",
+        "description": "Opcje kolorów kamery.",
         "title": "Pokoje 9 do 15 Kolory"
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "Pokój 1, kolor podłogi.",
+          "alpha_room_0": "Pokój 1",
           "alpha_room_1": "Pokój 2",
           "alpha_room_2": "Pokój 3",
           "alpha_room_3": "Pokój 4",
@@ -177,7 +190,7 @@
           "alpha_room_6": "Pokój 7",
           "alpha_room_7": "Pokój 8"
         },
-        "description": "Opcje Kamery. Alfa 2",
+        "description": "Opcje kamery. Alfa 2",
         "title": "Kanał Alfa Kolory Pokojów"
       },
       "alpha_3": {
@@ -191,7 +204,7 @@
           "alpha_room_14": "Pokój 15",
           "alpha_room_15": "Pokój 16"
         },
-        "description": "Opcje Kamery. Alfa 3",
+        "description": "Opcje kamery. Alfa 3",
         "title": "Kanał Alfa Kolory Pokojów"
       }
     }
@@ -199,22 +212,33 @@
   "selector": {
     "camera_config_action": {
       "options": {
-        "opt_1": "Skonfiguruj Obraz",
+        "opt_1": "Skonfiguruj obraz",
+        "opt_2": "Skonfiguruj Ogólne Kolory",
+        "opt_3": "Kolory Pokoje 1 do 8",
+        "opt_4": "Kolory Pokoje 9 do 16",
+        "opt_5": "Zaawansowane Opcje"
+      }
+    },
+    "camera_config_advanced": {
+      "options": {
+        "opt_1": "Skonfiguruj Przesunięcie Obrazu",
         "opt_2": "Skonfiguruj Tekst Statusu",
-        "opt_3": "Skonfiguruj Ogólne Kolory",
-        "opt_4": "Kolory Pokoi 1 do 8",
-        "opt_5": "Kolory Pokoi 9 do 16",
-        "opt_6": "Skopiuj Dzienniki Kamery do www",
-        "opt_7": "Zmień nazwę opcji kolorów"
+        "opt_3": "Kopiuj Dzienniki Kamery do www",
+        "opt_4": "Zmień Nazwy Opcji Kolorów"
+      }
+    },
+    "camera_logs_progres": {
+      "options": {
+        "opt_1": "Kopiuj Dzienniki do www",
+        "opt_2": "Usuń Dzienniki z www"
       }
     },
     "vacuum_status": {
       "options": {
         "connected": "Połączony",
-        "disconnected": "Rozłączony",
+        "disconnected": "Odłączony",
         "charging": "Ładowanie",
         "cleaning": "Czyszczenie",
-        "moving": "Ruchomy",
         "docked": "Zacumowany",
         "idle": "Bezczynny",
         "paused": "Wstrzymany",

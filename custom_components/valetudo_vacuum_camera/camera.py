@@ -32,7 +32,7 @@ import voluptuous as vol
 
 from .camera_processing import CameraProcessor
 from .camera_shared import CameraShared
-from .common import async_get_active_user_id, get_vacuum_unique_id_from_mqtt_topic
+from .common import get_vacuum_unique_id_from_mqtt_topic
 from .const import (
     ATTR_MARGINS,
     ATTR_ROTATE,
@@ -57,6 +57,7 @@ from .const import (
 )
 from .snapshots.snapshot import Snapshots
 from .utils.colors_man import ColorsManagment
+from .utils.users_data import async_get_active_user_language
 from .valetudo.MQTT.connector import ValetudoConnector
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
@@ -123,13 +124,13 @@ class ValetudoCamera(Camera):
             self._mqtt_listen_topic = str(self._mqtt_listen_topic)
             self._shared.file_name = self._mqtt_listen_topic.split("/")[1].lower()
             self._file_name = self._shared.file_name
-            _LOGGER.debug(f"\nCamera {self._file_name} Starting up..")
-            _LOGGER.info(f"\nSystem Release: {platform.node()}, {platform.release()}")
-            _LOGGER.info(f"\nSystem Version: {platform.version()}")
-            _LOGGER.info(f"\nSystem Machine: {platform.machine()}")
-            _LOGGER.info(f"\nPython Version: {platform.python_version()}")
+            _LOGGER.debug(f"Camera {self._file_name} Starting up..")
+            _LOGGER.info(f"System Release: {platform.node()}, {platform.release()}")
+            _LOGGER.info(f"System Version: {platform.version()}")
+            _LOGGER.info(f"System Machine: {platform.machine()}")
+            _LOGGER.info(f"Python Version: {platform.python_version()}")
             _LOGGER.info(
-                f"\nMemory Available: "
+                f"Memory Available: "
                 f"{round((ProcInsp().psutil.virtual_memory().available / (1024 * 1024)), 1)}"
                 f" and In Use: {round((ProcInsp().psutil.virtual_memory().used / (1024 * 1024)), 1)}"
             )
@@ -302,7 +303,7 @@ class ValetudoCamera(Camera):
         an empty image if there are no data.
         """
         if self._last_image:
-            _LOGGER.debug(f"\n{self._file_name}: Returning Last image.")
+            _LOGGER.debug(f"{self._file_name}: Returning Last image.")
             return self._last_image
         elif self._last_image is None:
             # Check if the snapshot file exists
@@ -310,12 +311,12 @@ class ValetudoCamera(Camera):
             if os.path.isfile(self.snapshot_img):
                 # Load the snapshot image
                 self._last_image = Image.open(self.snapshot_img)
-                _LOGGER.debug(f"\n{self._file_name}: Returning Snapshot image.")
+                _LOGGER.debug(f"{self._file_name}: Returning Snapshot image.")
                 return self._last_image
             else:
                 # Create an empty image with a gray background
                 empty_img = Image.new("RGB", (800, 600), "gray")
-                _LOGGER.info(f"\n{self._file_name}: Returning Empty image.")
+                _LOGGER.info(f"{self._file_name}: Returning Empty image.")
                 return empty_img
 
     async def take_snapshot(self, json_data: Any, image_data: Image.Image) -> None:
@@ -337,11 +338,9 @@ class ValetudoCamera(Camera):
 
     async def async_update(self):
         """Camera Frame Update."""
-        # Get the active user language
-        self._shared.user_language = await async_get_active_user_id(self.hass)
         # check and update the vacuum reported state
         if not self._mqtt:
-            _LOGGER.debug(f"\n{self._file_name}: No MQTT data available.")
+            _LOGGER.debug(f"{self._file_name}: No MQTT data available.")
             # return last/empty image if no MQTT or CPU usage too high.
             pil_img = self.empty_if_no_data()
             self.Image = await self.hass.async_create_task(
@@ -385,8 +384,11 @@ class ValetudoCamera(Camera):
                 # do not take the automatic snapshot.
                 self._shared.snapshot_take = False
                 _LOGGER.info(
-                    f"\n{self._file_name}: Camera image data update available: {process_data}"
+                    f"{self._file_name}: Camera image data update available: {process_data}"
                 )
+            else:
+                # Get the active user language
+                self._shared.user_language = await async_get_active_user_language(self.hass)
             try:
                 parsed_json = await self._mqtt.update_data(self._shared.image_grab)
                 if not parsed_json:
@@ -445,17 +447,17 @@ class ValetudoCamera(Camera):
                                 await self.take_snapshot(parsed_json, pil_img)
                     # clean up
                     del pil_img
-                    _LOGGER.debug(f"\n{self._file_name}: Image update complete")
+                    _LOGGER.debug(f"{self._file_name}: Image update complete")
                     processing_time = round((time.perf_counter() - start_time), 3)
                     # Adjust the frame interval to the processing time.
                     self._attr_frame_interval = max(0.1, processing_time)
                     _LOGGER.debug(
-                        f"\n{self._file_name}: Frame {self._shared.frame_number} interval"
+                        f"{self._file_name}: Frame {self._shared.frame_number} interval"
                         f" is {self._attr_frame_interval}"
                     )
                 else:
                     _LOGGER.info(
-                        f"\n{self._file_name}: Image not processed. Returning not updated image."
+                        f"{self._file_name}: Image not processed. Returning not updated image."
                     )
                     self._attr_frame_interval = 0.1
                 self.camera_image(self._image_w, self._image_h)
@@ -472,10 +474,10 @@ class ValetudoCamera(Camera):
                     ((proc.cpu_percent() / int(ProcInsp().psutil.cpu_count())) / 10), 1
                 )
                 _LOGGER.debug(
-                    f"\n{self._file_name} System CPU usage stat: {self._cpu_percent}%"
+                    f"{self._file_name} System CPU usage stat: {self._cpu_percent}%"
                 )
                 _LOGGER.debug(
-                    f"\n{self._file_name} Camera Memory usage in GB: "
+                    f"{self._file_name} Camera Memory usage in GB: "
                     f"{round(proc.memory_info()[0] / 2. ** 30, 2)}, "
                     f"{memory_percent}% of Total."
                 )

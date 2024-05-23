@@ -3,14 +3,14 @@
     "step": {
       "user": {
         "data": {
-          "vacuum_entity": "Identifikátor vysavače",
+          "vacuum_entity": "ID zařízení vysavače",
           "vacuum_config_entry": "Konfigurační data vysavače",
           "vacuum_map": "Téma vysavače",
-          "vacuum_identifiers": "MQTT identifikátor vysavače",
+          "vacuum_identifiers": "ID MQTT vysavače",
           "unique_id": ""
         },
         "data_description": {
-          "vacuum_entity": "Identifikátor vysavače"
+          "vacuum_entity": "ID zařízení vysavače"
         },
         "description": "Nastavení kamery.",
         "title": "Nastavení kamery Valetudo"
@@ -21,55 +21,68 @@
     "step": {
       "init": {
         "title": "Možnosti kamery Valetudo",
-        "description": "Možné změny:",
+        "description": "### _Standardní možnosti_:",
         "data": {
           "camera_config_action": "Akce"
+        }
+      },
+      "advanced": {
+        "title": "Možnosti kamery Valetudo",
+        "description": "### _Pokročilé možnosti_:",
+        "data": {
+          "camera_config_action": "Akce"
+        }
+      },
+      "download_logs": {
+        "title": "Soubor protokolu kamery Valetudo",
+        "description": "### _Kopírování souboru protokolu_:",
+        "data": {
+          "camera_logs_progres": "Co chcete udělat?"
         }
       },
       "image_opt": {
         "data": {
           "rotate_image": "Otočit",
           "margins": "Okraje obrázku.",
-          "add_offset": "Přidat kompenzaci.",
-          "auto_zoom": "Povolit automatické zvětšení",
+          "auto_zoom": "Povolit automatické přiblížení",
           "zoom_lock_ratio": "Uzamknout poměr stran.",
           "aspect_ratio": "Poměr stran obrázku.",
           "enable_www_snapshots": "Exportovat snímky PNG."
         },
         "data_description": {
-          "rotate_image": "Úhel 0, 90, 180, 270 stupňů",
-          "margins": "Automatické ořezání okrajů v pixelech.",
+          "rotate_image": "Stupeň 0, 90, 180, 270",
+          "margins": "Automaticky oříznout okraje v pixelech.",
           "aspect_ratio": "Poměr stran obrázku."
         },
-        "description": "Možnosti obrazu kamery",
-        "title": "Možnosti obrazu"
+        "description": "Možnosti obrázku kamery",
+        "title": "Možnosti obrázku"
       },
       "image_offset": {
         "data": {
-          "offset_top": "Kompenzace nahoře",
-          "offset_bottom": "Kompenzace dole",
-          "offset_left": "Kompenzace vlevo",
-          "offset_right": "Kompenzace vpravo"
+          "offset_top": "Horní posun",
+          "offset_bottom": "Dolní posun",
+          "offset_left": "Levá posun",
+          "offset_right": "Pravá posun"
         },
         "data_description": {
-          "offset_top": "Kompenzace nahoře při rotaci 0 v pixelech.",
-          "offset_bottom": "Kompenzace dole při rotaci 0 v pixelech.",
-          "offset_left": "Kompenzace vlevo při rotaci 0 v pixelech.",
-          "offset_right": "Kompenzace vpravo při rotaci 0 v pixelech."
+          "offset_top": "Horní posun při otočení o 0 stupňů v pixelech.",
+          "offset_bottom": "Dolní posun při otočení o 0 stupňů v pixelech.",
+          "offset_left": "Levá posun při otočení o 0 stupňů v pixelech.",
+          "offset_right": "Pravá posun při otočení o 0 stupňů v pixelech."
         },
-        "description": "Kompenzace obrázku kamery",
-        "title": "Kompenzace obrázku"
+        "description": "Posunutí obrázku kamery",
+        "title": "Posunutí obrázku"
       },
       "status_text": {
         "data": {
           "show_vac_status": "Zobrazit stav vysavače.",
           "vac_status_font": "Fira Sans",
           "vac_status_size": "Velikost textu",
-          "vac_status_position": "Pozice textu: Dole(VYP)",
+          "vac_status_position": "Pozice textu: Spodní (OFF)",
           "color_text": "[255, 255, 255]"
         },
         "data_description": {
-          "vac_status_font": "Výchozí písmo Fira Serif.",
+          "vac_status_font": "Výchozí písmo textu Fira Serif.",
           "vac_status_size": "Výchozí velikost textu 50.",
           "color_text": "Barva textu stavu vysavače."
         },
@@ -86,15 +99,15 @@
           "color_no_go": "[255, 0, 0]",
           "color_zone_clean": "[255, 255, 255]",
           "color_background": "[0, 125, 255]",
-          "add_base_alpha": "Konfigurovat průhlednost:"
+          "add_base_alpha": "Nastavit průhlednost:"
         },
         "data_description": {
-          "color_charger": "Barva nabíječe.",
+          "color_charger": "Barva nabíječky.",
           "color_move": "Barva pohybu.",
           "color_wall": "Barva zdi.",
           "color_robot": "Barva robota.",
-          "color_go_to": "Barva přejít na.",
-          "color_no_go": "Barva neprocházející.",
+          "color_go_to": "Barva jít na.",
+          "color_no_go": "Barva nechodit na.",
           "color_zone_clean": "Barva zóny čištění.",
           "color_background": "Barva pozadí."
         },
@@ -103,18 +116,18 @@
       },
       "alpha_1": {
         "data": {
-          "alpha_charger": "Průhlednost nabíječe   ",
-          "alpha_move": "Průhlednost pohybu     ",
-          "alpha_wall": "Průhlednost zdí     ",
-          "alpha_robot": "Průhlednost robota     ",
-          "alpha_go_to": "Průhlednost oblasti přechodu",
-          "alpha_no_go": "Průhlednost oblasti neprocházející",
-          "alpha_zone_clean": "Průhlednost oblasti čištění",
+          "alpha_charger": "Průhlednost nabíječky",
+          "alpha_move": "Průhlednost pohybu",
+          "alpha_wall": "Průhlednost zdi",
+          "alpha_robot": "Průhlednost robota",
+          "alpha_go_to": "Průhlednost jít na",
+          "alpha_no_go": "Průhlednost nechodit na",
+          "alpha_zone_clean": "Průhlednost zóny čištění",
           "alpha_background": "Průhlednost pozadí",
-          "alpha_text": "Průhlednost textu      "
+          "alpha_text": "Průhlednost textu"
         },
         "description": "Možnosti kamery. Alfa 1",
-        "title": "Alfa kanál základních barev"
+        "title": "Průhlednost základních barev"
       },
       "rooms_colours_1": {
         "data": {
@@ -126,20 +139,20 @@
           "color_room_5": "[96, 123, 139]",
           "color_room_6": "[224, 255, 255]",
           "color_room_7": "[209, 238, 238]",
-          "add_room_1_alpha": "Konfigurovat průhlednost:"
+          "add_room_1_alpha": "Nastavit průhlednost:"
         },
         "data_description": {
-          "color_room_0": "Barva podlahy 1.",
-          "color_room_1": "Místnost 2",
-          "color_room_2": "Místnost 3",
-          "color_room_3": "Místnost 4",
-          "color_room_4": "Místnost 5",
-          "color_room_5": "Místnost 6",
-          "color_room_6": "Místnost 7",
-          "color_room_7": "Místnost 8"
+          "color_room_0": "Pokoj 1",
+          "color_room_1": "Pokoj 2",
+          "color_room_2": "Pokoj 3",
+          "color_room_3": "Pokoj 4",
+          "color_room_4": "Pokoj 5",
+          "color_room_5": "Pokoj 6",
+          "color_room_6": "Pokoj 7",
+          "color_room_7": "Pokoj 8"
         },
         "description": "Možnosti barev kamery.",
-        "title": "Barevné místnosti od 1 do 8"
+        "title": "Barvy pokojů od 1 do 8"
       },
       "rooms_colours_2": {
         "data": {
@@ -151,48 +164,48 @@
           "color_room_13": "[245, 176, 65]",
           "color_room_14": "[82, 190, 128]",
           "color_room_15": "[72, 201, 176]",
-          "add_room_2_alpha": "Konfigurovat průhlednost:"
+          "add_room_2_alpha": "Nastavit průhlednost:"
         },
         "data_description": {
-          "color_room_8": "Místnost 9",
-          "color_room_9": "Místnost 10",
-          "color_room_10": "Místnost 11",
-          "color_room_11": "Místnost 12",
-          "color_room_12": "Místnost 13",
-          "color_room_13": "Místnost 14",
-          "color_room_14": "Místnost 15",
-          "color_room_15": "Místnost 16"
+          "color_room_8": "Pokoj 9",
+          "color_room_9": "Pokoj 10",
+          "color_room_10": "Pokoj 11",
+          "color_room_11": "Pokoj 12",
+          "color_room_12": "Pokoj 13",
+          "color_room_13": "Pokoj 14",
+          "color_room_14": "Pokoj 15",
+          "color_room_15": "Pokoj 16"
         },
         "description": "Možnosti barev kamery.",
-        "title": "Barevné místnosti od 9 do 15"
+        "title": "Barvy pokojů od 9 do 16"
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "Barva podlahy 1.",
-          "alpha_room_1": "Místnost 2",
-          "alpha_room_2": "Místnost 3",
-          "alpha_room_3": "Místnost 4",
-          "alpha_room_4": "Místnost 5",
-          "alpha_room_5": "Místnost 6",
-          "alpha_room_6": "Místnost 7",
-          "alpha_room_7": "Místnost 8"
+          "alpha_room_0": "Pokoj 1",
+          "alpha_room_1": "Pokoj 2",
+          "alpha_room_2": "Pokoj 3",
+          "alpha_room_3": "Pokoj 4",
+          "alpha_room_4": "Pokoj 5",
+          "alpha_room_5": "Pokoj 6",
+          "alpha_room_6": "Pokoj 7",
+          "alpha_room_7": "Pokoj 8"
         },
         "description": "Možnosti kamery. Alfa 2",
-        "title": "Alfa kanál barev místností"
+        "title": "Průhlednost barev pokojů"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "Místnost 9",
-          "alpha_room_9": "Místnost 10",
-          "alpha_room_10": "Místnost 11",
-          "alpha_room_11": "Místnost 12",
-          "alpha_room_12": "Místnost 13",
-          "alpha_room_13": "Místnost 14",
-          "alpha_room_14": "Místnost 15",
-          "alpha_room_15": "Místnost 16"
+          "alpha_room_8": "Pokoj 9",
+          "alpha_room_9": "Pokoj 10",
+          "alpha_room_10": "Pokoj 11",
+          "alpha_room_11": "Pokoj 12",
+          "alpha_room_12": "Pokoj 13",
+          "alpha_room_13": "Pokoj 14",
+          "alpha_room_14": "Pokoj 15",
+          "alpha_room_15": "Pokoj 16"
         },
         "description": "Možnosti kamery. Alfa 3",
-        "title": "Alfa kanál barev místností"
+        "title": "Průhlednost barev pokojů"
       }
     }
   },
@@ -200,12 +213,24 @@
     "camera_config_action": {
       "options": {
         "opt_1": "Nastavit obrázek",
+        "opt_2": "Nastavit obecné barvy",
+        "opt_3": "Barvy pokojů od 1 do 8",
+        "opt_4": "Barvy pokojů od 9 do 16",
+        "opt_5": "Pokročilé možnosti"
+      }
+    },
+    "camera_config_advanced": {
+      "options": {
+        "opt_1": "Nastavit posunutí obrázku",
         "opt_2": "Nastavit text stavu",
-        "opt_3": "Nastavit obecné barvy",
-        "opt_4": "Barvy místností od 1 do 8",
-        "opt_5": "Barvy místností od 9 do 16",
-        "opt_6": "Zkopírovat záznamy kamery na www",
-        "opt_7": "Přejmenovat možnosti barev"
+        "opt_3": "Kopírovat protokoly kamery do www",
+        "opt_4": "Přejmenovat možnosti barev"
+      }
+    },
+    "camera_logs_progres": {
+      "options": {
+        "opt_1": "Kopírovat protokoly do www",
+        "opt_2": "Odstranit protokoly z www"
       }
     },
     "vacuum_status": {
@@ -214,9 +239,8 @@
         "disconnected": "Odpojeno",
         "charging": "Nabíjení",
         "cleaning": "Čištění",
-        "moving": "Pohybující se",
-        "docked": "Zařazeno",
-        "idle": "Volno",
+        "docked": "V doku",
+        "idle": "Nečinný",
         "paused": "Pozastaveno",
         "returning": "Návrat"
       }
@@ -232,12 +256,12 @@
       "description": "Zapne kameru."
     },
     "snapshot": {
-      "name": "Vytvořit snímek",
-      "description": "Vytvoří snímek z kamery.",
+      "name": "Pořídit snímek",
+      "description": "Pořídí snímek z kamery.",
       "fields": {
         "filename": {
           "name": "Název souboru",
-          "description": "Šablona názvu souboru. Dostupná proměnná je `entity_id`."
+          "description": "Šablona názvu souboru. K dispozici je proměnná `entity_id`."
         }
       }
     }

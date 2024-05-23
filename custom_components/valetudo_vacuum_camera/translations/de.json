@@ -3,78 +3,91 @@
     "step": {
       "user": {
         "data": {
-          "vacuum_entity": "Staubsauger-Entität-ID",
-          "vacuum_config_entry": "Staubsauger-Konfigurationsdaten",
-          "vacuum_map": "Staubsauger-Thema",
-          "vacuum_identifiers": "Staubsauger-MQTT-ID",
+          "vacuum_entity": "Staubsauger Entitäts-ID",
+          "vacuum_config_entry": "Staubsauger Konfigurationsdaten",
+          "vacuum_map": "Staubsauger Thema",
+          "vacuum_identifiers": "Staubsauger MQTT-ID",
           "unique_id": ""
         },
         "data_description": {
-          "vacuum_entity": "Staubsauger-Entität-ID"
+          "vacuum_entity": "Staubsauger Entitäts-ID"
         },
-        "description": "Kamerakonfiguration.",
-        "title": "Valetudo Kameraeinrichtung"
+        "description": "Kamera Setup.",
+        "title": "Valetudo Kamera Setup"
       }
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Valetudo Kameraoptionen",
-        "description": "Mögliche Änderungen:",
+        "title": "Valetudo Kamera Optionen",
+        "description": "### _Standardoptionen_:",
         "data": {
           "camera_config_action": "Aktion"
+        }
+      },
+      "advanced": {
+        "title": "Valetudo Kamera Optionen",
+        "description": "### _Erweiterte Optionen_:",
+        "data": {
+          "camera_config_action": "Aktion"
+        }
+      },
+      "download_logs": {
+        "title": "Valetudo Kamera Logdatei",
+        "description": "### _Logdatei-Kopie_:",
+        "data": {
+          "camera_logs_progres": "Was soll gemacht werden?"
         }
       },
       "image_opt": {
         "data": {
           "rotate_image": "Drehen",
-          "margins": "Bildränder.",
-          "add_offset": "Offset-Bild.",
-          "auto_zoom": "Automatische Vergrößerung aktivieren",
-          "zoom_lock_ratio": "Seitenverhältnis sperren.",
-          "aspect_ratio": "Bildseitenverhältnis.",
-          "enable_www_snapshots": "PNG-Schnappschüsse exportieren."
+          "margins": "Bildränder",
+          "auto_zoom": "Automatischen Zoom aktivieren",
+          "zoom_lock_ratio": "Seitenverhältnis sperren",
+          "aspect_ratio": "Seitenverhältnis",
+          "enable_www_snapshots": "PNG-Snapshots exportieren"
         },
         "data_description": {
           "rotate_image": "Grad 0, 90, 180, 270",
-          "margins": "Automatisches Beschnitt der Ränder in Pixeln.",
-          "aspect_ratio": "Bildseitenverhältnis."
+          "margins": "Automatische Zuschnittsränder in Pixel.",
+          "aspect_ratio": "Seitenverhältnis"
         },
-        "description": "Bildoptionen der Kamera",
+        "description": "Kamera-Bildoptionen",
         "title": "Bildoptionen"
       },
       "image_offset": {
         "data": {
-          "offset_top": "Oben verschieben",
-          "offset_bottom": "Unten verschieben",
-          "offset_left": "Links verschieben",
-          "offset_right": "Rechts verschieben"
+          "offset_top": "Oberer Versatz",
+          "offset_bottom": "Unterer Versatz",
+          "offset_left": "Linker Versatz",
+          "offset_right": "Rechter Versatz"
         },
         "data_description": {
-          "offset_top": "Oben verschieben bei Rotation 0 in Pixeln.",
-          "offset_bottom": "Unten verschieben bei Rotation 0 in Pixeln.",
-          "offset_left": "Links verschieben bei Rotation 0 in Pixeln.",
-          "offset_right": "Rechts verschieben bei Rotation 0 in Pixeln."
+          "offset_top": "Oberer Versatz bei 0 Grad in Pixel.",
+          "offset_bottom": "Unterer Versatz bei 0 Grad in Pixel.",
+          "offset_left": "Linker Versatz bei 0 Grad in Pixel.",
+          "offset_right": "Rechter Versatz bei 0 Grad in Pixel."
         },
-        "description": "Bildoffset der Kamera",
-        "title": "Bildoffset"
+        "description": "Kamera-Bildversatz",
+        "title": "Bildversatz"
       },
       "status_text": {
         "data": {
           "show_vac_status": "Staubsaugerstatus anzeigen.",
           "vac_status_font": "Fira Sans",
           "vac_status_size": "Textgröße",
-          "vac_status_position": "Textposition: Unten(AUS)",
+          "vac_status_position": "Textposition: Unten (AUS)",
           "color_text": "[255, 255, 255]"
         },
         "data_description": {
-          "vac_status_font": "Standardtext Fira Serif.",
+          "vac_status_font": "Standardtextschriftart Fira Serif.",
           "vac_status_size": "Standardtextgröße 50.",
-          "color_text": "Textfarbe des Staubsaugerstatus."
+          "color_text": "Staubsaugerstatus Textfarbe."
         },
         "description": "Bildoptionen",
-        "title": "Status Textoptionen"
+        "title": "Status-Textoptionen"
       },
       "base_colours": {
         "data": {
@@ -89,32 +102,32 @@
           "add_base_alpha": "Transparenz konfigurieren:"
         },
         "data_description": {
-          "color_charger": "Ladefarbe.",
-          "color_move": "Bewegungsfarbe.",
+          "color_charger": "Ladegerät Farbe.",
+          "color_move": "Bewegung Farbe.",
           "color_wall": "Wandfarbe.",
-          "color_robot": "Roboterfarbe.",
-          "color_go_to": "Gehe-zu-Farbe.",
-          "color_no_go": "Nicht-gehen-Farbe.",
-          "color_zone_clean": "Zone reinigen Farbe.",
+          "color_robot": "Roboter Farbe.",
+          "color_go_to": "Go-to Farbe.",
+          "color_no_go": "No-go Farbe.",
+          "color_zone_clean": "Zonenreinigungsfarbe.",
           "color_background": "Hintergrundfarbe."
         },
-        "description": "Bildfarboptionen der Kamera.",
-        "title": "Grundfarben einrichten"
+        "description": "Kamera-Farboptionen.",
+        "title": "Basisfarben-Setup"
       },
       "alpha_1": {
         "data": {
-          "alpha_charger": "Ladegerät Alpha   ",
-          "alpha_move": "Bewegungen Alpha     ",
-          "alpha_wall": "Wände Alpha     ",
-          "alpha_robot": "Roboter Alpha     ",
-          "alpha_go_to": "Gehe Zu Bereich Alpha",
-          "alpha_no_go": "No Go Bereich Alpha",
-          "alpha_zone_clean": "Zone Clean Alpha",
-          "alpha_background": "Hintergrund Alpha",
-          "alpha_text": "Text Alpha      "
+          "alpha_charger": "Ladegerät-Alpha",
+          "alpha_move": "Bewegungs-Alpha",
+          "alpha_wall": "Wand-Alpha",
+          "alpha_robot": "Roboter-Alpha",
+          "alpha_go_to": "Go-to Bereich Alpha",
+          "alpha_no_go": "No-go Bereich Alpha",
+          "alpha_zone_clean": "Zonenreinigung Alpha",
+          "alpha_background": "Hintergrund-Alpha",
+          "alpha_text": "Text-Alpha"
         },
-        "description": "Kameraoptionen. Alpha 1",
-        "title": "Alpha Kanal Grundfarben"
+        "description": "Kamera-Optionen. Alpha 1",
+        "title": "Alpha-Kanal Basisfarben"
       },
       "rooms_colours_1": {
         "data": {
@@ -129,7 +142,7 @@
           "add_room_1_alpha": "Transparenz konfigurieren:"
         },
         "data_description": {
-          "color_room_0": "Raum 1, Bodenfarbe.",
+          "color_room_0": "Raum 1",
           "color_room_1": "Raum 2",
           "color_room_2": "Raum 3",
           "color_room_3": "Raum 4",
@@ -138,8 +151,8 @@
           "color_room_6": "Raum 7",
           "color_room_7": "Raum 8"
         },
-        "description": "Bildfarboptionen der Kamera.",
-        "title": "Farben von Raum 1 bis 8"
+        "description": "Kamera-Farboptionen.",
+        "title": "Farben für Räume 1 bis 8"
       },
       "rooms_colours_2": {
         "data": {
@@ -163,12 +176,12 @@
           "color_room_14": "Raum 15",
           "color_room_15": "Raum 16"
         },
-        "description": "Bildfarboptionen der Kamera.",
-        "title": "Farben von Raum 9 bis 15"
+        "description": "Kamera-Farboptionen.",
+        "title": "Farben für Räume 9 bis 16"
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "Raum 1, Bodenfarbe.",
+          "alpha_room_0": "Raum 1",
           "alpha_room_1": "Raum 2",
           "alpha_room_2": "Raum 3",
           "alpha_room_3": "Raum 4",
@@ -177,8 +190,8 @@
           "alpha_room_6": "Raum 7",
           "alpha_room_7": "Raum 8"
         },
-        "description": "Kameraoptionen. Alpha 2",
-        "title": "Alpha Kanal Raumfarben"
+        "description": "Kamera-Optionen. Alpha 2",
+        "title": "Alpha-Kanal Raumfarben"
       },
       "alpha_3": {
         "data": {
@@ -191,34 +204,45 @@
           "alpha_room_14": "Raum 15",
           "alpha_room_15": "Raum 16"
         },
-        "description": "Kameraoptionen. Alpha 3",
-        "title": "Alpha Kanal Raumfarben"
+        "description": "Kamera-Optionen. Alpha 3",
+        "title": "Alpha-Kanal Raumfarben"
       }
     }
   },
   "selector": {
     "camera_config_action": {
       "options": {
-        "opt_1": "Bild einstellen",
-        "opt_2": "Status Text einstellen",
-        "opt_3": "Allgemeine Farben einstellen",
-        "opt_4": "Farben für Räume 1 bis 8 einstellen",
-        "opt_5": "Farben für Räume 9 bis 16 einstellen",
-        "opt_6": "Kameradaten auf www kopieren",
-        "opt_7": "Farboptionen umbenennen"
+        "opt_1": "Bild konfigurieren",
+        "opt_2": "Allgemeine Farben konfigurieren",
+        "opt_3": "Farben für Räume 1 bis 8",
+        "opt_4": "Farben für Räume 9 bis 16",
+        "opt_5": "Erweiterte Optionen"
+      }
+    },
+    "camera_config_advanced": {
+      "options": {
+        "opt_1": "Bildversatz konfigurieren",
+        "opt_2": "Status-Text konfigurieren",
+        "opt_3": "Kameraprotokolle in www kopieren",
+        "opt_4": "Farben umbenennen"
+      }
+    },
+    "camera_logs_progres": {
+      "options": {
+        "opt_1": "Protokolle in www kopieren",
+        "opt_2": "Protokolle aus www entfernen"
       }
     },
     "vacuum_status": {
       "options": {
         "connected": "Verbunden",
         "disconnected": "Getrennt",
-        "charging": "Lädt",
-        "cleaning": "Reinigt",
-        "moving": "Bewegend",
-        "docked": "Eingedockt",
-        "idle": "Inaktiv",
-        "paused": "Angehalten",
-        "returning": "Kehrt zurück"
+        "charging": "Laden",
+        "cleaning": "Reinigung",
+        "docked": "Angedockt",
+        "idle": "Leerlauf",
+        "paused": "Pausiert",
+        "returning": "Zurückkehren"
       }
     }
   },
@@ -232,12 +256,12 @@
       "description": "Schaltet die Kamera ein."
     },
     "snapshot": {
-      "name": "Snapshot erstellen",
-      "description": "Erstellt einen Snapshot von einer Kamera.",
+      "name": "Schnappschuss machen",
+      "description": "Macht einen Schnappschuss von einer Kamera.",
       "fields": {
         "filename": {
           "name": "Dateiname",
-          "description": "Vorlage eines Dateinamens. Verfügbare Variable ist `entity_id`."
+          "description": "Vorlage für einen Dateinamen. Verfügbare Variable ist `entity_id`."
         }
       }
     }

@@ -6,7 +6,7 @@
           "vacuum_entity": "Stofzuiger Entiteit ID",
           "vacuum_config_entry": "Stofzuiger Configuratiegegevens",
           "vacuum_map": "Stofzuiger Onderwerp",
-          "vacuum_identifiers": "Stofzuiger MQTT ID",
+          "vacuum_identifiers": "Stofzuiger MQTT-id",
           "unique_id": ""
         },
         "data_description": {
@@ -21,59 +21,72 @@
     "step": {
       "init": {
         "title": "Valetudo Camera Opties",
-        "description": "Mogelijke wijzigingen:",
+        "description": "### _Standaardopties_:",
         "data": {
           "camera_config_action": "Actie"
+        }
+      },
+      "advanced": {
+        "title": "Valetudo Camera Opties",
+        "description": "### _Geavanceerde opties_:",
+        "data": {
+          "camera_config_action": "Actie"
+        }
+      },
+      "download_logs": {
+        "title": "Valetudo Camera Logbestand",
+        "description": "### _Logbestand Kopiëren_:",
+        "data": {
+          "camera_logs_progres": "Wat te doen?"
         }
       },
       "image_opt": {
         "data": {
           "rotate_image": "Roteer",
           "margins": "Afbeeldingsmarges.",
-          "add_offset": "Afbeelding Verschuiven.",
-          "auto_zoom": "Automatisch Zoomen inschakelen",
+          "auto_zoom": "Automatisch inzoomen inschakelen",
           "zoom_lock_ratio": "Aspectverhouding vergrendelen.",
-          "aspect_ratio": "Afbeeldingsaspectverhouding.",
-          "enable_www_snapshots": "Exporteer PNG-snapshots."
+          "aspect_ratio": "Beeldverhouding van de afbeelding.",
+          "enable_www_snapshots": "PNG-snapshots exporteren."
         },
         "data_description": {
           "rotate_image": "Graden 0, 90, 180, 270",
-          "margins": "Automatisch Bijsnijden Marges in pixels.",
-          "aspect_ratio": "Afbeeldingsaspectverhouding."
+          "margins": "Automatisch bijsnijden marges in pixels.",
+          "aspect_ratio": "Beeldverhouding van de afbeelding."
         },
         "description": "Camera Afbeelding Opties",
-        "title": "Afbeelding Opties"
+        "title": "Afbeeldingsopties"
       },
       "image_offset": {
         "data": {
-          "offset_top": "Bovenste Verschuiving",
-          "offset_bottom": "Onderste Verschuiving",
-          "offset_left": "Linker Verschuiving",
-          "offset_right": "Rechter Verschuiving"
+          "offset_top": "Bovenste offset",
+          "offset_bottom": "Onderste offset",
+          "offset_left": "Linker offset",
+          "offset_right": "Rechter offset"
         },
         "data_description": {
-          "offset_top": "Bovenste Verschuiving rotatie 0 in pixels.",
-          "offset_bottom": "Onderste Verschuiving rotatie 0 in pixels.",
-          "offset_left": "Linker Verschuiving rotatie 0 in pixels.",
-          "offset_right": "Rechter Verschuiving rotatie 0 in pixels."
+          "offset_top": "Bovenste offset rotatie 0 in pixels.",
+          "offset_bottom": "Onderste offset rotatie 0 in pixels.",
+          "offset_left": "Linker offset rotatie 0 in pixels.",
+          "offset_right": "Rechter offset rotatie 0 in pixels."
         },
-        "description": "Camera Afbeelding Verschuiving",
-        "title": "Afbeelding Verschuiving"
+        "description": "Camera Afbeelding Offset",
+        "title": "Afbeeldingsoffset"
       },
       "status_text": {
         "data": {
           "show_vac_status": "Toon Stofzuigerstatus.",
           "vac_status_font": "Fira Sans",
           "vac_status_size": "Tekstgrootte",
-          "vac_status_position": "Tekst Positie: Onderaan(UIT)",
+          "vac_status_position": "Tekstpositie: Onderaan (UIT)",
           "color_text": "[255, 255, 255]"
         },
         "data_description": {
           "vac_status_font": "Tekstlettertype standaard Fira Serif.",
           "vac_status_size": "Tekstgrootte standaard 50.",
-          "color_text": "Kleur van de Stofzuigerstatus Tekst."
+          "color_text": "Kleur van de tekst van de stofzuigerstatus."
         },
-        "description": "Afbeelding Opties",
+        "description": "Afbeeldingsopties",
         "title": "Status Tekst Opties"
       },
       "base_colours": {
@@ -86,16 +99,16 @@
           "color_no_go": "[255, 0, 0]",
           "color_zone_clean": "[255, 255, 255]",
           "color_background": "[0, 125, 255]",
-          "add_base_alpha": "Configureer Transparantie:"
+          "add_base_alpha": "Transparantie instellen:"
         },
         "data_description": {
-          "color_charger": "Kleur van de Oplader.",
-          "color_move": "Kleur van de Beweging.",
-          "color_wall": "Kleur van de Muur.",
-          "color_robot": "Kleur van de Robot.",
-          "color_go_to": "Kleur van de Ga-naar.",
-          "color_no_go": "Kleur van de Niet-gaan.",
-          "color_zone_clean": "Kleur van de Zone Schoon.",
+          "color_charger": "Kleur van de lader.",
+          "color_move": "Kleur van de beweging.",
+          "color_wall": "Kleur van de muur.",
+          "color_robot": "Kleur van de robot.",
+          "color_go_to": "Kleur van het ga-naar-gebied.",
+          "color_no_go": "Kleur van het niet-gaan-gebied.",
+          "color_zone_clean": "Kleur van de zone schoonmaken.",
           "color_background": "Achtergrondkleur."
         },
         "description": "Camera Kleuropties.",
@@ -103,7 +116,7 @@
       },
       "alpha_1": {
         "data": {
-          "alpha_charger": "Oplader Alpha   ",
+          "alpha_charger": "Lader Alpha   ",
           "alpha_move": "Bewegingen Alpha     ",
           "alpha_wall": "Muren Alpha     ",
           "alpha_robot": "Robot Alpha     ",
@@ -114,7 +127,7 @@
           "alpha_text": "Tekst Alpha      "
         },
         "description": "Camera Opties. Alpha 1",
-        "title": "Alpha Kanaal Basis Kleuren"
+        "title": "Alfa Kanaal Basis Kleuren"
       },
       "rooms_colours_1": {
         "data": {
@@ -126,10 +139,10 @@
           "color_room_5": "[96, 123, 139]",
           "color_room_6": "[224, 255, 255]",
           "color_room_7": "[209, 238, 238]",
-          "add_room_1_alpha": "Configureer Transparantie:"
+          "add_room_1_alpha": "Transparantie instellen:"
         },
         "data_description": {
-          "color_room_0": "Kamer 1, vloerkleur.",
+          "color_room_0": "Kamer 1",
           "color_room_1": "Kamer 2",
           "color_room_2": "Kamer 3",
           "color_room_3": "Kamer 4",
@@ -151,7 +164,7 @@
           "color_room_13": "[245, 176, 65]",
           "color_room_14": "[82, 190, 128]",
           "color_room_15": "[72, 201, 176]",
-          "add_room_2_alpha": "Configureer Transparantie:"
+          "add_room_2_alpha": "Transparantie instellen:"
         },
         "data_description": {
           "color_room_8": "Kamer 9",
@@ -168,7 +181,7 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "Kamer 1, vloerkleur.",
+          "alpha_room_0": "Kamer 1",
           "alpha_room_1": "Kamer 2",
           "alpha_room_2": "Kamer 3",
           "alpha_room_3": "Kamer 4",
@@ -178,7 +191,7 @@
           "alpha_room_7": "Kamer 8"
         },
         "description": "Camera Opties. Alpha 2",
-        "title": "Alpha Kanaal Kamers Kleuren"
+        "title": "Alfa Kanaal Kamers Kleuren"
       },
       "alpha_3": {
         "data": {
@@ -192,20 +205,32 @@
           "alpha_room_15": "Kamer 16"
         },
         "description": "Camera Opties. Alpha 3",
-        "title": "Alpha Kanaal Kamers Kleuren"
+        "title": "Alfa Kanaal Kamers Kleuren"
       }
     }
   },
   "selector": {
     "camera_config_action": {
       "options": {
-        "opt_1": "Afbeelding Configureren",
-        "opt_2": "Status Tekst Configureren",
-        "opt_3": "Algemene Kleuren Configureren",
-        "opt_4": "Kleuren Kamers 1 tot 8 Configureren",
-        "opt_5": "Kleuren Kamers 9 tot 16 Configureren",
-        "opt_6": "Camera Logs naar www Kopiëren",
-        "opt_7": "Kleuropties hernoemen"
+        "opt_1": "Beeld instellen",
+        "opt_2": "Algemene Kleuren instellen",
+        "opt_3": "Kleuren Kamers 1 tot 8 instellen",
+        "opt_4": "Kleuren Kamers 9 tot 16 instellen",
+        "opt_5": "Geavanceerde Opties"
+      }
+    },
+    "camera_config_advanced": {
+      "options": {
+        "opt_1": "Beeld offset instellen",
+        "opt_2": "Status Tekst instellen",
+        "opt_3": "Kopieer Camera Logs naar www",
+        "opt_4": "Kleur Opties hernoemen"
+      }
+    },
+    "camera_logs_progres": {
+      "options": {
+        "opt_1": "Logs naar www kopiëren",
+        "opt_2": "Logs verwijderen van www"
       }
     },
     "vacuum_status": {
@@ -213,12 +238,11 @@
         "connected": "Verbonden",
         "disconnected": "Verbroken",
         "charging": "Opladen",
-        "cleaning": "Aan het Schoonmaken",
-        "moving": "Bewegen",
+        "cleaning": "Schoonmaken",
         "docked": "Aangemeerd",
         "idle": "Inactief",
         "paused": "Gepauzeerd",
-        "returning": "Keert Terug"
+        "returning": "Terugkerend"
       }
     }
   },
@@ -232,7 +256,7 @@
       "description": "Schakelt de camera in."
     },
     "snapshot": {
-      "name": "Maak Snapshot",
+      "name": "Maak een snapshot",
       "description": "Maakt een snapshot van een camera.",
       "fields": {
         "filename": {

@@ -1,6 +1,6 @@
-"""config_flow 2024.05.4
-IMPORTANT: When adding new options to the camera
-it will be mandatory to update const.py update_options.
+"""config_flow 2024.06.0
+IMPORTANT: Maintain code when adding new options to the camera
+it will be mandatory to update const.py and common.py update_options.
 Format of the new constants must be CONST_NAME = "const_name" update also
 sting.json and en.json please.
 """
@@ -30,11 +30,10 @@ from homeassistant.helpers.selector import (
 from homeassistant.helpers.storage import STORAGE_DIR
 import voluptuous as vol
 
-from .common import (  # get_entity_identifier_from_mqtt,
+from .common import (
     get_device_info,
     get_vacuum_mqtt_topic,
     get_vacuum_unique_id_from_mqtt_topic,
-    rename_room_description,
     update_options,
 )
 from .const import (
@@ -61,6 +60,7 @@ from .const import (
     ALPHA_ROOM_14,
     ALPHA_ROOM_15,
     ALPHA_TEXT,
+    ALPHA_VALUES,
     ALPHA_WALL,
     ALPHA_ZONE_CLEAN,
     ATTR_MARGINS,
@@ -104,12 +104,17 @@ from .const import (
     CONF_VACUUM_CONFIG_ENTRY_ID,
     CONF_VACUUM_ENTITY_ID,
     CONF_ZOOM_LOCK_RATIO,
+    DEFAULT_VALUES,
     DOMAIN,
+    FONTS_AVAILABLE,
     IS_ALPHA,
     IS_ALPHA_R1,
     IS_ALPHA_R2,
-    IS_OFFSET,
+    RATIO_VALUES,
+    ROTATION_VALUES,
+    TEXT_SIZE_VALUES,
 )
+from .utils.users_data import async_rename_room_description
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -158,75 +163,7 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             # set the unique_id in the entry configuration
             await self.async_set_unique_id(unique_id=unique_id)
             # set default options
-            self.options.update(
-                {
-                    "rotate_image": "0",
-                    "margins": "100",
-                    "aspect_ratio": "None",
-                    "offset_top": 0,
-                    "offset_bottom": 0,
-                    "offset_left": 0,
-                    "offset_right": 0,
-                    "auto_zoom": False,
-                    "zoom_lock_ratio": True,
-                    "show_vac_status": False,
-                    "vac_status_font": "custom_components/valetudo_vacuum_camera/utils/fonts/FiraSans.ttf",
-                    "vac_status_size": 50,
-                    "vac_status_position": True,
-                    "get_svg_file": False,
-                    "enable_www_snapshots": False,
-                    "color_charger": [255, 128, 0],
-                    "color_move": [238, 247, 255],
-                    "color_wall": [255, 255, 0],
-                    "color_robot": [255, 255, 204],
-                    "color_go_to": [0, 255, 0],
-                    "color_no_go": [255, 0, 0],
-                    "color_zone_clean": [255, 255, 255],
-                    "color_background": [0, 125, 255],
-                    "color_text": [255, 255, 255],
-                    "alpha_charger": 255.0,
-                    "alpha_move": 255.0,
-                    "alpha_wall": 255.0,
-                    "alpha_robot": 255.0,
-                    "alpha_go_to": 255.0,
-                    "alpha_no_go": 125.0,
-                    "alpha_zone_clean": 125.0,
-                    "alpha_background": 255.0,
-                    "alpha_text": 255.0,
-                    "color_room_0": [135, 206, 250],
-                    "color_room_1": [176, 226, 255],
-                    "color_room_2": [165, 105, 18],
-                    "color_room_3": [164, 211, 238],
-                    "color_room_4": [141, 182, 205],
-                    "color_room_5": [96, 123, 139],
-                    "color_room_6": [224, 255, 255],
-                    "color_room_7": [209, 238, 238],
-                    "color_room_8": [180, 205, 205],
-                    "color_room_9": [122, 139, 139],
-                    "color_room_10": [175, 238, 238],
-                    "color_room_11": [84, 153, 199],
-                    "color_room_12": [133, 193, 233],
-                    "color_room_13": [245, 176, 65],
-                    "color_room_14": [82, 190, 128],
-                    "color_room_15": [72, 201, 176],
-                    "alpha_room_0": 255.0,
-                    "alpha_room_1": 255.0,
-                    "alpha_room_2": 255.0,
-                    "alpha_room_3": 255.0,
-                    "alpha_room_4": 255.0,
-                    "alpha_room_5": 255.0,
-                    "alpha_room_6": 255.0,
-                    "alpha_room_7": 255.0,
-                    "alpha_room_8": 255.0,
-                    "alpha_room_9": 255.0,
-                    "alpha_room_10": 255.0,
-                    "alpha_room_11": 255.0,
-                    "alpha_room_12": 255.0,
-                    "alpha_room_13": 255.0,
-                    "alpha_room_14": 255.0,
-                    "alpha_room_15": 255.0,
-                }
-            )
+            self.options.update(DEFAULT_VALUES)
             # create the path for storing the snapshots.
             storage_path = f"{self.hass.config.path(STORAGE_DIR)}/valetudo_camera"
             if not os.path.exists(storage_path):
@@ -242,10 +179,7 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 self.data[CONF_VACUUM_CONFIG_ENTRY_ID], self.hass
             )
 
-            # Return the data and options to config_entry
-            # This to duplicate the data recreating the options
-            # in the options flow.
-
+            # Return the data and default options to config_entry
             return self.async_create_entry(
                 title=vacuum_device.name + " Camera",
                 data=self.data,
@@ -271,77 +205,25 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         self.options = {}
         self.bk_options = self.config_entry.options
         self._check_alpha = False
-        self._check_offset = False
         _LOGGER.debug(
             "Options edit in progress.. options before edit: %s", dict(self.bk_options)
         )
         options_values = list(self.config_entry.options.values())
         if len(options_values) > 0:
-            config_dict: NumberSelectorConfig = {
-                "min": 0.0,  # Minimum value
-                "max": 255.0,  # Maximum value
-                "step": 1.0,  # Step value
-            }
-            config_size: NumberSelectorConfig = {
-                "min": 5,  # Minimum value
-                "max": 51,  # Maximum value
-                "step": 1,  # Step value
-            }
+            config_dict: NumberSelectorConfig = ALPHA_VALUES
+            config_size: NumberSelectorConfig = TEXT_SIZE_VALUES
             font_selector = SelectSelectorConfig(
-                options=[
-                    {
-                        "label": "Fira Sans",
-                        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/FiraSans.ttf",
-                    },
-                    {
-                        "label": "Inter",
-                        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/Inter-VF.ttf",
-                    },
-                    {
-                        "label": "M Plus Regular",
-                        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/MPLUSRegular.ttf",
-                    },
-                    {
-                        "label": "Noto Sans CJKhk",
-                        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/NotoSansCJKhk-VF.ttf",
-                    },
-                    {
-                        "label": "Noto Kufi Arabic",
-                        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/NotoKufiArabic-VF.ttf",
-                    },
-                    {
-                        "label": "Noto Sans Khojki",
-                        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/NotoSansKhojki.ttf",
-                    },
-                    {
-                        "label": "Lato Regular",
-                        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/Lato-Regular.ttf",
-                    },
-                ],
+                options=FONTS_AVAILABLE,
                 mode=SelectSelectorMode.DROPDOWN,
             )
             rotation_selector = SelectSelectorConfig(
-                options=[
-                    {"label": "0", "value": "0"},
-                    {"label": "90", "value": "90"},
-                    {"label": "180", "value": "180"},
-                    {"label": "270", "value": "270"},
-                ],
+                options=ROTATION_VALUES,
                 mode=SelectSelectorMode.DROPDOWN,
             )
             aspec_ratio_selector = SelectSelectorConfig(
-                options=[
-                    {"label": "Original Ratio.", "value": "None"},
-                    {"label": "1:1", "value": "1, 1"},
-                    {"label": "2:1", "value": "2, 1"},
-                    {"label": "3:2", "value": "3, 2"},
-                    {"label": "5:4", "value": "5, 4"},
-                    {"label": "9:16", "value": "9, 16"},
-                    {"label": "16:9", "value": "16, 9"},
-                ],
+                options=RATIO_VALUES,
                 mode=SelectSelectorMode.DROPDOWN,
             )
-
             self.IMG_SCHEMA = vol.Schema(
                 {
                     vol.Required(
@@ -350,9 +232,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Optional(
                         ATTR_MARGINS, default=config_entry.options.get("margins")
                     ): cv.string,
-                    vol.Optional(
-                        IS_OFFSET, default=self._check_offset
-                    ): BooleanSelector(),
                     vol.Required(
                         CONF_ASPECT_RATIO,
                         default=config_entry.options.get("aspect_ratio"),
@@ -616,17 +495,13 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 if next_action == "opt_1":
                     return await self.async_step_image_opt()
                 elif next_action == "opt_2":
-                    return await self.async_step_status_text()
-                elif next_action == "opt_3":
                     return await self.async_step_base_colours()
-                elif next_action == "opt_4":
+                elif next_action == "opt_3":
                     return await self.async_step_rooms_colours_1()
-                elif next_action == "opt_5":
+                elif next_action == "opt_4":
                     return await self.async_step_rooms_colours_2()
-                elif next_action == "opt_6":
-                    return await self.async_download_logs()
-                elif next_action == "opt_7":
-                    return await self.async_rename_translations()
+                elif next_action == "opt_5":
+                    return await self.async_step_advanced()
                 elif next_action == "more options":
                     """
                     From TAPO custom control component, this is,
@@ -640,12 +515,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         menu_keys = SelectSelectorConfig(
             options=[
                 {"label": "configure_image", "value": "opt_1"},
-                {"label": "configure_status_text", "value": "opt_2"},
-                {"label": "configure_general_colours", "value": "opt_3"},
-                {"label": "configure_rooms_colours_1", "value": "opt_4"},
-                {"label": "configure_rooms_colours_2", "value": "opt_5"},
-                {"label": "copy_camera_logs_to_www", "value": "opt_6"},
-                {"label": "rename_colours_descriptions", "value": "opt_7"},
+                {"label": "configure_general_colours", "value": "opt_2"},
+                {"label": "configure_rooms_colours_1", "value": "opt_3"},
+                {"label": "configure_rooms_colours_2", "value": "opt_4"},
+                {"label": "advanced_options", "value": "opt_5"},
             ],
             mode=SelectSelectorMode.LIST,
             translation_key="camera_config_action",
@@ -655,6 +528,51 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         return self.async_show_form(
             step_id="init",
+            data_schema=vol.Schema(data_schema),
+            errors=errors,
+        )
+
+    async def async_step_advanced(self, user_input=None):
+        """
+        Start the options menu configuration.
+        """
+        errors = {}
+        if user_input is not None:
+            if "camera_config_advanced" in user_input:
+                next_action = user_input["camera_config_advanced"]
+                if next_action == "opt_1":
+                    return await self.async_step_image_offset()
+                elif next_action == "opt_2":
+                    return await self.async_step_status_text()
+                elif next_action == "opt_3":
+                    return await self.async_step_download_logs()
+                elif next_action == "opt_4":
+                    return await self.async_rename_translations()
+                elif next_action == "more options":
+                    """
+                    From TAPO custom control component, this is,
+                    a great idea of how to simply the configuration
+                    simple old style menu ;).
+                    """
+                else:
+                    errors["base"] = "incorrect_options_action"
+
+        # noinspection PyArgumentList
+        menu_keys_1 = SelectSelectorConfig(
+            options=[
+                {"label": "configure_image", "value": "opt_1"},
+                {"label": "configure_status_text", "value": "opt_2"},
+                {"label": "copy_camera_logs_to_www", "value": "opt_3"},
+                {"label": "rename_colours_descriptions", "value": "opt_4"},
+            ],
+            mode=SelectSelectorMode.LIST,
+            translation_key="camera_config_advanced",
+        )
+
+        data_schema = {"camera_config_advanced": SelectSelector(menu_keys_1)}
+
+        return self.async_show_form(
+            step_id="advanced",
             data_schema=vol.Schema(data_schema),
             errors=errors,
         )
@@ -675,12 +593,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     "enable_www_snapshots": user_input.get(CONF_SNAPSHOTS_ENABLE),
                 }
             )
-            self._check_offset = user_input.get(IS_OFFSET)
-            if self._check_offset:
-                self._check_offset = False
-                return await self.async_step_image_offset()
-            else:
-                return await self.async_step_opt_save()
+
+            return await self.async_step_opt_save()
 
         return self.async_show_form(
             step_id="image_opt",
@@ -919,25 +833,70 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             description_placeholders=self.options,
         )
 
-    async def async_download_logs(self):
+    async def async_step_logs_move(self):
         """
-        Copy the logs from .storage to www config folder.
+        Move the logs from www config folder to .storage.
         """
-        user_input = None
         ha_dir = self.hass.config.path()
         ha_storage = self.hass.config.path(STORAGE_DIR)
         camera_id = self.unique_id.split("_")
         file_name = camera_id[0].lower() + ".zip"
         source_path = f"{ha_storage}/valetudo_camera/{file_name}"
         destination_path = f"{ha_dir}/www/{file_name}"
-        if user_input is None:
-            if os.path.exists(source_path):
-                _LOGGER.info(f"Logs {file_name} found in {source_path}")
-                shutil.copy(source_path, destination_path)
-            else:
-                _LOGGER.debug(f"Logs {file_name} not found in {source_path}")
-            return await self.async_step_init()
-        return self.async_show_form(step_id="download")
+        if os.path.exists(source_path):
+            _LOGGER.info(f"Logs found in {source_path}")
+            shutil.copy(source_path, destination_path)
+        else:
+            _LOGGER.debug(f"Logs not found in {source_path}")
+        self.options = self.bk_options
+        return await self.async_step_opt_save()
+
+    async def async_step_logs_remove(self):
+        """
+        Remove the logs from www config folder.
+        """
+        ha_dir = self.hass.config.path()
+        camera_id = self.unique_id.split("_")
+        file_name = camera_id[0].lower() + ".zip"
+        destination_path = f"{ha_dir}/www/{file_name}"
+        if os.path.exists(destination_path):
+            _LOGGER.info(f"Logs removed: {destination_path}")
+            os.remove(destination_path)
+        else:
+            _LOGGER.debug(f"Logs not found: {destination_path}")
+        self.options = self.bk_options
+        return await self.async_step_opt_save()
+
+    async def async_step_download_logs(self, user_input=None):
+        """
+        Copy the logs from .storage to www config folder.
+        """
+        errors = {}
+        if user_input is not None:
+            if "camera_logs_progres" in user_input:
+                next_action = user_input["camera_logs_progres"]
+                if next_action == "opt_1":
+                    return await self.async_step_logs_move()
+                elif next_action == "opt_2":
+                    return await self.async_step_logs_remove()
+                elif next_action == "no_action":
+                    ...  # do nothing
+                else:
+                    errors["base"] = "incorrect_options_action"
+        copy_options = SelectSelectorConfig(
+            options=[
+                {"label": "copy_the_logs_to_www", "value": "opt_1"},
+                {"label": "delete_logs_from_www", "value": "opt_2"},
+            ],
+            translation_key="camera_logs_progres",
+            mode=SelectSelectorMode.LIST,
+        )
+        data_schema = {"camera_logs_progres": SelectSelector(copy_options)}
+        return self.async_show_form(
+            step_id="download_logs",
+            data_schema=vol.Schema(data_schema),
+            errors=errors,
+        )
 
     async def async_rename_translations(self):
         """
@@ -945,17 +904,17 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         """
         hass = self.hass
         user_input = None
-        storage_path = self.hass.config.path(STORAGE_DIR, "valetudo_camera")
+        storage_path = hass.config.path(STORAGE_DIR, "valetudo_camera")
         _LOGGER.debug(f"Looking for Storage Path: {storage_path}")
         camera_id = self.unique_id.split("_")
         file_name = camera_id[0].lower()
         if (user_input is None) and self.bk_options:
             if self.hass:
-                await rename_room_description(hass, storage_path, file_name)
+                await async_rename_room_description(hass, storage_path, file_name)
                 self.options = self.bk_options
             return await self.async_step_opt_save()
 
-        return self.async_show_form(step_id="download")
+        return self.async_show_form(step_id="rename_translations")
 
     async def async_step_opt_save(self):
         """

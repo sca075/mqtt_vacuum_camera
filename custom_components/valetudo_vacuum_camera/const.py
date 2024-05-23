@@ -1,6 +1,6 @@
 """Constants for the valetudo_vacuum_camera integration."""
 
-"""Version v2024.04.3"""
+"""Version v2024.06.0"""
 
 """Required in Config_Flow"""
 PLATFORMS = ["camera"]
@@ -31,6 +31,134 @@ CONF_AUTO_ZOOM = "auto_zoom"
 CONF_ZOOM_LOCK_RATIO = "zoom_lock_ratio"
 ICON = "mdi:camera"
 NAME = "Valetudo Vacuum Camera"
+DEFAULT_VALUES = {
+    "rotate_image": "0",
+    "margins": "100",
+    "aspect_ratio": "None",
+    "offset_top": 0,
+    "offset_bottom": 0,
+    "offset_left": 0,
+    "offset_right": 0,
+    "auto_zoom": False,
+    "zoom_lock_ratio": True,
+    "show_vac_status": False,
+    "vac_status_font": "custom_components/valetudo_vacuum_camera/utils/fonts/FiraSans.ttf",
+    "vac_status_size": 50,
+    "vac_status_position": True,
+    "get_svg_file": False,
+    "enable_www_snapshots": False,
+    "color_charger": [255, 128, 0],
+    "color_move": [238, 247, 255],
+    "color_wall": [255, 255, 0],
+    "color_robot": [255, 255, 204],
+    "color_go_to": [0, 255, 0],
+    "color_no_go": [255, 0, 0],
+    "color_zone_clean": [255, 255, 255],
+    "color_background": [0, 125, 255],
+    "color_text": [255, 255, 255],
+    "alpha_charger": 255.0,
+    "alpha_move": 255.0,
+    "alpha_wall": 255.0,
+    "alpha_robot": 255.0,
+    "alpha_go_to": 255.0,
+    "alpha_no_go": 125.0,
+    "alpha_zone_clean": 125.0,
+    "alpha_background": 255.0,
+    "alpha_text": 255.0,
+    "color_room_0": [135, 206, 250],
+    "color_room_1": [176, 226, 255],
+    "color_room_2": [165, 105, 18],
+    "color_room_3": [164, 211, 238],
+    "color_room_4": [141, 182, 205],
+    "color_room_5": [96, 123, 139],
+    "color_room_6": [224, 255, 255],
+    "color_room_7": [209, 238, 238],
+    "color_room_8": [180, 205, 205],
+    "color_room_9": [122, 139, 139],
+    "color_room_10": [175, 238, 238],
+    "color_room_11": [84, 153, 199],
+    "color_room_12": [133, 193, 233],
+    "color_room_13": [245, 176, 65],
+    "color_room_14": [82, 190, 128],
+    "color_room_15": [72, 201, 176],
+    "alpha_room_0": 255.0,
+    "alpha_room_1": 255.0,
+    "alpha_room_2": 255.0,
+    "alpha_room_3": 255.0,
+    "alpha_room_4": 255.0,
+    "alpha_room_5": 255.0,
+    "alpha_room_6": 255.0,
+    "alpha_room_7": 255.0,
+    "alpha_room_8": 255.0,
+    "alpha_room_9": 255.0,
+    "alpha_room_10": 255.0,
+    "alpha_room_11": 255.0,
+    "alpha_room_12": 255.0,
+    "alpha_room_13": 255.0,
+    "alpha_room_14": 255.0,
+    "alpha_room_15": 255.0,
+}
+
+ALPHA_VALUES = {
+    "min": 0.0,  # Minimum value
+    "max": 255.0,  # Maximum value
+    "step": 1.0,  # Step value
+}
+
+TEXT_SIZE_VALUES = {
+    "min": 5,  # Minimum value
+    "max": 51,  # Maximum value
+    "step": 1,  # Step value
+}
+
+ROTATION_VALUES = [
+    {"label": "0", "value": "0"},
+    {"label": "90", "value": "90"},
+    {"label": "180", "value": "180"},
+    {"label": "270", "value": "270"},
+]
+
+RATIO_VALUES = [
+    {"label": "Original Ratio.", "value": "None"},
+    {"label": "1:1", "value": "1, 1"},
+    {"label": "2:1", "value": "2, 1"},
+    {"label": "3:2", "value": "3, 2"},
+    {"label": "5:4", "value": "5, 4"},
+    {"label": "9:16", "value": "9, 16"},
+    {"label": "16:9", "value": "16, 9"},
+]
+
+FONTS_AVAILABLE = [
+    {
+        "label": "Fira Sans",
+        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/FiraSans.ttf",
+    },
+    {
+        "label": "Inter",
+        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/Inter-VF.ttf",
+    },
+    {
+        "label": "M Plus Regular",
+        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/MPLUSRegular.ttf",
+    },
+    {
+        "label": "Noto Sans CJKhk",
+        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/NotoSansCJKhk-VF.ttf",
+    },
+    {
+        "label": "Noto Kufi Arabic",
+        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/NotoKufiArabic-VF.ttf",
+    },
+    {
+        "label": "Noto Sans Khojki",
+        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/NotoSansKhojki.ttf",
+    },
+    {
+        "label": "Lato Regular",
+        "value": "custom_components/valetudo_vacuum_camera/utils/fonts/Lato-Regular.ttf",
+    },
+]
+
 
 """App Constants. Not in use, and dummy values"""
 IDLE_SCAN_INTERVAL = 120

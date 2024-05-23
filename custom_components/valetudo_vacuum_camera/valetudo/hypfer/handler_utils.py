@@ -241,6 +241,6 @@ class ImageUtils:
             self.img.offset_y = height - self.img.crop_img_size[1]
 
         _LOGGER.debug(
-            f"\n{self.file_name} Image Coordinates: "
+            f"\n{self.file_name} Image Coordinates at 16:9: "
             f"Offset X: {self.img.offset_x} Offset Y: {self.img.offset_y}"
         )
