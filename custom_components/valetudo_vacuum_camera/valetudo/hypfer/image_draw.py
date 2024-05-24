@@ -152,12 +152,8 @@ class ImageDraw:
         try:
             json_id = my_json["metaData"]["nonce"]
         except (ValueError, KeyError) as e:
-            _LOGGER.debug(f"\nNo JsonID provided: {e}")
+            _LOGGER.debug(f"\n{self.file_name}: No JsonID provided: {e}")
             json_id = None
-        else:
-            _LOGGER.info(
-                f"\nVacuum JSon ID: {json_id} at Frame {self.img_h.frame_number}."
-            )
         return json_id
 
     async def async_draw_zones(

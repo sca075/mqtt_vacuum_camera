@@ -36,7 +36,7 @@ class StatusText:
         file_name = f"{language}.json"
         file_path = f"{self._translations_path}/{file_name}"
         try:
-            with open(file_path, "r") as file:
+            with open(file_path) as file:
                 translations = json.load(file)
         except FileNotFoundError:
             return None
