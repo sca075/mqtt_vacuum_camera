@@ -1,5 +1,5 @@
 """
-Version: 2024.05.4
+Version: 2024.06.0
 Status text of the vacuum cleaners.
 Clas to handle the status text of the vacuum cleaners.
 """
@@ -58,6 +58,8 @@ class StatusText:
         """Return the translated status."""
         status = self._shared.vacuum_state
         language = self._shared.user_language
+        if not language:
+            return status.capitalize()
         translations = self.get_vacuum_status_translation(language)
         if translations is not None and status in translations:
             return translations[status]
