@@ -19,6 +19,21 @@ from homeassistant.helpers.storage import STORAGE_DIR
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
+def is_auth_updated(self) -> bool:
+    """Check if the auth file has been updated."""
+    file_path = self.hass.config.path(STORAGE_DIR, "auth")
+    # Get the last modified time of the file
+    last_modified_time = os.path.getmtime(file_path)
+    if self._update_time is None:
+        self._update_time = last_modified_time
+        return True
+    elif self._update_time == last_modified_time:
+        return False
+    elif self._update_time < last_modified_time:
+        self._update_time = last_modified_time
+        return True
+
+
 async def async_find_last_logged_in_user(hass: HomeAssistant) -> Optional[str]:
     """Search and return the last logged-in user ID."""
     file_path = f"{hass.config.path(STORAGE_DIR)}/auth"

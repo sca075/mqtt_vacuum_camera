@@ -57,7 +57,7 @@ from .const import (
 )
 from .snapshots.snapshot import Snapshots
 from .utils.colors_man import ColorsManagment
-from .utils.users_data import async_get_active_user_language
+from .utils.users_data import async_get_active_user_language, is_auth_updated
 from .valetudo.MQTT.connector import ValetudoConnector
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
@@ -184,6 +184,7 @@ class ValetudoCamera(Camera):
         if os.path.isfile(self.log_file):
             os.remove(self.log_file)
         self._last_image = None
+        self._update_time = None
         self._rrm_data = False  # Check for rrm data
         # get the colours used in the maps.
         self._colours = ColorsManagment(self._shared)
@@ -339,6 +340,11 @@ class ValetudoCamera(Camera):
     async def async_update(self):
         """Camera Frame Update."""
         # check and update the vacuum reported state
+        if is_auth_updated(self):
+            # Get the active user language
+            self._shared.user_language = await async_get_active_user_language(
+                self.hass
+            )
         if not self._mqtt:
             _LOGGER.debug(f"{self._file_name}: No MQTT data available.")
             # return last/empty image if no MQTT or CPU usage too high.
@@ -386,9 +392,6 @@ class ValetudoCamera(Camera):
                 _LOGGER.info(
                     f"{self._file_name}: Camera image data update available: {process_data}"
                 )
-            else:
-                # Get the active user language
-                self._shared.user_language = await async_get_active_user_language(self.hass)
             try:
                 parsed_json = await self._mqtt.update_data(self._shared.image_grab)
                 if not parsed_json:
