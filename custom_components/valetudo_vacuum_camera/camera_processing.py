@@ -1,6 +1,6 @@
 """
 Multiprocessing module
-Version: v2024.05.2
+Version: v2024.06.0
 This module provide the image multiprocessing in order to
 avoid the overload of the main_thread of Home Assistant.
 """
@@ -15,6 +15,7 @@ import logging
 from .types import Color, JsonType, PilPNG
 from .utils.drawable import Drawable as Draw
 from .utils.status_text import StatusText
+from .utils.users_data import async_get_active_user_language
 from .valetudo.hypfer.image_handler import MapImageHandler
 from .valetudo.rand256.image_handler import ReImageHandler
 
@@ -210,7 +211,8 @@ class CameraProcessor:
         self, pil_img: PilPNG, color: Color, font: str, img_top: bool = True
     ) -> PilPNG:
         """Draw text on the image."""
-
+        if self._shared.user_language is None:
+            self._shared.user_language = await async_get_active_user_language(self.hass)
         if pil_img is not None:
             text, size = self._status_text.get_status_text(pil_img)
             Draw.status_text(
