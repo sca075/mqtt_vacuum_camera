@@ -11,12 +11,60 @@ from __future__ import annotations
 import json
 import logging
 import os
+import glob
 from typing import Optional
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import STORAGE_DIR
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
+
+
+async def async_write_vacuum_id(storage_dir, vacuum_id):
+    """Write the vacuum_id to a JSON file."""
+    # Create the full file path
+    file_path = os.path.join(storage_dir, 'rooms_colours_description.json')
+    # Data to be written
+    data = {'vacuum_id': vacuum_id}
+    # Write data to a JSON file
+    with open(file_path, 'w') as file:
+        json.dump(data, file, indent=4)
+    _LOGGER.info(f"vacuum_id saved: {vacuum_id}")
+
+
+def get_translations_vacuum_id(storage_dir):
+    """Read the vacuum_id from a JSON file."""
+    # Create the full file path
+    file_path = os.path.join(storage_dir, 'rooms_colours_description.json')
+    try:
+        with open(file_path) as file:
+            data = json.load(file)
+            vacuum_id = data.get('vacuum_id', None)
+            return vacuum_id
+    except FileNotFoundError:
+        _LOGGER.debug(f"{file_path} does not exist.")
+        return None
+    except json.JSONDecodeError:
+        _LOGGER.debug(f"Error reading the file {file_path}.")
+    return None
+
+
+def remove_room_data_files(directory) -> None:
+    """Remove all 'room_data*.json' files in the specified directory."""
+    # Create the full path pattern for glob to match
+    path_pattern = os.path.join(directory, "room_data*.json")
+    # Find all files matching the pattern
+    files = glob.glob(path_pattern)
+    if not files:
+        _LOGGER.debug(f"No files found matching pattern: {path_pattern}")
+        return
+    # Loop through and remove each file
+    for file in files:
+        try:
+            os.remove(file)
+            _LOGGER.debug(f"Removed file: {file}")
+        except OSError as e:
+            _LOGGER.debug(f"Error removing file {file}: {e}")
 
 
 def is_auth_updated(self) -> bool:
@@ -188,10 +236,7 @@ async def async_load_room_data(storage_path: str, vacuum_id: str) -> dict:
             data = json.load(data_file)
             return data
     except FileNotFoundError:
-        _LOGGER.warning(
-            f"Room data file not found: {data_file_path}, "
-            f"the file will be created as soon the segment clean will be operated"
-        )
+        _LOGGER.debug(f"Vacuum ID: {vacuum_id} do not support rooms.")
         return {}
     except json.JSONDecodeError:
         _LOGGER.error(f"Error decoding room data file: {data_file_path}")
@@ -204,6 +249,16 @@ async def async_rename_room_description(
     """
     Add room names to the room descriptions in the translations.
     """
+    room_data = await async_load_room_data(storage_path, vacuum_id)
+
+    if not room_data:
+        _LOGGER.warning(
+            f"Vacuum ID: {vacuum_id} do not support Rooms! Aborting room name addition."
+        )
+        return None
+    # Save the vacuum_id to a JSON file
+    await async_write_vacuum_id(storage_path, vacuum_id)
+    # Get the languages to modify
     language = await async_load_language(storage_path)
     edit_path = hass.config.path(
         f"custom_components/valetudo_vacuum_camera/translations"
@@ -217,8 +272,6 @@ async def async_rename_room_description(
             " Please report the missing translation to the author."
         )
         data_list = await async_load_translations_json(hass, ["en"])
-
-    room_data = await async_load_room_data(storage_path, vacuum_id)
 
     # Modify the "data_description" keys for rooms_colours_1 and rooms_colours_2
     for data in data_list:
@@ -257,6 +310,6 @@ async def async_rename_room_description(
             with open(os.path.join(edit_path, f"{language[idx]}.json"), "w") as file:
                 json.dump(data, file, indent=2)
             _LOGGER.info(
-                "Room names added to the room descriptions in the translations."
+                f"Room names added to the room descriptions in the {language[idx]} translations."
             )
     return None
