@@ -1,7 +1,7 @@
 """
 Image Draw Class for Valetudo Hypfer Image Handling.
 This class is used to simplify the ImageHandler class.
-Version: 2024.05.3
+Version: 2024.06.0
 """
 
 from __future__ import annotations
@@ -60,25 +60,32 @@ class ImageDraw:
             pixels = self.img_h.data.sublist(compressed_pixels, 3)
             if layer_type == "segment" or layer_type == "floor":
                 room_color = self.img_h.shared.rooms_colors[room_id]
-                if layer_type == "segment":
-                    # Check if the room is active and set a modified color
-                    if self.img_h.active_zones and room_id < (
-                        len(self.img_h.active_zones) - 1
-                    ):
-                        if self.img_h.active_zones[room_id + 1] == 1:
-                            room_color = (
-                                ((2 * room_color[0]) + color_zone_clean[0]) // 3,
-                                ((2 * room_color[1]) + color_zone_clean[1]) // 3,
-                                ((2 * room_color[2]) + color_zone_clean[2]) // 3,
-                                ((2 * room_color[3]) + color_zone_clean[3]) // 3,
-                            )
-                img_np_array = await self.img_h.draw.from_json_to_image(
-                    img_np_array, pixels, pixel_size, room_color
-                )
-                if room_id < 15:
-                    room_id += 1
-                else:
-                    room_id = 0
+                try:
+                    if layer_type == "segment":
+                        # Check if the room is active and set a modified color
+                        if self.img_h.active_zones and room_id < (
+                            len(self.img_h.active_zones) - 1
+                        ):
+                            if self.img_h.active_zones[room_id + 1] == 1:
+                                room_color = (
+                                    ((2 * room_color[0]) + color_zone_clean[0]) // 3,
+                                    ((2 * room_color[1]) + color_zone_clean[1]) // 3,
+                                    ((2 * room_color[2]) + color_zone_clean[2]) // 3,
+                                    ((2 * room_color[3]) + color_zone_clean[3]) // 3,
+                                )
+                except IndexError as e:
+                    _LOGGER.warning(f"{self.file_name} Image Draw Error: {e}")
+                    _LOGGER.debug(
+                        f"\n{self.file_name} Active Zones: {self.img_h.active_zones} and Room ID: {room_id}"
+                    )
+                finally:
+                    img_np_array = await self.img_h.draw.from_json_to_image(
+                        img_np_array, pixels, pixel_size, room_color
+                    )
+                    if room_id < 15:
+                        room_id += 1
+                    else:
+                        room_id = 0
             elif layer_type == "wall":
                 # Drawing walls.
                 img_np_array = await self.img_h.draw.from_json_to_image(
