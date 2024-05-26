@@ -342,9 +342,7 @@ class ValetudoCamera(Camera):
         # check and update the vacuum reported state
         if is_auth_updated(self):
             # Get the active user language
-            self._shared.user_language = await async_get_active_user_language(
-                self.hass
-            )
+            self._shared.user_language = await async_get_active_user_language(self.hass)
         if not self._mqtt:
             _LOGGER.debug(f"{self._file_name}: No MQTT data available.")
             # return last/empty image if no MQTT or CPU usage too high.
