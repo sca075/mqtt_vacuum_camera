@@ -8,10 +8,10 @@ Version: 2024.06.0
 
 from __future__ import annotations
 
+import glob
 import json
 import logging
 import os
-import glob
 from typing import Optional
 
 from homeassistant.core import HomeAssistant
@@ -20,14 +20,33 @@ from homeassistant.helpers.storage import STORAGE_DIR
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
+def get_rooms_count(robot_name: str) -> int:
+    """Get the number of segments in the room_data_{vacuum_id}.json file."""
+    hass = HomeAssistant(os.getcwd())
+    file_path = hass.config.path(
+        STORAGE_DIR, "valetudo_camera", f"room_data_{robot_name}.json"
+    )
+    try:
+        with open(file_path) as file:
+            room_data = json.load(file)
+            room_count = room_data.get("segments", 0)
+            return room_count
+    except FileNotFoundError:
+        _LOGGER.debug(f"File not found: {file_path}")
+        return 0
+    except json.JSONDecodeError:
+        _LOGGER.error(f"Error decoding file: {file_path}")
+        return 0
+
+
 async def async_write_vacuum_id(storage_dir, vacuum_id):
     """Write the vacuum_id to a JSON file."""
     # Create the full file path
-    file_path = os.path.join(storage_dir, 'rooms_colours_description.json')
+    file_path = os.path.join(storage_dir, "rooms_colours_description.json")
     # Data to be written
-    data = {'vacuum_id': vacuum_id}
+    data = {"vacuum_id": vacuum_id}
     # Write data to a JSON file
-    with open(file_path, 'w') as file:
+    with open(file_path, "w") as file:
         json.dump(data, file, indent=4)
     _LOGGER.info(f"vacuum_id saved: {vacuum_id}")
 
@@ -35,11 +54,11 @@ async def async_write_vacuum_id(storage_dir, vacuum_id):
 def get_translations_vacuum_id(storage_dir):
     """Read the vacuum_id from a JSON file."""
     # Create the full file path
-    file_path = os.path.join(storage_dir, 'rooms_colours_description.json')
+    file_path = os.path.join(storage_dir, "rooms_colours_description.json")
     try:
         with open(file_path) as file:
             data = json.load(file)
-            vacuum_id = data.get('vacuum_id', None)
+            vacuum_id = data.get("vacuum_id", None)
             return vacuum_id
     except FileNotFoundError:
         _LOGGER.debug(f"{file_path} does not exist.")

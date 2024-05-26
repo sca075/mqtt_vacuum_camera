@@ -13,7 +13,7 @@ from homeassistant.helpers.storage import STORAGE_DIR
 
 from custom_components.valetudo_vacuum_camera.types import Any, JsonType, PilPNG
 from custom_components.valetudo_vacuum_camera.utils.users_data import (
-    async_write_languages_json
+    async_write_languages_json,
 )
 
 _LOGGER = logging.getLogger(__name__)  # Create a logger instance
@@ -46,7 +46,7 @@ class Snapshots:
         if not un_formated_room_data:
             _LOGGER.debug(f"No rooms data found for {vacuum_id} to save.")
             return
-        room_data = {}
+        room_data = {"segments": len(un_formated_room_data)}
         for room_id, room_info in un_formated_room_data.items():
             room_data[room_id] = {
                 "number": room_info["number"],
