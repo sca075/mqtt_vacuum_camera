@@ -23,6 +23,7 @@ class StatusText:
     def __init__(self, hass, camera_shared):
         self.hass = hass
         self._shared = camera_shared
+        self.file_name = self._shared.file_name
         self._translations_path = hass.config.path(
             "custom_components/valetudo_vacuum_camera/translations/"
         )
@@ -39,6 +40,10 @@ class StatusText:
             with open(file_path) as file:
                 translations = json.load(file)
         except FileNotFoundError:
+            _LOGGER.warning(f"{file_path} Not found. Report to the author that {language} is missing.")
+            return None
+        except json.JSONDecodeError:
+            _LOGGER.warning(f"{file_path} is not a valid JSON file.")
             return None
         return translations
 
@@ -49,6 +54,11 @@ class StatusText:
         @return: Json data or None.
         """
         translations = self.load_translations(language)
+
+        # Check if the translations file is loaded.
+        if translations is None:
+            return None
+
         vacuum_status_options = (
             translations.get("selector", {}).get("vacuum_status", {}).get("options", {})
         )
@@ -72,16 +82,16 @@ class StatusText:
         :param text_img: Image to draw the text on.
         :return status_text, text_size: List of the status text and the text size.
         """
-        status_text = ["If you read me, something went wrong.."]  # default text
+        status_text = ["If you read me, something really went wrong.."]  # default text
         text_size_coverage = 1.5  # resize factor for the text
         text_size = self._shared.vacuum_status_size  # default text size
         charge_level = "\u03DE"  # unicode Koppa symbol
         charging = "\u2211"  # unicode Charging symbol
         vacuum_state = self.translate_vacuum_status()
         if self._shared.show_vacuum_state:
-            status_text = [f"{self._shared.file_name}: {vacuum_state}"]
+            status_text = [f"{self.file_name}: {vacuum_state}"]
             if not self._shared.vacuum_connection:
-                status_text = [f"{self._shared.file_name}: Disconnected from MQTT?"]
+                status_text = [f"{self.file_name}: Disconnected from MQTT?"]
             else:
                 if self._shared.current_room:
                     try:
