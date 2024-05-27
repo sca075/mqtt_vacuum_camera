@@ -136,7 +136,9 @@ async def async_get_user_ids(hass: HomeAssistant) -> list[str]:
     user_ids = [
         user["id"]
         for user in data["data"]["users"]
-        if user["name"] not in ["Supervisor", "Home Assistant Content"]
+        if user["name"] not in ["Supervisor",
+                                "Home Assistant Content",
+                                "Home Assistant Cloud"]
     ]
     return user_ids
 
