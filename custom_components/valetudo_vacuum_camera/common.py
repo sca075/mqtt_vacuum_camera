@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import logging
 
-from homeassistant.components import mqtt
 from homeassistant.components.mqtt import DOMAIN as MQTT_DOMAIN
 from homeassistant.components.mqtt.models import MqttData
 from homeassistant.components.vacuum import DOMAIN as VACUUM_DOMAIN
