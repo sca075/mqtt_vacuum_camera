@@ -43,12 +43,16 @@ class Snapshots:
         # New file room_data to be saved / updated
         data_file_path = os.path.join(self.storage_path, f"room_data_{vacuum_id}.json")
         un_formated_room_data = self._shared.map_rooms
+        _LOGGER.debug(f"Rooms data of {vacuum_id}: {un_formated_room_data}")
         if not un_formated_room_data:
             _LOGGER.debug(f"No rooms data found for {vacuum_id} to save.")
             return
-        room_data = {"segments": len(un_formated_room_data)}
+        room_data = {
+            "segments": len(un_formated_room_data),
+            "rooms": {}
+        }
         for room_id, room_info in un_formated_room_data.items():
-            room_data[room_id] = {
+            room_data["rooms"][room_id] = {
                 "number": room_info["number"],
                 "name": room_info["name"],
             }
@@ -106,7 +110,9 @@ class Snapshots:
                 log_file.write(log_data)
             if self._first_run:
                 self._first_run = False
+                _LOGGER.info("Getting the users languages data.")
                 await async_write_languages_json(self.hass)
+                _LOGGER.info("Getting vacuum rooms data.")
                 await self.async_get_room_data()
 
         except Exception as e:

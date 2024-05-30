@@ -7,11 +7,12 @@ from __future__ import annotations
 
 import logging
 
-from homeassistant.components import mqtt
+from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.components.mqtt import DOMAIN as MQTT_DOMAIN
+from homeassistant.components.mqtt.models import MqttData
 from homeassistant.components.vacuum import DOMAIN as VACUUM_DOMAIN
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import device_registry as dr, entity_registry as er
+from homeassistant.util.hass_dict import HassKey
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -24,6 +25,7 @@ def get_device_info(
     entity registry and device registry.
     """
     vacuum_entity_id = er.async_resolve_entity_id(er.async_get(hass), config_entry_id)
+    _LOGGER.debug(f"Vacuum entity ID: {vacuum_entity_id}")
     if not vacuum_entity_id:
         _LOGGER.error("Unable to lookup vacuum's entity ID. Was it removed?")
         return None
@@ -33,7 +35,7 @@ def get_device_info(
     vacuum_device = device_registry.async_get(
         entity_registry.async_get(vacuum_entity_id).device_id
     )
-
+    _LOGGER.debug(f"Vacuum device: {vacuum_device}")
     if not vacuum_device:
         _LOGGER.error("Unable to locate vacuum's device ID. Was it removed?")
         return None
@@ -53,6 +55,7 @@ def get_entity_identifier_from_mqtt(
     device = device_registry.async_get_device(
         identifiers={(MQTT_DOMAIN, mqtt_identifier)}
     )
+    _LOGGER.debug(f"Device: {device}")
     entities = er.async_entries_for_device(entity_registry, device_id=device.id)
     for entity in entities:
         if entity.domain == VACUUM_DOMAIN:
@@ -66,8 +69,10 @@ def get_vacuum_mqtt_topic(vacuum_entity_id: str, hass: HomeAssistant) -> str | N
     Fetches the mqtt topic identifier from the MQTT integration. Returns None if it cannot be found.
     """
     try:
+        # Fix for Home Assistant 2026.6.0
+        DATA_MQTT: HassKey[MqttData] = HassKey("mqtt")
         return list(
-            mqtt.get_mqtt_data(hass)
+            hass.data[DATA_MQTT]
             .debug_info_entities.get(vacuum_entity_id)
             .get("subscriptions")
             .keys()

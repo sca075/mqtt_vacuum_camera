@@ -40,7 +40,9 @@ class StatusText:
             with open(file_path) as file:
                 translations = json.load(file)
         except FileNotFoundError:
-            _LOGGER.warning(f"{file_path} Not found. Report to the author that {language} is missing.")
+            _LOGGER.warning(
+                f"{file_path} Not found. Report to the author that {language} is missing."
+            )
             return None
         except json.JSONDecodeError:
             _LOGGER.warning(f"{file_path} is not a valid JSON file.")
