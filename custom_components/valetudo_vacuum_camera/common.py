@@ -24,6 +24,7 @@ def get_device_info(
     entity registry and device registry.
     """
     vacuum_entity_id = er.async_resolve_entity_id(er.async_get(hass), config_entry_id)
+    _LOGGER.debug(f"Vacuum entity ID: {vacuum_entity_id}")
     if not vacuum_entity_id:
         _LOGGER.error("Unable to lookup vacuum's entity ID. Was it removed?")
         return None
@@ -33,7 +34,7 @@ def get_device_info(
     vacuum_device = device_registry.async_get(
         entity_registry.async_get(vacuum_entity_id).device_id
     )
-
+    _LOGGER.debug(f"Vacuum device: {vacuum_device}")
     if not vacuum_device:
         _LOGGER.error("Unable to locate vacuum's device ID. Was it removed?")
         return None
@@ -53,6 +54,7 @@ def get_entity_identifier_from_mqtt(
     device = device_registry.async_get_device(
         identifiers={(MQTT_DOMAIN, mqtt_identifier)}
     )
+    _LOGGER.debug(f"Device: {device}")
     entities = er.async_entries_for_device(entity_registry, device_id=device.id)
     for entity in entities:
         if entity.domain == VACUUM_DOMAIN:

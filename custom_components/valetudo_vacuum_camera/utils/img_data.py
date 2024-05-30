@@ -3,10 +3,10 @@ Collections of Json and List routines
 ImageData is part of the Image_Handler
 used functions to search data in the json
 provided for the creation of the new camera frame
-Version: v2024.05.1
+Version: v2024.06.1
 """
 
-import logging
+from __future__ import annotations
 
 import numpy as np
 
@@ -16,8 +16,6 @@ from custom_components.valetudo_vacuum_camera.types import (
     JsonType,
     NumpyArray,
 )
-
-_LOGGER = logging.getLogger(__name__)
 
 
 class ImageData:
@@ -88,8 +86,9 @@ class ImageData:
                     if layer_type not in layer_dict:
                         layer_dict[layer_type] = []
                     layer_dict[layer_type].append(json_obj.get("compressedPixels", []))
-                if layer_type == "floor":
-                    active_list.append(0)
+                # Hopefully will not brake anything.
+                # if layer_type == "floor":
+                #    active_list.append("floor")
                 if layer_type == "segment":
                     active_list.append(int(active_type["active"]))
 

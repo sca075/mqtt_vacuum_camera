@@ -1,6 +1,6 @@
 """
 Camera
-Version: v2024.05.4
+Version: v2024.06.1
 Image Processing Threading implemented on Version 1.5.7.
 """
 
@@ -490,7 +490,7 @@ class ValetudoCamera(Camera):
         if pil_img:
             self._last_image = pil_img
             _LOGGER.debug(
-                f"\n{self._file_name}: Image from Json: {self._shared.vac_json_id}."
+                f"{self._file_name}: Image from Json: {self._shared.vac_json_id}."
             )
             if self._shared.show_vacuum_state:
                 pil_img = await self.processor.run_async_draw_image_text(
@@ -498,10 +498,10 @@ class ValetudoCamera(Camera):
                 )
         else:
             if self._last_image is not None:
-                _LOGGER.debug(f"\n{self._file_name}: Output Last Image.")
+                _LOGGER.debug(f"{self._file_name}: Output Last Image.")
                 pil_img = self._last_image
             else:
-                _LOGGER.debug(f"\n{self._file_name}: Output Gray Image.")
+                _LOGGER.debug(f"{self._file_name}: Output Gray Image.")
                 pil_img = self.empty_if_no_data()
         self._image_w = pil_img.width
         self._image_h = pil_img.height

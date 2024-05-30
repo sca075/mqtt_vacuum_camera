@@ -3,10 +3,11 @@ Collections of Drawing Utility
 Drawable is part of the Image_Handler
 used functions to draw the elements on the Numpy Array
 that is actually our camera frame.
-Version: v2024.05.1
+Version: v2024.06.1
 """
 
-import logging
+from __future__ import annotations
+
 import math
 
 from PIL import ImageDraw, ImageFont
@@ -20,8 +21,6 @@ from custom_components.valetudo_vacuum_camera.types import (
 )
 
 # import re
-
-_LOGGER = logging.getLogger(__name__)
 
 
 class Drawable:
@@ -419,7 +418,6 @@ class Drawable:
         # to draw the robot.
         tmp_x, tmp_y = 26, 26
         # Draw Robot
-        _LOGGER.info(f"Drawing {log} Robot With Angle: {angle}")
         radius = 25  # Radius of the vacuum constant
         r_scaled = radius // 11  # Offset scale for placement of the objects.
         r_cover = r_scaled * 12  # Scale factor for cover

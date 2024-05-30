@@ -1,7 +1,7 @@
 """
 Image Draw Class for Valetudo Hypfer Image Handling.
 This class is used to simplify the ImageHandler class.
-Version: 2024.06.0
+Version: 2024.06.1
 """
 
 from __future__ import annotations
@@ -66,7 +66,7 @@ class ImageDraw:
                         if self.img_h.active_zones and room_id < (
                             len(self.img_h.active_zones) - 1
                         ):
-                            if self.img_h.active_zones[room_id + 1] == 1:
+                            if self.img_h.active_zones[room_id] == 1:
                                 room_color = (
                                     ((2 * room_color[0]) + color_zone_clean[0]) // 3,
                                     ((2 * room_color[1]) + color_zone_clean[1]) // 3,
@@ -76,7 +76,7 @@ class ImageDraw:
                 except IndexError as e:
                     _LOGGER.warning(f"{self.file_name} Image Draw Error: {e}")
                     _LOGGER.debug(
-                        f"\n{self.file_name} Active Zones: {self.img_h.active_zones} and Room ID: {room_id}"
+                        f"{self.file_name} Active Zones: {self.img_h.active_zones} and Room ID: {room_id}"
                     )
                 finally:
                     img_np_array = await self.img_h.draw.from_json_to_image(
@@ -100,7 +100,7 @@ class ImageDraw:
         try:
             obstacle_data = entity_dict.get("obstacle")
         except KeyError:
-            _LOGGER.info(f"\n{self.file_name} No obstacle found.")
+            _LOGGER.info(f"{self.file_name} No obstacle found.")
         else:
             obstacle_positions = []
             if obstacle_data:
@@ -122,7 +122,7 @@ class ImageDraw:
                     np_array, obstacle_positions, color_no_go
                 )
                 _LOGGER.debug(
-                    f"\n{self.file_name} All obstacle positions: %s",
+                    f"{self.file_name} All obstacle positions: %s",
                     obstacle_positions,
                 )
                 return np_array
@@ -139,7 +139,7 @@ class ImageDraw:
         try:
             charger_pos = entity_dict.get("charger_location")
         except KeyError:
-            _LOGGER.warning(f"\n{self.file_name}: No charger position found.")
+            _LOGGER.warning(f"{self.file_name}: No charger position found.")
         else:
             if charger_pos:
                 charger_pos = charger_pos[0]["points"]
@@ -159,7 +159,7 @@ class ImageDraw:
         try:
             json_id = my_json["metaData"]["nonce"]
         except (ValueError, KeyError) as e:
-            _LOGGER.debug(f"\n{self.file_name}: No JsonID provided: {e}")
+            _LOGGER.debug(f"{self.file_name}: No JsonID provided: {e}")
             json_id = None
         return json_id
 
@@ -176,7 +176,7 @@ class ImageDraw:
         except (ValueError, KeyError):
             zone_clean = None
         else:
-            _LOGGER.info(f"\n{self.file_name}: Got zones.")
+            _LOGGER.info(f"{self.file_name}: Got zones.")
         if zone_clean:
             try:
                 zones_active = zone_clean.get("active_zone")
@@ -217,7 +217,7 @@ class ImageDraw:
         except (ValueError, KeyError):
             virtual_walls = None
         else:
-            _LOGGER.info(f"\n{self.file_name}: Got virtual walls.")
+            _LOGGER.info(f"{self.file_name}: Got virtual walls.")
         if virtual_walls:
             np_array = await self.img_h.draw.draw_virtual_walls(
                 np_array, virtual_walls, color_no_go
@@ -243,9 +243,7 @@ class ImageDraw:
             predicted_path = paths_data.get("predicted_path", [])
             path_pixels = paths_data.get("path", [])
         except KeyError as e:
-            _LOGGER.warning(
-                f"\n{self.file_name}: Error extracting paths data: {str(e)}"
-            )
+            _LOGGER.warning(f"{self.file_name}: Error extracting paths data: {str(e)}")
         finally:
             if predicted_path:
                 predicted_path = predicted_path[0]["points"]
@@ -276,7 +274,7 @@ class ImageDraw:
         except (ValueError, KeyError):
             entity_dict = None
         else:
-            _LOGGER.info(f"\n{self.file_name}: Got the points in the json.")
+            _LOGGER.info(f"{self.file_name}: Got the points in the json.")
         return entity_dict
 
     @staticmethod
@@ -323,7 +321,7 @@ class ImageDraw:
                     < len(self.img_h.active_zones) - 1
                 ):  # issue #100 Index out of range.
                     self.img_h.zooming = bool(
-                        self.img_h.active_zones[self.img_h.robot_in_room["id"] + 1]
+                        self.img_h.active_zones[self.img_h.robot_in_room["id"]]
                     )
                 else:
                     self.img_h.zooming = False
@@ -360,13 +358,13 @@ class ImageDraw:
                         "in_room": self.img_h.robot_in_room["room"],
                     }
                     _LOGGER.debug(
-                        f"\n{self.file_name} is in {self.img_h.robot_in_room['room']}"
+                        f"{self.file_name} is in {self.img_h.robot_in_room['room']}"
                     )
                     del room, corners, robot_x, robot_y  # free memory.
                     return temp
             del room, corners  # free memory.
             _LOGGER.debug(
-                f"\n{self.file_name} not located within Camera Rooms coordinates."
+                f"{self.file_name} not located within Camera Rooms coordinates."
             )
             self.img_h.robot_in_room = last_room
             self.img_h.zooming = False
@@ -387,7 +385,7 @@ class ImageDraw:
         try:
             robot_pos = entity_dict.get("robot_position")
         except KeyError:
-            _LOGGER.warning(f"\n{self.file_name} No robot position found.")
+            _LOGGER.warning(f"{self.file_name} No robot position found.")
             return None, None, None
         finally:
             if robot_pos:
