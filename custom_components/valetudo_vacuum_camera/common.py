@@ -7,12 +7,12 @@ from __future__ import annotations
 
 import logging
 
+from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.components.mqtt import DOMAIN as MQTT_DOMAIN
 from homeassistant.components.mqtt.models import MqttData
 from homeassistant.components.vacuum import DOMAIN as VACUUM_DOMAIN
 from homeassistant.core import HomeAssistant
 from homeassistant.util.hass_dict import HassKey
-from homeassistant.helpers import device_registry as dr, entity_registry as er
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -69,6 +69,7 @@ def get_vacuum_mqtt_topic(vacuum_entity_id: str, hass: HomeAssistant) -> str | N
     Fetches the mqtt topic identifier from the MQTT integration. Returns None if it cannot be found.
     """
     try:
+        # Fix for Home Assistant 2026.6.0
         DATA_MQTT: HassKey[MqttData] = HassKey("mqtt")
         return list(
             hass.data[DATA_MQTT]

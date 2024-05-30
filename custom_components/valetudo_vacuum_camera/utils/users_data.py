@@ -22,9 +22,8 @@ _LOGGER: logging.Logger = logging.getLogger(__name__)
 
 def get_rooms_count(robot_name: str) -> int:
     """Get the number of segments in the room_data_{vacuum_id}.json file."""
-    hass = HomeAssistant(os.getcwd())
-    file_path = hass.config.path(
-        STORAGE_DIR, "valetudo_camera", f"room_data_{robot_name}.json"
+    file_path = os.path.join(
+        os.getcwd(), STORAGE_DIR, "valetudo_camera", f"room_data_{robot_name}.json"
     )
     try:
         with open(file_path) as file:
