@@ -186,7 +186,7 @@ async def async_write_languages_json(hass: HomeAssistant):
                 with open(user_data_file) as file:
                     data = json.load(file)
                     _LOGGER.info(f"User ID: {user_id}, data: {data}")
-                    language = data['data']['language']['language']
+                    language = data["data"]["language"]["language"]
                     languages["languages"].append(
                         {"user_id": user_id, "language": language}
                     )
