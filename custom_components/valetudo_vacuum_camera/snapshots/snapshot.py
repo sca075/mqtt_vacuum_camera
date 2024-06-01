@@ -43,14 +43,10 @@ class Snapshots:
         # New file room_data to be saved / updated
         data_file_path = os.path.join(self.storage_path, f"room_data_{vacuum_id}.json")
         un_formated_room_data = self._shared.map_rooms
-        _LOGGER.debug(f"Rooms data of {vacuum_id}: {un_formated_room_data}")
         if not un_formated_room_data:
             _LOGGER.debug(f"No rooms data found for {vacuum_id} to save.")
             return
-        room_data = {
-            "segments": len(un_formated_room_data),
-            "rooms": {}
-        }
+        room_data = {"segments": len(un_formated_room_data), "rooms": {}}
         for room_id, room_info in un_formated_room_data.items():
             room_data["rooms"][room_id] = {
                 "number": room_info["number"],
