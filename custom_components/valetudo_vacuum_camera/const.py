@@ -1,6 +1,6 @@
 """Constants for the valetudo_vacuum_camera integration."""
 
-"""Version v2024.06.0"""
+"""Version v2024.06.2"""
 
 """Required in Config_Flow"""
 PLATFORMS = ["camera"]
@@ -31,6 +31,7 @@ CONF_AUTO_ZOOM = "auto_zoom"
 CONF_ZOOM_LOCK_RATIO = "zoom_lock_ratio"
 ICON = "mdi:camera"
 NAME = "Valetudo Vacuum Camera"
+
 DEFAULT_VALUES = {
     "rotate_image": "0",
     "margins": "100",
@@ -98,6 +99,74 @@ DEFAULT_VALUES = {
     "alpha_room_14": 255.0,
     "alpha_room_15": 255.0,
 }
+
+KEYS_TO_UPDATE = [
+    "rotate_image",
+    "margins",
+    "aspect_ratio",
+    "offset_top",
+    "offset_bottom",
+    "offset_left",
+    "offset_right",
+    "auto_zoom",
+    "zoom_lock_ratio",
+    "show_vac_status",
+    "vac_status_size",
+    "vac_status_position",
+    "vac_status_font",
+    "get_svg_file",
+    "enable_www_snapshots",
+    "color_charger",
+    "color_move",
+    "color_wall",
+    "color_robot",
+    "color_go_to",
+    "color_no_go",
+    "color_zone_clean",
+    "color_background",
+    "color_text",
+    "alpha_charger",
+    "alpha_move",
+    "alpha_wall",
+    "alpha_robot",
+    "alpha_go_to",
+    "alpha_no_go",
+    "alpha_zone_clean",
+    "alpha_background",
+    "alpha_text",
+    "color_room_0",
+    "color_room_1",
+    "color_room_2",
+    "color_room_3",
+    "color_room_4",
+    "color_room_5",
+    "color_room_6",
+    "color_room_7",
+    "color_room_8",
+    "color_room_9",
+    "color_room_10",
+    "color_room_11",
+    "color_room_12",
+    "color_room_13",
+    "color_room_14",
+    "color_room_15",
+    "alpha_room_0",
+    "alpha_room_1",
+    "alpha_room_2",
+    "alpha_room_3",
+    "alpha_room_4",
+    "alpha_room_5",
+    "alpha_room_6",
+    "alpha_room_7",
+    "alpha_room_8",
+    "alpha_room_9",
+    "alpha_room_10",
+    "alpha_room_11",
+    "alpha_room_12",
+    "alpha_room_13",
+    "alpha_room_14",
+    "alpha_room_15",
+]
 
 ALPHA_VALUES = {
     "min": 0.0,  # Minimum value
