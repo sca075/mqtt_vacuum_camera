@@ -1,32 +1,19 @@
 # From our manifest.json for our custom component
 pillow==10.3.0
-numpy==1.23.2
+numpy
 isal==1.6.1
 psutil-home-assistant==0.0.1
 janus==1.0.0
 
 
 # Strictly for tests
-coverage==7.0.0
-pytest==7.2.0
-#pytest-asyncio==0.20.3
-pytest-cov==3.0.0
-pytest-socket==0.5.1
-pytest-mqtt == 0.2.0
-#pytest-homeassistant-custom-component==0.13.45
-pytest-asyncio==0.20.2
-#pytest-xdist==2.5.0
-pytest-homeassistant-custom-component==0.12.49
-#pytest-mqtt==0.2.0
-#pytest-sugar==0.9.5
-#pytest-unordered==0.5.2
-#pytest-timeout==2.1.0
-##pytest-requests_mock==1.10.0
-##pytest-respx==0.20.1
-##pytest-pytest_freezer==0.4.6
-#pytest-socket==0.5.1
-#anyio==3.*
-#pytest-forked==1.*
-#pytest-test-groups==1.*
-#pytest-cov==3.0.0
-pytest-aiohttp==1.*
+# We should always use the latest version to make sure we're testing against the latest version of Home Assistant
+pytest-homeassistant-custom-component>=0.13.128
+# By avoiding to pin to any of these, they can be automatically be managed by pytest-homeassistant-custom-component (above)
+pytest-asyncio
+pytest-aiohttp
+coverage
+pytest
+pytest-cov
+pytest-socket
+pytest-mqtt

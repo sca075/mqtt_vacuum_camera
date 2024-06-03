@@ -163,3 +163,4 @@ lib64
 
 # Home Assistant configuration
 config/
+www/
