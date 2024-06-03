@@ -55,8 +55,6 @@ For further details on how the camera operates and how you can contribute, refer
 
 </details>
 
-![Screenshot 2023-09-12 at 22 53 29](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/4f5981e3-39f2-449a-8a43-39870631e9a1)
-
 
 ### How to install:
 Via [HACS](https://hacs.xyz//setup/download) please follow. The instructions in [here](./docs/install.md) show detailed steps and will help to set up the camera also without HACS (manual setup). Our setup guide also includes **important** informations on how to setup the [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
