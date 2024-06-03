@@ -4,4 +4,6 @@ set -e
 
 cd "$(dirname "$0")/.."
 
+python3 -m ensurepip --upgrade
+python -m pip install --upgrade setuptools
 python3 -m pip install --requirement requirements.test.txt
