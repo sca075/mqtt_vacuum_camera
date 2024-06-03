@@ -63,8 +63,8 @@ class ImageDraw:
                 try:
                     if layer_type == "segment":
                         # Check if the room is active and set a modified color
-                        if self.img_h.active_zones and room_id < (
-                            len(self.img_h.active_zones) - 1
+                        if self.img_h.active_zones and (room_id in range(
+                            len(self.img_h.active_zones))
                         ):
                             if self.img_h.active_zones[room_id] == 1:
                                 room_color = (
@@ -315,10 +315,8 @@ class ImageDraw:
                     "angle": angle,
                     "in_room": self.img_h.robot_in_room["room"],
                 }
-                if (
-                    self.img_h.active_zones
-                    and self.img_h.robot_in_room["id"]
-                    < len(self.img_h.active_zones) - 1
+                if self.img_h.active_zones and (self.img_h.robot_in_room["id"] in range(
+                    len(self.img_h.active_zones))
                 ):  # issue #100 Index out of range.
                     self.img_h.zooming = bool(
                         self.img_h.active_zones[self.img_h.robot_in_room["id"]]
@@ -328,8 +326,8 @@ class ImageDraw:
                 return temp
         # else we need to search and use the async method.
         if self.img_h.rooms_pos:
-            room_count = 0
             last_room = None
+            room_count = 0
             if self.img_h.robot_in_room:
                 last_room = self.img_h.robot_in_room
             for room in self.img_h.rooms_pos:
