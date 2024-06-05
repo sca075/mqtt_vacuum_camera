@@ -81,7 +81,7 @@ class ImageUtils:
             self.img.crop_area = self.img.auto_crop
         return rotated
 
-    def get_calibration_points(self, rotation_angle: int) -> list[dict[str, int]]:
+    def get_vacuum_points(self, rotation_angle: int) -> list[dict[str, int]]:
         """Calculate the calibration points based on the rotation angle."""
 
         """get_calibration_data"""
