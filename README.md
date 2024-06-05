@@ -15,8 +15,8 @@
 **About:**
 Extract the maps for rooted Vacuum Cleaners with Valetudo [Hypfer](https://valetudo.cloud/) or [RE(rand256)](https://github.com/rand256/valetudo) Firmware connected to Home Assistant via MQTT, [easy setup](./docs/install.md) thanks to [HACS](https://hacs.xyz/)  and guided Home Assistant GUI configuration.
 
-**What it is:** 
-This custom component anyhow is simple to install and setup, decode and render the vacuum maps to Home Assistant in few clicks. 
+**What it is:**
+This custom component anyhow is simple to install and setup, decode and render the vacuum maps to Home Assistant in few clicks.
 When you want also to control your vacuum you will need to also install the:
 [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card) from HACS as well.
 
@@ -59,12 +59,12 @@ For further details on how the camera operates and how you can contribute, refer
 ### How to install:
 Via [HACS](https://hacs.xyz//setup/download) please follow. The instructions in [here](./docs/install.md) show detailed steps and will help to set up the camera also without HACS (manual setup). Our setup guide also includes **important** informations on how to setup the [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
 
-### Features: 
+### Features:
 <details><summary> We here List what this camera offers as futures.</summary>
 
 1) All Valetudo vacuums are supported.
 2) **Automatically Generate the calibration points for the lovelace-xiaomi-vacuum-map-card** to ensure full compatibility to this user-friendly card.
-3) **Automatically Generate rooms based configuration when vacuum support this functionality**, this will allow you to configure the rooms quickly on the [lovelace-xiaomi-vacuum-map-card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card). 
+3) **Automatically Generate rooms based configuration when vacuum support this functionality**, this will allow you to configure the rooms quickly on the [lovelace-xiaomi-vacuum-map-card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
 4) **The camera take automatically [snapshots](./docs/snapshots.md) (when the vacuum idle/ error / docked)**. It is also possible to save a snapshot using a service call from Home Assistant with the file name and location you want to use. By the default the snapshot is saved in the www folder of Home Assistant. If the snapshot is disabled from Image Options the png will be deleted automatically.
    ```
    service: camera.snapshot
