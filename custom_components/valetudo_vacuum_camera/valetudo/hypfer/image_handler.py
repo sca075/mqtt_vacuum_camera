@@ -1,8 +1,8 @@
 """
-Image Handler Module.
+Image Handler Class.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Version: 2024.06.1
+Version: 2024.06.2
 """
 
 from __future__ import annotations
@@ -96,9 +96,9 @@ class MapImageHandler(object):
                     np.where(image_array != list(detect_colour))
                 )
                 # Calculate the trim box based on the first and last occurrences
-                min_y, min_x, dummy = np.min(nonzero_coords, axis=0)
-                max_y, max_x, dummy = np.max(nonzero_coords, axis=0)
-                del dummy, nonzero_coords
+                min_y, min_x, _ = np.min(nonzero_coords, axis=0)
+                max_y, max_x, _ = np.max(nonzero_coords, axis=0)
+                del nonzero_coords
                 _LOGGER.debug(
                     "{}: Found trims max and min values (y,x) ({}, {}) ({},{})...".format(
                         self.file_name,
@@ -448,9 +448,8 @@ class MapImageHandler(object):
             },  # Bottom-right corner 2
             {"x": 0, "y": self.crop_img_size[1]},  # Bottom-left corner (optional) 3
         ]
-
         # Calculate the calibration points in the vacuum coordinate system
-        vacuum_points = self.imu.get_calibration_points(rotation_angle)
+        vacuum_points = self.imu.get_vacuum_points(rotation_angle)
 
         # Create the calibration data for each point
         for vacuum_point, map_point in zip(vacuum_points, map_points):

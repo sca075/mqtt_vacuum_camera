@@ -63,8 +63,8 @@ class ImageDraw:
                 try:
                     if layer_type == "segment":
                         # Check if the room is active and set a modified color
-                        if self.img_h.active_zones and (room_id in range(
-                            len(self.img_h.active_zones))
+                        if self.img_h.active_zones and (
+                            room_id in range(len(self.img_h.active_zones))
                         ):
                             if self.img_h.active_zones[room_id] == 1:
                                 room_color = (
@@ -315,8 +315,9 @@ class ImageDraw:
                     "angle": angle,
                     "in_room": self.img_h.robot_in_room["room"],
                 }
-                if self.img_h.active_zones and (self.img_h.robot_in_room["id"] in range(
-                    len(self.img_h.active_zones))
+                if self.img_h.active_zones and (
+                    self.img_h.robot_in_room["id"]
+                    in range(len(self.img_h.active_zones))
                 ):  # issue #100 Index out of range.
                     self.img_h.zooming = bool(
                         self.img_h.active_zones[self.img_h.robot_in_room["id"]]
