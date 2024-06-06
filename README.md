@@ -16,17 +16,18 @@
 Extract the maps for rooted Vacuum Cleaners with Valetudo [Hypfer](https://valetudo.cloud/) or [RE(rand256)](https://github.com/rand256/valetudo) Firmware connected to Home Assistant via MQTT, [easy setup](./docs/install.md) thanks to [HACS](https://hacs.xyz/)  and guided Home Assistant GUI configuration.
 
 **What it is:**
-This custom component anyhow is simple to install and setup, decode and render the vacuum maps to Home Assistant in few clicks.
+This custom component is simple to install and setup, decode and render the vacuum maps to Home Assistant in few clicks.
 When you want also to control your vacuum you will need to also install the:
 [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card) from HACS as well.
 
 ### Limitations and Compatibility:
 <details>
    <summary>
-      Please read the limitations and compatibility before to install the camera.
+      Please Read the "Limitations and Compatibility" before to install the camera.
    </summary>
 
-I kindly ask for your understanding regarding any limitations you may encounter with this custom component.
+I kindly ask for your understanding regarding any limitations you may encounter with this custom component (please read also
+our [**notice**](./NOTICE.txt)).
 While it's been extensively tested on a PI4 8GB and now also on ProxMox VE, hardware below PI4 8GB may face issues. **Your feedback on such platforms is invaluable**;
 please report any problems you encounter.
 As a team of one, I'm diligently working to address compatibility across all environments, but this process takes time. In the interim, you can utilize [ValetudoPNG](https://github.com/erkexzcx/valetudopng) as an alternative on unsupported platforms.
@@ -34,8 +35,8 @@ Your support in making this component compatible with all environments is greatl
 For further details on how the camera operates and how you can contribute, refer to the Wiki section of this project. Your patience and assistance are crucial as we strive toward our goal of universal compatibility.
 
 - PI3 4GB: The camera is working on PI3 4GB, anyhow no chance there to run two vacuums cameras at the same time.
-- PI4 4GB: The camera is working on PI4 4GB, anyhow run two vacuums cameras at the same time isn't advised.
-</details>
+- PI4 4GB: The camera is working on PI4 4GB, anyhow run two vacuums cameras at the same time isn't advised even if possible.
+</details> 
 
 
 ### Known Supported Vacuums:
