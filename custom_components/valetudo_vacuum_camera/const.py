@@ -1,11 +1,12 @@
 """Constants for the valetudo_vacuum_camera integration."""
 
-"""Version v2024.06.2"""
+"""Version v2024.06.3b2"""
 
 """Required in Config_Flow"""
 PLATFORMS = ["camera"]
 DOMAIN = "valetudo_vacuum_camera"
 DEFAULT_NAME = "valetudo vacuum camera"
+DEFAULT_ROOMS = 15
 ATTR_ROTATE = "rotate_image"
 ATTR_CROP = "crop_image"
 ATTR_MARGINS = "margins"

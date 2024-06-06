@@ -3,7 +3,7 @@ Common functions for the Valetudo Vacuum Camera integration.
 Those functions are used to store and retrieve user data from the Home Assistant storage.
 The data will be stored locally in the Home Assistant in .storage/valetudo_camera directory.
 Author: @sca075
-Version: 2024.06.3b1
+Version: 2024.06.3b2
 """
 
 from __future__ import annotations
@@ -17,6 +17,9 @@ from typing import Optional
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import STORAGE_DIR
 
+
+from custom_components.valetudo_vacuum_camera.const import DEFAULT_ROOMS
+
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
@@ -26,16 +29,16 @@ def get_rooms_count(robot_name: str) -> int:
         os.getcwd(), STORAGE_DIR, "valetudo_camera", f"room_data_{robot_name}.json"
     )
     try:
-        with open(file_path) as file:
-            room_data = json.load(file)
-            room_count = room_data.get("segments", 0)
+        with open(file_path) as rooms_file:
+            room_data = json.load(rooms_file)
+            room_count = room_data.get("segments", DEFAULT_ROOMS)
             return room_count
     except FileNotFoundError:
-        _LOGGER.debug(f"File not found: {file_path}")
-        return 0
+        _LOGGER.warning(f"File not found: {file_path}")
+        return DEFAULT_ROOMS
     except json.JSONDecodeError:
         _LOGGER.error(f"Error decoding file: {file_path}")
-        return 0
+        return DEFAULT_ROOMS
 
 
 async def async_write_vacuum_id(storage_dir, vacuum_id):
