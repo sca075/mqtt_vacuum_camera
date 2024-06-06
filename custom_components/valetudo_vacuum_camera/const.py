@@ -6,6 +6,7 @@
 PLATFORMS = ["camera"]
 DOMAIN = "valetudo_vacuum_camera"
 DEFAULT_NAME = "valetudo vacuum camera"
+DEFAULT_ROOMS = 15
 ATTR_ROTATE = "rotate_image"
 ATTR_CROP = "crop_image"
 ATTR_MARGINS = "margins"

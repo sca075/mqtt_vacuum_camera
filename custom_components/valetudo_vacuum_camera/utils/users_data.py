@@ -17,6 +17,9 @@ from typing import Optional
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import STORAGE_DIR
 
+
+from custom_components.valetudo_vacuum_camera.const import DEFAULT_ROOMS
+
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
@@ -28,14 +31,14 @@ def get_rooms_count(robot_name: str) -> int:
     try:
         with open(file_path) as file:
             room_data = json.load(file)
-            room_count = room_data.get("segments", 0)
+            room_count = room_data.get("segments", DEFAULT_ROOMS)
             return room_count
     except FileNotFoundError:
         _LOGGER.debug(f"File not found: {file_path}")
-        return 0
+        return DEFAULT_ROOMS
     except json.JSONDecodeError:
         _LOGGER.error(f"Error decoding file: {file_path}")
-        return 0
+        return DEFAULT_ROOMS
 
 
 async def async_write_vacuum_id(storage_dir, vacuum_id):
