@@ -3,7 +3,7 @@ Common functions for the Valetudo Vacuum Camera integration.
 Those functions are used to store and retrieve user data from the Home Assistant storage.
 The data will be stored locally in the Home Assistant in .storage/valetudo_camera directory.
 Author: @sca075
-Version: 2024.06.1
+Version: 2024.06.3b1
 """
 
 from __future__ import annotations
@@ -100,44 +100,36 @@ def is_auth_updated(self) -> bool:
         return True
 
 
-async def async_find_last_logged_in_user(hass: HomeAssistant) -> Optional[str]:
-    """Search and return the last logged-in user ID."""
-    file_path = f"{hass.config.path(STORAGE_DIR)}/auth"
-    try:
-        with open(file_path) as file:
-            data = json.load(file)
+async def async_find_last_logged_in_user(hass: HomeAssistant) -> str or None:
+    """Retrieve the ID of the last logged-in user based on the most recent token usage."""
+    users = await hass.auth.async_get_users()  # Fetches list of all user objects
+    last_user = None
+    last_login_time = None
 
-    except FileNotFoundError:
-        _LOGGER.info("User ID File not found: %s", file_path)
+    # Iterate through users to find the one with the most recent activity
+    for user in users:
+        # Iterate through refresh tokens to find the most recent usage
+        for token in user.refresh_tokens.values():
+            if token.last_used_at and (last_login_time is None or token.last_used_at > last_login_time):
+                last_login_time = token.last_used_at
+                last_user = user
+
+    if last_user:
+        _LOGGER.info(f"Last logged-in user: {last_user.id}")
+        return last_user.id
+    else:
+        _LOGGER.info("No users have logged in yet.")
         return None
-
-    # Check if the data is not empty
-    if isinstance(data, dict) and data:
-        # Return the last entry
-        last_one = len(list(data["data"]["refresh_tokens"])) - 1
-        last_user_id = str(data["data"]["refresh_tokens"][last_one]["user_id"])
-        return last_user_id
 
 
 async def async_get_user_ids(hass: HomeAssistant) -> list[str]:
-    """Get the user IDs from the auth file."""
-    file_path = f"{hass.config.path(STORAGE_DIR)}/auth"
-    # Load the JSON data
-    try:
-        with open(file_path) as file:
-            data = json.load(file)
+    """Get the user IDs, excluding certain system users."""
+    users = await hass.auth.async_get_users()
+    excluded_users = ["Supervisor", "Home Assistant Content", "Home Assistant Cloud"]
 
-    except FileNotFoundError:
-        _LOGGER.info("File not found: %s", file_path)
-        return []
+    # Filter out users based on their name not being in the excluded list
+    user_ids = [user.id for user in users if user.name not in excluded_users]
 
-    # Extract user IDs for users other than "Supervisor" and "Home Assistant Content"
-    user_ids = [
-        user["id"]
-        for user in data["data"]["users"]
-        if user["name"]
-        not in ["Supervisor", "Home Assistant Content", "Home Assistant Cloud"]
-    ]
     return user_ids
 
 
@@ -147,7 +139,7 @@ async def async_get_active_user_language(hass: HomeAssistant) -> str:
     If the user's language setting is not found, default to English.
     """
     active_user_id = await async_find_last_logged_in_user(hass)
-    languages_path = f"{hass.config.path(STORAGE_DIR)}/languages.json"
+    languages_path = f"{hass.config.path(STORAGE_DIR)}/valetudo_camera/languages.json"
     file_path = hass.config.path(STORAGE_DIR, f"frontend.user_data_{active_user_id}")
     if os.path.exists(languages_path):
         with open(languages_path) as languages_file:
@@ -163,8 +155,10 @@ async def async_get_active_user_language(hass: HomeAssistant) -> str:
                 return language
         except KeyError:
             _LOGGER.info("User ID Language not found: %s", file_path)
-    _LOGGER.info("Defaulting to English language.")
-    return "en"
+            return "en"
+    else:
+        _LOGGER.info("Defaulting to English language.")
+        return "en"
 
 
 async def async_write_languages_json(hass: HomeAssistant):
@@ -174,7 +168,7 @@ async def async_write_languages_json(hass: HomeAssistant):
     try:
         user_ids = await async_get_user_ids(
             hass
-        )  # This function should exclude system users
+        )  # This function exclude system users
         _LOGGER.info(f"Saving User IDs: {user_ids} languages...")
         languages = {"languages": []}
         for user_id in user_ids:
@@ -253,8 +247,8 @@ async def async_load_translations_json(
         file_path = f"{translations_path}/{file_name}"
 
         try:
-            with open(file_path) as file:
-                translations = json.load(file)
+            with open(file_path) as translation_file:
+                translations = json.load(translation_file)
                 translations_list.append(translations)
         except FileNotFoundError:
             translations_list.append(None)
