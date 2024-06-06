@@ -29,12 +29,12 @@ def get_rooms_count(robot_name: str) -> int:
         os.getcwd(), STORAGE_DIR, "valetudo_camera", f"room_data_{robot_name}.json"
     )
     try:
-        with open(file_path) as file:
-            room_data = json.load(file)
+        with open(file_path) as rooms_file:
+            room_data = json.load(rooms_file)
             room_count = room_data.get("segments", DEFAULT_ROOMS)
             return room_count
     except FileNotFoundError:
-        _LOGGER.debug(f"File not found: {file_path}")
+        _LOGGER.warning(f"File not found: {file_path}")
         return DEFAULT_ROOMS
     except json.JSONDecodeError:
         _LOGGER.error(f"Error decoding file: {file_path}")
