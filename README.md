@@ -61,7 +61,11 @@ For further details on how the camera operates and how you can contribute, refer
 
 
 ### How to install:
-Via [HACS](https://hacs.xyz//setup/download) please follow. The instructions in [here](./docs/install.md) show detailed steps and will help to set up the camera also without HACS (manual setup). Our setup guide also includes **important** informations on how to setup the [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
+
+[![Open HACS repository in Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=sca075&repository=valetudo_vacuum_camera&category=integration)
+
+The instructions in [here](./docs/install.md) show detailed steps and will help to set up the camera also without HACS (manual setup).
+Our setup guide also includes **important** informations on how to setup the [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
 
 ### Features:
 <details><summary> We here List what this camera offers as futures.</summary>
