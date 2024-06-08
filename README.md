@@ -16,6 +16,9 @@
 Extract the maps for rooted Vacuum Cleaners with Valetudo [Hypfer](https://valetudo.cloud/) or [RE(rand256)](https://github.com/rand256/valetudo) Firmware connected to Home Assistant via MQTT, [easy setup](./docs/install.md) thanks to [HACS](https://hacs.xyz/)  and guided Home Assistant GUI configuration.
 
 **What it is:**
+
+❗This is an _unofficial_ repo and is not created, maintained, or in any sense linked to [valetudo.cloud](https://valetudo.cloud)
+
 This custom component is simple to install and setup, decode and render the vacuum maps to Home Assistant in few clicks.
 When you want also to control your vacuum you will need to also install the:
 [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card) from HACS as well.
