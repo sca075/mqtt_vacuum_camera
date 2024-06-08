@@ -1,11 +1,14 @@
 """
 Common functions for the Valetudo Vacuum Camera integration.
-Version: 2024.06.2
+Version: 2024.06.3b3
 """
 
 from __future__ import annotations
 
+import asyncio
+import json
 import logging
+from typing import Any
 
 from homeassistant.components.mqtt import DOMAIN as MQTT_DOMAIN
 from homeassistant.components.vacuum import DOMAIN as VACUUM_DOMAIN
@@ -56,7 +59,6 @@ def get_entity_identifier_from_mqtt(
     device = device_registry.async_get_device(
         identifiers={(MQTT_DOMAIN, mqtt_identifier)}
     )
-    _LOGGER.debug(f"Device: {device}")
     entities = er.async_entries_for_device(entity_registry, device_id=device.id)
     for entity in entities:
         if entity.domain == VACUUM_DOMAIN:
@@ -106,3 +108,34 @@ async def update_options(bk_options, new_options):
     # updated_options is a dictionary containing the merged options
     updated_bk_options = updated_options  # or backup_options, as needed
     return updated_bk_options
+
+
+async def async_load_file(file_to_load: str) -> Any:
+    """Asynchronously load JSON data from a file."""
+    loop = asyncio.get_event_loop()
+
+    def read_file(my_file: str):
+        """Helper function to read data from a file."""
+        with open(my_file) as file:
+            return file.read()
+
+    try:
+        return await loop.run_in_executor(None, read_file, file_to_load)
+    except Exception as e:
+        _LOGGER.warning(f"Blocking IO issue detected: {e}")
+        return None
+
+
+def _write_to_file(file_path, data):
+    """Helper function to write data to a file."""
+    with open(file_path, "w") as datafile:
+        json.dump(data, datafile, indent=2)
+
+
+async def async_write_json_to_disk(file_to_write: str, json_data):
+    """Asynchronously write data to a JSON file."""
+    loop = asyncio.get_event_loop()
+    try:
+        await loop.run_in_executor(None, _write_to_file, file_to_write, json_data)
+    except Exception as e:
+        _LOGGER.warning(f"Exception {e}")

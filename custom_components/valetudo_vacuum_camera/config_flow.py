@@ -1,4 +1,4 @@
-"""config_flow 2024.06.0
+"""config_flow 2024.06.3b3
 IMPORTANT: Maintain code when adding new options to the camera
 it will be mandatory to update const.py and common.py update_options.
 Format of the new constants must be CONST_NAME = "const_name" update also
@@ -785,7 +785,9 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         _LOGGER.debug(f"Looking for Storage Path: {storage_path}")
         if (user_input is None) and self.bk_options:
             if self.hass:
-                await async_rename_room_description(hass, storage_path, self.file_name)
+                await hass.async_add_executor_job(
+                    async_rename_room_description, hass, storage_path, self.file_name
+                )
                 self.options = self.bk_options
             return await self.async_step_opt_save()
 
