@@ -3,7 +3,7 @@ Common functions for the Valetudo Vacuum Camera integration.
 Those functions are used to store and retrieve user data from the Home Assistant storage.
 The data will be stored locally in the Home Assistant in .storage/valetudo_camera directory.
 Author: @sca075
-Version: 2024.06.3b2
+Version: 2024.06.3b3
 """
 
 from __future__ import annotations
@@ -17,7 +17,10 @@ from typing import Optional
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import STORAGE_DIR
 
-
+from custom_components.valetudo_vacuum_camera.common import (
+    async_load_file,
+    async_write_json_to_disk,
+)
 from custom_components.valetudo_vacuum_camera.const import DEFAULT_ROOMS
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -70,7 +73,7 @@ def get_translations_vacuum_id(storage_dir):
     return None
 
 
-def remove_room_data_files(directory) -> None:
+def remove_room_data_files(directory: str) -> None:
     """Remove all 'room_data*.json' files in the specified directory."""
     # Create the full path pattern for glob to match
     path_pattern = os.path.join(directory, "room_data*.json")
@@ -113,7 +116,9 @@ async def async_find_last_logged_in_user(hass: HomeAssistant) -> str or None:
     for user in users:
         # Iterate through refresh tokens to find the most recent usage
         for token in user.refresh_tokens.values():
-            if token.last_used_at and (last_login_time is None or token.last_used_at > last_login_time):
+            if token.last_used_at and (
+                last_login_time is None or token.last_used_at > last_login_time
+            ):
                 last_login_time = token.last_used_at
                 last_user = user
 
@@ -143,22 +148,33 @@ async def async_get_active_user_language(hass: HomeAssistant) -> str:
     """
     active_user_id = await async_find_last_logged_in_user(hass)
     languages_path = f"{hass.config.path(STORAGE_DIR)}/valetudo_camera/languages.json"
-    file_path = hass.config.path(STORAGE_DIR, f"frontend.user_data_{active_user_id}")
+    user_data_path = hass.config.path(
+        STORAGE_DIR, f"frontend.user_data_{active_user_id}"
+    )
     if os.path.exists(languages_path):
-        with open(languages_path) as languages_file:
-            languages_data = json.load(languages_file)
+        languages_file = await async_load_file(languages_path)
+        if languages_file:
+            languages_data = json.loads(languages_file)
             for language_info in languages_data.get("languages", []):
                 if language_info.get("user_id") == active_user_id:
                     return language_info.get("language", "en")
-    elif os.path.exists(file_path):
+        else:
+            _LOGGER.info(
+                "Cannot load languages.json file. Defaulting to English language."
+            )
+            return "en"
+    elif os.path.exists(user_data_path):
+        user_data_file = await async_load_file(user_data_path)
         try:
-            with open(file_path) as file:
-                data = json.load(file)
+            if user_data_file:
+                data = json.loads(user_data_file)
                 language = data["data"]["language"]["language"]
                 return language
+            else:
+                raise KeyError
         except KeyError:
-            _LOGGER.info("User ID Language not found: %s", file_path)
             return "en"
+
     else:
         _LOGGER.info("Defaulting to English language.")
         return "en"
@@ -169,9 +185,7 @@ async def async_write_languages_json(hass: HomeAssistant):
     Write the languages.json file with languages for all users excluding system accounts.
     """
     try:
-        user_ids = await async_get_user_ids(
-            hass
-        )  # This function exclude system users
+        user_ids = await async_get_user_ids(hass)  # This function exclude system users
         _LOGGER.info(f"Saving User IDs: {user_ids} languages...")
         languages = {"languages": []}
         for user_id in user_ids:
@@ -180,23 +194,28 @@ async def async_write_languages_json(hass: HomeAssistant):
             )
 
             if os.path.exists(user_data_file):
-                with open(user_data_file) as file:
-                    data = json.load(file)
-                    _LOGGER.info(f"User ID: {user_id}, data: {data}")
+                user_data = await async_load_file(user_data_file)
+                try:
+                    data = json.loads(user_data)
                     language = data["data"]["language"]["language"]
                     languages["languages"].append(
                         {"user_id": user_id, "language": language}
                     )
+                except KeyError:
+                    raise KeyError
+                except json.JSONDecodeError:
+                    raise json.JSONDecodeError
+                else:
                     _LOGGER.info(f"User ID: {user_id}, language: {language}")
             else:
                 _LOGGER.info(f"User ID: {user_id}, skipping...")
+                return None
 
         # Write the consolidated languages to a JSON file
         out_languages_file = hass.config.path(
             STORAGE_DIR, "valetudo_camera", "languages.json"
         )
-        with open(out_languages_file, "w") as outfile:
-            json.dump(languages, outfile, indent=2)
+        await async_write_json_to_disk(out_languages_file, languages)
 
     except Exception as e:
         _LOGGER.warning(f"Error while writing languages.json: {str(e)}")
@@ -207,27 +226,21 @@ async def async_load_languages(storage_path: str, selected_languages=None) -> li
     if selected_languages is None:
         selected_languages = []
     language_file_path = os.path.join(storage_path, "languages.json")
-    try:
-        with open(language_file_path) as language_file:
-            data = json.load(language_file)
-            # Access the "languages" key first
-            languages = data.get("languages", [])
-            # Extract language from each dictionary
-            for lang_data in languages:
-                language = lang_data.get("language", "")
+    if os.path.exists(language_file_path):
+        language_file = await async_load_file(language_file_path)
+        if language_file:
+            try:
+                languages_data = json.loads(language_file)
+            except json.JSONDecodeError:
+                _LOGGER.error(f"Error decoding language file: {language_file_path}")
+                return []
+            for language_info in languages_data.get("languages", []):
+                language = language_info.get("language", "")
                 selected_languages.append(language)
             return selected_languages
-    except FileNotFoundError:
-        # Handle case where language file is not found
-        _LOGGER.warning(
-            f"Language file not found in {storage_path}. "
-            f"The file will be stored as soon as the vacuum is operated."
-        )
-        return []
-    except json.JSONDecodeError:
-        # Handle case where JSON decoding error occurs
-        _LOGGER.error("Error decoding language file.")
-        return []
+        else:
+            _LOGGER.warning(f"Language file not found in {storage_path}.")
+            return []
 
 
 async def async_load_translations_json(
@@ -246,11 +259,11 @@ async def async_load_translations_json(
 
     for language in languages:
         _LOGGER.debug(f"Loading translations for language: {language}")
-        file_name = f"{language}.json"
-        file_path = f"{translations_path}/{file_name}"
+        locals_file_name = f"{language}.json"
+        locals_file_path = f"{translations_path}/{locals_file_name}"
 
         try:
-            with open(file_path) as translation_file:
+            with open(locals_file_path) as translation_file:
                 translations = json.load(translation_file)
                 translations_list.append(translations)
         except FileNotFoundError:
