@@ -29,7 +29,6 @@ def get_device_info(
     entity registry and device registry.
     """
     vacuum_entity_id = er.async_resolve_entity_id(er.async_get(hass), config_entry_id)
-    _LOGGER.debug(f"Vacuum entity ID: {vacuum_entity_id}")
     if not vacuum_entity_id:
         _LOGGER.error("Unable to lookup vacuum's entity ID. Was it removed?")
         return None
@@ -39,7 +38,6 @@ def get_device_info(
     vacuum_device = device_registry.async_get(
         entity_registry.async_get(vacuum_entity_id).device_id
     )
-    _LOGGER.debug(f"Vacuum device: {vacuum_device}")
     if not vacuum_device:
         _LOGGER.error("Unable to locate vacuum's device ID. Was it removed?")
         return None
@@ -126,16 +124,37 @@ async def async_load_file(file_to_load: str) -> Any:
         return None
 
 
-def _write_to_file(file_path, data):
-    """Helper function to write data to a file."""
-    with open(file_path, "w") as datafile:
-        json.dump(data, datafile, indent=2)
-
-
-async def async_write_json_to_disk(file_to_write: str, json_data):
+async def async_write_json_to_disk(file_to_write: str, json_data) -> None:
     """Asynchronously write data to a JSON file."""
     loop = asyncio.get_event_loop()
+
+    def _write_to_file(file_path, data):
+        """Helper function to write data to a file."""
+        with open(file_path, "w") as datafile:
+            json.dump(data, datafile, indent=2)
+
     try:
         await loop.run_in_executor(None, _write_to_file, file_to_write, json_data)
-    except Exception as e:
-        _LOGGER.warning(f"Exception {e}")
+    except IOError as e:
+        _LOGGER.warning(f"Blocking IO issue detected: {e}")
+
+
+async def async_write_file_to_disk(
+    file_to_write: str, data, is_binary: bool = False
+) -> None:
+    """Asynchronously write data to a file."""
+    loop = asyncio.get_event_loop()
+
+    def _write_to_file(file_path, data_to_write, binary_mode):
+        """Helper function to write data to a file."""
+        if binary_mode:
+            with open(file_path, "wb") as datafile:
+                datafile.write(data_to_write)
+        else:
+            with open(file_path, "w") as datafile:
+                datafile.write(data_to_write)
+
+    try:
+        await loop.run_in_executor(None, _write_to_file, file_to_write, data, is_binary)
+    except IOError as e:
+        _LOGGER.warning(f"Blocking IO issue detected: {e}")

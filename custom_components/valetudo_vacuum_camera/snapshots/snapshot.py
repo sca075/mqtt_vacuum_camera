@@ -1,9 +1,8 @@
-"""Snapshot Version 2024.06.0"""
+"""Snapshot Version 2024.06.3"""
 
 import asyncio
 from asyncio import gather, get_event_loop
 import concurrent.futures
-import json
 import logging
 import os
 import shutil
@@ -11,6 +10,10 @@ import zipfile
 
 from homeassistant.helpers.storage import STORAGE_DIR
 
+from custom_components.valetudo_vacuum_camera.common import (
+    async_write_file_to_disk,
+    async_write_json_to_disk,
+)
 from custom_components.valetudo_vacuum_camera.types import Any, JsonType, PilPNG
 from custom_components.valetudo_vacuum_camera.utils.users_data import (
     async_write_languages_json,
@@ -54,8 +57,7 @@ class Snapshots:
             }
         if room_data:
             try:
-                with open(data_file_path, "w") as language_file:
-                    json.dump(room_data, language_file, indent=2)
+                await async_write_json_to_disk(data_file_path, room_data)
                 _LOGGER.info(f"\nRooms data of {vacuum_id} saved to {data_file_path}")
             except Exception as e:
                 _LOGGER.warning(f"Failed to save rooms data of {vacuum_id}: {e}")
@@ -63,7 +65,7 @@ class Snapshots:
     async def async_get_filtered_logs(self):
         """Make a copy of home-assistant.log to home-assistant.tmp"""
         log_file_path = os.path.join(self._directory_path, "home-assistant.log")
-        tmp_log_file_path = os.path.join(self._directory_path, "home-assistant.tmp")
+        tmp_log_file_path = os.path.join(self._directory_path, f"{self.file_name}.tmp")
 
         try:
             if os.path.exists(log_file_path):
@@ -86,35 +88,37 @@ class Snapshots:
             _LOGGER.warning("Snapshot Error while processing logs: %s", str(e))
             return ""
 
-    async def async_get_data(self, file_name: str, json_data: JsonType) -> None:
+    async def async_get_data(self, file_name: str, json_data: JsonType) -> Any:
         """Get the data to compose the snapshot logs."""
+
         # Create the storage folder if it doesn't exist
         if not os.path.exists(self.storage_path):
             os.makedirs(self.storage_path)
 
         try:
-            # Save JSON data to a file
-            json_file_name = os.path.join(self.storage_path, f"{file_name}.json")
-            with open(json_file_name, "w") as json_file:
-                json.dump(json_data, json_file, indent=4)
-
-            log_data = await self.async_get_filtered_logs()
-
-            # Save log data to a file
-            log_file_name = os.path.join(self.storage_path, f"{file_name}.log")
-            with open(log_file_name, "w") as log_file:
-                log_file.write(log_data)
+            # Save the users languages data if the Camera is the first run
             if self._first_run:
                 self._first_run = False
-                _LOGGER.info("Getting the users languages data.")
+                _LOGGER.info(f"Getting {file_name} users languages data.")
                 await async_write_languages_json(self.hass)
-                _LOGGER.info("Getting vacuum rooms data.")
+                _LOGGER.info(f"Getting {file_name} rooms data.")
                 await self.async_get_room_data()
+
+            # Save JSON data to a file
+            if json_data:
+                json_file_name = os.path.join(self.storage_path, f"{file_name}.json")
+                await async_write_json_to_disk(json_file_name, json_data)
+
+            # Save log data to a file
+            log_data = await self.async_get_filtered_logs()
+            if log_data:
+                log_file_name = os.path.join(self.storage_path, f"{file_name}.log")
+                await async_write_file_to_disk(log_file_name, log_data)
 
         except Exception as e:
             _LOGGER.warning("Snapshot Error while saving data: %s", str(e))
 
-    def _zip_snapshot(self, file_name: str) -> None:
+    def zip_snapshot(self, file_name: str) -> Any:
         """Create a ZIP archive"""
         zip_file_name = os.path.join(self.storage_path, f"{file_name}.zip")
 
@@ -123,19 +127,28 @@ class Snapshots:
                 json_file_name = os.path.join(self.storage_path, f"{file_name}.json")
                 log_file_name = os.path.join(self.storage_path, f"{file_name}.log")
                 png_file_name = os.path.join(self.storage_path, f"{file_name}.png")
+                raw_file_name = os.path.join(self.storage_path, f"{file_name}.raw")
 
-                # Add the JSON file to the ZIP archive
-                zf.write(json_file_name, os.path.basename(json_file_name))
+                # Add the Vacuum JSON file to the ZIP archive
+                if os.path.exists(json_file_name):
+                    _LOGGER.debug("Adding %s to the ZIP archive", json_file_name)
+                    zf.write(json_file_name, os.path.basename(json_file_name))
+                    os.remove(json_file_name)
 
-                # Add the log file to the ZIP archive
-                zf.write(log_file_name, os.path.basename(log_file_name))
+                # Add the HA filtered log file to the ZIP archive
+                if os.path.exists(log_file_name):
+                    _LOGGER.debug("Adding %s to the ZIP archive", log_file_name)
+                    zf.write(log_file_name, os.path.basename(log_file_name))
+                    os.remove(log_file_name)
 
                 # Add the PNG file to the ZIP archive
-                zf.write(png_file_name, os.path.basename(png_file_name))
+                if os.path.exists(png_file_name):
+                    _LOGGER.debug("Adding %s to the ZIP archive", png_file_name)
+                    zf.write(png_file_name, os.path.basename(png_file_name))
 
-                # Check if the file_name.raw exists
-                raw_file_name = os.path.join(self.storage_path, f"{file_name}.raw")
+                # Check if the MQTT file_name.raw exists
                 if os.path.exists(raw_file_name):
+                    _LOGGER.debug("Adding %s to the ZIP archive", raw_file_name)
                     # Add the .raw file to the ZIP archive
                     zf.write(raw_file_name, os.path.basename(raw_file_name))
                     # Remove the .raw file
@@ -144,22 +157,15 @@ class Snapshots:
         except Exception as e:
             _LOGGER.warning("Error while creating logs ZIP archive: %s", str(e))
 
-        # Clean up the original files
-        try:
-            os.remove(json_file_name)
-            os.remove(log_file_name)
-        except Exception as e:
-            _LOGGER.warning("Error while cleaning up original files: %s", str(e))
-
     async def async_data_snapshot(self, file_name: str, json_data: any) -> None:
         """
-        Save JSON data and filtered logs to a ZIP archive.
+        Save Vacuum JSON data and filtered logs to a ZIP archive.
         :param file_name: Vacuum friendly name
         :param json_data: Vacuum JSON data
         """
         try:
             await self.async_get_data(file_name, json_data)
-            self._zip_snapshot(file_name)
+            self.zip_snapshot(file_name)
         except Exception as e:
             _LOGGER.warning("Error while creating logs snapshot: %s", str(e))
 
@@ -170,13 +176,11 @@ class Snapshots:
             if (_LOGGER.getEffectiveLevel() > 0) and (
                 _LOGGER.getEffectiveLevel() != 30
             ):
-                # Save mqtt raw data file.
-                if self._mqtt is not None:
-                    await self._mqtt.save_payload(self.file_name)
                 # Write the JSON and data to the file.
                 await self.async_data_snapshot(self.file_name, json_data)
             # Save image ready for snapshot.
-            image_data.save(self.snapshot_img)  # Save the image in .storage
+            image_data.save(self.snapshot_img)
+            # Copy the image in WWW if user want it.
             if self._shared.enable_snapshots:
                 if os.path.isfile(self.snapshot_img):
                     shutil.copy(

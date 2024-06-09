@@ -1,10 +1,11 @@
 """
-Version: v2024.05.3
+Version: v2024.06.3
 - Removed the PNG decode, the json is extracted from map-data instead of map-data-hass.
 - Tested no influence on the camera performance.
 - Added gzip library used in Valetudo RE data compression.
 """
 
+import asyncio
 import json
 import logging
 
@@ -13,6 +14,7 @@ from homeassistant.core import callback
 from homeassistant.helpers.storage import STORAGE_DIR
 from isal import igzip, isal_zlib
 
+from custom_components.valetudo_vacuum_camera.common import async_write_file_to_disk
 from custom_components.valetudo_vacuum_camera.valetudo.rand256.rrparser import (
     RRMapParser,
 )
@@ -57,16 +59,21 @@ class ValetudoConnector:
         """
         payload = self._img_payload if self._img_payload else self._rrm_payload
         data_type = "Hypfer" if self._img_payload else "Rand256"
+        loop = asyncio.get_running_loop()
         if payload:
             if process:
                 _LOGGER.debug(
                     f"{self._file_name}: Processing {data_type} data from MQTT."
                 )
                 if data_type == "Hypfer":
-                    json_data = isal_zlib.decompress(payload).decode()
+                    json_data = await loop.run_in_executor(
+                        None, lambda: isal_zlib.decompress(payload).decode()
+                    )
                     result = json.loads(json_data)
                 elif (data_type == "Rand256") and (self._ignore_data is False):
-                    payload_decompressed = igzip.decompress(payload)
+                    payload_decompressed = await loop.run_in_executor(
+                        None, lambda: igzip.decompress(payload)
+                    )
                     self._rrm_json = self._rrm_data.parse_data(
                         payload=payload_decompressed, pixels=True
                     )
@@ -135,12 +142,12 @@ class ValetudoConnector:
                 file_data = self._img_payload
             elif self._rrm_payload:
                 file_data = self._rrm_payload
-            with open(
-                f"{self._hass.config.path(STORAGE_DIR)}"
+            await async_write_file_to_disk(
+                file_to_write=f"{self._hass.config.path(STORAGE_DIR)}"
                 f"/valetudo_camera/{file_name}.raw",
-                "wb",
-            ) as file:
-                file.write(file_data)
+                data=file_data,
+                is_binary=True,
+            )
             _LOGGER.info(f"Saved image data from MQTT in {file_name}.raw!")
 
     async def hypfer_handle_image_data(self, msg) -> None:
@@ -296,7 +303,7 @@ class ValetudoConnector:
 
             for segment_id in segment_ids:
                 if segment_id in room_ids:
-                    room_idx = room_ids[segment_id] - 1  # Adjust index to start from 0
+                    room_idx = room_ids[segment_id] - 1  # Index start from 0
                     self._rrm_active_segments[room_idx] = 1
             self._shared.rand256_active_zone = self._rrm_active_segments
             _LOGGER.debug(
