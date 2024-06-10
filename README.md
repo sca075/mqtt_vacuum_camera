@@ -1,7 +1,7 @@
 [releases_shield]: https://img.shields.io/github/release/sca075/valetudo_vacuum_camera.svg?style=popout
 [latest_release]: https://github.com/sca075/valetudo_vacuum_camera/releases/latest
 
-# Valetudo Vacuum's Camera
+# MQTT Vacuum's Camera
 
 <img width="876" alt="logo512x1752" src="https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/52bad802-6404-406d-84bf-8a5cc74f7d0f">
 
