@@ -3,7 +3,8 @@
 
 # Valetudo Vacuum's Camera
 
-![logo_new](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/b1f5a523-7a20-4ddd-b345-84755920458c)
+<img width="876" alt="logo512x1752" src="https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/52bad802-6404-406d-84bf-8a5cc74f7d0f">
+
 
 ### Current Release: [![GitHub Latest Release][releases_shield]][latest_release]
 
