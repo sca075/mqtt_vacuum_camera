@@ -2,8 +2,9 @@
 [latest_release]: https://github.com/sca075/valetudo_vacuum_camera/releases/latest
 
 # MQTT Vacuum's Camera
-
-<img width="876" alt="logo512x1752" src="https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/52bad802-6404-406d-84bf-8a5cc74f7d0f">
+<p align="center">
+  <img width="256" alt="logo@2x" src="https://github.com/sca075/mqtt_vacuum_camera/assets/82227818/0c623494-2844-4ed9-a246-0ad27f32503e">
+</p>
 
 
 ### Current Release: [![GitHub Latest Release][releases_shield]][latest_release]
