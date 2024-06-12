@@ -121,13 +121,13 @@ async def async_load_file(file_to_load: str, is_json: bool = False) -> Any:
             else:
                 with open(my_file) as file:
                     return file.read()
-        except FileNotFoundError:
+        except (FileNotFoundError, json.JSONDecodeError):
             _LOGGER.warning(f"{my_file} does not exist.")
             return None
 
     try:
         return await loop.run_in_executor(None, read_file, file_to_load, is_json)
-    except Exception as e:
+    except (FileNotFoundError, json.JSONDecodeError) as e:
         _LOGGER.warning(f"Blocking IO issue detected: {e}")
         return None
 

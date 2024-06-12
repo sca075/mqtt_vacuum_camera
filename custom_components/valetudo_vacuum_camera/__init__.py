@@ -302,10 +302,13 @@ async def handle_homeassistant_stop(event):
     hass = core.HomeAssistant(os.getcwd())
     storage = os.path.join(os.getcwd(), STORAGE_DIR, "valetudo_camera")
     _LOGGER.debug(f"Storage path: {storage}")
+    if not os.path.exists(storage):
+        _LOGGER.debug("No valetudo_camera folder found. Aborting!")
+        return False
     vacuum_entity_id = await async_get_translations_vacuum_id(storage)
     if not vacuum_entity_id:
         _LOGGER.debug("No vacuum room data found. Aborting!")
-        return True
+        return False
     _LOGGER.debug(f"Writing down the rooms data for {vacuum_entity_id}.")
     await async_rename_room_description(hass, storage, vacuum_entity_id)
     return True

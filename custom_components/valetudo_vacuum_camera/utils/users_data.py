@@ -67,7 +67,9 @@ async def async_get_translations_vacuum_id(storage_dir):
         return vacuum_id
     except json.JSONDecodeError:
         _LOGGER.warning(f"Error reading the file {vacuum_id_path}.")
-    return None
+    except Exception as e:
+        _LOGGER.error(f"Unhandled exception: {e}")
+        return None
 
 
 def remove_room_data_files(directory: str) -> None:
