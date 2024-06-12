@@ -31,7 +31,10 @@ from .const import (
     CONF_VACUUM_IDENTIFIERS,
     DOMAIN,
 )
-from .utils.users_data import async_rename_room_description, get_translations_vacuum_id
+from .utils.users_data import (
+    async_get_translations_vacuum_id,
+    async_rename_room_description,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -299,7 +302,7 @@ async def handle_homeassistant_stop(event):
     hass = core.HomeAssistant(os.getcwd())
     storage = os.path.join(os.getcwd(), STORAGE_DIR, "valetudo_camera")
     _LOGGER.debug(f"Storage path: {storage}")
-    vacuum_entity_id = get_translations_vacuum_id(storage)
+    vacuum_entity_id = await async_get_translations_vacuum_id(storage)
     if not vacuum_entity_id:
         _LOGGER.debug("No vacuum room data found. Aborting!")
         return True

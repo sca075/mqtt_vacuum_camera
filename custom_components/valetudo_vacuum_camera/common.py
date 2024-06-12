@@ -1,6 +1,6 @@
 """
 Common functions for the Valetudo Vacuum Camera integration.
-Version: 2024.06.3b3
+Version: 2024.06.4
 """
 
 from __future__ import annotations
@@ -108,17 +108,25 @@ async def update_options(bk_options, new_options):
     return updated_bk_options
 
 
-async def async_load_file(file_to_load: str) -> Any:
+async def async_load_file(file_to_load: str, is_json: bool = False) -> Any:
     """Asynchronously load JSON data from a file."""
     loop = asyncio.get_event_loop()
 
-    def read_file(my_file: str):
+    def read_file(my_file: str, read_json: bool = False):
         """Helper function to read data from a file."""
-        with open(my_file) as file:
-            return file.read()
+        try:
+            if read_json:
+                with open(my_file) as file:
+                    return json.load(file)
+            else:
+                with open(my_file) as file:
+                    return file.read()
+        except FileNotFoundError:
+            _LOGGER.warning(f"{my_file} does not exist.")
+            return None
 
     try:
-        return await loop.run_in_executor(None, read_file, file_to_load)
+        return await loop.run_in_executor(None, read_file, file_to_load, is_json)
     except Exception as e:
         _LOGGER.warning(f"Blocking IO issue detected: {e}")
         return None

@@ -1,6 +1,6 @@
 """
 Camera
-Version: v2024.06.1
+Version: v2024.06.4
 Image Processing Threading implemented on Version 1.5.7.
 """
 
@@ -113,8 +113,8 @@ class ValetudoCamera(Camera):
     def __init__(self, hass, device_info):
         super().__init__()
         self.hass = hass
-        self._attr_model = "Valetudo Vacuums"
-        self._attr_brand = "Valetudo Vacuum Camera"
+        self._attr_model = "Vacuums Camera"
+        self._attr_brand = "MQTT Vacuum Camera"
         self._attr_name = "Camera"
         self._attr_is_on = True
         self._directory_path = self.hass.config.path()  # get Home Assistant path
