@@ -1,9 +1,9 @@
 """
-Common functions for the Valetudo Vacuum Camera integration.
+Users Data for the Valetudo Vacuum Camera integration.
 Those functions are used to store and retrieve user data from the Home Assistant storage.
 The data will be stored locally in the Home Assistant in .storage/valetudo_camera directory.
 Author: @sca075
-Version: 2024.06.3
+Version: 2024.06.4
 """
 
 from __future__ import annotations
@@ -26,24 +26,24 @@ from custom_components.valetudo_vacuum_camera.const import DEFAULT_ROOMS
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
-def get_rooms_count(
+async def async_get_rooms_count(
     robot_name: str,
-) -> int:  # todo make it async and recheck config flow for rooms_count
+) -> int:
     """Get the number of segments in the room_data_{vacuum_id}.json file."""
     file_path = os.path.join(
         os.getcwd(), STORAGE_DIR, "valetudo_camera", f"room_data_{robot_name}.json"
     )
-    try:
-        with open(file_path) as rooms_file:
-            room_data = json.load(rooms_file)
-            room_count = room_data.get("segments", DEFAULT_ROOMS)
-            return room_count
-    except FileNotFoundError:
+    if not os.path.exists(file_path):
         _LOGGER.warning(f"File not found: {file_path}")
         return DEFAULT_ROOMS
-    except json.JSONDecodeError:
-        _LOGGER.error(f"Error decoding file: {file_path}")
-        return DEFAULT_ROOMS
+    else:
+        room_data = await async_load_file(file_path, True)
+        if room_data:
+            room_count = room_data.get("segments", DEFAULT_ROOMS)
+            return room_count
+        else:
+            _LOGGER.error(f"Error decoding file: {file_path}")
+            return DEFAULT_ROOMS
 
 
 async def async_write_vacuum_id(storage_dir, vacuum_id):
@@ -67,7 +67,7 @@ async def async_get_translations_vacuum_id(storage_dir):
         return vacuum_id
     except json.JSONDecodeError:
         _LOGGER.warning(f"Error reading the file {vacuum_id_path}.")
-    except Exception as e:
+    except OSError as e:
         _LOGGER.error(f"Unhandled exception: {e}")
         return None
 

@@ -143,8 +143,8 @@ async def async_write_json_to_disk(file_to_write: str, json_data) -> None:
 
     try:
         await loop.run_in_executor(None, _write_to_file, file_to_write, json_data)
-    except IOError as e:
-        _LOGGER.warning(f"Blocking IO issue detected: {e}")
+    except OSError as e:
+        _LOGGER.warning(f"Blocking issue detected: {e}")
 
 
 async def async_write_file_to_disk(
@@ -164,5 +164,5 @@ async def async_write_file_to_disk(
 
     try:
         await loop.run_in_executor(None, _write_to_file, file_to_write, data, is_binary)
-    except IOError as e:
-        _LOGGER.warning(f"Blocking IO issue detected: {e}")
+    except OSError as e:
+        _LOGGER.warning(f"Blocking issue detected: {e}")
