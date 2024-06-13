@@ -335,29 +335,28 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         _LOGGER.info(f"{self.config_entry.unique_id}: Options Configuration Started.")
         errors = {}
         number_of_rooms = await async_get_rooms_count(self.file_name)
-        if user_input is not None:
-            if "camera_config_action" in user_input:
-                next_action = user_input["camera_config_action"]
-                if next_action == "opt_1":
-                    return await self.async_step_image_opt()
-                elif next_action == "opt_2":
-                    return await self.async_step_base_colours()
-                elif next_action == "opt_3":
-                    return (
-                        await self.async_step_rooms_colours_1()
-                    )  # self.async_step_rooms_colours_1()
-                elif next_action == "opt_4":
-                    return await self.async_step_rooms_colours_2()
-                elif next_action == "opt_5":
-                    return await self.async_step_advanced()
-                elif next_action == "more options":
-                    """
-                    From TAPO custom control component, this is,
-                    a great idea of how to simply the configuration
-                    simple old style menu ;).
-                    """
-                else:
-                    errors["base"] = "incorrect_options_action"
+        if user_input is not None and "camera_config_action" in user_input:
+            next_action = user_input["camera_config_action"]
+            if next_action == "opt_1":
+                return await self.async_step_image_opt()
+            elif next_action == "opt_2":
+                return await self.async_step_base_colours()
+            elif next_action == "opt_3":
+                return (
+                    await self.async_step_rooms_colours_1()
+                )  # self.async_step_rooms_colours_1()
+            elif next_action == "opt_4":
+                return await self.async_step_rooms_colours_2()
+            elif next_action == "opt_5":
+                return await self.async_step_advanced()
+            elif next_action == "more options":
+                """
+                From TAPO custom control component, this is,
+                a great idea of how to simply the configuration
+                simple old style menu ;).
+                """
+            else:
+                errors["base"] = "incorrect_options_action"
 
         # noinspection PyArgumentList
         if number_of_rooms > 8:
@@ -397,25 +396,24 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         Start the options menu configuration.
         """
         errors = {}
-        if user_input is not None:
-            if "camera_config_advanced" in user_input:
-                next_action = user_input["camera_config_advanced"]
-                if next_action == "opt_1":
-                    return await self.async_step_image_offset()
-                elif next_action == "opt_2":
-                    return await self.async_step_status_text()
-                elif next_action == "opt_3":
-                    return await self.async_step_download_logs()
-                elif next_action == "opt_4":
-                    return await self.async_rename_translations()
-                elif next_action == "more options":
-                    """
-                    From TAPO custom control component, this is,
-                    a great idea of how to simply the configuration
-                    simple old style menu ;).
-                    """
-                else:
-                    errors["base"] = "incorrect_options_action"
+        if user_input is not None and "camera_config_advanced" in user_input:
+            next_action = user_input["camera_config_advanced"]
+            if next_action == "opt_1":
+                return await self.async_step_image_offset()
+            elif next_action == "opt_2":
+                return await self.async_step_status_text()
+            elif next_action == "opt_3":
+                return await self.async_step_download_logs()
+            elif next_action == "opt_4":
+                return await self.async_rename_translations()
+            elif next_action == "more options":
+                """
+                From TAPO custom control component, this is,
+                a great idea of how to simply the configuration
+                simple old style menu ;).
+                """
+            else:
+                errors["base"] = "incorrect_options_action"
 
         # noinspection PyArgumentList
         menu_keys_1 = SelectSelectorConfig(
@@ -749,17 +747,16 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         Copy the logs from .storage to www config folder.
         """
         errors = {}
-        if user_input is not None:
-            if "camera_logs_progres" in user_input:
-                next_action = user_input["camera_logs_progres"]
-                if next_action == "opt_1":
-                    return await self.async_step_logs_move()
-                elif next_action == "opt_2":
-                    return await self.async_step_logs_remove()
-                elif next_action == "no_action":
-                    ...  # do nothing
-                else:
-                    errors["base"] = "incorrect_options_action"
+        if user_input is not None and "camera_logs_progres" in user_input:
+            next_action = user_input["camera_logs_progres"]
+            if next_action == "opt_1":
+                return await self.async_step_logs_move()
+            elif next_action == "opt_2":
+                return await self.async_step_logs_remove()
+            elif next_action == "no_action":
+                ...  # do nothing
+            else:
+                errors["base"] = "incorrect_options_action"
         copy_options = SelectSelectorConfig(
             options=[
                 {"label": "copy_the_logs_to_www", "value": "opt_1"},
