@@ -1,6 +1,6 @@
 """
 Common functions for the Valetudo Vacuum Camera integration.
-Version: 2024.06.3b3
+Version: 2024.06.4
 """
 
 from __future__ import annotations
@@ -108,18 +108,26 @@ async def update_options(bk_options, new_options):
     return updated_bk_options
 
 
-async def async_load_file(file_to_load: str) -> Any:
+async def async_load_file(file_to_load: str, is_json: bool = False) -> Any:
     """Asynchronously load JSON data from a file."""
     loop = asyncio.get_event_loop()
 
-    def read_file(my_file: str):
+    def read_file(my_file: str, read_json: bool = False):
         """Helper function to read data from a file."""
-        with open(my_file) as file:
-            return file.read()
+        try:
+            if read_json:
+                with open(my_file) as file:
+                    return json.load(file)
+            else:
+                with open(my_file) as file:
+                    return file.read()
+        except (FileNotFoundError, json.JSONDecodeError):
+            _LOGGER.warning(f"{my_file} does not exist.")
+            return None
 
     try:
-        return await loop.run_in_executor(None, read_file, file_to_load)
-    except Exception as e:
+        return await loop.run_in_executor(None, read_file, file_to_load, is_json)
+    except (FileNotFoundError, json.JSONDecodeError) as e:
         _LOGGER.warning(f"Blocking IO issue detected: {e}")
         return None
 
@@ -135,8 +143,8 @@ async def async_write_json_to_disk(file_to_write: str, json_data) -> None:
 
     try:
         await loop.run_in_executor(None, _write_to_file, file_to_write, json_data)
-    except IOError as e:
-        _LOGGER.warning(f"Blocking IO issue detected: {e}")
+    except OSError as e:
+        _LOGGER.warning(f"Blocking issue detected: {e}")
 
 
 async def async_write_file_to_disk(
@@ -156,5 +164,5 @@ async def async_write_file_to_disk(
 
     try:
         await loop.run_in_executor(None, _write_to_file, file_to_write, data, is_binary)
-    except IOError as e:
-        _LOGGER.warning(f"Blocking IO issue detected: {e}")
+    except OSError as e:
+        _LOGGER.warning(f"Blocking issue detected: {e}")

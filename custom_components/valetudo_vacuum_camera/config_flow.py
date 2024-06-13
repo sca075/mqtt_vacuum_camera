@@ -1,4 +1,4 @@
-"""config_flow 2024.06.3b3
+"""config_flow 2024.06.4
 IMPORTANT: Maintain code when adding new options to the camera
 it will be mandatory to update const.py and common.py update_options.
 Format of the new constants must be CONST_NAME = "const_name" update also
@@ -82,7 +82,7 @@ from .const import (
     ROTATION_VALUES,
     TEXT_SIZE_VALUES,
 )
-from .utils.users_data import async_rename_room_description, get_rooms_count
+from .utils.users_data import async_get_rooms_count, async_rename_room_description
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -173,7 +173,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         self.options = {}
         self.bk_options = self.config_entry.options
         self.file_name = self.unique_id.split("_")[0].lower()
-        self.rooms_count = get_rooms_count(self.file_name)
         self._check_alpha = False
         _LOGGER.debug(
             "Options edit in progress.. options before edit: %s", dict(self.bk_options)
@@ -335,32 +334,32 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         """
         _LOGGER.info(f"{self.config_entry.unique_id}: Options Configuration Started.")
         errors = {}
-        if user_input is not None:
-            if "camera_config_action" in user_input:
-                next_action = user_input["camera_config_action"]
-                if next_action == "opt_1":
-                    return await self.async_step_image_opt()
-                elif next_action == "opt_2":
-                    return await self.async_step_base_colours()
-                elif next_action == "opt_3":
-                    return (
-                        await self.async_step_rooms_colours_1()
-                    )  # self.async_step_rooms_colours_1()
-                elif next_action == "opt_4":
-                    return await self.async_step_rooms_colours_2()
-                elif next_action == "opt_5":
-                    return await self.async_step_advanced()
-                elif next_action == "more options":
-                    """
-                    From TAPO custom control component, this is,
-                    a great idea of how to simply the configuration
-                    simple old style menu ;).
-                    """
-                else:
-                    errors["base"] = "incorrect_options_action"
+        number_of_rooms = await async_get_rooms_count(self.file_name)
+        if user_input is not None and "camera_config_action" in user_input:
+            next_action = user_input["camera_config_action"]
+            if next_action == "opt_1":
+                return await self.async_step_image_opt()
+            elif next_action == "opt_2":
+                return await self.async_step_base_colours()
+            elif next_action == "opt_3":
+                return (
+                    await self.async_step_rooms_colours_1()
+                )  # self.async_step_rooms_colours_1()
+            elif next_action == "opt_4":
+                return await self.async_step_rooms_colours_2()
+            elif next_action == "opt_5":
+                return await self.async_step_advanced()
+            elif next_action == "more options":
+                """
+                From TAPO custom control component, this is,
+                a great idea of how to simply the configuration
+                simple old style menu ;).
+                """
+            else:
+                errors["base"] = "incorrect_options_action"
 
         # noinspection PyArgumentList
-        if self.rooms_count > 8:
+        if number_of_rooms > 8:
             menu_keys = SelectSelectorConfig(
                 options=[
                     {"label": "configure_image", "value": "opt_1"},
@@ -397,25 +396,24 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         Start the options menu configuration.
         """
         errors = {}
-        if user_input is not None:
-            if "camera_config_advanced" in user_input:
-                next_action = user_input["camera_config_advanced"]
-                if next_action == "opt_1":
-                    return await self.async_step_image_offset()
-                elif next_action == "opt_2":
-                    return await self.async_step_status_text()
-                elif next_action == "opt_3":
-                    return await self.async_step_download_logs()
-                elif next_action == "opt_4":
-                    return await self.async_rename_translations()
-                elif next_action == "more options":
-                    """
-                    From TAPO custom control component, this is,
-                    a great idea of how to simply the configuration
-                    simple old style menu ;).
-                    """
-                else:
-                    errors["base"] = "incorrect_options_action"
+        if user_input is not None and "camera_config_advanced" in user_input:
+            next_action = user_input["camera_config_advanced"]
+            if next_action == "opt_1":
+                return await self.async_step_image_offset()
+            elif next_action == "opt_2":
+                return await self.async_step_status_text()
+            elif next_action == "opt_3":
+                return await self.async_step_download_logs()
+            elif next_action == "opt_4":
+                return await self.async_rename_translations()
+            elif next_action == "more options":
+                """
+                From TAPO custom control component, this is,
+                a great idea of how to simply the configuration
+                simple old style menu ;).
+                """
+            else:
+                errors["base"] = "incorrect_options_action"
 
         # noinspection PyArgumentList
         menu_keys_1 = SelectSelectorConfig(
@@ -574,12 +572,12 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     ):
         """Dynamically generate rooms colours configuration step based on the number of rooms."""
         _LOGGER.info("Dynamic Rooms Colours Configuration Started.")
-
+        number_of_rooms = await async_get_rooms_count(self.file_name)
         rooms_count = 1
-        if self.rooms_count > 8:
+        if number_of_rooms > 8:
             rooms_count = 8
-        elif (self.rooms_count <= 8) and (self.rooms_count != 0):
-            rooms_count = self.rooms_count
+        elif (number_of_rooms <= 8) and (number_of_rooms != 0):
+            rooms_count = number_of_rooms
 
         if user_input is not None:
             # Update options based on user input
@@ -617,10 +615,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     ):
         """Dynamically generate rooms colours configuration step based on the number of rooms."""
         _LOGGER.info("Dynamic Rooms Colours over 8 Configuration Started.")
-
+        number_of_rooms = await async_get_rooms_count(self.file_name)
         if user_input is not None:
             # Update options based on user input
-            for i in range(8, min(self.rooms_count, 16)):
+            for i in range(8, min(number_of_rooms, 16)):
                 room_key = f"color_room_{i}"
                 self.options.update({room_key: user_input.get(room_key)})
 
@@ -633,7 +631,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         # Dynamically create data schema based on the number of rooms
         fields = {}
-        for i in range(8, min(self.rooms_count, 16)):
+        for i in range(8, min(number_of_rooms, 16)):
             fields[
                 vol.Optional(
                     f"color_room_{i}",
@@ -652,12 +650,12 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_alpha_2(self, user_input: Optional[Dict[str, Any]] = None):
         """Dynamically generate rooms colours configuration step based on the number of rooms."""
         _LOGGER.info("Dynamic Rooms Colours Configuration Started.")
-
+        number_of_rooms = await async_get_rooms_count(self.file_name)
         rooms_count = 1
-        if self.rooms_count > 8:
+        if number_of_rooms > 8:
             rooms_count = 8
-        elif (self.rooms_count <= 8) and (self.rooms_count != 0):
-            rooms_count = self.rooms_count
+        elif (number_of_rooms <= 8) and (number_of_rooms != 0):
+            rooms_count = number_of_rooms
 
         if user_input is not None:
             # Update options based on user input
@@ -686,10 +684,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_alpha_3(self, user_input: Optional[Dict[str, Any]] = None):
         """Dynamically generate rooms colours configuration step based on the number of rooms."""
         _LOGGER.info("Dynamic Rooms Colours Configuration Started.")
-
+        number_of_rooms = await async_get_rooms_count(self.file_name)
         if user_input is not None:
             # Update options based on user input
-            for i in range(8, min(self.rooms_count, 16)):
+            for i in range(8, min(number_of_rooms, 16)):
                 room_key = f"alpha_room_{i}"
                 self.options.update({room_key: user_input.get(room_key)})
 
@@ -697,7 +695,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         # Dynamically create data schema based on the number of rooms
         fields = {}
-        for i in range(8, min(self.rooms_count, 16)):
+        for i in range(8, min(number_of_rooms, 16)):
             fields[
                 vol.Optional(
                     f"alpha_room_{i}",
@@ -749,17 +747,16 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         Copy the logs from .storage to www config folder.
         """
         errors = {}
-        if user_input is not None:
-            if "camera_logs_progres" in user_input:
-                next_action = user_input["camera_logs_progres"]
-                if next_action == "opt_1":
-                    return await self.async_step_logs_move()
-                elif next_action == "opt_2":
-                    return await self.async_step_logs_remove()
-                elif next_action == "no_action":
-                    ...  # do nothing
-                else:
-                    errors["base"] = "incorrect_options_action"
+        if user_input is not None and "camera_logs_progres" in user_input:
+            next_action = user_input["camera_logs_progres"]
+            if next_action == "opt_1":
+                return await self.async_step_logs_move()
+            elif next_action == "opt_2":
+                return await self.async_step_logs_remove()
+            elif next_action == "no_action":
+                ...  # do nothing
+            else:
+                errors["base"] = "incorrect_options_action"
         copy_options = SelectSelectorConfig(
             options=[
                 {"label": "copy_the_logs_to_www", "value": "opt_1"},

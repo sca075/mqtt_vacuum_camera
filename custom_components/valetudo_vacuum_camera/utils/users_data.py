@@ -1,9 +1,9 @@
 """
-Common functions for the Valetudo Vacuum Camera integration.
+Users Data for the Valetudo Vacuum Camera integration.
 Those functions are used to store and retrieve user data from the Home Assistant storage.
 The data will be stored locally in the Home Assistant in .storage/valetudo_camera directory.
 Author: @sca075
-Version: 2024.06.3b3
+Version: 2024.06.4
 """
 
 from __future__ import annotations
@@ -26,51 +26,50 @@ from custom_components.valetudo_vacuum_camera.const import DEFAULT_ROOMS
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
-def get_rooms_count(robot_name: str) -> int:
+async def async_get_rooms_count(
+    robot_name: str,
+) -> int:
     """Get the number of segments in the room_data_{vacuum_id}.json file."""
     file_path = os.path.join(
         os.getcwd(), STORAGE_DIR, "valetudo_camera", f"room_data_{robot_name}.json"
     )
-    try:
-        with open(file_path) as rooms_file:
-            room_data = json.load(rooms_file)
-            room_count = room_data.get("segments", DEFAULT_ROOMS)
-            return room_count
-    except FileNotFoundError:
+    if not os.path.exists(file_path):
         _LOGGER.warning(f"File not found: {file_path}")
         return DEFAULT_ROOMS
-    except json.JSONDecodeError:
-        _LOGGER.error(f"Error decoding file: {file_path}")
-        return DEFAULT_ROOMS
+    else:
+        room_data = await async_load_file(file_path, True)
+        if room_data:
+            room_count = room_data.get("segments", DEFAULT_ROOMS)
+            return room_count
+        else:
+            _LOGGER.error(f"Error decoding file: {file_path}")
+            return DEFAULT_ROOMS
 
 
 async def async_write_vacuum_id(storage_dir, vacuum_id):
     """Write the vacuum_id to a JSON file."""
     # Create the full file path
-    file_path = os.path.join(storage_dir, "rooms_colours_description.json")
+    json_path = os.path.join(storage_dir, "rooms_colours_description.json")
     # Data to be written
     data = {"vacuum_id": vacuum_id}
     # Write data to a JSON file
-    with open(file_path, "w") as file:
-        json.dump(data, file, indent=4)
+    await async_write_json_to_disk(json_path, data)
     _LOGGER.info(f"vacuum_id saved: {vacuum_id}")
 
 
-def get_translations_vacuum_id(storage_dir):
+async def async_get_translations_vacuum_id(storage_dir):
     """Read the vacuum_id from a JSON file."""
     # Create the full file path
-    file_path = os.path.join(storage_dir, "rooms_colours_description.json")
+    vacuum_id_path = os.path.join(storage_dir, "rooms_colours_description.json")
     try:
-        with open(file_path) as file:
-            data = json.load(file)
-            vacuum_id = data.get("vacuum_id", None)
-            return vacuum_id
-    except FileNotFoundError:
-        _LOGGER.debug(f"{file_path} does not exist.")
-        return None
+        data = await async_load_file(vacuum_id_path, True)
+        vacuum_id = data.get("vacuum_id", None)
+        return vacuum_id
     except json.JSONDecodeError:
-        _LOGGER.debug(f"Error reading the file {file_path}.")
-    return None
+        _LOGGER.warning(f"Error reading the file {vacuum_id_path}.")
+    except OSError as e:
+        _LOGGER.error(f"Unhandled exception: {e}")
+        return None
 
 
 def remove_room_data_files(directory: str) -> None:
@@ -263,9 +262,8 @@ async def async_load_translations_json(
         locals_file_path = f"{translations_path}/{locals_file_name}"
 
         try:
-            with open(locals_file_path) as translation_file:
-                translations = json.load(translation_file)
-                translations_list.append(translations)
+            translations = await async_load_file(locals_file_path, True)
+            translations_list.append(translations)
         except FileNotFoundError:
             translations_list.append(None)
 
@@ -276,14 +274,9 @@ async def async_load_room_data(storage_path: str, vacuum_id: str) -> dict:
     """Load the room data from the room_data_{vacuum_id}.json file."""
     data_file_path = os.path.join(storage_path, f"room_data_{vacuum_id}.json")
     if os.path.exists(data_file_path):
-        try:
-            with open(data_file_path) as data_file:
-                data = json.load(data_file)
-                _LOGGER.debug(f"Room data loaded from: {data_file_path}")
-                return data
-        except json.JSONDecodeError:
-            _LOGGER.error(f"Error decoding room data file: {data_file_path}")
-            return {}
+        data = await async_load_file(data_file_path, True)
+        _LOGGER.debug(f"Room data loaded from: {data_file_path}")
+        return data
     else:
         _LOGGER.debug(f"File not found: {data_file_path}")
         return {}
@@ -356,8 +349,9 @@ async def async_rename_room_description(
     # Write the modified data back to the JSON files
     for idx, data in enumerate(data_list):
         if data is not None:
-            with open(os.path.join(edit_path, f"{language[idx]}.json"), "w") as file:
-                json.dump(data, file, indent=2)
+            await async_write_json_to_disk(
+                os.path.join(edit_path, f"{language[idx]}.json"), data
+            )
             _LOGGER.info(
                 f"Room names added to the room descriptions in the {language[idx]} translations."
             )
