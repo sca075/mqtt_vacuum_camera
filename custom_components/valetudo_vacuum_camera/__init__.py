@@ -30,6 +30,7 @@ from .const import (
     CONF_VACUUM_CONNECTION_STRING,
     CONF_VACUUM_IDENTIFIERS,
     DOMAIN,
+    migrate_me,
 )
 from .tmp_migrate.migration import (
     async_migrate_entries,  # temporarily import migration function
@@ -301,21 +302,20 @@ def find_vacuum_files(directory) -> list[str] or None:
 
 async def handle_homeassistant_stop(event):
     """Handle Home Assistant stop event."""
-    _LOGGER.debug("Home Assistant is stopping. Writing down the rooms data.")
-    """
-    async def async_migrate_config_entries(file_path: str, old_domain: str, new_domain: str):
-    test migration this code is not used during the migration process.
-    """
-    # hass = core.HomeAssistant(os.getcwd())
-    # storage = os.path.join(os.getcwd(), STORAGE_DIR, "valetudo_camera")
-    # _LOGGER.debug(f"Storage path: {storage}")
-    # vacuum_entity_id = await async_get_translations_vacuum_id(storage)
-    # if not vacuum_entity_id:
-    #     _LOGGER.debug("No vacuum room data found. Aborting!")
-    #     return True
-    # _LOGGER.debug(f"Writing down the rooms data for {vacuum_entity_id}.")
-    #  await async_rename_room_description(hass, storage, vacuum_entity_id)
-    return await async_migrate_entries()
+    if len(migrate_me) == 1:
+        return await async_migrate_entries()
+    else:
+        _LOGGER.debug("Home Assistant is stopping. Writing down the rooms data.")
+        hass = core.HomeAssistant(os.getcwd())
+        storage = os.path.join(os.getcwd(), STORAGE_DIR, "valetudo_camera")
+        _LOGGER.debug(f"Storage path: {storage}")
+        vacuum_entity_id = await async_get_translations_vacuum_id(storage)
+        if not vacuum_entity_id:
+            _LOGGER.debug("No vacuum room data found. Aborting!")
+            return True
+        _LOGGER.debug(f"Writing down the rooms data for {vacuum_entity_id}.")
+        await async_rename_room_description(hass, storage, vacuum_entity_id)
+        return True
 
 
 # noinspection PyCallingNonCallable

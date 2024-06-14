@@ -1,3 +1,5 @@
+"""Repairs for the valetudo_vacuum_camera integration."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -6,8 +8,7 @@ from homeassistant import data_entry_flow
 from homeassistant.components.repairs import RepairsFlow
 from homeassistant.core import HomeAssistant
 import voluptuous as vol
-from .const import DOMAIN
-
+from .const import DOMAIN, migrate_me
 
 class RestartRequiredFixFlow(RepairsFlow):
     """Handler for an issue fixing flow."""
@@ -28,6 +29,7 @@ class RestartRequiredFixFlow(RepairsFlow):
         """Handle the confirm step of a fix flow."""
         if user_input is not None:
             # just restart
+            migrate_me.append("confirm_restart")
             await self.hass.services.async_call("homeassistant", "restart")
             return self.async_create_entry(title="", data={})
 

@@ -246,6 +246,12 @@
       }
     }
   },
+  "issues":{
+    "confirm_restart": {
+      "title": "Migration Restart Required!",
+      "description": "Please backup HA and restart it"
+    }
+  },
   "services": {
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",

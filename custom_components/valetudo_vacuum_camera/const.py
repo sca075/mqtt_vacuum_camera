@@ -2,6 +2,8 @@
 
 """Version v2024.06.3b2"""
 
+migrate_me = []
+
 """Required in Config_Flow"""
 PLATFORMS = ["camera"]
 DOMAIN = "valetudo_vacuum_camera"
