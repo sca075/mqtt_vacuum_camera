@@ -214,7 +214,7 @@ async def async_migrate_entity_registry(file_path, old_platform, new_platform):
     return "Migration completed successfully"
 
 
-async def async_migrate_config_entries() -> bool:
+async def async_migrate_entries() -> bool:
     """Migrate Valetudo Vacuum Camera to MQTT Vacuum Camera."""
     # Define the file to edit
     file1 = "core.config_entries"

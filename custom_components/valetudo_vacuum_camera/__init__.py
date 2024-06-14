@@ -32,7 +32,7 @@ from .const import (
     DOMAIN,
 )
 from .tmp_migrate.migration import (
-    async_migrate_config_entries,  # temporarily import migration function
+    async_migrate_entries,  # temporarily import migration function
 )
 from .utils.users_data import (
     async_get_translations_vacuum_id,
@@ -315,7 +315,7 @@ async def handle_homeassistant_stop(event):
     #     return True
     # _LOGGER.debug(f"Writing down the rooms data for {vacuum_entity_id}.")
     #  await async_rename_room_description(hass, storage, vacuum_entity_id)
-    return await async_migrate_config_entries()
+    return await async_migrate_entries()
 
 
 # noinspection PyCallingNonCallable
