@@ -22,13 +22,12 @@ from PIL import Image
 from homeassistant import config_entries, core
 from homeassistant.components.camera import PLATFORM_SCHEMA, Camera, CameraEntityFeature
 from homeassistant.const import CONF_NAME, CONF_UNIQUE_ID
-from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import config_validation as cv, issue_registry as ir
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.reload import async_setup_reload_service
 from homeassistant.helpers.storage import STORAGE_DIR
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from psutil_home_assistant import PsutilWrapper as ProcInsp
-from homeassistant.helpers import issue_registry as ir
 import voluptuous as vol
 
 from .camera_processing import CameraProcessor
@@ -76,9 +75,9 @@ _LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
-        hass: core.HomeAssistant,
-        config_entry: config_entries.ConfigEntry,
-        async_add_entities,
+    hass: core.HomeAssistant,
+    config_entry: config_entries.ConfigEntry,
+    async_add_entities,
 ) -> None:
     """Setup camera from a config entry created in the integrations UI."""
     config = hass.data[DOMAIN][config_entry.entry_id]
@@ -92,10 +91,10 @@ async def async_setup_entry(
 
 
 async def async_setup_platform(
-        hass: core.HomeAssistant,
-        config: ConfigType,
-        async_add_entities: AddEntitiesCallback,
-        discovery_info: DiscoveryInfoType | None = None,
+    hass: core.HomeAssistant,
+    config: ConfigType,
+    async_add_entities: AddEntitiesCallback,
+    discovery_info: DiscoveryInfoType | None = None,
 ):
     """Set up the camera platform."""
     async_add_entities([ValetudoCamera(hass, config)])
@@ -179,7 +178,7 @@ class ValetudoCamera(Camera):
             self._shared.enable_snapshots = True
         # If snapshots are disabled, delete www data
         if not self._shared.enable_snapshots and os.path.isfile(
-                f"{self._directory_path}/www/snapshot_{self._file_name}.png"
+            f"{self._directory_path}/www/snapshot_{self._file_name}.png"
         ):
             os.remove(f"{self._directory_path}/www/snapshot_{self._file_name}.png")
         # If there is a log zip in www remove it
@@ -240,7 +239,7 @@ class ValetudoCamera(Camera):
         return self._attr_frame_interval
 
     def camera_image(
-            self, width: Optional[int] = None, height: Optional[int] = None
+        self, width: Optional[int] = None, height: Optional[int] = None
     ) -> Optional[bytes]:
         """Camera Image"""
         return self.Image
@@ -271,11 +270,11 @@ class ValetudoCamera(Camera):
         if (self._shared.map_rooms is not None) and (self._shared.map_rooms != {}):
             attrs["rooms"] = self._shared.map_rooms
         if (self._shared.map_pred_zones is not None) and (
-                self._shared.map_pred_zones != {}
+            self._shared.map_pred_zones != {}
         ):
             attrs["zones"] = self._shared.map_pred_zones
         if (self._shared.map_pred_points is not None) and (
-                self._shared.map_pred_points != {}
+            self._shared.map_pred_points != {}
         ):
             attrs["points"] = self._shared.map_pred_points
         return attrs
@@ -384,12 +383,12 @@ class ValetudoCamera(Camera):
             self._processing = True
             # if the vacuum is working, or it is the first image.
             if (
-                    self._shared.vacuum_state == "cleaning"
-                    or self._shared.vacuum_state == "moving"
-                    or self._shared.vacuum_state == "returning"
-                    or self._shared.vacuum_state == "disconnected"
-                    or self._shared.vacuum_state == "connected"
-                    or not self._shared.vacuum_bat_charged  # text update use negative logic
+                self._shared.vacuum_state == "cleaning"
+                or self._shared.vacuum_state == "moving"
+                or self._shared.vacuum_state == "returning"
+                or self._shared.vacuum_state == "disconnected"
+                or self._shared.vacuum_state == "connected"
+                or not self._shared.vacuum_bat_charged  # text update use negative logic
             ):
                 # grab the image from MQTT.
                 self._shared.image_grab = True
@@ -475,12 +474,12 @@ class ValetudoCamera(Camera):
                 # HA supervised Memory and CUP usage report.
                 memory_percent = round(
                     (
-                            (proc.memory_info()[0] / 2.0**30)
-                            / (ProcInsp().psutil.virtual_memory().total / 2.0**30)
+                        (proc.memory_info()[0] / 2.0**30)
+                        / (ProcInsp().psutil.virtual_memory().total / 2.0**30)
                     )
                     * 100,
                     2,
-                    )
+                )
                 self._cpu_percent = round(
                     ((proc.cpu_percent() / int(ProcInsp().psutil.cpu_count())) / 10), 1
                 )
@@ -538,7 +537,7 @@ class ValetudoCamera(Camera):
         loop = get_event_loop()
 
         with concurrent.futures.ThreadPoolExecutor(
-                max_workers=1, thread_name_prefix=f"{self._file_name}_camera"
+            max_workers=1, thread_name_prefix=f"{self._file_name}_camera"
         ) as executor:
             tasks = [
                 loop.run_in_executor(

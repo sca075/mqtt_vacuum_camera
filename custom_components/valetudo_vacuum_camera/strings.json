@@ -142,11 +142,11 @@
           "add_room_1_alpha": "Configure Transparency:"
         },
         "data_description": {
-          "color_room_0": "Room 1",
-          "color_room_1": "Room 2",
-          "color_room_2": "Room 3",
-          "color_room_3": "Room 4",
-          "color_room_4": "Room 5",
+          "color_room_0": "### **RoomID 16 Entrance**",
+          "color_room_1": "### **RoomID 17 Living Room**",
+          "color_room_2": "### **RoomID 18 Kitchen**",
+          "color_room_3": "### **RoomID 19 Bathroom**",
+          "color_room_4": "### **RoomID 20 Bedroom**",
           "color_room_5": "Room 6",
           "color_room_6": "Room 7",
           "color_room_7": "Room 8"
@@ -181,11 +181,11 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "Room 1",
-          "alpha_room_1": "Room 2",
-          "alpha_room_2": "Room 3",
-          "alpha_room_3": "Room 4",
-          "alpha_room_4": "Room 5",
+          "alpha_room_0": "RoomID 16 Entrance",
+          "alpha_room_1": "RoomID 17 Living Room",
+          "alpha_room_2": "RoomID 18 Kitchen",
+          "alpha_room_3": "RoomID 19 Bathroom",
+          "alpha_room_4": "RoomID 20 Bedroom",
           "alpha_room_5": "Room 6",
           "alpha_room_6": "Room 7",
           "alpha_room_7": "Room 8"
@@ -246,10 +246,17 @@
       }
     }
   },
-  "issues":{
+  "issues": {
     "confirm_restart": {
-      "title": "Migration Restart Required!",
-      "description": "Please backup HA and restart it"
+      "title": "Restart required",
+      "fix_flow": {
+        "step": {
+          "confirm_restart": {
+            "title": "Valetudo Vacuum Camera Migration.",
+            "description": "**Before** this repair **please Backup Home Assistant**. After **submit** Home Assistant will restart and mqtt_vacuum_camera will replace valetudo_vacuum camera."
+          }
+        }
+      }
     }
   },
   "services": {

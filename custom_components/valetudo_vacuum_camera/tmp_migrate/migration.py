@@ -80,27 +80,44 @@ async def async_write_file_to_disk(
         _LOGGER.warning(f"Blocking issue detected: {e}")
 
 
-def unzip_file(file_path, output_dir):
+def unzip_file(file_path: str, output_dir: str):
     """Unzip a file to the specified directory."""
     try:
-        os.makedirs(output_dir, exist_ok=True)
+        os.mkdir(output_dir)
     except OSError as e:
         _LOGGER.error(f"Error creating output directory: {str(e)}")
         return False
 
+    done = False  # Initialize done as False
     if zipfile.is_zipfile(file_path):
         _LOGGER.info(f"Unzipping {file_path} to {output_dir}")
-        with zipfile.CompleteDirs(file_path) as zip_ref:
-            zip_ref.extractall(output_dir)
+        try:
+            with zipfile.CompleteDirs(file_path) as zip_ref:
+                zip_ref.extractall(output_dir)
+            done = True  # Set done to True only if extraction succeeds
+        except zipfile.BadZipFile:
+            _LOGGER.error(f"Corrupted zip file: {file_path}")
+        except Exception as e:
+            _LOGGER.error(f"Failed to unzip file {file_path}: {str(e)}")
     else:
         _LOGGER.error(f"Invalid zip file: {file_path}")
 
+    if done:
+        # Additional checks can be added here to ensure all expected files are present
+        _LOGGER.info(f"Unzip operation completed successfully, proceeding to cleanup.")
+        folder_to_delete = os.path.join(
+            os.getcwd(), "custom_components", "valetudo_vacuum_camera"
+        )
+        delete_old_folder(folder_to_delete)
+    else:
+        _LOGGER.error("Unzip operation failed, old folder will not be deleted.")
 
-def async_unzip(zip_path, extract_to):
+
+async def async_unzip(zip_path, extract_to):
     """
     Run the unzip operation in a separate thread.
     """
-    with ThreadPoolExecutor(max_workers=1) as executor:
+    with ThreadPoolExecutor(max_workers=2) as executor:
         future = executor.submit(unzip_file, zip_path, extract_to)
         return future.result()
 
@@ -214,6 +231,17 @@ async def async_migrate_entity_registry(file_path, old_platform, new_platform):
     return "Migration completed successfully"
 
 
+def delete_old_folder(path):
+    """Delete the old folder."""
+    try:
+        shutil.rmtree(path)
+        _LOGGER.info(f"Successfully deleted the folder at {path}")
+    except FileNotFoundError:
+        _LOGGER.warning(f"No folder found at {path} to delete.")
+    except Exception as e:
+        _LOGGER.warning(f"Failed to delete the folder at {path}: {str(e)}")
+
+
 async def async_migrate_entries() -> bool:
     """Migrate Valetudo Vacuum Camera to MQTT Vacuum Camera."""
     # Define the file to edit
@@ -222,26 +250,31 @@ async def async_migrate_entries() -> bool:
     # Define the paths
     base_path = os.getcwd()
     storage_path = os.path.join(os.getcwd(), STORAGE_DIR)
+    camera_storage_path = os.path.join(storage_path, "valetudo_camera")
     file1_path = os.path.join(storage_path, file1)
     file2_path = os.path.join(storage_path, file2)
-    work_dir = os.path.join(
+    worker_dir = os.path.join(
         base_path, "custom_components", "valetudo_vacuum_camera", "tmp_migrate"
     )
-    zip_file = os.path.join(work_dir, "mqtt_vacuum_camera.zip")  # Zip file to extract
+    zip_file = os.path.join(worker_dir, "mqtt_vacuum_camera.zip")  # Zip file to extract
     unzip_dir = os.path.join(base_path, "custom_components", "mqtt_vacuum_camera")
     # Unzip the files to the work directory
-    async_unzip(zip_file, unzip_dir)
+    await async_unzip(zip_file, unzip_dir)
     # Copy the files to the work directory
-    await async_copy_file(file1_path, os.path.join(work_dir, file1))
-    await async_copy_file(file2_path, os.path.join(work_dir, file2))
+    await async_copy_file(file1_path, os.path.join(camera_storage_path, file1))
+    await async_copy_file(file2_path, os.path.join(camera_storage_path, file2))
     # Migrate the config entries and entity registry
     await async_migrate_config_entries(
-        os.path.join(work_dir, file1), "valetudo_vacuum_camera", "mqtt_vacuum_camera"
+        os.path.join(camera_storage_path, file1),
+        "valetudo_vacuum_camera",
+        "mqtt_vacuum_camera",
     )
     await async_migrate_entity_registry(
-        os.path.join(work_dir, file2), "valetudo_vacuum_camera", "mqtt_vacuum_camera"
+        os.path.join(camera_storage_path, file2),
+        "valetudo_vacuum_camera",
+        "mqtt_vacuum_camera",
     )
     # Copy the files back to the storage directory
-    await async_copy_file(os.path.join(work_dir, file1), file1_path)
-    await async_copy_file(os.path.join(work_dir, file2), file2_path)
+    await async_copy_file(os.path.join(camera_storage_path, file1), file1_path)
+    await async_copy_file(os.path.join(camera_storage_path, file2), file2_path)
     return True
