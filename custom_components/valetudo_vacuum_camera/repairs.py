@@ -8,7 +8,9 @@ from homeassistant import data_entry_flow
 from homeassistant.components.repairs import RepairsFlow
 from homeassistant.core import HomeAssistant
 import voluptuous as vol
+
 from .const import DOMAIN, migrate_me
+
 
 class RestartRequiredFixFlow(RepairsFlow):
     """Handler for an issue fixing flow."""
@@ -17,14 +19,13 @@ class RestartRequiredFixFlow(RepairsFlow):
         self.issue_id = issue_id
 
     async def async_step_init(
-            self, user_input: dict[str, str] | None = None
+        self, user_input: dict[str, str] | None = None
     ) -> data_entry_flow.FlowResult:
         """Handle the first step of a fix flow."""
-
         return await self.async_step_confirm_restart()
 
     async def async_step_confirm_restart(
-            self, user_input: dict[str, str] | None = None
+        self, user_input: dict[str, str] | None = None
     ) -> data_entry_flow.FlowResult:
         """Handle the confirm step of a fix flow."""
         if user_input is not None:
@@ -41,11 +42,11 @@ class RestartRequiredFixFlow(RepairsFlow):
 
 
 async def async_create_fix_flow(
-        hass: HomeAssistant,
-        issue_id: str,
-        data: dict[str, str | int | float | None] | None = None,
-        *args: Any,
-        **kwargs: Any,
+    hass: HomeAssistant,
+    issue_id: str,
+    data: dict[str, str | int | float | None] | None = None,
+    *args: Any,
+    **kwargs: Any,
 ) -> RepairsFlow | None:
     """Create flow."""
     if issue_id.startswith("restart_required"):
