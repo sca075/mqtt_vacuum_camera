@@ -302,11 +302,11 @@ def find_vacuum_files(directory) -> list[str] or None:
 
 async def handle_homeassistant_stop(event):
     """Handle Home Assistant stop event."""
+    hass = core.HomeAssistant(os.getcwd())
     if len(migrate_me) == 1:
-        return await async_migrate_entries()
+        return await async_migrate_entries(hass)
     else:
         _LOGGER.debug("Home Assistant is stopping. Writing down the rooms data.")
-        hass = core.HomeAssistant(os.getcwd())
         storage = os.path.join(os.getcwd(), STORAGE_DIR, "valetudo_camera")
         _LOGGER.debug(f"Storage path: {storage}")
         vacuum_entity_id = await async_get_translations_vacuum_id(storage)

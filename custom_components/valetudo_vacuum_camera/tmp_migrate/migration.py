@@ -15,6 +15,7 @@ import shutil
 from typing import Any
 import zipfile
 
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import STORAGE_DIR
 
 _LOGGER = logging.getLogger(__name__)
@@ -242,19 +243,20 @@ def delete_old_folder(path):
         _LOGGER.warning(f"Failed to delete the folder at {path}: {str(e)}")
 
 
-async def async_migrate_entries() -> bool:
+async def async_migrate_entries(hass: HomeAssistant) -> bool:
     """Migrate Valetudo Vacuum Camera to MQTT Vacuum Camera."""
     # Define the file to edit
     file1 = "core.config_entries"
     file2 = "core.entity_registry"
     # Define the paths
-    base_path = os.getcwd()
-    storage_path = os.path.join(os.getcwd(), STORAGE_DIR)
-    camera_storage_path = os.path.join(storage_path, "valetudo_camera")
-    file1_path = os.path.join(storage_path, file1)
-    file2_path = os.path.join(storage_path, file2)
-    worker_dir = os.path.join(
-        base_path, "custom_components", "valetudo_vacuum_camera", "tmp_migrate"
+    base_path = hass.config.path()  # os.getcwd()
+    camera_storage_path = hass.config.path(STORAGE_DIR, "valetudo_camera")
+    if not os.path.exists(camera_storage_path):
+        os.mkdir(camera_storage_path)
+    file1_path = hass.config.path(STORAGE_DIR, file1)
+    file2_path = hass.config.path(STORAGE_DIR, file2)
+    worker_dir = hass.config.path(
+        "custom_components", "valetudo_vacuum_camera", "tmp_migrate"
     )
     zip_file = os.path.join(worker_dir, "mqtt_vacuum_camera.zip")  # Zip file to extract
     unzip_dir = os.path.join(base_path, "custom_components", "mqtt_vacuum_camera")
