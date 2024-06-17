@@ -40,9 +40,21 @@ async def async_load_file(file_to_load: str, is_json: bool = False) -> Any:
 
     try:
         return await loop.run_in_executor(None, read_file, file_to_load, is_json)
-    except (FileNotFoundError, json.JSONDecodeError) as e:
+    except FileNotFoundError as e:
         _LOGGER.warning(f"Blocking IO issue detected: {e}")
+    except json.JSONDecodeError as e:
+        _LOGGER.warning(f"Error reading JSON file: {e}")
         return None
+
+
+def make_dir(directory: str) -> bool:
+    """Asynchronously create a directory."""
+    try:
+        os.mkdir(directory)
+    except OSError as e:
+        _LOGGER.error(f"Error creating output directory: {str(e)}")
+        return False
+    return True
 
 
 async def async_write_json_to_disk(file_to_write: str, json_data) -> None:
@@ -56,7 +68,7 @@ async def async_write_json_to_disk(file_to_write: str, json_data) -> None:
 
     try:
         await loop.run_in_executor(None, _write_to_file, file_to_write, json_data)
-    except OSError as e:
+    except Exception as e:
         _LOGGER.warning(f"Blocking issue detected: {e}")
 
 
@@ -77,17 +89,13 @@ async def async_write_file_to_disk(
 
     try:
         await loop.run_in_executor(None, _write_to_file, file_to_write, data, is_binary)
-    except OSError as e:
+    except Exception as e:
         _LOGGER.warning(f"Blocking issue detected: {e}")
 
 
 def unzip_file(file_path: str, output_dir: str):
     """Unzip a file to the specified directory."""
-    try:
-        os.mkdir(output_dir)
-    except OSError as e:
-        _LOGGER.error(f"Error creating output directory: {str(e)}")
-        return False
+    make_dir(output_dir)
 
     done = False  # Initialize done as False
     if zipfile.is_zipfile(file_path):
@@ -105,7 +113,7 @@ def unzip_file(file_path: str, output_dir: str):
 
     if done:
         # Additional checks can be added here to ensure all expected files are present
-        _LOGGER.info(f"Unzip operation completed successfully, proceeding to cleanup.")
+        _LOGGER.info("Unzip operation completed successfully, proceeding to cleanup.")
         folder_to_delete = os.path.join(
             os.getcwd(), "custom_components", "valetudo_vacuum_camera"
         )
@@ -123,15 +131,16 @@ async def async_unzip(zip_path, extract_to):
         return future.result()
 
 
-async def async_copy_file(src: str, dst: str):
+async def async_copy_file(src: str, dst: str) -> bool:
     """Copy a file from src to dst."""
     loop = asyncio.get_event_loop()
     try:
         await loop.run_in_executor(None, lambda: shutil.copy2(src, dst))
         _LOGGER.info(f"File copied from {src} to {dst}")
-    except OSError as e:
+    except Exception as e:
         _LOGGER.error(f"Error copying file: {str(e)}")
-        return "Error copying file"
+        return False
+    return True
 
 
 async def async_update_entry_field(entry, key, old_str, new_str):
@@ -166,30 +175,34 @@ async def async_migrate_config_entries(
 
     # Modify the entries
     modified = False
-    for entry in data["data"]["entries"]:
-        # Update domain in the entry
-        if entry["domain"] == old_domain:
-            entry["domain"] = new_domain
-            _LOGGER.info(f"Domain updated for entry_id {entry['entry_id']}")
+    try:
+        for entry in data["data"]["entries"]:
+            # Update domain in the entry
+            if entry["domain"] == old_domain:
+                entry["domain"] = new_domain
+                _LOGGER.info(f"Domain updated for entry_id {entry['entry_id']}")
 
-        # Update platform and other nested keys
-        await async_update_entry_field(entry, None, old_domain, new_domain)
+            # Update platform and other nested keys
+            await async_update_entry_field(entry, None, old_domain, new_domain)
 
-        modified = True
+            modified = True
 
-    # Save the changes back to the file if modifications have been made
-    if modified:
-        try:
-            await async_write_json_to_disk(file_path, data)
-            _LOGGER.info("Successfully updated the config_entries file.")
-        except Exception as e:
-            _LOGGER.error(f"Error writing JSON file: {str(e)}")
-            return "Error writing JSON file"
+        # Save the changes back to the file if modifications have been made
+        if modified:
+            try:
+                await async_write_json_to_disk(file_path, data)
+                _LOGGER.info("Successfully updated the config_entries file.")
+            except Exception as e:
+                _LOGGER.error(f"Error writing JSON file: {str(e)}")
+                return "Error writing JSON file"
 
-    else:
-        _LOGGER.info("No modifications needed.")
+        else:
+            _LOGGER.info("No modifications needed.")
+    except Exception as e:
+        _LOGGER.error(f"Error updating config entries: {str(e)}")
+        return False
 
-    return "Migration completed successfully"
+    return True
 
 
 async def async_migrate_entity_registry(file_path, old_platform, new_platform):
@@ -207,29 +220,33 @@ async def async_migrate_entity_registry(file_path, old_platform, new_platform):
         return "Error reading JSON file"
 
     # Modify the entries
-    modified = False
-    for entity in data["data"]["entities"]:
-        if entity.get("platform", "") == old_platform:
-            original_platform = entity["platform"]
-            entity["platform"] = new_platform
-            _LOGGER.info(
-                f"Updated platform from {original_platform} to {entity['platform']} "
-                f"for entity_id {entity['entity_id']}"
-            )
-            modified = True
+    try:
+        modified = False
+        for entity in data["data"]["entities"]:
+            if entity.get("platform", "") == old_platform:
+                original_platform = entity["platform"]
+                entity["platform"] = new_platform
+                _LOGGER.info(
+                    f"Updated platform from {original_platform} to {entity['platform']} "
+                    f"for entity_id {entity['entity_id']}"
+                )
+                modified = True
 
-    # Save the changes back to the file if modifications have been made
-    if modified:
-        try:
-            await async_write_json_to_disk(file_path, data)
-            _LOGGER.info("Successfully updated the entity_registry file.")
-        except Exception as e:
-            _LOGGER.error(f"Error writing JSON file: {str(e)}")
-            return "Error writing JSON file"
-    else:
-        _LOGGER.info("No modifications were needed.")
+        # Save the changes back to the file if modifications have been made
+        if modified:
+            try:
+                await async_write_json_to_disk(file_path, data)
+                _LOGGER.info("Successfully updated the entity_registry file.")
+            except Exception as e:
+                _LOGGER.error(f"Error writing JSON file: {str(e)}")
+                return "Error writing JSON file"
+        else:
+            _LOGGER.info("No modifications were needed.")
+    except Exception as e:
+        _LOGGER.error(f"Error updating entity registry: {str(e)}")
+        return False
 
-    return "Migration completed successfully"
+    return True
 
 
 def delete_old_folder(path):
@@ -252,9 +269,16 @@ async def async_migrate_entries(hass: HomeAssistant) -> bool:
     base_path = hass.config.path()  # os.getcwd()
     camera_storage_path = hass.config.path(STORAGE_DIR, "valetudo_camera")
     if not os.path.exists(camera_storage_path):
-        os.mkdir(camera_storage_path)
+        make_dir(camera_storage_path)
     file1_path = hass.config.path(STORAGE_DIR, file1)
     file2_path = hass.config.path(STORAGE_DIR, file2)
+    if os.path.exists(file1_path) and os.path.exists(file2_path):
+        await async_copy_file(file1_path, os.path.join(camera_storage_path, file1))
+        await async_copy_file(file2_path, os.path.join(camera_storage_path, file2))
+    else:
+        _LOGGER.error(f"File not found: {file1_path}")
+        return False
+    # Define the work directory
     worker_dir = hass.config.path(
         "custom_components", "valetudo_vacuum_camera", "tmp_migrate"
     )
@@ -262,9 +286,6 @@ async def async_migrate_entries(hass: HomeAssistant) -> bool:
     unzip_dir = os.path.join(base_path, "custom_components", "mqtt_vacuum_camera")
     # Unzip the files to the work directory
     await async_unzip(zip_file, unzip_dir)
-    # Copy the files to the work directory
-    await async_copy_file(file1_path, os.path.join(camera_storage_path, file1))
-    await async_copy_file(file2_path, os.path.join(camera_storage_path, file2))
     # Migrate the config entries and entity registry
     await async_migrate_config_entries(
         os.path.join(camera_storage_path, file1),
