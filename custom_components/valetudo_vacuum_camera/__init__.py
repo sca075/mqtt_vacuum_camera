@@ -233,6 +233,7 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
 async def async_setup_entry(
     hass: core.HomeAssistant, entry: config_entries.ConfigEntry
 ) -> bool:
+
     """Set up platform from a ConfigEntry."""
     hass.data.setdefault(DOMAIN, {})
     hass_data = dict(entry.data)
@@ -300,30 +301,30 @@ def find_vacuum_files(directory) -> list[str] or None:
     return vacuum_names
 
 
-async def handle_homeassistant_stop(event):
-    """Handle Home Assistant stop event."""
-    hass = core.HomeAssistant(os.getcwd())
-    if len(migrate_me) == 1:
-        return await async_migrate_entries(hass)
-    else:
-        _LOGGER.debug("Home Assistant is stopping. Writing down the rooms data.")
-        storage = os.path.join(os.getcwd(), STORAGE_DIR, "valetudo_camera")
-        _LOGGER.debug(f"Storage path: {storage}")
-        vacuum_entity_id = await async_get_translations_vacuum_id(storage)
-        if not vacuum_entity_id:
-            _LOGGER.debug("No vacuum room data found. Aborting!")
-            return True
-        _LOGGER.debug(f"Writing down the rooms data for {vacuum_entity_id}.")
-        await async_rename_room_description(hass, storage, vacuum_entity_id)
-        return True
-
-
 # noinspection PyCallingNonCallable
 async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
     """Set up the Valetudo Camera Custom component from yaml configuration."""
+
+    async def handle_homeassistant_stop(event):
+        """Handle Home Assistant stop event."""
+        if len(migrate_me) == 1:
+            return await async_migrate_entries(hass)
+        else:
+            _LOGGER.debug("Home Assistant is stopping. Writing down the rooms data.")
+            storage = os.path.join(os.getcwd(), STORAGE_DIR, "valetudo_camera")
+            _LOGGER.debug(f"Storage path: {storage}")
+            vacuum_entity_id = await async_get_translations_vacuum_id(storage)
+            if not vacuum_entity_id:
+                _LOGGER.debug("No vacuum room data found. Aborting!")
+                return True
+            _LOGGER.debug(f"Writing down the rooms data for {vacuum_entity_id}.")
+            await async_rename_room_description(hass, storage, vacuum_entity_id)
+            return True
+
     hass.bus.async_listen_once(
         EVENT_HOMEASSISTANT_FINAL_WRITE, handle_homeassistant_stop
     )
+
     # Make sure MQTT integration is enabled and the client is available
     if not await mqtt.async_wait_for_mqtt_client(hass):
         _LOGGER.error("MQTT integration is not available")
