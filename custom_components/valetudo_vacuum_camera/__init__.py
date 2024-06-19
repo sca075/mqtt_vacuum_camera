@@ -311,7 +311,7 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
             return await async_migrate_entries(hass)
         else:
             _LOGGER.debug("Home Assistant is stopping. Writing down the rooms data.")
-            storage = os.path.join(os.getcwd(), STORAGE_DIR, "valetudo_camera")
+            storage = hass.config.path(STORAGE_DIR, "valetudo_camera")
             _LOGGER.debug(f"Storage path: {storage}")
             vacuum_entity_id = await async_get_translations_vacuum_id(storage)
             if not vacuum_entity_id:
