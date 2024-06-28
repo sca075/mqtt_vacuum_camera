@@ -13,28 +13,28 @@
           "vacuum_entity": "Stofzuiger Entiteit ID"
         },
         "description": "Camera Setup.",
-        "title": "Valetudo Camera Setup"
+        "title": "MQTT Camera Setup"
       }
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Valetudo Camera Opties",
+        "title": "MQTT Camera Opties",
         "description": "### _Standaardopties_:",
         "data": {
           "camera_config_action": "Actie"
         }
       },
       "advanced": {
-        "title": "Valetudo Camera Opties",
+        "title": "MQTT Camera Opties",
         "description": "### _Geavanceerde opties_:",
         "data": {
           "camera_config_action": "Actie"
         }
       },
       "download_logs": {
-        "title": "Valetudo Camera Logbestand",
+        "title": "MQTT Camera Logbestand",
         "description": "### _Logbestand Kopiëren_:",
         "data": {
           "camera_logs_progres": "Wat te doen?"

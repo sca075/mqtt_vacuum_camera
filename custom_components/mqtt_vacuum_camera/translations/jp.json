@@ -13,133 +13,133 @@
           "vacuum_entity": "掃除機エンティティID"
         },
         "description": "カメラ設定。",
-        "title": "Valetudoカメラ設定"
+        "title": "MQTTカメラ設定"
       }
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Valetudoカメラオプション",
+        "title": "MQTTカメラオプション",
         "description": "### _標準オプション_:",
         "data": {
           "camera_config_action": "アクション"
         }
       },
       "advanced": {
-        "title": "Valetudoカメラオプション",
-        "description": "### _高度なオプション_:",
+        "title": "MQTTカメラオプション",
+        "description": "### _アドバンスドオプション_:",
         "data": {
           "camera_config_action": "アクション"
         }
       },
       "download_logs": {
-        "title": "Valetudoカメラログファイル",
+        "title": "MQTTカメラログファイル",
         "description": "### _ログファイルコピー_:",
         "data": {
-          "camera_logs_progres": "何をしますか？"
+          "camera_logs_progres": "どうする？"
         }
       },
       "image_opt": {
         "data": {
           "rotate_image": "回転",
-          "margins": "画像マージン。",
-          "auto_zoom": "自動ズームを有効にする",
-          "zoom_lock_ratio": "アスペクト比をロックする。",
-          "aspect_ratio": "画像のアスペクト比。",
-          "enable_www_snapshots": "PNGスナップショットをエクスポートする。"
+          "margins": "画像のマージン",
+          "auto_zoom": "オートズームを有効にする",
+          "zoom_lock_ratio": "アスペクト比を固定",
+          "aspect_ratio": "画像のアスペクト比",
+          "enable_www_snapshots": "PNGスナップショットをエクスポート"
         },
         "data_description": {
-          "rotate_image": "度0、90、180、270",
-          "margins": "ピクセル単位の自動トリミングマージン。",
-          "aspect_ratio": "画像のアスペクト比。"
+          "rotate_image": "度数 0, 90, 180, 270",
+          "margins": "ピクセルでの自動トリムマージン",
+          "aspect_ratio": "画像のアスペクト比"
         },
         "description": "カメラ画像オプション",
         "title": "画像オプション"
       },
       "image_offset": {
         "data": {
-          "offset_top": "オフセットトップ",
-          "offset_bottom": "オフセットボトム",
-          "offset_left": "オフセット左",
-          "offset_right": "オフセット右"
+          "offset_top": "上へのオフセット",
+          "offset_bottom": "下へのオフセット",
+          "offset_left": "左へのオフセット",
+          "offset_right": "右へのオフセット"
         },
         "data_description": {
-          "offset_top": "回転0のトップオフセットはピクセル単位。",
-          "offset_bottom": "回転0のボトムオフセットはピクセル単位。",
-          "offset_left": "回転0の左オフセットはピクセル単位。",
-          "offset_right": "回転0の右オフセットはピクセル単位。"
+          "offset_top": "0度回転での上へのオフセット（ピクセル）",
+          "offset_bottom": "0度回転での下へのオフセット（ピクセル）",
+          "offset_left": "0度回転での左へのオフセット（ピクセル）",
+          "offset_right": "0度回転での右へのオフセット（ピクセル）"
         },
-        "description": "カメラ画像オフセット",
+        "description": "カメラ画像のオフセット",
         "title": "画像オフセット"
       },
       "status_text": {
         "data": {
-          "show_vac_status": "掃除機ステータスを表示。",
+          "show_vac_status": "掃除機のステータスを表示",
           "vac_status_font": "Fira Sans",
           "vac_status_size": "テキストサイズ",
-          "vac_status_position": "テキストの位置：下（オフ）",
-          "color_text": "[255、255、255]"
+          "vac_status_position": "テキスト位置：下（オフ）",
+          "color_text": "[255, 255, 255]"
         },
         "data_description": {
-          "vac_status_font": "デフォルトのFira Serifフォント。",
-          "vac_status_size": "デフォルトのテキストサイズ50。",
-          "color_text": "掃除機ステータステキストの色。"
+          "vac_status_font": "デフォルトのテキストフォント Fira Serif",
+          "vac_status_size": "デフォルトのテキストサイズ 50",
+          "color_text": "掃除機ステータステキストの色"
         },
         "description": "画像オプション",
         "title": "ステータステキストオプション"
       },
       "base_colours": {
         "data": {
-          "color_charger": "[255、128、0]",
-          "color_move": "[238、247、255]",
-          "color_wall": "[255、255、0]",
-          "color_robot": "[255、255、204]",
-          "color_go_to": "[0、255、0]",
-          "color_no_go": "[255、0、0]",
-          "color_zone_clean": "[255、255、255]",
-          "color_background": "[0、125、255]",
-          "add_base_alpha": "透明度を設定："
+          "color_charger": "[255, 128, 0]",
+          "color_move": "[238, 247, 255]",
+          "color_wall": "[255, 255, 0]",
+          "color_robot": "[255, 255, 204]",
+          "color_go_to": "[0, 255, 0]",
+          "color_no_go": "[255, 0, 0]",
+          "color_zone_clean": "[255, 255, 255]",
+          "color_background": "[0, 125, 255]",
+          "add_base_alpha": "透明度の設定"
         },
         "data_description": {
-          "color_charger": "充電器の色。",
-          "color_move": "移動の色。",
-          "color_wall": "壁の色。",
-          "color_robot": "ロボットの色。",
-          "color_go_to": "移動先の色。",
-          "color_no_go": "移動不可エリアの色。",
-          "color_zone_clean": "ゾーンクリーンの色。",
-          "color_background": "背景色。"
+          "color_charger": "充電器の色",
+          "color_move": "移動色",
+          "color_wall": "壁の色",
+          "color_robot": "ロボットの色",
+          "color_go_to": "指定場所の色",
+          "color_no_go": "禁止エリアの色",
+          "color_zone_clean": "ゾーンクリーニングの色",
+          "color_background": "背景色"
         },
-        "description": "カメラ色オプシション。",
-        "title": "基本色の設定"
+        "description": "カメラカラーオプション",
+        "title": "基本色設定"
       },
       "alpha_1": {
         "data": {
-          "alpha_charger": "充電器アルファ   ",
-          "alpha_move": "移動アルファ     ",
-          "alpha_wall": "壁アルファ     ",
-          "alpha_robot": "ロボットアルファ     ",
-          "alpha_go_to": "移動先エリアアルファ",
-          "alpha_no_go": "移動不可エリアアルファ",
-          "alpha_zone_clean": "ゾーンクリーンアルファ",
-          "alpha_background": "背景アルファ",
-          "alpha_text": "テキストアルファ      "
+          "alpha_charger": "充電器のアルファ",
+          "alpha_move": "移動のアルファ",
+          "alpha_wall": "壁のアルファ",
+          "alpha_robot": "ロボットのアルファ",
+          "alpha_go_to": "指定エリアのアルファ",
+          "alpha_no_go": "禁止エリアのアルファ",
+          "alpha_zone_clean": "ゾーンクリーンのアルファ",
+          "alpha_background": "背景のアルファ",
+          "alpha_text": "テキストのアルファ"
         },
         "description": "カメラオプション。アルファ1",
-        "title": "基本色のアルファチャンネル"
+        "title": "基本色のアルファチャネル"
       },
       "rooms_colours_1": {
         "data": {
-          "color_room_0": "[135、206、250]",
-          "color_room_1": "[176、226、255]",
-          "color_room_2": "[165、105、18]",
-          "color_room_3": "[164、211、238]",
-          "color_room_4": "[141、182、205]",
-          "color_room_5": "[96、123、139]",
-          "color_room_6": "[224、255、255]",
-          "color_room_7": "[209、238、238]",
-          "add_room_1_alpha": "透明度を設定："
+          "color_room_0": "[135, 206, 250]",
+          "color_room_1": "[176, 226, 255]",
+          "color_room_2": "[165, 105, 18]",
+          "color_room_3": "[164, 211, 238]",
+          "color_room_4": "[141, 182, 205]",
+          "color_room_5": "[96, 123, 139]",
+          "color_room_6": "[224, 255, 255]",
+          "color_room_7": "[209, 238, 238]",
+          "add_room_1_alpha": "透明度の設定"
         },
         "data_description": {
           "color_room_0": "部屋1",
@@ -151,20 +151,20 @@
           "color_room_6": "部屋7",
           "color_room_7": "部屋8"
         },
-        "description": "カメラ色オプション。",
-        "title": "部屋1から8の色"
+        "description": "カメラカラーオプション",
+        "title": "部屋1から8のカラー"
       },
       "rooms_colours_2": {
         "data": {
-          "color_room_8": "[180、205、205]",
-          "color_room_9": "[122、139、139]",
-          "color_room_10": "[175、238、238]",
-          "color_room_11": "[84、153、199]",
-          "color_room_12": "[133、193、233]",
-          "color_room_13": "[245、176、65]",
-          "color_room_14": "[82、190、128]",
-          "color_room_15": "[72、201、176]",
-          "add_room_2_alpha": "透明度を設定："
+          "color_room_8": "[180, 205, 205]",
+          "color_room_9": "[122, 139, 139]",
+          "color_room_10": "[175, 238, 238]",
+          "color_room_11": "[84, 153, 199]",
+          "color_room_12": "[133, 193, 233]",
+          "color_room_13": "[245, 176, 65]",
+          "color_room_14": "[82, 190, 128]",
+          "color_room_15": "[72, 201, 176]",
+          "add_room_2_alpha": "透明度の設定"
         },
         "data_description": {
           "color_room_8": "部屋9",
@@ -176,55 +176,55 @@
           "color_room_14": "部屋15",
           "color_room_15": "部屋16"
         },
-        "description": "カメラ色オプション。",
-        "title": "部屋9から15の色"
+        "description": "カメラカラーオプション",
+        "title": "部屋9から15のカラー"
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "部屋1",
-          "alpha_room_1": "部屋2",
-          "alpha_room_2": "部屋3",
-          "alpha_room_3": "部屋4",
-          "alpha_room_4": "部屋5",
-          "alpha_room_5": "部屋6",
-          "alpha_room_6": "部屋7",
-          "alpha_room_7": "部屋8"
+          "alpha_room_0": "部屋1のアルファ",
+          "alpha_room_1": "部屋2のアルファ",
+          "alpha_room_2": "部屋3のアルファ",
+          "alpha_room_3": "部屋4のアルファ",
+          "alpha_room_4": "部屋5のアルファ",
+          "alpha_room_5": "部屋6のアルファ",
+          "alpha_room_6": "部屋7のアルファ",
+          "alpha_room_7": "部屋8のアルファ"
         },
         "description": "カメラオプション。アルファ2",
-        "title": "部屋の色のアルファチャンネル"
+        "title": "部屋のアルファチャネル"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "部屋9",
-          "alpha_room_9": "部屋10",
-          "alpha_room_10": "部屋11",
-          "alpha_room_11": "部屋12",
-          "alpha_room_12": "部屋13",
-          "alpha_room_13": "部屋14",
-          "alpha_room_14": "部屋15",
-          "alpha_room_15": "部屋16"
+          "alpha_room_8": "部屋9のアルファ",
+          "alpha_room_9": "部屋10のアルファ",
+          "alpha_room_10": "部屋11のアルファ",
+          "alpha_room_11": "部屋12のアルファ",
+          "alpha_room_12": "部屋13のアルファ",
+          "alpha_room_13": "部屋14のアルファ",
+          "alpha_room_14": "部屋15のアルファ",
+          "alpha_room_15": "部屋16のアルファ"
         },
         "description": "カメラオプション。アルファ3",
-        "title": "部屋の色のアルファチャンネル"
+        "title": "部屋のアルファチャネル"
       }
     }
   },
   "selector": {
     "camera_config_action": {
       "options": {
-        "opt_1": "画像を設定",
-        "opt_2": "一般的な色を設定",
-        "opt_3": "部屋1から8の色を設定",
-        "opt_4": "部屋9から16の色を設定",
-        "opt_5": "高度なオプション"
+        "opt_1": "画像設定",
+        "opt_2": "一般色設定",
+        "opt_3": "部屋1から8の色設定",
+        "opt_4": "部屋9から16の色設定",
+        "opt_5": "アドバンスドオプション"
       }
     },
     "camera_config_advanced": {
       "options": {
-        "opt_1": "画像のオフセットを設定",
-        "opt_2": "ステータステキストを設定",
+        "opt_1": "画像オフセット設定",
+        "opt_2": "ステータステキスト設定",
         "opt_3": "カメラログをwwwにコピー",
-        "opt_4": "色のオプションをリネーム"
+        "opt_4": "色オプションの名前変更"
       }
     },
     "camera_logs_progres": {
@@ -236,36 +236,34 @@
     "vacuum_status": {
       "options": {
         "connected": "接続済み",
-        "disconnected": "切断済み",
+        "disconnected": "未接続",
         "charging": "充電中",
-        "cleaning": "清掃中",
+        "cleaning": "掃除中",
         "docked": "ドック済み",
         "idle": "アイドル",
         "paused": "一時停止中",
-        "returning": "帰宅中"
+        "returning": "帰還中"
       }
     }
   },
   "services": {
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",
-      "description": "カメラをオフにします。"
+      "description": "カメラをオフにする。"
     },
     "turn_on": {
       "name": "[%key:common::action::turn_on%]",
-      "description": "カメラをオンにします。"
+      "description": "カメラをオンにする。"
     },
     "snapshot": {
-      "name": "スナップショットを取る",
-      "description": "カメラからスナップショットを取得します。",
+      "name": "スナップショットを撮る",
+      "description": "カメラからスナップショットを撮る。",
       "fields": {
         "filename": {
           "name": "ファイル名",
-          "description": "ファイル名のテンプレート。利用可能な変数は `entity_id` です。"
+          "description": "ファイル名のテンプレート。利用可能な変数は `entity_id`です。"
         }
       }
     }
   }
 }
-
-

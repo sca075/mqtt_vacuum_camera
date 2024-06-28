@@ -1,5 +1,5 @@
 """
-Version: 2024.06.0
+Version: 2024.07.0
 Status text of the vacuum cleaners.
 Clas to handle the status text of the vacuum cleaners.
 """
@@ -10,6 +10,7 @@ import json
 import logging
 
 from custom_components.mqtt_vacuum_camera.types import JsonType, PilPNG
+from custom_components.mqtt_vacuum_camera.const import DOMAIN
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 _LOGGER.propagate = True
@@ -25,7 +26,7 @@ class StatusText:
         self._shared = camera_shared
         self.file_name = self._shared.file_name
         self._translations_path = hass.config.path(
-            "custom_components/mqtt_vacuum_camera/translations/"
+            f"custom_components/{DOMAIN}/translations/"
         )
 
     def load_translations(self, language: str) -> JsonType:

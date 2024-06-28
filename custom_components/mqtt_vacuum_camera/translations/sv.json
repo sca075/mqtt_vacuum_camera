@@ -1,0 +1,269 @@
+{
+   "config": {
+      "step": {
+         "user": {
+            "data": {
+               "vacuum_entity": "Dammsugar-enhetens ID",
+               "vacuum_config_entry": "Konfigurationsdata för dammsugaren",
+               "vacuum_map": "Dammsugarens ämne",
+               "vacuum_identifiers": "Dammsugarens MQTT-id",
+               "unique_id": ""
+            },
+            "data_description": {
+               "vacuum_entity": "Dammsugar-enhetens ID"
+            },
+            "description": "Inställning av kamera.",
+            "title": "MQTT Kamerainställning"
+         }
+      }
+   },
+   "options": {
+      "step": {
+         "init": {
+            "title": "MQTT Kameraalternativ",
+            "description": "### _Standardalternativ_:",
+            "data": {
+               "camera_config_action": "Åtgärd"
+            }
+         },
+         "advanced": {
+            "title": "MQTT Kameraalternativ",
+            "description": "### _Avancerade alternativ_:",
+            "data": {
+               "camera_config_action": "Åtgärd"
+            }
+         },
+         "download_logs": {
+            "title": "MQTT Kamerloggfil",
+            "description": "### _Kopiera loggfil_:",
+            "data": {
+               "camera_logs_progres": "Vad ska göras?"
+            }
+         },
+         "image_opt": {
+            "data": {
+               "rotate_image": "Rotera",
+               "margins": "Bildmarginaler",
+               "auto_zoom": "Aktivera automatisk zoom",
+               "zoom_lock_ratio": "Lås bildförhållande",
+               "aspect_ratio": "Bildförhållande",
+               "enable_www_snapshots": "Exportera PNG-ögonblicksbilder"
+            },
+            "data_description": {
+               "rotate_image": "Grader 0, 90, 180, 270",
+               "margins": "Automatiska marginaler i pixlar",
+               "aspect_ratio": "Bildförhållande"
+            },
+            "description": "Bildalternativ för kamera",
+            "title": "Bildalternativ"
+         },
+         "image_offset": {
+            "data": {
+               "offset_top": "Övre förskjutning",
+               "offset_bottom": "Nedre förskjutning",
+               "offset_left": "Vänster förskjutning",
+               "offset_right": "Höger förskjutning"
+            },
+            "data_description": {
+               "offset_top": "Övre förskjutning vid rotation 0 i pixlar",
+               "offset_bottom": "Nedre förskjutning vid rotation 0 i pixlar",
+               "offset_left": "Vänster förskjutning vid rotation 0 i pixlar",
+               "offset_right": "Höger förskjutning vid rotation 0 i pixlar"
+            },
+            "description": "Kamera bildförskjutning",
+            "title": "Bildförskjutning"
+         },
+         "status_text": {
+            "data": {
+               "show_vac_status": "Visa dammsugarens status",
+               "vac_status_font": "Fira Sans",
+               "vac_status_size": "Textstorlek",
+               "vac_status_position": "Textposition: Botten (AV)",
+               "color_text": "[255, 255, 255]"
+            },
+            "data_description": {
+               "vac_status_font": "Standardtexttypsnitt Fira Serif",
+               "vac_status_size": "Standardtextstorlek 50",
+               "color_text": "Färg på texten för dammsugarens status"
+            },
+            "description": "Status textalternativ för bild",
+            "title": "Status textalternativ"
+         },
+         "base_colours": {
+            "data": {
+               "color_charger": "[255, 128, 0]",
+               "color_move": "[238, 247, 255]",
+               "color_wall": "[255, 255, 0]",
+               "color_robot": "[255, 255, 204]",
+               "color_go_to": "[0, 255, 0]",
+               "color_no_go": "[255, 0, 0]",
+               "color_zone_clean": "[255, 255, 255]",
+               "color_background": "[0, 125, 255]",
+               "add_base_alpha": "Konfigurera transparens:"
+            },
+            "data_description": {
+               "color_charger": "Färg på laddare",
+               "color_move": "Färg på rörelse",
+               "color_wall": "Väggfärg",
+               "color_robot": "Robotfärg",
+               "color_go_to": "Färg för gå-till-zonen",
+               "color_no_go": "Färg för no-go zonen",
+               "color_zone_clean": "Färg för rengöringszonen",
+               "color_background": "Bakgrundsfärg"
+            },
+            "description": "Kamera färgalternativ",
+            "title": "Grundläggande färginställningar"
+         },
+         "alpha_1": {
+            "data": {
+               "alpha_charger": "Transparens för laddare",
+               "alpha_move": "Transparens för rörelse",
+               "alpha_wall": "Transparens för väggar",
+               "alpha_robot": "Transparens för robot",
+               "alpha_go_to": "Transparens för gå-till-område",
+               "alpha_no_go": "Transparens för no-go-område",
+               "alpha_zone_clean": "Transparens för rengöringszonen",
+               "alpha_background": "Transparens för bakgrund",
+               "alpha_text": "Transparens för text"
+            },
+            "description": "Kameraalternativ. Alfa 1",
+            "title": "Alfa-kanal för grundfärger"
+         },
+         "rooms_colours_1": {
+            "data": {
+               "color_room_0": "[135, 206, 250]",
+               "color_room_1": "[176, 226, 255]",
+               "color_room_2": "[165, 105, 18]",
+               "color_room_3": "[164, 211, 238]",
+               "color_room_4": "[141, 182, 205]",
+               "color_room_5": "[96, 123, 139]",
+               "color_room_6": "[224, 255, 255]",
+               "color_room_7": "[209, 238, 238]",
+               "add_room_1_alpha": "Konfigurera transparens"
+            },
+            "data_description": {
+               "color_room_0": "Rum 1",
+               "color_room_1": "Rum 2",
+               "color_room_2": "Rum 3",
+               "color_room_3": "Rum 4",
+               "color_room_4": "Rum 5",
+               "color_room_5": "Rum 6",
+               "color_room_6": "Rum 7",
+               "color_room_7": "Rum 8"
+            },
+            "description": "Kamerafärgalternativ.",
+            "title": "Färger för rum 1 till 8"
+         },
+         "rooms_colours_2": {
+            "data": {
+               "color_room_8": "[180, 205, 205]",
+               "color_room_9": "[122, 139, 139]",
+               "color_room_10": "[175, 238, 238]",
+               "color_room_11": "[84, 153, 199]",
+               "color_room_12": "[133, 193, 233]",
+               "color_room_13": "[245, 176, 65]",
+               "color_room_14": "[82, 190, 128]",
+               "color_room_15": "[72, 201, 176]",
+               "add_room_2_alpha": "Konfigurera transparens"
+            },
+            "data_description": {
+               "color_room_8": "Rum 9",
+               "color_room_9": "Rum 10",
+               "color_room_10": "Rum 11",
+               "color_room_11": "Rum 12",
+               "color_room_12": "Rum 13",
+               "color_room_13": "Rum 14",
+               "color_room_14": "Rum 15",
+               "color_room_15": "Rum 16"
+            },
+            "description": "Kamerafärgalternativ.",
+            "title": "Färger för rum 9 till 15"
+         },
+         "alpha_2": {
+            "data": {
+               "alpha_room_0": "Transparens för Rum 1",
+               "alpha_room_1": "Transparens för Rum 2",
+               "alpha_room_2": "Transparens för Rum 3",
+               "alpha_room_3": "Transparens för Rum 4",
+               "alpha_room_4": "Transparens för Rum 5",
+               "alpha_room_5": "Transparens för Rum 6",
+               "alpha_room_6": "Transparens för Rum 7",
+               "alpha_room_7": "Transparens för Rum 8"
+            },
+            "description": "Kameraalternativ. Alfa 2",
+            "title": "Alfa-kanal för rumfärger"
+         },
+         "alpha_3": {
+            "data": {
+               "alpha_room_8": "Transparens för Rum 9",
+               "alpha_room_9": "Transparens för Rum 10",
+               "alpha_room_10": "Transparens för Rum 11",
+               "alpha_room_11": "Transparens för Rum 12",
+               "alpha_room_12": "Transparens för Rum 13",
+               "alpha_room_13": "Transparens för Rum 14",
+               "alpha_room_14": "Transparens för Rum 15",
+               "alpha_room_15": "Transparens för Rum 16"
+            },
+            "description": "Kameraalternativ. Alfa 3",
+            "title": "Alfa-kanal för rumfärger"
+         }
+      }
+   },
+   "selector": {
+      "camera_config_action": {
+         "options": {
+            "opt_1": "Konfigurera bild",
+            "opt_2": "Konfigurera allmänna färger",
+            "opt_3": "Färger för rum 1 till 8",
+            "opt_4": "Färger för rum 9 till 16",
+            "opt_5": "Avancerade alternativ"
+         }
+      },
+      "camera_config_advanced": {
+         "options": {
+            "opt_1": "Konfigurera bildoffset",
+            "opt_2": "Konfigurera statustext",
+            "opt_3": "Kopiera kamerajournaler till www",
+            "opt_4": "Döp om färgalternativ"
+         }
+      },
+      "camera_logs_progres": {
+         "options": {
+            "opt_1": "Kopiera journaler till www",
+            "opt_2": "Ta bort journaler från www"
+         }
+      },
+      "vacuum_status": {
+         "options": {
+            "connected": "Ansluten",
+            "disconnected": "Frånkopplad",
+            "charging": "Laddar",
+            "cleaning": "Städar",
+            "docked": "Dockad",
+            "idle": "Viloläge",
+            "paused": "Pausad",
+            "returning": "Återvänder"
+         }
+      }
+   },
+   "services": {
+      "turn_off": {
+         "name": "[%key:common::action::turn_off%]",
+         "description": "Stänger av kameran."
+      },
+      "turn_on": {
+         "name": "[%key:common::action::turn_on%]",
+         "description": "Slår på kameran."
+      },
+      "snapshot": {
+         "name": "Ta ögonblicksbild",
+         "description": "Tar en ögonblicksbild från en kamera.",
+         "fields": {
+            "filename": {
+               "name": "Filnamn",
+               "description": "Mall för filnamn. Tillgänglig variabel är `entity_id`."
+            }
+         }
+      }
+   }
+}

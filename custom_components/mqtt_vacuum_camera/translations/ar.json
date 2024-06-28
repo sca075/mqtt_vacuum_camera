@@ -4,142 +4,142 @@
       "user": {
         "data": {
           "vacuum_entity": "معرف كيان المكنسة",
-          "vacuum_config_entry": "بيانات تكوين المكنسة",
+          "vacuum_config_entry": "بيانات تهيئة المكنسة",
           "vacuum_map": "موضوع المكنسة",
-          "vacuum_identifiers": "معرفات المكنسة في MQTT",
+          "vacuum_identifiers": "معرف MQTT للمكنسة",
           "unique_id": ""
         },
         "data_description": {
           "vacuum_entity": "معرف كيان المكنسة"
         },
         "description": "إعداد الكاميرا.",
-        "title": "إعداد كاميرا Valetudo"
+        "title": "إعداد كاميرا MQTT"
       }
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "خيارات كاميرا Valetudo",
-        "description": "### _خيارات قياسية_:",
+        "title": "خيارات كاميرا MQTT",
+        "description": "### _الخيارات القياسية_:",
         "data": {
           "camera_config_action": "الإجراء"
         }
       },
       "advanced": {
-        "title": "خيارات كاميرا Valetudo",
-        "description": "### _خيارات متقدمة_:",
+        "title": "خيارات كاميرا MQTT",
+        "description": "### _الخيارات المتقدمة_:",
         "data": {
           "camera_config_action": "الإجراء"
         }
       },
       "download_logs": {
-        "title": "ملف سجل كاميرا Valetudo",
-        "description": "### _نسخة ملف السجلات_:",
+        "title": "ملف سجل كاميرا MQTT",
+        "description": "### _نسخ ملف السجلات_:",
         "data": {
-          "camera_logs_progres": "ماذا تريد أن تفعل؟"
+          "camera_logs_progres": "ماذا تفعل؟"
         }
       },
       "image_opt": {
         "data": {
           "rotate_image": "تدوير",
-          "margins": "هوامش الصورة.",
-          "auto_zoom": "تمكين التكبير التلقائي",
-          "zoom_lock_ratio": "تأمين نسبة العرض إلى الارتفاع.",
-          "aspect_ratio": "نسبة العرض إلى الارتفاع للصورة.",
-          "enable_www_snapshots": "تصدير لقطات PNG."
+          "margins": "هوامش الصورة",
+          "auto_zoom": "تفعيل التكبير التلقائي",
+          "zoom_lock_ratio": "قفل نسبة الأبعاد",
+          "aspect_ratio": "نسبة أبعاد الصورة",
+          "enable_www_snapshots": "تصدير اللقطات PNG"
         },
         "data_description": {
-          "rotate_image": "درجة 0، 90، 180، 270",
-          "margins": "تقليم تلقائي للهوامش بالبكسل.",
-          "aspect_ratio": "نسبة العرض إلى الارتفاع للصورة."
+          "rotate_image": "درجة 0, 90, 180, 270",
+          "margins": "هوامش تلقائية بالبكسل",
+          "aspect_ratio": "نسبة أبعاد الصورة"
         },
         "description": "خيارات صورة الكاميرا",
         "title": "خيارات الصورة"
       },
       "image_offset": {
         "data": {
-          "offset_top": "إزاحة لأعلى",
-          "offset_bottom": "إزاحة لأسفل",
-          "offset_left": "إزاحة لليسار",
-          "offset_right": "إزاحة لليمين"
+          "offset_top": "الإزاحة للأعلى",
+          "offset_bottom": "الإزاحة للأسفل",
+          "offset_left": "الإزاحة لليسار",
+          "offset_right": "الإزاحة لليمين"
         },
         "data_description": {
-          "offset_top": "إزاحة لأعلى عند دوران 0 بالبكسل.",
-          "offset_bottom": "إزاحة لأسفل عند دوران 0 بالبكسل.",
-          "offset_left": "إزاحة لليسار عند دوران 0 بالبكسل.",
-          "offset_right": "إزاحة لليمين عند دوران 0 بالبكسل."
+          "offset_top": "إزاحة الأعلى بدوران 0 بالبكسل",
+          "offset_bottom": "إزاحة الأسفل بدوران 0 بالبكسل",
+          "offset_left": "إزاحة اليسار بدوران 0 بالبكسل",
+          "offset_right": "إزاحة اليمين بدوران 0 بالبكسل"
         },
         "description": "إزاحة صورة الكاميرا",
         "title": "إزاحة الصورة"
       },
       "status_text": {
         "data": {
-          "show_vac_status": "عرض حالة المكنسة.",
-          "vac_status_font": "Fira Sans",
+          "show_vac_status": "عرض حالة المكنسة",
+          "vac_status_font": "خط Fira Sans",
           "vac_status_size": "حجم النص",
-          "vac_status_position": "موضع النص: أسفل (OFF)",
-          "color_text": "[255، 255، 255]"
+          "vac_status_position": "موضع النص: الأسفل (معطل)",
+          "color_text": "[255, 255, 255]"
         },
         "data_description": {
-          "vac_status_font": "الخط النصي الافتراضي Fira Serif.",
-          "vac_status_size": "حجم النص الافتراضي 50.",
-          "color_text": "لون نص حالة المكنسة."
+          "vac_status_font": "الخط الافتراضي Fira Serif",
+          "vac_status_size": "حجم النص الافتراضي 50",
+          "color_text": "لون نص حالة المكنسة"
         },
-        "description": "خيارات الصورة",
+        "description": "خيارات صورة النص",
         "title": "خيارات نص الحالة"
       },
       "base_colours": {
         "data": {
-          "color_charger": "[255، 128، 0]",
-          "color_move": "[238، 247، 255]",
-          "color_wall": "[255، 255، 0]",
-          "color_robot": "[255، 255، 204]",
-          "color_go_to": "[0، 255، 0]",
-          "color_no_go": "[255، 0، 0]",
-          "color_zone_clean": "[255، 255، 255]",
-          "color_background": "[0، 125، 255]",
-          "add_base_alpha": "تكوين الشفافية:"
+          "color_charger": "[255, 128, 0]",
+          "color_move": "[238, 247, 255]",
+          "color_wall": "[255, 255, 0]",
+          "color_robot": "[255, 255, 204]",
+          "color_go_to": "[0, 255, 0]",
+          "color_no_go": "[255, 0, 0]",
+          "color_zone_clean": "[255, 255, 255]",
+          "color_background": "[0, 125, 255]",
+          "add_base_alpha": "تهيئة الشفافية"
         },
         "data_description": {
-          "color_charger": "لون الشاحن.",
-          "color_move": "لون الحركة.",
-          "color_wall": "لون الجدار.",
-          "color_robot": "لون الروبوت.",
-          "color_go_to": "لون الذهاب إلى.",
-          "color_no_go": "لون لا تذهب إلى.",
-          "color_zone_clean": "لون منطقة التنظيف.",
-          "color_background": "لون الخلفية."
+          "color_charger": "لون الشاحن",
+          "color_move": "لون الحركة",
+          "color_wall": "لون الجدار",
+          "color_robot": "لون الروبوت",
+          "color_go_to": "لون الذهاب إلى",
+          "color_no_go": "لون المنطقة الممنوعة",
+          "color_zone_clean": "لون تنظيف المنطقة",
+          "color_background": "لون الخلفية"
         },
-        "description": "خيارات ألوان الكاميرا.",
-        "title": "إعداد ألوان الأساس"
+        "description": "خيارات ألوان الكاميرا",
+        "title": "إعدادات الألوان الأساسية"
       },
       "alpha_1": {
         "data": {
-          "alpha_charger": "ألفا الشاحن",
-          "alpha_move": "ألفا الحركة",
-          "alpha_wall": "ألفا الجدار",
-          "alpha_robot": "ألفا الروبوت",
-          "alpha_go_to": "ألفا منطقة الذهاب إلى",
-          "alpha_no_go": "ألفا منطقة لا تذهب إلى",
-          "alpha_zone_clean": "ألفا منطقة التنظيف",
-          "alpha_background": "ألفا الخلفية",
-          "alpha_text": "ألفا النص"
+          "alpha_charger": "شفافية الشاحن",
+          "alpha_move": "شفافية الحركة",
+          "alpha_wall": "شفافية الجدران",
+          "alpha_robot": "شفافية الروبوت",
+          "alpha_go_to": "شفافية المنطقة المستهدفة",
+          "alpha_no_go": "شفافية المنطقة الممنوعة",
+          "alpha_zone_clean": "شفافية منطقة التنظيف",
+          "alpha_background": "شفافية الخلفية",
+          "alpha_text": "شفافية النص"
         },
         "description": "خيارات الكاميرا. ألفا 1",
-        "title": "ألوان قناة ألفا الأساسية"
+        "title": "ألوان قاعدة الألفا"
       },
       "rooms_colours_1": {
         "data": {
-          "color_room_0": "[135، 206، 250]",
-          "color_room_1": "[176، 226، 255]",
-          "color_room_2": "[165، 105، 18]",
-          "color_room_3": "[164، 211، 238]",
-          "color_room_4": "[141، 182، 205]",
-          "color_room_5": "[96، 123، 139]",
-          "color_room_6": "[224، 255، 255]",
-          "color_room_7": "[209، 238، 238]",
-          "add_room_1_alpha": "تكوين الشفافية:"
+          "color_room_0": "[135, 206, 250]",
+          "color_room_1": "[176, 226, 255]",
+          "color_room_2": "[165, 105, 18]",
+          "color_room_3": "[164, 211, 238]",
+          "color_room_4": "[141, 182, 205]",
+          "color_room_5": "[96, 123, 139]",
+          "color_room_6": "[224, 255, 255]",
+          "color_room_7": "[209, 238, 238]",
+          "add_room_1_alpha": "تهيئة الشفافية"
         },
         "data_description": {
           "color_room_0": "غرفة 1",
@@ -151,20 +151,20 @@
           "color_room_6": "غرفة 7",
           "color_room_7": "غرفة 8"
         },
-        "description": "خيارات ألوان الكاميرا.",
-        "title": "ألوان الغرف من 1 إلى 8"
+        "description": "خيارات ألوان الكاميرا",
+        "title": "ألوان الغرف 1 إلى 8"
       },
       "rooms_colours_2": {
         "data": {
-          "color_room_8": "[180، 205، 205]",
-          "color_room_9": "[122، 139، 139]",
-          "color_room_10": "[175، 238، 238]",
-          "color_room_11": "[84، 153، 199]",
-          "color_room_12": "[133، 193، 233]",
-          "color_room_13": "[245، 176، 65]",
-          "color_room_14": "[82، 190، 128]",
-          "color_room_15": "[72، 201، 176]",
-          "add_room_2_alpha": "تكوين الشفافية:"
+          "color_room_8": "[180, 205, 205]",
+          "color_room_9": "[122, 139, 139]",
+          "color_room_10": "[175, 238, 238]",
+          "color_room_11": "[84, 153, 199]",
+          "color_room_12": "[133, 193, 233]",
+          "color_room_13": "[245, 176, 65]",
+          "color_room_14": "[82, 190, 128]",
+          "color_room_15": "[72, 201, 176]",
+          "add_room_2_alpha": "تهيئة الشفافية"
         },
         "data_description": {
           "color_room_8": "غرفة 9",
@@ -176,36 +176,93 @@
           "color_room_14": "غرفة 15",
           "color_room_15": "غرفة 16"
         },
-        "description": "خيارات ألوان الكاميرا.",
-        "title": "ألوان الغرف من 9 إلى 15"
+        "description": "خيارات ألوان الكاميرا",
+        "title": "ألوان الغرف 9 إلى 15"
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "غرفة 1",
-          "alpha_room_1": "غرفة 2",
-          "alpha_room_2": "غرفة 3",
-          "alpha_room_3": "غرفة 4",
-          "alpha_room_4": "غرفة 5",
-          "alpha_room_5": "غرفة 6",
-          "alpha_room_6": "غرفة 7",
-          "alpha_room_7": "غرفة 8"
+          "alpha_room_0": "ششفافية غرفة 1",
+          "alpha_room_1": "شفافية غرفة 2",
+          "alpha_room_2": "شفافية غرفة 3",
+          "alpha_room_3": "شفافية غرفة 4",
+          "alpha_room_4": "شفافية غرفة 5",
+          "alpha_room_5": "شفافية غرفة 6",
+          "alpha_room_6": "شفافية غرفة 7",
+          "alpha_room_7": "شفافية غرفة 8"
         },
         "description": "خيارات الكاميرا. ألفا 2",
-        "title": "ألوان قناة ألفا للغرف"
+        "title": "ألوان قنوات الغرف"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "غرفة 9",
-          "alpha_room_9": "غرفة 10",
-          "alpha_room_10": "غرفة 11",
-          "alpha_room_11": "غرفة 12",
-          "alpha_room_12": "غرفة 13",
-          "alpha_room_13": "غرفة 14",
-          "alpha_room_14": "غرفة 15",
-          "alpha_room_15": "غرفة 16"
+          "alpha_room_8": "شفافية غرفة 9",
+          "alpha_room_9": "شفافية غرفة 10",
+          "alpha_room_10": "شفافية غرفة 11",
+          "alpha_room_11": "شفافية غرفة 12",
+          "alpha_room_12": "شفافية غرفة 13",
+          "alpha_room_13": "شفافية غرفة 14",
+          "alpha_room_14": "شفافية غرفة 15",
+          "alpha_room_15": "شفافية غرفة 16"
         },
         "description": "خيارات الكاميرا. ألفا 3",
-        "title": "ألوان قناة ألفا للغرف"
+        "title": "ألوان قنوات الغرف"
+      }
+    }
+  },
+  "selector": {
+    "camera_config_action": {
+      "options": {
+        "opt_1": "تكوين الصورة",
+        "opt_2": "تكوين الألوان العامة",
+        "opt_3": "ألوان الغرف من 1 إلى 8",
+        "opt_4": "ألوان الغرف من 9 إلى 16",
+        "opt_5": "الخيارات المتقدمة"
+      }
+    },
+    "camera_config_advanced": {
+      "options": {
+        "opt_1": "تكوين إزاحة الصورة",
+        "opt_2": "تكوين نص الحالة",
+        "opt_3": "نسخ سجلات الكاميرا إلى www",
+        "opt_4": "إعادة تسمية خيارات الألوان"
+      }
+    },
+    "camera_logs_progres": {
+      "options": {
+        "opt_1": "نسخ السجلات إلى www",
+        "opt_2": "إزالة السجلات من www"
+      }
+    },
+    "vacuum_status": {
+      "options": {
+        "connected": "متصل",
+        "disconnected": "غير متصل",
+        "charging": "يشحن",
+        "cleaning": "ينظف",
+        "docked": "موصول",
+        "idle": "خامل",
+        "paused": "متوقف مؤقتاً",
+        "returning": "يعود"
+      }
+    }
+  },
+  "services": {
+    "turn_off": {
+      "name": "[%key:common::action::turn_off%]",
+      "description": "يوقف الكاميرا."
+    },
+    "turn_on": {
+      "name": "[%key:common::action::turn_on%]",
+      "description": "يشغل الكاميرا."
+    },
+    "snapshot": {
+      "name": "التقاط صورة",
+      "description": "يأخذ لقطة من الكاميرا.",
+      "fields": {
+        "filename": {
+          "name": "اسم الملف",
+          "description": "قالب اسم الملف. المتغير المتاح هو `entity_id`."
+        }
       }
     }
   }

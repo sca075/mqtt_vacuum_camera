@@ -13,28 +13,28 @@
           "vacuum_entity": "Идентификатор устройства пылесоса"
         },
         "description": "Настройка камеры.",
-        "title": "Настройка камеры Valetudo"
+        "title": "Настройка камеры MQTT"
       }
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Опции камеры Valetudo",
+        "title": "Опции камеры MQTT",
         "description": "### _Стандартные опции_:",
         "data": {
           "camera_config_action": "Действие"
         }
       },
       "advanced": {
-        "title": "Опции камеры Valetudo",
+        "title": "Опции камеры MQTT",
         "description": "### _Расширенные опции_:",
         "data": {
           "camera_config_action": "Действие"
         }
       },
       "download_logs": {
-        "title": "Файл журнала камеры Valetudo",
+        "title": "Файл журнала камеры MQTT",
         "description": "### _Копирование файлов журнала_:",
         "data": {
           "camera_logs_progres": "Что делать?"

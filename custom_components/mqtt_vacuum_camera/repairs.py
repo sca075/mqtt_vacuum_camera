@@ -34,6 +34,6 @@ async def async_create_fix_flow(
     issue_id: str,
     data: dict[str, str | int | float | None] | None,
 ) -> RepairsFlow:
-    """Create flow."""
+    """Create flow. issue_1 is general purpose"""
     if issue_id == "issue_1":
         return Issue1RepairFlow()

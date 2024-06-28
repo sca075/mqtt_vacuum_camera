@@ -13,28 +13,28 @@
           "vacuum_entity": "ID de Entidad del Aspirador"
         },
         "description": "Configuración de la Cámara.",
-        "title": "Configuración de la Cámara Valetudo"
+        "title": "Configuración de la Cámara MQTT"
       }
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Opciones de la Cámara Valetudo",
+        "title": "Opciones de la Cámara MQTT",
         "description": "### _Opciones Estándar_:",
         "data": {
           "camera_config_action": "Acción"
         }
       },
       "advanced": {
-        "title": "Opciones de la Cámara Valetudo",
+        "title": "Opciones de la Cámara MQTT",
         "description": "### _Opciones Avanzadas_:",
         "data": {
           "camera_config_action": "Acción"
         }
       },
       "download_logs": {
-        "title": "Archivo de Registro de la Cámara Valetudo",
+        "title": "Archivo de Registro de la Cámara MQTT",
         "description": "### _Copia del Archivo de Registro_:",
         "data": {
           "camera_logs_progres": "¿Qué hacer?"
