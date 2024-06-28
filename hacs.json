@@ -1,7 +1,7 @@
 {
-  "name": "Valetudo Vacuum Camera",
+  "name": "MQTT Vacuum Camera",
   "zip_release": true,
   "render_readme": true,
   "homeassistant": "2024.6.0",
-  "filename": "valetudo_vacuum_camera.zip"
+  "filename": "mqtt_vacuum_camera.zip"
 }
