@@ -1,5 +1,5 @@
 NOTICE
-Valetudo Vacuum's Camera renders the images of the Valetudo Vacuums with Home Assistant, extracting and utilizing data
+MQTT Vacuum's Camera renders the images of the Valetudo Vacuums with Home Assistant, extracting and utilizing data
 from Valetudo firmware through MQTT to create a detailed map image with vacuum coordinates, walls, LiDar data,
 virtual restrictions, paths, cleaned areas, and segments (rooms).
 The author of this component developed it independently and is not associated with the Valetudo project or its creators.

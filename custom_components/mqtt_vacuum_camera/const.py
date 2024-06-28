@@ -5,7 +5,7 @@
 """Required in Config_Flow"""
 PLATFORMS = ["camera"]
 DOMAIN = "mqtt_vacuum_camera"
-DEFAULT_NAME = "valetudo vacuum camera"
+DEFAULT_NAME = "mqtt vacuum camera"
 DEFAULT_ROOMS = 1
 ATTR_ROTATE = "rotate_image"
 ATTR_CROP = "crop_image"
@@ -31,7 +31,7 @@ CONF_EXPORT_SVG = "get_svg_file"
 CONF_AUTO_ZOOM = "auto_zoom"
 CONF_ZOOM_LOCK_RATIO = "zoom_lock_ratio"
 ICON = "mdi:camera"
-NAME = "Valetudo Vacuum Camera"
+NAME = "MQTT Vacuum Camera"
 
 DEFAULT_VALUES = {
     "rotate_image": "0",
