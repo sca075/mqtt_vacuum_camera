@@ -1,0 +1,269 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "vacuum_entity": "Identyfikator encji odkurzacza",
+          "vacuum_config_entry": "Dane konfiguracyjne odkurzacza",
+          "vacuum_map": "Temat odkurzacza",
+          "vacuum_identifiers": "Identyfikator MQTT odkurzacza",
+          "unique_id": ""
+        },
+        "data_description": {
+          "vacuum_entity": "Identyfikator encji odkurzacza"
+        },
+        "description": "Konfiguracja kamery.",
+        "title": "Konfiguracja kamery Valetudo"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opcje kamery Valetudo",
+        "description": "### _Standardowe opcje_:",
+        "data": {
+          "camera_config_action": "Dzia\u0142anie"
+        }
+      },
+      "advanced": {
+        "title": "Opcje kamery Valetudo",
+        "description": "### _Zaawansowane opcje_:",
+        "data": {
+          "camera_config_action": "Dzia\u0142anie"
+        }
+      },
+      "download_logs": {
+        "title": "Plik dziennika kamery Valetudo",
+        "description": "### _Kopiowanie plik\u00f3w dziennika_:",
+        "data": {
+          "camera_logs_progres": "Co zrobi\u0107?"
+        }
+      },
+      "image_opt": {
+        "data": {
+          "rotate_image": "Obr\u00f3\u0107",
+          "margins": "Marginesy obrazu.",
+          "auto_zoom": "W\u0142\u0105cz automatyczne przybli\u017canie",
+          "zoom_lock_ratio": "Zablokuj proporcje.",
+          "aspect_ratio": "Proporcje obrazu.",
+          "enable_www_snapshots": "Eksportuj migawki PNG."
+        },
+        "data_description": {
+          "rotate_image": "Stopnie 0, 90, 180, 270",
+          "margins": "Automatyczne przycinanie margines\u00f3w w pikselach.",
+          "aspect_ratio": "Proporcje obrazu."
+        },
+        "description": "Opcje obrazu kamery",
+        "title": "Opcje obrazu"
+      },
+      "image_offset": {
+        "data": {
+          "offset_top": "G\u00f3rny offset",
+          "offset_bottom": "Dolny offset",
+          "offset_left": "Lewy offset",
+          "offset_right": "Prawy offset"
+        },
+        "data_description": {
+          "offset_top": "G\u00f3rny offset obr\u00f3t 0 w pikselach.",
+          "offset_bottom": "Dolny offset obr\u00f3t 0 w pikselach.",
+          "offset_left": "Lewy offset obr\u00f3t 0 w pikselach.",
+          "offset_right": "Prawy offset obr\u00f3t 0 w pikselach."
+        },
+        "description": "Przesuni\u0119cie obrazu kamery",
+        "title": "Przesuni\u0119cie obrazu"
+      },
+      "status_text": {
+        "data": {
+          "show_vac_status": "Poka\u017c status odkurzacza.",
+          "vac_status_font": "Fira Sans",
+          "vac_status_size": "Rozmiar tekstu",
+          "vac_status_position": "Pozycja tekstu: Na dole (WY\u0141)",
+          "color_text": "[255, 255, 255]"
+        },
+        "data_description": {
+          "vac_status_font": "Czcionka tekstu domy\u015blnie Fira Serif.",
+          "vac_status_size": "Domy\u015blny rozmiar tekstu 50.",
+          "color_text": "Kolor tekstu statusu odkurzacza."
+        },
+        "description": "Opcje obrazu",
+        "title": "Opcje tekstu statusu"
+      },
+      "base_colours": {
+        "data": {
+          "color_charger": "[255, 128, 0]",
+          "color_move": "[238, 247, 255]",
+          "color_wall": "[255, 255, 0]",
+          "color_robot": "[255, 255, 204]",
+          "color_go_to": "[0, 255, 0]",
+          "color_no_go": "[255, 0, 0]",
+          "color_zone_clean": "[255, 255, 255]",
+          "color_background": "[0, 125, 255]",
+          "add_base_alpha": "Skonfiguruj Przezroczysto\u015b\u0107:"
+        },
+        "data_description": {
+          "color_charger": "Kolor \u0142adowarki.",
+          "color_move": "Kolor ruchu.",
+          "color_wall": "Kolor \u015bciany.",
+          "color_robot": "Kolor robota.",
+          "color_go_to": "Kolor przechodzenia do.",
+          "color_no_go": "Kolor zakazu.",
+          "color_zone_clean": "Kolor czyszczenia strefy.",
+          "color_background": "Kolor t\u0142a."
+        },
+        "description": "Opcje kolor\u00f3w kamery.",
+        "title": "Ustawienia Kolor\u00f3w Podstawowych"
+      },
+      "alpha_1": {
+        "data": {
+          "alpha_charger": "\u0141adowarka Alpha   ",
+          "alpha_move": "Ruchy Alpha     ",
+          "alpha_wall": "\u015aciany Alpha     ",
+          "alpha_robot": "Robot Alpha     ",
+          "alpha_go_to": "Przejd\u017a do Obszaru Alpha",
+          "alpha_no_go": "Obszar Bez Przej\u015bcia Alpha",
+          "alpha_zone_clean": "Strefa Czyszczenia Alpha",
+          "alpha_background": "T\u0142o Alpha",
+          "alpha_text": "Tekst Alpha      "
+        },
+        "description": "Opcje kamery. Alpha 1",
+        "title": "Kolory Alfa Kana\u0142u Podstawowe"
+      },
+      "rooms_colours_1": {
+        "data": {
+          "color_room_0": "[135, 206, 250]",
+          "color_room_1": "[176, 226, 255]",
+          "color_room_2": "[165, 105, 18]",
+          "color_room_3": "[164, 211, 238]",
+          "color_room_4": "[141, 182, 205]",
+          "color_room_5": "[96, 123, 139]",
+          "color_room_6": "[224, 255, 255]",
+          "color_room_7": "[209, 238, 238]",
+          "add_room_1_alpha": "Skonfiguruj Przezroczysto\u015b\u0107:"
+        },
+        "data_description": {
+          "color_room_0": "### **RoomID 16 Entrance**",
+          "color_room_1": "### **RoomID 17 Living Room**",
+          "color_room_2": "### **RoomID 18 Kitchen**",
+          "color_room_3": "### **RoomID 19 Bathroom**",
+          "color_room_4": "### **RoomID 20 Bedroom**",
+          "color_room_5": "Pok\u00f3j 6",
+          "color_room_6": "Pok\u00f3j 7",
+          "color_room_7": "Pok\u00f3j 8"
+        },
+        "description": "Opcje kolor\u00f3w kamery.",
+        "title": "Pokoje 1 do 8 Kolory"
+      },
+      "rooms_colours_2": {
+        "data": {
+          "color_room_8": "[180, 205, 205]",
+          "color_room_9": "[122, 139, 139]",
+          "color_room_10": "[175, 238, 238]",
+          "color_room_11": "[84, 153, 199]",
+          "color_room_12": "[133, 193, 233]",
+          "color_room_13": "[245, 176, 65]",
+          "color_room_14": "[82, 190, 128]",
+          "color_room_15": "[72, 201, 176]",
+          "add_room_2_alpha": "Skonfiguruj Przezroczysto\u015b\u0107:"
+        },
+        "data_description": {
+          "color_room_8": "Pok\u00f3j 9",
+          "color_room_9": "Pok\u00f3j 10",
+          "color_room_10": "Pok\u00f3j 11",
+          "color_room_11": "Pok\u00f3j 12",
+          "color_room_12": "Pok\u00f3j 13",
+          "color_room_13": "Pok\u00f3j 14",
+          "color_room_14": "Pok\u00f3j 15",
+          "color_room_15": "Pok\u00f3j 16"
+        },
+        "description": "Opcje kolor\u00f3w kamery.",
+        "title": "Pokoje 9 do 15 Kolory"
+      },
+      "alpha_2": {
+        "data": {
+          "alpha_room_0": "RoomID 16 Entrance",
+          "alpha_room_1": "RoomID 17 Living Room",
+          "alpha_room_2": "RoomID 18 Kitchen",
+          "alpha_room_3": "RoomID 19 Bathroom",
+          "alpha_room_4": "RoomID 20 Bedroom",
+          "alpha_room_5": "Pok\u00f3j 6",
+          "alpha_room_6": "Pok\u00f3j 7",
+          "alpha_room_7": "Pok\u00f3j 8"
+        },
+        "description": "Opcje kamery. Alfa 2",
+        "title": "Kana\u0142 Alfa Kolory Pokoj\u00f3w"
+      },
+      "alpha_3": {
+        "data": {
+          "alpha_room_8": "Pok\u00f3j 9",
+          "alpha_room_9": "Pok\u00f3j 10",
+          "alpha_room_10": "Pok\u00f3j 11",
+          "alpha_room_11": "Pok\u00f3j 12",
+          "alpha_room_12": "Pok\u00f3j 13",
+          "alpha_room_13": "Pok\u00f3j 14",
+          "alpha_room_14": "Pok\u00f3j 15",
+          "alpha_room_15": "Pok\u00f3j 16"
+        },
+        "description": "Opcje kamery. Alfa 3",
+        "title": "Kana\u0142 Alfa Kolory Pokoj\u00f3w"
+      }
+    }
+  },
+  "selector": {
+    "camera_config_action": {
+      "options": {
+        "opt_1": "Skonfiguruj obraz",
+        "opt_2": "Skonfiguruj Og\u00f3lne Kolory",
+        "opt_3": "Kolory Pokoje 1 do 8",
+        "opt_4": "Kolory Pokoje 9 do 16",
+        "opt_5": "Zaawansowane Opcje"
+      }
+    },
+    "camera_config_advanced": {
+      "options": {
+        "opt_1": "Skonfiguruj Przesuni\u0119cie Obrazu",
+        "opt_2": "Skonfiguruj Tekst Statusu",
+        "opt_3": "Kopiuj Dzienniki Kamery do www",
+        "opt_4": "Zmie\u0144 Nazwy Opcji Kolor\u00f3w"
+      }
+    },
+    "camera_logs_progres": {
+      "options": {
+        "opt_1": "Kopiuj Dzienniki do www",
+        "opt_2": "Usu\u0144 Dzienniki z www"
+      }
+    },
+    "vacuum_status": {
+      "options": {
+        "connected": "Po\u0142\u0105czony",
+        "disconnected": "Od\u0142\u0105czony",
+        "charging": "\u0141adowanie",
+        "cleaning": "Czyszczenie",
+        "docked": "Zacumowany",
+        "idle": "Bezczynny",
+        "paused": "Wstrzymany",
+        "returning": "Powracanie"
+      }
+    }
+  },
+  "services": {
+    "turn_off": {
+      "name": "[%key:common::action::turn_off%]",
+      "description": "Wy\u0142\u0105cza kamer\u0119."
+    },
+    "turn_on": {
+      "name": "[%key:common::action::turn_on%]",
+      "description": "W\u0142\u0105cza kamer\u0119."
+    },
+    "snapshot": {
+      "name": "Zr\u00f3b migawk\u0119",
+      "description": "Robi migawk\u0119 z kamery.",
+      "fields": {
+        "filename": {
+          "name": "Nazwa pliku",
+          "description": "Szablon nazwy pliku. Dost\u0119pna zmienna to `entity_id`."
+        }
+      }
+    }
+  }
+}
