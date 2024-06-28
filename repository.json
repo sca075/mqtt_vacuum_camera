@@ -1,0 +1,11 @@
+{
+   "repository": "https://github.com/sca075/mqtt_vacuum_camera",
+   "name": "MQTT Vacuum Camera",
+   "description": "A Home Assistant custom component to export and render maps of vacuum cleaners connected via MQTT, including Valetudo Hypfer and RE(rand256) firmwares.",
+   "author": "sca075",
+   "topics": ["home-assistant", "mqtt", "vacuum", "camera", "valetudo"],
+   "labels": ["integration", "custom_component"],
+   "homepage": "https://github.com/sca075/mqtt_vacuum_camera",
+   "license": "Apache-2.0",
+   "languages": ["Python"]
+}
