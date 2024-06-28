@@ -1,7 +1,7 @@
 import socket
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
-from custom_components.valetudo_vacuum_camera.camera import ValetudoCamera
+from custom_components.mqtt_vacuum_camera.camera import ValetudoCamera
 from homeassistant.components.camera import Camera
 
 
@@ -35,7 +35,7 @@ async def test_update_success(
     )
 
     with patch(
-        "custom_components.valetudo_vacuum_camera.camera.ConfigFlowHandler.async_step_user",
+        "custom_components.mqtt_vacuum_camera.camera.ConfigFlowHandler.async_step_user",
         return_value={"title": "My Vacuum Camera"},
     ):
         camera = ValetudoCamera(Camera, {"path": "homeassistant/core"})

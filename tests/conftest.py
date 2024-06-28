@@ -5,7 +5,7 @@ import pytest
 from homeassistant.setup import async_setup_component
 
 # from homeassistant.components import mqtt
-from custom_components.valetudo_vacuum_camera.const import DOMAIN
+from custom_components.mqtt_vacuum_camera.const import DOMAIN
 
 
 async def test_async_setup(hass):
