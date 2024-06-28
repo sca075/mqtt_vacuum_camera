@@ -1,13 +1,14 @@
 NOTICE
-MQTT Vacuum's Camera renders the images of the Valetudo Vacuums with Home Assistant, extracting and utilizing data
-from Valetudo firmware through MQTT to create a detailed map image with vacuum coordinates, walls, LiDar data,
-virtual restrictions, paths, cleaned areas, and segments (rooms).
+MQTT Vacuum's Camera renders the images of the Vacuums connected via MQTT with Home Assistant (mainly Valetudo ones),
+extracting and utilizing data from Vacuums firmware through MQTT to create a detailed map image with vacuum coordinates,
+walls, LiDar data, virtual restrictions, paths, cleaned areas, and segments (rooms).
 The author of this component developed it independently and is not associated with the Valetudo project or its creators.
+The scope of this project is to provide a visual representation of the vacuum's maps within Home Assistant.
 
 Origin of the Work
 This work is based on Valetudo firmware, which is an open-source project aimed at providing a cloud-free solution for
-robotic vacuums. The integration within Home Assistant allows users to visualize the maps, facilitating the control of
-their Valetudo-compatible vacuums within the Home Assistant ecosystem.
+robotic vacuums within Home Assistant. The integration for Home Assistant allows users to visualize the maps,
+facilitating the control of their MQTT or Valetudo-compatible vacuums within the Home Assistant ecosystem.
 
 Trademarks
 This component does not grant permission to use the trade names, trademarks, service marks, or product names of the
