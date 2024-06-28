@@ -13,28 +13,28 @@
           "vacuum_entity": "ID zařízení vysavače"
         },
         "description": "Nastavení kamery.",
-        "title": "Nastavení kamery Valetudo"
+        "title": "Nastavení kamery MQTT"
       }
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Možnosti kamery Valetudo",
+        "title": "Možnosti kamery MQTT",
         "description": "### _Standardní možnosti_:",
         "data": {
           "camera_config_action": "Akce"
         }
       },
       "advanced": {
-        "title": "Možnosti kamery Valetudo",
+        "title": "Možnosti kamery MQTT",
         "description": "### _Pokročilé možnosti_:",
         "data": {
           "camera_config_action": "Akce"
         }
       },
       "download_logs": {
-        "title": "Soubor protokolu kamery Valetudo",
+        "title": "Soubor protokolu kamery MQTT",
         "description": "### _Kopírování souboru protokolu_:",
         "data": {
           "camera_logs_progres": "Co chcete udělat?"

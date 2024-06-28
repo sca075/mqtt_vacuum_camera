@@ -13,28 +13,28 @@
           "vacuum_entity": "Støvsuger Entitet ID"
         },
         "description": "Kamerainnstilling.",
-        "title": "Valetudo Kameraoppsett"
+        "title": "MQTT Kameraoppsett"
       }
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Valetudo Kameraalternativer",
+        "title": "MQTT Kameraalternativer",
         "description": "### _Standardalternativer_:",
         "data": {
           "camera_config_action": "Handling"
         }
       },
       "advanced": {
-        "title": "Valetudo Kameraalternativer",
+        "title": "MQTT Kameraalternativer",
         "description": "### _Avanserte alternativer_:",
         "data": {
           "camera_config_action": "Handling"
         }
       },
       "download_logs": {
-        "title": "Valetudo Kameraloggfil",
+        "title": "MQTT Kameraloggfil",
         "description": "### _Kopier loggfiler_:",
         "data": {
           "camera_logs_progres": "Hva skal gjøres?"

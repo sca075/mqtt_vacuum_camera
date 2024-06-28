@@ -13,28 +13,28 @@
           "vacuum_entity": "Staubsauger Entitäts-ID"
         },
         "description": "Kamera Setup.",
-        "title": "Valetudo Kamera Setup"
+        "title": "MQTT Kamera Setup"
       }
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Valetudo Kamera Optionen",
+        "title": "MQTT Kamera Optionen",
         "description": "### _Standardoptionen_:",
         "data": {
           "camera_config_action": "Aktion"
         }
       },
       "advanced": {
-        "title": "Valetudo Kamera Optionen",
+        "title": "MQTT Kamera Optionen",
         "description": "### _Erweiterte Optionen_:",
         "data": {
           "camera_config_action": "Aktion"
         }
       },
       "download_logs": {
-        "title": "Valetudo Kamera Logdatei",
+        "title": "MQTT Kamera Logdatei",
         "description": "### _Logdatei-Kopie_:",
         "data": {
           "camera_logs_progres": "Was soll gemacht werden?"

@@ -13,28 +13,28 @@
                     "vacuum_entity": "Vacuum Entity ID"
                 },
                 "description": "Camera Setup.",
-                "title": "Valetudo Camera Setup"
+                "title": "MQTT Camera Setup"
             }
         }
     },
     "options": {
         "step": {
             "init": {
-                "title": "Valetudo Camera Options",
+                "title": "MQTT Camera Options",
                 "description": "### _Standard Options_:",
                 "data": {
                     "camera_config_action": "Action"
                 }
             },
             "advanced": {
-                "title": "Valetudo Camera Options",
+                "title": "MQTT Camera Options",
                 "description": "### _Advanced Options_:",
                 "data": {
                     "camera_config_action": "Action"
                 }
             },
             "download_logs": {
-                "title": "Valetudo Camera Log File",
+                "title": "MQTT Camera Log File",
                 "description": "### _Logs File Copy_:",
                 "data": {
                     "camera_logs_progres": "What to do?"

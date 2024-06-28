@@ -13,28 +13,28 @@
           "vacuum_entity": "Identyfikator encji odkurzacza"
         },
         "description": "Konfiguracja kamery.",
-        "title": "Konfiguracja kamery Valetudo"
+        "title": "Konfiguracja kamery MQTT"
       }
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Opcje kamery Valetudo",
+        "title": "Opcje kamery MQTT",
         "description": "### _Standardowe opcje_:",
         "data": {
           "camera_config_action": "Dzia\u0142anie"
         }
       },
       "advanced": {
-        "title": "Opcje kamery Valetudo",
+        "title": "Opcje kamery MQTT",
         "description": "### _Zaawansowane opcje_:",
         "data": {
           "camera_config_action": "Dzia\u0142anie"
         }
       },
       "download_logs": {
-        "title": "Plik dziennika kamery Valetudo",
+        "title": "Plik dziennika kamery MQTT",
         "description": "### _Kopiowanie plik\u00f3w dziennika_:",
         "data": {
           "camera_logs_progres": "Co zrobi\u0107?"

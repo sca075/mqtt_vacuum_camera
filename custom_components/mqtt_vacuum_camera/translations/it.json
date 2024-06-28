@@ -13,28 +13,28 @@
           "vacuum_entity": "ID Entità Aspirapolvere"
         },
         "description": "Impostazioni Fotocamera.",
-        "title": "Configurazione Fotocamera Valetudo"
+        "title": "Configurazione Fotocamera MQTT"
       }
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Opzioni Fotocamera Valetudo",
+        "title": "Opzioni Fotocamera MQTT",
         "description": "### _Opzioni Standard_ :",
         "data": {
           "camera_config_action": "Azione"
         }
       },
       "advanced": {
-        "title": "Opzioni Fotocamera Valetudo",
+        "title": "Opzioni Fotocamera MQTT",
         "description": "### _Opzioni Avanzate_ :",
         "data": {
           "camera_config_action": "Azione"
         }
       },
       "download_logs": {
-        "title": "File di Registro Fotocamera Valetudo",
+        "title": "File di Registro Fotocamera MQTT",
         "description": "### _Copia del File di Registro_ :",
         "data": {
           "camera_logs_progres": "Cosa fare?"
