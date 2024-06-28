@@ -1,6 +1,6 @@
 {
   "name": "MQTT Vacuum Camera",
-  "url": "https://github.com/sca075/mqtt_vacuum_camera"
+  "url": "https://github.com/sca075/mqtt_vacuum_camera",
   "zip_release": true,
   "render_readme": true,
   "homeassistant": "2024.6.0",
