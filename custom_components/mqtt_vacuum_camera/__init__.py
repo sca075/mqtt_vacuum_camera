@@ -304,9 +304,11 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
     
     async def handle_homeassistant_stop(event):
         """Handle Home Assistant stop event."""
-        _LOGGER.debug("Home Assistant is stopping. Writing down the rooms data.")
+        _LOGGER.info("Home Assistant is stopping. Writing down the rooms data.")
         storage = hass.config.path(STORAGE_DIR, "valetudo_camera")
-        _LOGGER.debug(f"Storage path: {storage}")
+        if not os.path.exists(storage):
+            _LOGGER.debug(f"Storage path: {storage} do not exists. Aborting!")
+            return True
         vacuum_entity_id = await async_get_translations_vacuum_id(storage)
         if not vacuum_entity_id:
             _LOGGER.debug("No vacuum room data found. Aborting!")
