@@ -1,18 +1,27 @@
 """
 Image Utils Class for Valetudo Hypfer Image Handling.
 This class is used to simplify the ImageHandler class.
-Version: 2024.06.1
+Version: 2024.07.0
 """
 
 from __future__ import annotations
 
 import logging
 
+import numpy as np
 from numpy import rot90
 
-from custom_components.mqtt_vacuum_camera.types import NumpyArray
+from custom_components.mqtt_vacuum_camera.types import Color, NumpyArray
 
 _LOGGER = logging.getLogger(__name__)
+
+
+class TrimError(Exception):
+    """Exception raised for errors in the trim process."""
+
+    def __init__(self, message, image):
+        super().__init__(message)
+        self.image = image
 
 
 class ImageUtils:
@@ -51,6 +60,29 @@ class ImageUtils:
                 self.img.auto_crop[0] : self.img.auto_crop[2],
             ]
         return trimmed
+
+    async def async_image_margins(
+        self, image_array: NumpyArray, detect_colour: Color
+    ) -> tuple[int, int, int, int]:
+        """Crop the image based on the auto crop area."""
+        """async_auto_trim_and_zoom_image"""
+
+        nonzero_coords = np.column_stack(np.where(image_array != list(detect_colour)))
+        # Calculate the trim box based on the first and last occurrences
+        min_y, min_x, _ = NumpyArray.min(nonzero_coords, axis=0)
+        max_y, max_x, _ = NumpyArray.max(nonzero_coords, axis=0)
+        del nonzero_coords
+        _LOGGER.debug(
+            "{}: Found trims max and min values (y,x) ({}, {}) ({},{})...".format(
+                self.file_name,
+                int(max_y),
+                int(max_x),
+                int(min_y),
+                int(min_x),
+            )
+        )
+
+        return min_y, min_x, max_x, max_y
 
     async def async_rotate_the_image(
         self, trimmed: NumpyArray, rotate: int

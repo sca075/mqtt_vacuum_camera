@@ -15,9 +15,7 @@ from homeassistant.helpers.storage import STORAGE_DIR
 from isal import igzip, isal_zlib
 
 from custom_components.mqtt_vacuum_camera.common import async_write_file_to_disk
-from custom_components.mqtt_vacuum_camera.valetudo.rand256.rrparser import (
-    RRMapParser,
-)
+from custom_components.mqtt_vacuum_camera.valetudo.rand256.rrparser import RRMapParser
 
 _LOGGER = logging.getLogger(__name__)
 _QOS = 0

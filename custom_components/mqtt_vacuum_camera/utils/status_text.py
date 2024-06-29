@@ -9,8 +9,8 @@ from __future__ import annotations
 import json
 import logging
 
-from custom_components.mqtt_vacuum_camera.types import JsonType, PilPNG
 from custom_components.mqtt_vacuum_camera.const import DOMAIN
+from custom_components.mqtt_vacuum_camera.types import JsonType, PilPNG
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 _LOGGER.propagate = True

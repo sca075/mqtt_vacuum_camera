@@ -2,7 +2,7 @@
 Image Handler Class.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Version: 2024.06.2
+Version: 2024.07.0
 """
 
 from __future__ import annotations
@@ -11,7 +11,6 @@ import json
 import logging
 
 from PIL import Image, ImageOps
-import numpy as np
 
 from custom_components.mqtt_vacuum_camera.types import (
     CalibrationPoints,
@@ -27,6 +26,7 @@ from custom_components.mqtt_vacuum_camera.utils.drawable import Drawable
 from custom_components.mqtt_vacuum_camera.utils.img_data import ImageData
 from custom_components.mqtt_vacuum_camera.valetudo.hypfer.handler_utils import (
     ImageUtils as ImUtils,
+    TrimError,
 )
 from custom_components.mqtt_vacuum_camera.valetudo.hypfer.image_draw import (
     ImageDraw as ImDraw,
@@ -78,6 +78,20 @@ class MapImageHandler(object):
         self.imd = ImDraw(self)
         self.imu = ImUtils(self)
 
+    def check_trim(
+        self, trimmed_height, trimmed_width, margin_size, image_array, file_name, rotate
+    ):
+        """
+        Check if the trimming is okay.
+        """
+        if trimmed_height <= margin_size or trimmed_width <= margin_size:
+            self.crop_area = [0, 0, image_array.shape[1], image_array.shape[0]]
+            self.img_size = (image_array.shape[1], image_array.shape[0])
+            raise TrimError(
+                f"Trimming failed at rotation {rotate}. Reverting to original image.",
+                image_array,
+            )
+
     async def async_auto_trim_and_zoom_image(
         self,
         image_array: NumpyArray,
@@ -92,21 +106,8 @@ class MapImageHandler(object):
         try:
             if not self.auto_crop:
                 # Find the coordinates of the first occurrence of a non-background color
-                nonzero_coords = np.column_stack(
-                    np.where(image_array != list(detect_colour))
-                )
-                # Calculate the trim box based on the first and last occurrences
-                min_y, min_x, _ = np.min(nonzero_coords, axis=0)
-                max_y, max_x, _ = np.max(nonzero_coords, axis=0)
-                del nonzero_coords
-                _LOGGER.debug(
-                    "{}: Found trims max and min values (y,x) ({}, {}) ({},{})...".format(
-                        self.file_name,
-                        int(max_y),
-                        int(max_x),
-                        int(min_y),
-                        int(min_x),
-                    )
+                min_y, min_x, max_x, max_y = await self.imu.async_image_margins(
+                    image_array, detect_colour
                 )
                 # Calculate and store the trims coordinates with margins
                 self.trim_left = int(min_x) + self.offset_left - margin_size
@@ -122,20 +123,17 @@ class MapImageHandler(object):
                 self.shared.image_ref_width = trimmed_width
 
                 # Test if the trims are okay or not
-                if trimmed_height <= margin_size or trimmed_width <= margin_size:
-                    _LOGGER.debug(
-                        f"{self.file_name}: Background colour not detected at rotation {rotate}."
+                try:
+                    self.check_trim(
+                        trimmed_height,
+                        trimmed_width,
+                        margin_size,
+                        image_array,
+                        self.file_name,
+                        rotate,
                     )
-                    pos_0 = 0
-                    self.crop_area = [
-                        pos_0,
-                        pos_0,
-                        image_array.shape[1],
-                        image_array.shape[0],
-                    ]
-                    self.img_size = (image_array.shape[1], image_array.shape[0])
-                    del trimmed_width, trimmed_height
-                    return image_array
+                except TrimError as e:
+                    return e.image
 
                 # Store Crop area of the original image_array we will use from the next frame.
                 self.auto_crop = [
@@ -144,6 +142,7 @@ class MapImageHandler(object):
                     self.trim_right,
                     self.trim_down,
                 ]
+
             # If it is needed to zoom the image.
             trimmed = await self.imu.async_check_if_zoom_is_on(
                 image_array, margin_size, zoom

@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-import voluptuous as vol
-
 from homeassistant import data_entry_flow
 from homeassistant.components.repairs import RepairsFlow
 from homeassistant.core import HomeAssistant
+import voluptuous as vol
 
 
 class Issue1RepairFlow(RepairsFlow):
@@ -17,7 +16,7 @@ class Issue1RepairFlow(RepairsFlow):
     ) -> data_entry_flow.FlowResult:
         """Handle the first step of a fix flow."""
 
-        return await (self.async_step_confirm())
+        return await self.async_step_confirm()
 
     async def async_step_confirm(
         self, user_input: dict[str, str] | None = None
