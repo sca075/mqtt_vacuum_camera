@@ -73,14 +73,9 @@ class ImageUtils:
         max_y, max_x, _ = NumpyArray.max(nonzero_coords, axis=0)
         del nonzero_coords
         _LOGGER.debug(
-            "{}: Found trims max and min values (y,x) ({}, {}) ({},{})...".format(
-                self.file_name,
-                int(max_y),
-                int(max_x),
-                int(min_y),
-                int(min_x),
+            f"{self.file_name}: Found trims max and min values (y,x) "
+            f"({int(max_y)}, {int(max_x)}) ({int(min_y)},{int(min_x)})..."
             )
-        )
 
         return min_y, min_x, max_x, max_y
 
