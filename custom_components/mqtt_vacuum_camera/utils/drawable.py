@@ -13,12 +13,7 @@ import math
 from PIL import ImageDraw, ImageFont
 import numpy as np
 
-from custom_components.mqtt_vacuum_camera.types import (
-    Color,
-    NumpyArray,
-    PilPNG,
-    Point,
-)
+from custom_components.mqtt_vacuum_camera.types import Color, NumpyArray, PilPNG, Point
 
 # import re
 

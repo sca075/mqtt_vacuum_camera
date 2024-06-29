@@ -31,7 +31,6 @@ from .const import (
     CONF_VACUUM_IDENTIFIERS,
     DOMAIN,
 )
-
 from .utils.users_data import (
     async_get_translations_vacuum_id,
     async_rename_room_description,
@@ -230,7 +229,6 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
 async def async_setup_entry(
     hass: core.HomeAssistant, entry: config_entries.ConfigEntry
 ) -> bool:
-
     """Set up platform from a ConfigEntry."""
     hass.data.setdefault(DOMAIN, {})
     hass_data = dict(entry.data)
@@ -301,7 +299,7 @@ def find_vacuum_files(directory) -> list[str] or None:
 # noinspection PyCallingNonCallable
 async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
     """Set up the Valetudo Camera Custom component from yaml configuration."""
-    
+
     async def handle_homeassistant_stop(event):
         """Handle Home Assistant stop event."""
         _LOGGER.info("Home Assistant is stopping. Writing down the rooms data.")
