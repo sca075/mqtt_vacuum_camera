@@ -129,6 +129,15 @@
         "description": "Camera Options. Alpha 1",
         "title": "Alpha Chanel Base Colours"
       },
+      "floor_only": {
+        "data": {
+          "color_room_0": "[135, 206, 250]",
+          "add_room_1_alpha": "Configure Transparency:"
+        },
+        "data_description": {
+          "color_room_0": "### **Floor Color**"
+        }
+      },
       "rooms_colours_1": {
         "data": {
           "color_room_0": "[135, 206, 250]",
@@ -179,13 +188,18 @@
         "description": "Camera Colours Options.",
         "title": "Rooms 9 to 15 Colours"
       },
+      "alpha_floor": {
+        "data": {
+          "alpha_room_0": "Floor Color"
+        }
+      },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "RoomID 16 Entrance",
-          "alpha_room_1": "RoomID 17 Living Room",
-          "alpha_room_2": "RoomID 18 Kitchen",
-          "alpha_room_3": "RoomID 19 Bathroom",
-          "alpha_room_4": "RoomID 20 Bedroom",
+          "alpha_room_0": "Room 1",
+          "alpha_room_1": "Room 2",
+          "alpha_room_2": "Room 3",
+          "alpha_room_3": "Room 4",
+          "alpha_room_4": "Room 5",
           "alpha_room_5": "Room 6",
           "alpha_room_6": "Room 7",
           "alpha_room_7": "Room 8"

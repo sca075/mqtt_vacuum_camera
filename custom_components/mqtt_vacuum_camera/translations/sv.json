@@ -129,6 +129,15 @@
             "description": "Kameraalternativ. Alfa 1",
             "title": "Alfa-kanal för grundfärger"
          },
+         "floor_only": {
+            "data": {
+               "color_room_0": "[135, 206, 250]",
+               "add_room_1_alpha": "Konfigurera transparens:"
+            },
+            "data_description": {
+               "color_room_0": "### **Golvfärg**"
+            }
+         },
          "rooms_colours_1": {
             "data": {
                "color_room_0": "[135, 206, 250]",
@@ -139,7 +148,7 @@
                "color_room_5": "[96, 123, 139]",
                "color_room_6": "[224, 255, 255]",
                "color_room_7": "[209, 238, 238]",
-               "add_room_1_alpha": "Konfigurera transparens"
+               "add_room_1_alpha": "Konfigurera transparens:"
             },
             "data_description": {
                "color_room_0": "Rum 1",
@@ -164,7 +173,7 @@
                "color_room_13": "[245, 176, 65]",
                "color_room_14": "[82, 190, 128]",
                "color_room_15": "[72, 201, 176]",
-               "add_room_2_alpha": "Konfigurera transparens"
+               "add_room_2_alpha": "Konfigurera transparens:"
             },
             "data_description": {
                "color_room_8": "Rum 9",
@@ -178,6 +187,11 @@
             },
             "description": "Kamerafärgalternativ.",
             "title": "Färger för rum 9 till 15"
+         },
+         "alpha_floor": {
+            "data": {
+               "alpha_room_0": "Golvfärg"
+            }
          },
          "alpha_2": {
             "data": {

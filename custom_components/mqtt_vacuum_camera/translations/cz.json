@@ -129,6 +129,15 @@
         "description": "Možnosti kamery. Alfa 1",
         "title": "Průhlednost základních barev"
       },
+      "floor_only": {
+        "data": {
+          "color_room_0": "[135, 206, 250]",
+          "add_room_1_alpha": "Nastavit průhlednost:"
+        },
+        "data_description": {
+          "color_room_0": "### **Barva podlahy**"
+        }
+      },
       "rooms_colours_1": {
         "data": {
           "color_room_0": "[135, 206, 250]",
@@ -178,6 +187,11 @@
         },
         "description": "Možnosti barev kamery.",
         "title": "Barvy pokojů od 9 do 16"
+      },
+      "alpha_floor": {
+        "data": {
+          "alpha_room_0": "Barva podlahy"
+        }
       },
       "alpha_2": {
         "data": {

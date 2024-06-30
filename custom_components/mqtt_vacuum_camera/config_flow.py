@@ -603,12 +603,18 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             ] = ColorRGBSelector()
 
         fields[vol.Optional(IS_ALPHA_R1, default=self._check_alpha)] = BooleanSelector()
-
-        return self.async_show_form(
-            step_id="rooms_colours_1",
-            data_schema=vol.Schema(fields),
-            description_placeholders=self.options,
-        )
+        if rooms_count == 1:
+            return self.async_show_form(
+                step_id="floor_only",
+                data_schema=vol.Schema(fields),
+                description_placeholders=self.options,
+            )
+        else:
+            return self.async_show_form(
+                step_id="rooms_colours_1",
+                data_schema=vol.Schema(fields),
+                description_placeholders=self.options,
+            )
 
     async def async_step_rooms_colours_2(
         self, user_input: Optional[Dict[str, Any]] = None
@@ -674,12 +680,18 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     default=self.config_entry.options.get(f"alpha_room_{i}"),
                 )
             ] = NumberSelector(self.config_dict)
-
-        return self.async_show_form(
-            step_id="alpha_2",
-            data_schema=vol.Schema(fields),
-            description_placeholders=self.options,
-        )
+        if rooms_count == 1:
+            return self.async_show_form(
+                step_id="alpha_floor",
+                data_schema=vol.Schema(fields),
+                description_placeholders=self.options,
+            )
+        else:
+            return self.async_show_form(
+                step_id="alpha_2",
+                data_schema=vol.Schema(fields),
+                description_placeholders=self.options,
+            )
 
     async def async_step_alpha_3(self, user_input: Optional[Dict[str, Any]] = None):
         """Dynamically generate rooms colours configuration step based on the number of rooms."""

@@ -129,6 +129,15 @@
         "description": "Opzioni Fotocamera. Alfa 1",
         "title": "Colori Base Canale Alfa"
       },
+      "floor_only": {
+        "data": {
+          "color_room_0": "[135, 206, 250]",
+          "add_room_1_alpha": "Configura Trasparenza:"
+        },
+        "data_description": {
+          "color_room_0": "### **Colore del Suolo**"
+        }
+      },
       "rooms_colours_1": {
         "data": {
           "color_room_0": "[135, 206, 250]",
@@ -152,7 +161,7 @@
           "color_room_7": "Stanza 8"
         },
         "description": "Opzioni Colori Fotocamera.",
-        "title": "Colori delle Stanze da 1 a 8"
+        "title": "Colori delle Stanze 1"
       },
       "rooms_colours_2": {
         "data": {
@@ -178,6 +187,11 @@
         },
         "description": "Opzioni Colori Fotocamera.",
         "title": "Colori delle Stanze da 9 a 15"
+      },
+      "alpha_floor": {
+        "data": {
+          "alpha_room_0": "Colore del Suolo"
+        }
       },
       "alpha_2": {
         "data": {

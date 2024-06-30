@@ -129,6 +129,15 @@
         "description": "Opcje kamery. Alpha 1",
         "title": "Kolory Alfa Kana\u0142u Podstawowe"
       },
+      "floor_only": {
+        "data": {
+          "color_room_0": "[135, 206, 250]",
+          "add_room_1_alpha": "Skonfiguruj przezroczystość:"
+        },
+        "data_description": {
+          "color_room_0": "### **Kolor podłogi*"
+        }
+      },
       "rooms_colours_1": {
         "data": {
           "color_room_0": "[135, 206, 250]",
@@ -142,11 +151,11 @@
           "add_room_1_alpha": "Skonfiguruj Przezroczysto\u015b\u0107:"
         },
         "data_description": {
-          "color_room_0": "### **RoomID 16 Entrance**",
-          "color_room_1": "### **RoomID 17 Living Room**",
-          "color_room_2": "### **RoomID 18 Kitchen**",
-          "color_room_3": "### **RoomID 19 Bathroom**",
-          "color_room_4": "### **RoomID 20 Bedroom**",
+          "color_room_0": "Pok\u00f3j 1",
+          "color_room_1": "Pok\u00f3j 2",
+          "color_room_2": "Pok\u00f3j 3",
+          "color_room_3": "Pok\u00f3j 4",
+          "color_room_4": "Pok\u00f3j 5",
           "color_room_5": "Pok\u00f3j 6",
           "color_room_6": "Pok\u00f3j 7",
           "color_room_7": "Pok\u00f3j 8"
@@ -179,13 +188,18 @@
         "description": "Opcje kolor\u00f3w kamery.",
         "title": "Pokoje 9 do 15 Kolory"
       },
+      "alpha_floor": {
+        "data": {
+          "alpha_room_0": "Kolor podłogi"
+        }
+      },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "RoomID 16 Entrance",
-          "alpha_room_1": "RoomID 17 Living Room",
-          "alpha_room_2": "RoomID 18 Kitchen",
-          "alpha_room_3": "RoomID 19 Bathroom",
-          "alpha_room_4": "RoomID 20 Bedroom",
+          "alpha_room_0": "Pok\u00f3j 1",
+          "alpha_room_1": "Pok\u00f3j 2",
+          "alpha_room_2": "Pok\u00f3j 3",
+          "alpha_room_3": "Pok\u00f3j 4",
+          "alpha_room_4": "Pok\u00f3j 5",
           "alpha_room_5": "Pok\u00f3j 6",
           "alpha_room_6": "Pok\u00f3j 7",
           "alpha_room_7": "Pok\u00f3j 8"

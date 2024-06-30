@@ -129,6 +129,15 @@
         "description": "Kameraalternativer. Alpha 1",
         "title": "Alpha Kanal Basisfarger"
       },
+      "floor_only": {
+        "data": {
+          "color_room_0": "[135, 206, 250]",
+          "add_room_1_alpha": "Konfigurer Gjennomsiktighet:"
+        },
+        "data_description": {
+          "color_room_0": "### **Gulvfarge**"
+        }
+      },
       "rooms_colours_1": {
         "data": {
           "color_room_0": "[135, 206, 250]",
@@ -178,6 +187,11 @@
         },
         "description": "Kamera Fargealternativer.",
         "title": "Rom 9 til 15 Farger"
+      },
+      "alpha_floor": {
+        "data": {
+          "alpha_room_0": "Gulvfarge"
+        }
       },
       "alpha_2": {
         "data": {

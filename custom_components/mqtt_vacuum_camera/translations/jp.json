@@ -129,6 +129,15 @@
         "description": "カメラオプション。アルファ1",
         "title": "基本色のアルファチャネル"
       },
+      "floor_only": {
+        "data": {
+          "color_room_0": "[135, 206, 250]",
+          "add_room_1_alpha": "透明度の設定"
+        },
+        "data_description": {
+          "color_room_0": "### **床の色**"
+        }
+      },
       "rooms_colours_1": {
         "data": {
           "color_room_0": "[135, 206, 250]",
@@ -178,6 +187,11 @@
         },
         "description": "カメラカラーオプション",
         "title": "部屋9から15のカラー"
+      },
+      "alpha_floor": {
+        "data": {
+          "alpha_room_0": "床の色"
+        }
       },
       "alpha_2": {
         "data": {

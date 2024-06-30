@@ -129,6 +129,15 @@
         "description": "Camera Opties. Alpha 1",
         "title": "Alfa Kanaal Basis Kleuren"
       },
+      "floor_only": {
+        "data": {
+          "color_room_0": "[135, 206, 250]",
+          "add_room_1_alpha": "Transparantie instellen:"
+        },
+        "data_description": {
+          "color_room_0": "### **Vloerkleur**"
+        }
+      },
       "rooms_colours_1": {
         "data": {
           "color_room_0": "[135, 206, 250]",
@@ -178,6 +187,11 @@
         },
         "description": "Camera Kleuropties.",
         "title": "Kamers 9 tot 15 Kleuren"
+      },
+      "alpha_floor": {
+        "data": {
+          "alpha_room_0": "Vloerkleur"
+        }
       },
       "alpha_2": {
         "data": {
