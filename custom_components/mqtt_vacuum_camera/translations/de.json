@@ -129,6 +129,15 @@
         "description": "Kamera-Optionen. Alpha 1",
         "title": "Alpha-Kanal Basisfarben"
       },
+      "floor_only": {
+        "data": {
+          "color_room_0": "[135, 206, 250]",
+          "add_room_1_alpha": "Configure Transparency:"
+        },
+        "data_description": {
+          "color_room_0": "### **Bodenfarbe**"
+        }
+      },
       "rooms_colours_1": {
         "data": {
           "color_room_0": "[135, 206, 250]",
@@ -178,6 +187,11 @@
         },
         "description": "Kamera-Farboptionen.",
         "title": "Farben für Räume 9 bis 16"
+      },
+      "alpha_floor": {
+        "data": {
+          "alpha_room_0": "Bodenfarbe"
+        }
       },
       "alpha_2": {
         "data": {

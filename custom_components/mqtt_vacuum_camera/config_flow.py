@@ -1,4 +1,4 @@
-"""config_flow 2024.06.4
+"""config_flow 2024.07.0
 IMPORTANT: Maintain code when adding new options to the camera
 it will be mandatory to update const.py and common.py update_options.
 Format of the new constants must be CONST_NAME = "const_name" update also
@@ -43,6 +43,7 @@ from .const import (
     ALPHA_MOVE,
     ALPHA_NO_GO,
     ALPHA_ROBOT,
+    ALPHA_ROOM_0,
     ALPHA_TEXT,
     ALPHA_VALUES,
     ALPHA_WALL,
@@ -55,6 +56,7 @@ from .const import (
     COLOR_MOVE,
     COLOR_NO_GO,
     COLOR_ROBOT,
+    COLOR_ROOM_0,
     COLOR_TEXT,
     COLOR_WALL,
     COLOR_ZONE_CLEAN,
@@ -72,6 +74,7 @@ from .const import (
     CONF_VACUUM_CONFIG_ENTRY_ID,
     CONF_VACUUM_ENTITY_ID,
     CONF_ZOOM_LOCK_RATIO,
+    DEFAULT_ROOMS,
     DEFAULT_VALUES,
     DOMAIN,
     FONTS_AVAILABLE,
@@ -174,6 +177,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         self.bk_options = self.config_entry.options
         self.file_name = self.unique_id.split("_")[0].lower()
         self._check_alpha = False
+        self.number_of_rooms = DEFAULT_ROOMS
         _LOGGER.debug(
             "Options edit in progress.. options before edit: %s", dict(self.bk_options)
         )
@@ -334,7 +338,14 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         """
         _LOGGER.info(f"{self.config_entry.unique_id}: Options Configuration Started.")
         errors = {}
-        number_of_rooms = await async_get_rooms_count(self.file_name)
+        self.number_of_rooms = await async_get_rooms_count(self.file_name)
+        if (
+            not isinstance(self.number_of_rooms, int)
+            or self.number_of_rooms < DEFAULT_ROOMS
+        ):
+            errors["base"] = "no_rooms"
+            _LOGGER.error("No rooms found in the configuration. Aborting.")
+            return self.async_abort(reason="no_rooms")
         if user_input is not None and "camera_config_action" in user_input:
             next_action = user_input["camera_config_action"]
             if next_action == "opt_1":
@@ -342,9 +353,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             elif next_action == "opt_2":
                 return await self.async_step_base_colours()
             elif next_action == "opt_3":
-                return (
-                    await self.async_step_rooms_colours_1()
-                )  # self.async_step_rooms_colours_1()
+                if self.number_of_rooms == 1:
+                    return await self.async_step_floor_only()
+                else:
+                    return await self.async_step_rooms_colours_1()
             elif next_action == "opt_4":
                 return await self.async_step_rooms_colours_2()
             elif next_action == "opt_5":
@@ -359,7 +371,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 errors["base"] = "incorrect_options_action"
 
         # noinspection PyArgumentList
-        if number_of_rooms > 8:
+        if self.number_of_rooms > 8:
             menu_keys = SelectSelectorConfig(
                 options=[
                     {"label": "configure_image", "value": "opt_1"},
@@ -567,17 +579,42 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             description_placeholders=self.options,
         )
 
+    async def async_step_floor_only(self, user_input: Optional[Dict[str, Any]] = None):
+        """Floor colours configuration step based on one room only"""
+        _LOGGER.info("Floor Colour Configuration Started.")
+
+        if user_input is not None:
+            # Update options based on user input
+            self.options.update({"color_room_0": user_input.get(COLOR_ROOM_0)})
+            self._check_alpha = user_input.get(IS_ALPHA_R1, False)
+            if self._check_alpha:
+                return await self.async_step_alpha_floor()
+            else:
+                return await self.async_step_opt_save()
+
+        fields = {
+            vol.Optional(
+                COLOR_ROOM_0, default=self.config_entry.options.get("color_room_0")
+            ): ColorRGBSelector(),
+            vol.Optional(IS_ALPHA_R1, default=self._check_alpha): BooleanSelector(),
+        }
+
+        return self.async_show_form(
+            step_id="floor_only",
+            data_schema=vol.Schema(fields),
+            description_placeholders=self.options,
+        )
+
     async def async_step_rooms_colours_1(
         self, user_input: Optional[Dict[str, Any]] = None
     ):
         """Dynamically generate rooms colours configuration step based on the number of rooms."""
         _LOGGER.info("Dynamic Rooms Colours Configuration Started.")
-        number_of_rooms = await async_get_rooms_count(self.file_name)
         rooms_count = 1
-        if number_of_rooms > 8:
+        if self.number_of_rooms > 8:
             rooms_count = 8
-        elif (number_of_rooms <= 8) and (number_of_rooms != 0):
-            rooms_count = number_of_rooms
+        elif (self.number_of_rooms <= 8) and (self.number_of_rooms != 0):
+            rooms_count = self.number_of_rooms
 
         if user_input is not None:
             # Update options based on user input
@@ -615,10 +652,9 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     ):
         """Dynamically generate rooms colours configuration step based on the number of rooms."""
         _LOGGER.info("Dynamic Rooms Colours over 8 Configuration Started.")
-        number_of_rooms = await async_get_rooms_count(self.file_name)
         if user_input is not None:
             # Update options based on user input
-            for i in range(8, min(number_of_rooms, 16)):
+            for i in range(8, min(self.number_of_rooms, 16)):
                 room_key = f"color_room_{i}"
                 self.options.update({room_key: user_input.get(room_key)})
 
@@ -631,7 +667,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         # Dynamically create data schema based on the number of rooms
         fields = {}
-        for i in range(8, min(number_of_rooms, 16)):
+        for i in range(8, min(self.number_of_rooms, 16)):
             fields[
                 vol.Optional(
                     f"color_room_{i}",
@@ -647,15 +683,35 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             description_placeholders=self.options,
         )
 
+    async def async_step_alpha_floor(self, user_input: Optional[Dict[str, Any]] = None):
+        """Floor alpha configuration step based on one room only"""
+        _LOGGER.info("Floor Alpha Configuration Started.")
+
+        if user_input is not None:
+            # Update options based on user input
+            self.options.update({"alpha_room_0": user_input.get(ALPHA_ROOM_0)})
+            return await self.async_step_opt_save()
+
+        fields = {
+            vol.Optional(
+                ALPHA_ROOM_0, default=self.config_entry.options.get("alpha_room_0")
+            ): NumberSelector(self.config_dict),
+        }
+
+        return self.async_show_form(
+            step_id="alpha_floor",
+            data_schema=vol.Schema(fields),
+            description_placeholders=self.options,
+        )
+
     async def async_step_alpha_2(self, user_input: Optional[Dict[str, Any]] = None):
         """Dynamically generate rooms colours configuration step based on the number of rooms."""
-        _LOGGER.info("Dynamic Rooms Colours Configuration Started.")
-        number_of_rooms = await async_get_rooms_count(self.file_name)
+        _LOGGER.info("Dynamic Rooms 1 to 8 Alpha Configuration Started.")
         rooms_count = 1
-        if number_of_rooms > 8:
+        if self.number_of_rooms > 8:
             rooms_count = 8
-        elif (number_of_rooms <= 8) and (number_of_rooms != 0):
-            rooms_count = number_of_rooms
+        elif (self.number_of_rooms <= 8) and (self.number_of_rooms != 0):
+            rooms_count = self.number_of_rooms
 
         if user_input is not None:
             # Update options based on user input
@@ -683,11 +739,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_alpha_3(self, user_input: Optional[Dict[str, Any]] = None):
         """Dynamically generate rooms colours configuration step based on the number of rooms."""
-        _LOGGER.info("Dynamic Rooms Colours Configuration Started.")
-        number_of_rooms = await async_get_rooms_count(self.file_name)
+        _LOGGER.info("Dynamic Rooms Alpha up to 16 Configuration Started.")
         if user_input is not None:
             # Update options based on user input
-            for i in range(8, min(number_of_rooms, 16)):
+            for i in range(8, min(self.number_of_rooms, 16)):
                 room_key = f"alpha_room_{i}"
                 self.options.update({room_key: user_input.get(room_key)})
 
@@ -695,7 +750,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         # Dynamically create data schema based on the number of rooms
         fields = {}
-        for i in range(8, min(number_of_rooms, 16)):
+        for i in range(8, min(self.number_of_rooms, 16)):
             fields[
                 vol.Optional(
                     f"alpha_room_{i}",

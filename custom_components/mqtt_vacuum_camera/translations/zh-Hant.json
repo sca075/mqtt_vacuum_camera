@@ -129,6 +129,15 @@
         "description": "相機選項。透明度1",
         "title": "基礎顏色透明度通道"
       },
+      "floor_only": {
+        "data": {
+          "color_room_0": "[135, 206, 250]",
+          "add_room_1_alpha": "配置透明度"
+        },
+        "data_description": {
+          "color_room_0": "### **地板顏色**"
+        }
+      },
       "rooms_colours_1": {
         "data": {
           "color_room_0": "[135, 206, 250]",
@@ -178,6 +187,11 @@
         },
         "description": "相機顏色選項。",
         "title": "房間9至15顏色"
+      },
+      "alpha_floor": {
+        "data": {
+          "alpha_room_0": "地板顏色"
+        }
       },
       "alpha_2": {
         "data": {

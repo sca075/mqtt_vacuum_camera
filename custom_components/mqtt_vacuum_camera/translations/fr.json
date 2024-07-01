@@ -129,6 +129,15 @@
         "description": "Options de la caméra. Alpha 1",
         "title": "Couleurs de base du canal alpha"
       },
+      "floor_only": {
+        "data": {
+          "color_room_0": "[135, 206, 250]",
+          "add_room_1_alpha": "Configurer la transparence:"
+        },
+        "data_description": {
+          "color_room_0": "### **Couleur du sol**"
+        }
+      },
       "rooms_colours_1": {
         "data": {
           "color_room_0": "[135, 206, 250]",
@@ -139,7 +148,7 @@
           "color_room_5": "[96, 123, 139]",
           "color_room_6": "[224, 255, 255]",
           "color_room_7": "[209, 238, 238]",
-          "add_room_1_alpha": "Configurer la transparence :"
+          "add_room_1_alpha": "Configurer la transparence:"
         },
         "data_description": {
           "color_room_0": "Salle 1",
@@ -178,6 +187,11 @@
         },
         "description": "Options de couleurs de la caméra.",
         "title": "Couleurs des pièces de 9 à 15"
+      },
+      "alpha_floor": {
+        "data": {
+          "alpha_room_0": "Couleur du sol"
+        }
       },
       "alpha_2": {
         "data": {

@@ -129,6 +129,15 @@
         "description": "خيارات الكاميرا. ألفا 1",
         "title": "ألوان قاعدة الألفا"
       },
+      "floor_only": {
+        "data": {
+          "color_room_0": "[135, 206, 250]",
+          "add_room_1_alpha": "تهيئة الشفافية"
+        },
+        "data_description": {
+          "color_room_0": "### **لون الأرضية**"
+        }
+      },
       "rooms_colours_1": {
         "data": {
           "color_room_0": "[135, 206, 250]",
@@ -178,6 +187,11 @@
         },
         "description": "خيارات ألوان الكاميرا",
         "title": "ألوان الغرف 9 إلى 15"
+      },
+      "alpha_floor": {
+        "data": {
+          "alpha_room_0": "لون الأرضية"
+        }
       },
       "alpha_2": {
         "data": {

@@ -129,6 +129,15 @@
         "description": "Опции камеры. Альфа 1",
         "title": "Цвета Альфа Канала Базовые"
       },
+      "floor_only": {
+        "data": {
+          "color_room_0": "[135, 206, 250]",
+          "add_room_1_alpha": "Настройка Прозрачности:"
+        },
+        "data_description": {
+          "color_room_0": "### **Цвет пола**"
+        }
+      },
       "rooms_colours_1": {
         "data": {
           "color_room_0": "[135, 206, 250]",
@@ -178,6 +187,11 @@
         },
         "description": "Опции цвета камеры.",
         "title": "Комнаты 9 до 15 Цвета"
+      },
+      "alpha_floor": {
+        "data": {
+          "alpha_room_0": "Цвет пола"
+        }
       },
       "alpha_2": {
         "data": {
