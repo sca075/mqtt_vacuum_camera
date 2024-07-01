@@ -176,7 +176,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         self.bk_options = self.config_entry.options
         self.file_name = self.unique_id.split("_")[0].lower()
         self._check_alpha = False
-        self.number_of_rooms = None
+        self.number_of_rooms = 0
         _LOGGER.debug(
             "Options edit in progress.. options before edit: %s", dict(self.bk_options)
         )
@@ -338,6 +338,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         _LOGGER.info(f"{self.config_entry.unique_id}: Options Configuration Started.")
         errors = {}
         self.number_of_rooms = await async_get_rooms_count(self.file_name)
+        if self.number_of_rooms == 0:
+            errors["base"] = "no_rooms"
+            _LOGGER.error("No rooms found in the configuration. Aborting.")
+            return self.async_abort(reason="no_rooms")
         if user_input is not None and "camera_config_action" in user_input:
             next_action = user_input["camera_config_action"]
             if next_action == "opt_1":
@@ -686,7 +690,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             self, user_input: Optional[Dict[str, Any]] = None
     ):
         """Floor alpha configuration step based on one room only"""
-        _LOGGER.info("Floor Colour Configuration Started.")
+        _LOGGER.info("Floor Alpha Configuration Started.")
 
         if user_input is not None:
             # Update options based on user input
