@@ -122,7 +122,6 @@ async def async_find_last_logged_in_user(hass: HomeAssistant) -> str or None:
                 last_user = user
 
     if last_user:
-        _LOGGER.info(f"Last logged-in user: {last_user.id}")
         return last_user.id
     else:
         _LOGGER.info("No users have logged in yet.")

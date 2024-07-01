@@ -194,7 +194,7 @@ class ValetudoConnector:
         Generate a Warning message if the vacuum is disconnected.
         """
         if self._mqtt_vac_connect_state == "disconnected":
-            _LOGGER.warning(
+            _LOGGER.debug(
                 f"{self._mqtt_topic}: Vacuum Disconnected from MQTT, waiting for connection."
             )
             self._mqtt_vac_stat = "disconnected"

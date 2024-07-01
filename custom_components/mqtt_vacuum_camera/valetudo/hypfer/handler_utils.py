@@ -75,7 +75,7 @@ class ImageUtils:
         _LOGGER.debug(
             f"{self.file_name}: Found trims max and min values (y,x) "
             f"({int(max_y)}, {int(max_x)}) ({int(min_y)},{int(min_x)})..."
-            )
+        )
 
         return min_y, min_x, max_x, max_y
 
