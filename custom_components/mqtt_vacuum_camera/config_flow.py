@@ -1,4 +1,4 @@
-"""config_flow 2024.06.4
+"""config_flow 2024.07.0
 IMPORTANT: Maintain code when adding new options to the camera
 it will be mandatory to update const.py and common.py update_options.
 Format of the new constants must be CONST_NAME = "const_name" update also
@@ -43,6 +43,7 @@ from .const import (
     ALPHA_MOVE,
     ALPHA_NO_GO,
     ALPHA_ROBOT,
+    ALPHA_ROOM_0,
     ALPHA_TEXT,
     ALPHA_VALUES,
     ALPHA_WALL,
@@ -55,6 +56,7 @@ from .const import (
     COLOR_MOVE,
     COLOR_NO_GO,
     COLOR_ROBOT,
+    COLOR_ROOM_0,
     COLOR_TEXT,
     COLOR_WALL,
     COLOR_ZONE_CLEAN,
@@ -72,8 +74,7 @@ from .const import (
     CONF_VACUUM_CONFIG_ENTRY_ID,
     CONF_VACUUM_ENTITY_ID,
     CONF_ZOOM_LOCK_RATIO,
-    COLOR_ROOM_0,
-    ALPHA_ROOM_0,
+    DEFAULT_ROOMS,
     DEFAULT_VALUES,
     DOMAIN,
     FONTS_AVAILABLE,
@@ -176,7 +177,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         self.bk_options = self.config_entry.options
         self.file_name = self.unique_id.split("_")[0].lower()
         self._check_alpha = False
-        self.number_of_rooms = 0
+        self.number_of_rooms = DEFAULT_ROOMS
         _LOGGER.debug(
             "Options edit in progress.. options before edit: %s", dict(self.bk_options)
         )
@@ -338,7 +339,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         _LOGGER.info(f"{self.config_entry.unique_id}: Options Configuration Started.")
         errors = {}
         self.number_of_rooms = await async_get_rooms_count(self.file_name)
-        if self.number_of_rooms == 0:
+        if (
+            not isinstance(self.number_of_rooms, int)
+            or self.number_of_rooms < DEFAULT_ROOMS
+        ):
             errors["base"] = "no_rooms"
             _LOGGER.error("No rooms found in the configuration. Aborting.")
             return self.async_abort(reason="no_rooms")
@@ -575,16 +579,13 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             description_placeholders=self.options,
         )
 
-    async def async_step_floor_only(
-            self, user_input: Optional[Dict[str, Any]] = None
-    ):
+    async def async_step_floor_only(self, user_input: Optional[Dict[str, Any]] = None):
         """Floor colours configuration step based on one room only"""
         _LOGGER.info("Floor Colour Configuration Started.")
 
         if user_input is not None:
             # Update options based on user input
-            self.options.update(
-                {"color_room_0": user_input.get(COLOR_ROOM_0)})
+            self.options.update({"color_room_0": user_input.get(COLOR_ROOM_0)})
             self._check_alpha = user_input.get(IS_ALPHA_R1, False)
             if self._check_alpha:
                 return await self.async_step_alpha_floor()
@@ -593,13 +594,9 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         fields = {
             vol.Optional(
-                COLOR_ROOM_0,
-                default=self.config_entry.options.get("color_room_0")
+                COLOR_ROOM_0, default=self.config_entry.options.get("color_room_0")
             ): ColorRGBSelector(),
-            vol.Optional(
-                IS_ALPHA_R1,
-                default=self._check_alpha
-            ): BooleanSelector()
+            vol.Optional(IS_ALPHA_R1, default=self._check_alpha): BooleanSelector(),
         }
 
         return self.async_show_form(
@@ -686,22 +683,18 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             description_placeholders=self.options,
         )
 
-    async def async_step_alpha_floor(
-            self, user_input: Optional[Dict[str, Any]] = None
-    ):
+    async def async_step_alpha_floor(self, user_input: Optional[Dict[str, Any]] = None):
         """Floor alpha configuration step based on one room only"""
         _LOGGER.info("Floor Alpha Configuration Started.")
 
         if user_input is not None:
             # Update options based on user input
-            self.options.update(
-                {"alpha_room_0": user_input.get(ALPHA_ROOM_0)})
+            self.options.update({"alpha_room_0": user_input.get(ALPHA_ROOM_0)})
             return await self.async_step_opt_save()
 
         fields = {
             vol.Optional(
-                ALPHA_ROOM_0,
-                default=self.config_entry.options.get("alpha_room_0")
+                ALPHA_ROOM_0, default=self.config_entry.options.get("alpha_room_0")
             ): NumberSelector(self.config_dict),
         }
 
