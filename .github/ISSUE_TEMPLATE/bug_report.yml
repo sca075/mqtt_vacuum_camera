@@ -1,5 +1,5 @@
-name: Report an issue with Valetudo Vacuum Camera
-description: Report an issue with Valetudo Vacuum Camera.
+name: Report an issue with MQTT Vacuum Camera
+description: Report an issue with MQTT Vacuum Camera.
 labels: bug
 assignees: 'SCA075'
 body:
@@ -55,7 +55,7 @@ body:
   - type: input
     id: valetudo-firmware-version
     validations:
-      required: true
+      required: false
     attributes:
       label: Please firmware installed on your Vacuum.
       placeholder: yyyy.mm.x
@@ -105,19 +105,29 @@ body:
       value: |
         # Details
   - type: textarea
+    id: logs
+    attributes:
+      label: Logs or Errors shown in the HA snapshots (please enable the Debug Mode) text will be auto formatted to code.
+      render: shell
+  - type: dropdown
     validations:
       required: false
     attributes:
-      label: Camera's settings.
-      description: |
-        Please provide the used options and settings (if problems with colours just value and used filed).
-      render: yaml
-  - type: textarea
-    attributes:
-      label: Logs or Errors shown in the HA snapshots (please enable the Debug Mode)
-      render: shell
+      label: Function, that in your opinion is creating the issue.
+      description: >
+        If you know what option is creating the issue, please select it.
+      options:
+        - Calibration of the Map
+        - Colors Configuration
+        - Image Aspect Ratio
+        - Logs Export
+        - Migration Process
+        - Room Names Advanced Option
+        - Snapshots Functions
+        - Vacuum Status Text
+        - Not sure / none of the above.
   - type: textarea
     attributes:
       label: Additional information
       description: >
-        If you have any additional information, use the field below.
+        Please provide additional information's, use the field below. This will help to understand/recreate the issue better.
