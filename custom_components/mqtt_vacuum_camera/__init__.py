@@ -306,11 +306,11 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
         storage = hass.config.path(STORAGE_DIR, "valetudo_camera")
         if not os.path.exists(storage):
             _LOGGER.debug(f"Storage path: {storage} do not exists. Aborting!")
-            return True
+            return False
         vacuum_entity_id = await async_get_translations_vacuum_id(storage)
         if not vacuum_entity_id:
             _LOGGER.debug("No vacuum room data found. Aborting!")
-            return True
+            return False
         _LOGGER.debug(f"Writing down the rooms data for {vacuum_entity_id}.")
         result = await async_rename_room_description(hass, storage, vacuum_entity_id)
         await hass.async_block_till_done()
