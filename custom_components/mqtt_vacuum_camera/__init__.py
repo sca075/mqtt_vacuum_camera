@@ -262,7 +262,7 @@ async def async_setup_entry(
 
     # Forward the setup to the camera platform.
     hass.async_create_task(
-        hass.config_entries.async_forward_entry_setup(entry, "camera")
+        hass.config_entries.async_forward_entry_setups(entry, ["camera"])
     )
     return True
 
@@ -312,8 +312,9 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
             _LOGGER.debug("No vacuum room data found. Aborting!")
             return True
         _LOGGER.debug(f"Writing down the rooms data for {vacuum_entity_id}.")
-        await async_rename_room_description(hass, storage, vacuum_entity_id)
-        return True
+        result = await async_rename_room_description(hass, storage, vacuum_entity_id)
+        await hass.async_block_till_done()
+        return result
 
     hass.bus.async_listen_once(
         EVENT_HOMEASSISTANT_FINAL_WRITE, handle_homeassistant_stop
