@@ -144,6 +144,8 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     os.mkdir(storage_path)
                 except FileExistsError as e:
                     _LOGGER.debug(f"Error {e} creating the path {storage_path}")
+                except OSError as e:
+                    _LOGGER.error(f"Error {e} creating the path {storage_path}")
             else:
                 _LOGGER.debug(f"Storage {storage_path} path found.")
             # Finally set up the entry.
