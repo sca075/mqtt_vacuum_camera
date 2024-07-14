@@ -1,11 +1,12 @@
 """Constants for the mqtt_vacuum_camera integration."""
 
-"""Version v2024.07.0"""
+"""Version v2024.07.1"""
 
 """Required in Config_Flow"""
 PLATFORMS = ["camera"]
 DOMAIN = "mqtt_vacuum_camera"
 DEFAULT_NAME = "mqtt vacuum camera"
+CAMERA_STORAGE = "valetudo_camera"
 DEFAULT_ROOMS = 1  # 15 is the maximum number of rooms.
 ATTR_ROTATE = "rotate_image"
 ATTR_CROP = "crop_image"

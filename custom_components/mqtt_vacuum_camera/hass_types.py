@@ -1,9 +1,8 @@
 """
 Custom HassKey types for Home Assistant.
-Version: 2024.06.2
+Version: 2024.07.1
 """
 
-# from homeassistant.components.mqtt import DOMAIN as MQTT_DOMAIN
 from homeassistant.components.mqtt.models import MqttData
 from homeassistant.util.hass_dict import HassKey
 
