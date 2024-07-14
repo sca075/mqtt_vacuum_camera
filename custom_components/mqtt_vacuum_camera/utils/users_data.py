@@ -3,7 +3,7 @@ Common functions for the MQTT Vacuum Camera integration.
 Those functions are used to store and retrieve user data from the Home Assistant storage.
 The data will be stored locally in the Home Assistant in .storage/valetudo_camera directory.
 Author: @sca075
-Version: 2024.07.0
+Version: 2024.07.1
 """
 
 from __future__ import annotations
@@ -283,7 +283,7 @@ async def async_load_room_data(storage_path: str, vacuum_id: str) -> dict:
 
 async def async_rename_room_description(
     hass: HomeAssistant, storage_path: str, vacuum_id: str
-) -> None:
+) -> bool:
     """
     Add room names to the room descriptions in the translations.
     """
@@ -294,7 +294,7 @@ async def async_rename_room_description(
         _LOGGER.warning(
             f"Vacuum ID: {vacuum_id} do not support Rooms! Aborting room name addition."
         )
-        return None
+        return False
 
     # Save the vacuum_id to a JSON file
     await async_write_vacuum_id(storage_path, vacuum_id)
@@ -352,4 +352,4 @@ async def async_rename_room_description(
             _LOGGER.info(
                 f"Room names added to the room descriptions in the {language[idx]} translations."
             )
-    return None
+    return True
