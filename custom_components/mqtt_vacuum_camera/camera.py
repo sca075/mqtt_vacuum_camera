@@ -10,6 +10,7 @@ import asyncio
 from asyncio import gather, get_event_loop
 import concurrent.futures
 from datetime import timedelta
+import logging
 from io import BytesIO
 import json
 import os
@@ -33,7 +34,6 @@ from .camera_processing import CameraProcessor
 from .camera_shared import CameraShared
 from .common import get_vacuum_unique_id_from_mqtt_topic
 from .const import (
-    _LOGGER,
     ATTR_MARGINS,
     ATTR_ROTATE,
     CAMERA_STORAGE,
@@ -71,6 +71,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
 )
 
 SCAN_INTERVAL = timedelta(seconds=3)
+_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(

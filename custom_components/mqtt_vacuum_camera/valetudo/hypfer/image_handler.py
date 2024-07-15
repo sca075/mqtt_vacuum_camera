@@ -8,10 +8,16 @@ Version: 2024.07.1
 from __future__ import annotations
 
 import json
+import os.path
+import logging
 
 from PIL import Image, ImageOps
 
-from custom_components.mqtt_vacuum_camera.const import _LOGGER
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.storage import STORAGE_DIR
+
+from custom_components.mqtt_vacuum_camera.const import CAMERA_STORAGE
+from custom_components.mqtt_vacuum_camera.common import async_write_json_to_disk, async_load_file
 from custom_components.mqtt_vacuum_camera.types import (
     CalibrationPoints,
     ChargerPosition,
@@ -32,14 +38,20 @@ from custom_components.mqtt_vacuum_camera.valetudo.hypfer.handler_utils import (
 from custom_components.mqtt_vacuum_camera.valetudo.hypfer.image_draw import (
     ImageDraw as ImDraw,
 )
+_LOGGER = logging.getLogger(__name__)
 
 
 class MapImageHandler(object):
     """Map Image Handler Class.
     This class is used to handle the image data and the drawing of the map."""
 
-    def __init__(self, shared_data):
+    def __init__(self, shared_data, hass: HomeAssistant):
         """Initialize the Map Image Handler."""
+        self.hass = hass
+        self.shared = shared_data  # camera shared data
+        self.file_name = shared_data.file_name  # file name of the vacuum.
+        self.path_to_data = self.hass.config.path(STORAGE_DIR, CAMERA_STORAGE,
+                                                  f"auto_crop_{self.file_name}.json")  # path to the data
         self.auto_crop = None  # auto crop data to be calculate once.
         self.calibration_data = None  # camera shared data.
         self.charger_pos = None  # vacuum data charger position.
@@ -48,7 +60,6 @@ class MapImageHandler(object):
         self.data = ImageData  # imported Image Data Module.
         self.draw = Drawable  # imported Drawing utilities
         self.go_to = None  # vacuum go to data
-        self.file_name = shared_data.file_name  # file name of the vacuum.
         self.img_hash = None  # hash of the image calculated to check differences.
         self.img_base_layer = None  # numpy array store the map base layer.
         self.img_size = None  # size of the created image
@@ -62,7 +73,6 @@ class MapImageHandler(object):
         self.active_zones = None  # vacuum active zones.
         self.frame_number = 0  # frame number of the image.
         self.zooming = False  # zooming the image.
-        self.shared = shared_data  # camera shared data
         self.svg_wait = False  # SVG image creation wait.
         self.trim_down = None  # memory stored trims calculated once.
         self.trim_left = None  # memory stored trims calculated once.
@@ -78,7 +88,7 @@ class MapImageHandler(object):
         self.imu = ImUtils(self)
 
     def check_trim(
-        self, trimmed_height, trimmed_width, margin_size, image_array, file_name, rotate
+            self, trimmed_height, trimmed_width, margin_size, image_array, file_name, rotate
     ):
         """
         Check if the trimming is okay.
@@ -92,16 +102,21 @@ class MapImageHandler(object):
             )
 
     async def async_auto_trim_and_zoom_image(
-        self,
-        image_array: NumpyArray,
-        detect_colour: Color = color_grey,
-        margin_size: int = 0,
-        rotate: int = 0,
-        zoom: bool = False,
+            self,
+            image_array: NumpyArray,
+            detect_colour: Color = color_grey,
+            margin_size: int = 0,
+            rotate: int = 0,
+            zoom: bool = False,
     ):
         """
         Automatically crops and trims a numpy array and returns the processed image.
         """
+        # if os.path.exists(self.path_to_data) and self.auto_crop is None:
+        #     temp_data = await async_load_file(self.path_to_data, True)
+        #     _LOGGER.debug(temp_data)
+        #     self.auto_crop = TrimCropData.from_dict(dict(temp_data)).to_list()
+        #     _LOGGER.debug(self.auto_crop)
         try:
             if not self.auto_crop:
                 # Find the coordinates of the first occurrence of a non-background color
@@ -138,6 +153,14 @@ class MapImageHandler(object):
                 self.auto_crop = TrimCropData(
                     self.trim_left, self.trim_up, self.trim_right, self.trim_down
                 ).to_list()
+                # if not os.path.exists(self.path_to_data):
+                #     _LOGGER.debug("Writing crop data to disk")
+                #     data = TrimCropData(
+                #         self.trim_left, self.trim_up, self.trim_right, self.trim_down
+                #     ).to_dict()
+                #     await async_write_json_to_disk(
+                #         self.path_to_data, data
+                #     )
             # If it is needed to zoom the image.
             trimmed = await self.imu.async_check_if_zoom_is_on(
                 image_array, margin_size, zoom
@@ -208,8 +231,8 @@ class MapImageHandler(object):
 
     # noinspection PyUnresolvedReferences,PyUnboundLocalVariable
     async def async_get_image_from_json(
-        self,
-        m_json: json | None,
+            self,
+            m_json: json | None,
     ) -> Image.Image | None:
         """Get the image from the JSON data.
         It uses the ImageDraw class to draw some of the elements of the image.
@@ -347,11 +370,11 @@ class MapImageHandler(object):
                 del img_np_array
             # reduce the image size if the zoomed image is bigger then the original.
             if (
-                self.shared.image_auto_zoom
-                and self.shared.vacuum_state == "cleaning"
-                and self.zooming
-                and self.shared.image_zoom_lock_ratio
-                or self.shared.image_aspect_ratio != "None"
+                    self.shared.image_auto_zoom
+                    and self.shared.vacuum_state == "cleaning"
+                    and self.zooming
+                    and self.shared.image_zoom_lock_ratio
+                    or self.shared.image_aspect_ratio != "None"
             ):
                 width = self.shared.image_ref_width
                 height = self.shared.image_ref_height
@@ -453,7 +476,7 @@ class MapImageHandler(object):
         return calibration_data
 
     async def async_map_coordinates_offset(
-        self, wsf: int, hsf: int, width: int, height: int
+            self, wsf: int, hsf: int, width: int, height: int
     ) -> tuple[int, int]:
         """
         Offset the coordinates to the map.

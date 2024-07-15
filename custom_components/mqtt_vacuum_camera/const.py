@@ -1,6 +1,7 @@
 """Constants for the mqtt_vacuum_camera integration."""
 
 import logging
+import inspect
 
 """Version v2024.07.1"""
 
@@ -35,7 +36,10 @@ CONF_AUTO_ZOOM = "auto_zoom"
 CONF_ZOOM_LOCK_RATIO = "zoom_lock_ratio"
 ICON = "mdi:camera"
 NAME = "MQTT Vacuum Camera"
-_LOGGER = logging.getLogger(__name__)
+
+# Logger
+caller_name = inspect.stack()[1].frame.f_globals['__name__']
+_LOGGER = logging.getLogger(caller_name)
 
 DEFAULT_VALUES = {
     "rotate_image": "0",
