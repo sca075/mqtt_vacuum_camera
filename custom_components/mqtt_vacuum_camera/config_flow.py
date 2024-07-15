@@ -50,6 +50,7 @@ from .const import (
     ALPHA_ZONE_CLEAN,
     ATTR_MARGINS,
     ATTR_ROTATE,
+    CAMERA_STORAGE,
     COLOR_BACKGROUND,
     COLOR_CHARGER,
     COLOR_GO_TO,
@@ -136,13 +137,15 @@ class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             # set default options
             self.options.update(DEFAULT_VALUES)
             # create the path for storing the snapshots.
-            storage_path = f"{self.hass.config.path(STORAGE_DIR)}/valetudo_camera"
+            storage_path = f"{self.hass.config.path(STORAGE_DIR)}/{CAMERA_STORAGE}"
             if not os.path.exists(storage_path):
                 _LOGGER.debug(f"Creating the {storage_path} path.")
                 try:
                     os.mkdir(storage_path)
                 except FileExistsError as e:
                     _LOGGER.debug(f"Error {e} creating the path {storage_path}")
+                except OSError as e:
+                    _LOGGER.error(f"Error {e} creating the path {storage_path}")
             else:
                 _LOGGER.debug(f"Storage {storage_path} path found.")
             # Finally set up the entry.
@@ -771,7 +774,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         ha_dir = self.hass.config.path()
         ha_storage = self.hass.config.path(STORAGE_DIR)
         file_name = f"{self.file_name}.zip"
-        source_path = f"{ha_storage}/valetudo_camera/{file_name}"
+        source_path = f"{ha_storage}/{CAMERA_STORAGE}/{file_name}"
         destination_path = f"{ha_dir}/www/{file_name}"
         if os.path.exists(source_path):
             _LOGGER.info(f"Logs found in {source_path}")
@@ -833,7 +836,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         """
         hass = self.hass
         user_input = None
-        storage_path = hass.config.path(STORAGE_DIR, "valetudo_camera")
+        storage_path = hass.config.path(STORAGE_DIR, CAMERA_STORAGE)
         _LOGGER.debug(f"Looking for Storage Path: {storage_path}")
         if (user_input is None) and self.bk_options:
             if self.hass:

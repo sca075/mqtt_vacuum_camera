@@ -21,7 +21,10 @@ from custom_components.mqtt_vacuum_camera.common import (
     async_load_file,
     async_write_json_to_disk,
 )
-from custom_components.mqtt_vacuum_camera.const import DEFAULT_ROOMS
+from custom_components.mqtt_vacuum_camera.const import (
+    CAMERA_STORAGE,
+    DEFAULT_ROOMS
+)
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -31,7 +34,7 @@ async def async_get_rooms_count(
 ) -> int:
     """Get the number of segments in the room_data_{vacuum_id}.json file."""
     file_path = os.path.join(
-        os.getcwd(), STORAGE_DIR, "valetudo_camera", f"room_data_{robot_name}.json"
+        os.getcwd(), STORAGE_DIR, CAMERA_STORAGE, f"room_data_{robot_name}.json"
     )
     if not os.path.exists(file_path):
         _LOGGER.warning(f"File not found: {file_path}")
@@ -145,7 +148,7 @@ async def async_get_active_user_language(hass: HomeAssistant) -> str:
     If the user's language setting is not found, default to English.
     """
     active_user_id = await async_find_last_logged_in_user(hass)
-    languages_path = f"{hass.config.path(STORAGE_DIR)}/valetudo_camera/languages.json"
+    languages_path = hass.config.path(STORAGE_DIR, CAMERA_STORAGE, "languages.json")
     user_data_path = hass.config.path(
         STORAGE_DIR, f"frontend.user_data_{active_user_id}"
     )
@@ -211,7 +214,7 @@ async def async_write_languages_json(hass: HomeAssistant):
 
         # Write the consolidated languages to a JSON file
         out_languages_file = hass.config.path(
-            STORAGE_DIR, "valetudo_camera", "languages.json"
+            STORAGE_DIR, CAMERA_STORAGE, "languages.json"
         )
         await async_write_json_to_disk(out_languages_file, languages)
 

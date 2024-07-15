@@ -23,6 +23,7 @@ from .common import (
     update_options,
 )
 from .const import (
+    CAMERA_STORAGE,
     CONF_MQTT_HOST,
     CONF_MQTT_PASS,
     CONF_MQTT_USER,
@@ -314,7 +315,7 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
         _LOGGER.debug(f"Writing down the rooms data for {vacuum_entity_id}.")
         result = await async_rename_room_description(hass, storage, vacuum_entity_id)
         await hass.async_block_till_done()
-        return result
+        return True
 
     hass.bus.async_listen_once(
         EVENT_HOMEASSISTANT_FINAL_WRITE, handle_homeassistant_stop
@@ -331,7 +332,7 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
 async def move_data_to_valetudo_camera(storage):
     """Move files from .storage folder to valetudo_camera folder."""
     if os.path.exists(storage):
-        storage_folder = f"{storage}/valetudo_camera"
+        storage_folder = f"{storage}/{CAMERA_STORAGE}"
         _LOGGER.debug(f"Creating the {storage_folder} path.")
         try:
             os.mkdir(storage_folder)

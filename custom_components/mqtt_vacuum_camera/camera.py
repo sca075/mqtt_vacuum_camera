@@ -36,6 +36,7 @@ from .common import get_vacuum_unique_id_from_mqtt_topic
 from .const import (
     ATTR_MARGINS,
     ATTR_ROTATE,
+    CAMERA_STORAGE,
     CONF_ASPECT_RATIO,
     CONF_AUTO_ZOOM,
     CONF_OFFSET_BOTTOM,
@@ -134,7 +135,7 @@ class ValetudoCamera(Camera):
                 f"{round((ProcInsp().psutil.virtual_memory().available / (1024 * 1024)), 1)}"
                 f" and In Use: {round((ProcInsp().psutil.virtual_memory().used / (1024 * 1024)), 1)}"
             )
-            self._storage_path = f"{self.hass.config.path(STORAGE_DIR)}/valetudo_camera"
+            self._storage_path = f"{self.hass.config.path(STORAGE_DIR)}/{CAMERA_STORAGE}"
             if not os.path.exists(self._storage_path):
                 self._storage_path = f"{self._directory_path}/{STORAGE_DIR}"
             self.snapshot_img = f"{self._storage_path}/{self._file_name}.png"
