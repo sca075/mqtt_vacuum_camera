@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import glob
 import json
-import logging
 import os
 from typing import Optional
 
@@ -22,11 +21,10 @@ from custom_components.mqtt_vacuum_camera.common import (
     async_write_json_to_disk,
 )
 from custom_components.mqtt_vacuum_camera.const import (
+    _LOGGER,
     CAMERA_STORAGE,
-    DEFAULT_ROOMS
+    DEFAULT_ROOMS,
 )
-
-_LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 async def async_get_rooms_count(

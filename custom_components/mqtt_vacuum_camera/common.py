@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import asyncio
 import json
-import logging
 from typing import Any
 
 from homeassistant.components.mqtt import DOMAIN as MQTT_DOMAIN
@@ -16,10 +15,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.helpers.device_registry import DeviceEntry
 
-from .const import KEYS_TO_UPDATE
+from .const import _LOGGER, KEYS_TO_UPDATE
 from .hass_types import GET_MQTT_DATA
-
-_LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 def get_device_info(

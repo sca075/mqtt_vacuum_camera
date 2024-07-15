@@ -1,11 +1,10 @@
 """
 Colors RGBA
-Version: v2024.05
+Version: v2024.07.1
 """
 
-import logging
-
 from custom_components.mqtt_vacuum_camera.const import (
+    _LOGGER,
     ALPHA_BACKGROUND,
     ALPHA_CHARGER,
     ALPHA_GO_TO,
@@ -57,8 +56,6 @@ from custom_components.mqtt_vacuum_camera.const import (
     COLOR_WALL,
     COLOR_ZONE_CLEAN,
 )
-
-_LOGGER = logging.getLogger(__name__)
 
 color_transparent = (0, 0, 0, 0)
 color_charger = (0, 128, 0, 255)

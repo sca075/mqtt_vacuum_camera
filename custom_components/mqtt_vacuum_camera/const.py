@@ -1,5 +1,7 @@
 """Constants for the mqtt_vacuum_camera integration."""
 
+import logging
+
 """Version v2024.07.1"""
 
 """Required in Config_Flow"""
@@ -33,6 +35,7 @@ CONF_AUTO_ZOOM = "auto_zoom"
 CONF_ZOOM_LOCK_RATIO = "zoom_lock_ratio"
 ICON = "mdi:camera"
 NAME = "MQTT Vacuum Camera"
+_LOGGER = logging.getLogger(__name__)
 
 DEFAULT_VALUES = {
     "rotate_image": "0",

@@ -1,5 +1,5 @@
 """
-Version: v2024.06.3
+Version: v2024.07.1
 - Removed the PNG decode, the json is extracted from map-data instead of map-data-hass.
 - Tested no influence on the camera performance.
 - Added gzip library used in Valetudo RE data compression.
@@ -7,7 +7,6 @@ Version: v2024.06.3
 
 import asyncio
 import json
-import logging
 
 from homeassistant.components import mqtt
 from homeassistant.core import callback
@@ -15,9 +14,9 @@ from homeassistant.helpers.storage import STORAGE_DIR
 from isal import igzip, isal_zlib
 
 from custom_components.mqtt_vacuum_camera.common import async_write_file_to_disk
+from custom_components.mqtt_vacuum_camera.const import _LOGGER
 from custom_components.mqtt_vacuum_camera.valetudo.rand256.rrparser import RRMapParser
 
-_LOGGER = logging.getLogger(__name__)
 _QOS = 0
 
 
