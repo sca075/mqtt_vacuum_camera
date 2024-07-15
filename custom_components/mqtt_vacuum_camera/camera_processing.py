@@ -10,8 +10,8 @@ from __future__ import annotations
 import asyncio
 from asyncio import gather, get_event_loop
 import concurrent.futures
-import logging
 
+from .const import _LOGGER
 from .types import Color, JsonType, PilPNG
 from .utils.drawable import Drawable as Draw
 from .utils.status_text import StatusText
@@ -19,7 +19,6 @@ from .utils.users_data import async_get_active_user_language
 from .valetudo.hypfer.image_handler import MapImageHandler
 from .valetudo.rand256.image_handler import ReImageHandler
 
-_LOGGER: logging.Logger = logging.getLogger(__name__)
 _LOGGER.propagate = True
 
 

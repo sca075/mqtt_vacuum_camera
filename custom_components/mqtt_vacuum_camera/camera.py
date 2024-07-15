@@ -1,6 +1,6 @@
 """
 Camera
-Version: v2024.07.0
+Version: v2024.07.1
 Image Processing Threading implemented on Version 1.5.7.
 """
 
@@ -12,7 +12,6 @@ import concurrent.futures
 from datetime import timedelta
 from io import BytesIO
 import json
-import logging
 import os
 import platform
 import time
@@ -34,6 +33,7 @@ from .camera_processing import CameraProcessor
 from .camera_shared import CameraShared
 from .common import get_vacuum_unique_id_from_mqtt_topic
 from .const import (
+    _LOGGER,
     ATTR_MARGINS,
     ATTR_ROTATE,
     CAMERA_STORAGE,
@@ -71,8 +71,6 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
 )
 
 SCAN_INTERVAL = timedelta(seconds=3)
-
-_LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
@@ -135,7 +133,9 @@ class ValetudoCamera(Camera):
                 f"{round((ProcInsp().psutil.virtual_memory().available / (1024 * 1024)), 1)}"
                 f" and In Use: {round((ProcInsp().psutil.virtual_memory().used / (1024 * 1024)), 1)}"
             )
-            self._storage_path = f"{self.hass.config.path(STORAGE_DIR)}/{CAMERA_STORAGE}"
+            self._storage_path = (
+                f"{self.hass.config.path(STORAGE_DIR)}/{CAMERA_STORAGE}"
+            )
             if not os.path.exists(self._storage_path):
                 self._storage_path = f"{self._directory_path}/{STORAGE_DIR}"
             self.snapshot_img = f"{self._storage_path}/{self._file_name}.png"

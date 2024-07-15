@@ -1,14 +1,10 @@
 """
 Class Camera Shared.
 Keep the data between the modules.
-Version: v2024.05.2
+Version: v2024.07.1
 """
 
-import logging
-
 from custom_components.mqtt_vacuum_camera.types import Colors
-
-_LOGGER = logging.getLogger(__name__)
 
 
 class CameraShared(object):
@@ -65,6 +61,7 @@ class CameraShared(object):
         self.map_pred_points = None  # Predefined points data
         self.map_new_path = None  # New path data
         self.map_old_path = None  # Old path data
+        self.trim_crop_data = None
         self.user_language = None  # User language
 
     def update_user_colors(self, user_colors):

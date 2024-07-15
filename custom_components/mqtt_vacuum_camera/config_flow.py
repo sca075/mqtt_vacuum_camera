@@ -1,11 +1,10 @@
-"""config_flow 2024.07.0
+"""config_flow 2024.07.1
 IMPORTANT: Maintain code when adding new options to the camera
 it will be mandatory to update const.py and common.py update_options.
 Format of the new constants must be CONST_NAME = "const_name" update also
 sting.json and en.json please.
 """
 
-import logging
 import os
 import shutil
 from typing import Any, Dict, Optional
@@ -37,6 +36,7 @@ from .common import (
     update_options,
 )
 from .const import (
+    _LOGGER,
     ALPHA_BACKGROUND,
     ALPHA_CHARGER,
     ALPHA_GO_TO,
@@ -87,8 +87,6 @@ from .const import (
     TEXT_SIZE_VALUES,
 )
 from .utils.users_data import async_get_rooms_count, async_rename_room_description
-
-_LOGGER = logging.getLogger(__name__)
 
 VACUUM_SCHEMA = vol.Schema(
     {

@@ -3,7 +3,7 @@ Collections of Drawing Utility
 Drawable is part of the Image_Handler
 used functions to draw the elements on the Numpy Array
 that is actually our camera frame.
-Version: v2024.06.1
+Version: v2024.07.1
 """
 
 from __future__ import annotations
@@ -14,8 +14,6 @@ from PIL import ImageDraw, ImageFont
 import numpy as np
 
 from custom_components.mqtt_vacuum_camera.types import Color, NumpyArray, PilPNG, Point
-
-# import re
 
 
 class Drawable:

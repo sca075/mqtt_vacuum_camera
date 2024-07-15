@@ -8,16 +8,14 @@ from __future__ import annotations
 
 import hashlib
 import json
-import logging
 
+from custom_components.mqtt_vacuum_camera.const import _LOGGER
 from custom_components.mqtt_vacuum_camera.types import (
     Color,
     JsonType,
     NumpyArray,
     RobotPosition,
 )
-
-_LOGGER = logging.getLogger(__name__)
 
 
 class ImageDraw:

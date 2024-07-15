@@ -1,17 +1,17 @@
 """
-Image Handler Class.
+Hypfer Image Handler Class.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Version: 2024.07.0
+Version: 2024.07.1
 """
 
 from __future__ import annotations
 
 import json
-import logging
 
 from PIL import Image, ImageOps
 
+from custom_components.mqtt_vacuum_camera.const import _LOGGER
 from custom_components.mqtt_vacuum_camera.types import (
     CalibrationPoints,
     ChargerPosition,
@@ -20,6 +20,7 @@ from custom_components.mqtt_vacuum_camera.types import (
     NumpyArray,
     RobotPosition,
     RoomsProperties,
+    TrimCropData,
 )
 from custom_components.mqtt_vacuum_camera.utils.colors_man import color_grey
 from custom_components.mqtt_vacuum_camera.utils.drawable import Drawable
@@ -31,8 +32,6 @@ from custom_components.mqtt_vacuum_camera.valetudo.hypfer.handler_utils import (
 from custom_components.mqtt_vacuum_camera.valetudo.hypfer.image_draw import (
     ImageDraw as ImDraw,
 )
-
-_LOGGER = logging.getLogger(__name__)
 
 
 class MapImageHandler(object):
@@ -88,7 +87,7 @@ class MapImageHandler(object):
             self.crop_area = [0, 0, image_array.shape[1], image_array.shape[0]]
             self.img_size = (image_array.shape[1], image_array.shape[0])
             raise TrimError(
-                f"Trimming failed at rotation {rotate}. Reverting to original image.",
+                f"{file_name}: Trimming failed at rotation {rotate}.",
                 image_array,
             )
 
@@ -136,13 +135,9 @@ class MapImageHandler(object):
                     return e.image
 
                 # Store Crop area of the original image_array we will use from the next frame.
-                self.auto_crop = [
-                    self.trim_left,
-                    self.trim_up,
-                    self.trim_right,
-                    self.trim_down,
-                ]
-
+                self.auto_crop = TrimCropData(
+                    self.trim_left, self.trim_up, self.trim_right, self.trim_down
+                ).to_list()
             # If it is needed to zoom the image.
             trimmed = await self.imu.async_check_if_zoom_is_on(
                 image_array, margin_size, zoom

@@ -1,7 +1,6 @@
 """mqtt vacuum camera"""
 
 import glob
-import logging
 import os
 import shutil
 
@@ -23,6 +22,7 @@ from .common import (
     update_options,
 )
 from .const import (
+    _LOGGER,
     CAMERA_STORAGE,
     CONF_MQTT_HOST,
     CONF_MQTT_PASS,
@@ -36,8 +36,6 @@ from .utils.users_data import (
     async_get_translations_vacuum_id,
     async_rename_room_description,
 )
-
-_LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = [Platform.CAMERA]
 
