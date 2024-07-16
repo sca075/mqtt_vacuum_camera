@@ -1,9 +1,8 @@
-"""Snapshot Version 2024.06.3"""
+"""Snapshot Version 2024.07.1"""
 
 import asyncio
 from asyncio import gather, get_event_loop
 import concurrent.futures
-import logging
 import os
 import shutil
 import zipfile
@@ -14,12 +13,11 @@ from custom_components.mqtt_vacuum_camera.common import (
     async_write_file_to_disk,
     async_write_json_to_disk,
 )
+from custom_components.mqtt_vacuum_camera.const import CAMERA_STORAGE, _LOGGER
 from custom_components.mqtt_vacuum_camera.types import Any, JsonType, PilPNG
 from custom_components.mqtt_vacuum_camera.utils.users_data import (
     async_write_languages_json,
 )
-
-_LOGGER = logging.getLogger(__name__)  # Create a logger instance
 
 
 class Snapshots:
@@ -33,7 +31,7 @@ class Snapshots:
         self.hass = hass
         self._shared = shared
         self._directory_path = hass.config.path()
-        self.storage_path = f"{hass.config.path(STORAGE_DIR)}/valetudo_camera"
+        self.storage_path = hass.config.path(STORAGE_DIR, CAMERA_STORAGE)
         if not os.path.exists(self.storage_path):
             self._storage_path = f"{self._directory_path}/{STORAGE_DIR}"
         self.file_name = self._shared.file_name

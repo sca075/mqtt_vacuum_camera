@@ -29,7 +29,7 @@ class CameraProcessor:
 
     def __init__(self, hass, camera_shared):
         self.hass = hass
-        self._map_handler = MapImageHandler(camera_shared)
+        self._map_handler = MapImageHandler(camera_shared, hass)
         self._re_handler = ReImageHandler(camera_shared)
         self._shared = camera_shared
         self._file_name = self._shared.file_name

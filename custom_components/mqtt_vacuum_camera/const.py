@@ -35,7 +35,9 @@ CONF_AUTO_ZOOM = "auto_zoom"
 CONF_ZOOM_LOCK_RATIO = "zoom_lock_ratio"
 ICON = "mdi:camera"
 NAME = "MQTT Vacuum Camera"
-_LOGGER = logging.getLogger(__name__)
+
+# Logger
+_LOGGER = logging.getLogger(DOMAIN)
 
 DEFAULT_VALUES = {
     "rotate_image": "0",
