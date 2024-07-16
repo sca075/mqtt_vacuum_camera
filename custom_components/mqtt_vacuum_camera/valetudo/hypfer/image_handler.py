@@ -101,6 +101,33 @@ class MapImageHandler(object):
                 image_array,
             )
 
+    async def async_auto_crop_data(self):
+        """Load the auto crop data from the disk."""
+        try:
+            if os.path.exists(self.path_to_data) and self.auto_crop is None:
+                temp_data = await async_load_file(self.path_to_data, True)
+                if temp_data is not None:
+                    trims_data = TrimCropData.from_dict(dict(temp_data)).to_list()
+                    self.trim_left, self.trim_up, self.trim_right, self.trim_down = trims_data
+                    return trims_data
+                else:
+                    _LOGGER.error("Trim data file is empty or corrupted.")
+                    return None
+        except Exception as e:
+            _LOGGER.error(f"Failed to load trim data due to an error: {e}")
+            return None
+
+    async def async_save_auto_crop_data(self):
+        """Save the auto crop data to the disk."""
+        if not os.path.exists(self.path_to_data):
+            _LOGGER.debug("Writing crop data to disk")
+            data = TrimCropData(
+                self.trim_left, self.trim_up, self.trim_right, self.trim_down
+            ).to_dict()
+            await async_write_json_to_disk(
+                self.path_to_data, data
+            )
+
     async def async_auto_trim_and_zoom_image(
             self,
             image_array: NumpyArray,
@@ -112,13 +139,9 @@ class MapImageHandler(object):
         """
         Automatically crops and trims a numpy array and returns the processed image.
         """
-        # if os.path.exists(self.path_to_data) and self.auto_crop is None:
-        #     temp_data = await async_load_file(self.path_to_data, True)
-        #     _LOGGER.debug(temp_data)
-        #     self.auto_crop = TrimCropData.from_dict(dict(temp_data)).to_list()
-        #     _LOGGER.debug(self.auto_crop)
         try:
-            if not self.auto_crop:
+            self.auto_crop = await self.async_auto_crop_data()
+            if self.auto_crop is None:
                 # Find the coordinates of the first occurrence of a non-background color
                 min_y, min_x, max_x, max_y = await self.imu.async_image_margins(
                     image_array, detect_colour
@@ -153,14 +176,7 @@ class MapImageHandler(object):
                 self.auto_crop = TrimCropData(
                     self.trim_left, self.trim_up, self.trim_right, self.trim_down
                 ).to_list()
-                # if not os.path.exists(self.path_to_data):
-                #     _LOGGER.debug("Writing crop data to disk")
-                #     data = TrimCropData(
-                #         self.trim_left, self.trim_up, self.trim_right, self.trim_down
-                #     ).to_dict()
-                #     await async_write_json_to_disk(
-                #         self.path_to_data, data
-                #     )
+                await self.async_save_auto_crop_data()
             # If it is needed to zoom the image.
             trimmed = await self.imu.async_check_if_zoom_is_on(
                 image_array, margin_size, zoom
