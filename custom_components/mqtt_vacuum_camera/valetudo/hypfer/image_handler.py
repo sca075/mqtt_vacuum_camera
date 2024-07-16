@@ -17,7 +17,10 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import STORAGE_DIR
 
 from custom_components.mqtt_vacuum_camera.const import CAMERA_STORAGE
-from custom_components.mqtt_vacuum_camera.common import async_write_json_to_disk, async_load_file
+from custom_components.mqtt_vacuum_camera.common import (
+    async_write_json_to_disk,
+    async_load_file,
+)
 from custom_components.mqtt_vacuum_camera.types import (
     CalibrationPoints,
     ChargerPosition,
@@ -38,6 +41,7 @@ from custom_components.mqtt_vacuum_camera.valetudo.hypfer.handler_utils import (
 from custom_components.mqtt_vacuum_camera.valetudo.hypfer.image_draw import (
     ImageDraw as ImDraw,
 )
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -50,8 +54,9 @@ class MapImageHandler(object):
         self.hass = hass
         self.shared = shared_data  # camera shared data
         self.file_name = shared_data.file_name  # file name of the vacuum.
-        self.path_to_data = self.hass.config.path(STORAGE_DIR, CAMERA_STORAGE,
-                                                  f"auto_crop_{self.file_name}.json")  # path to the data
+        self.path_to_data = self.hass.config.path(
+            STORAGE_DIR, CAMERA_STORAGE, f"auto_crop_{self.file_name}.json"
+        )  # path to the data
         self.auto_crop = None  # auto crop data to be calculate once.
         self.calibration_data = None  # camera shared data.
         self.charger_pos = None  # vacuum data charger position.
@@ -88,7 +93,7 @@ class MapImageHandler(object):
         self.imu = ImUtils(self)
 
     def check_trim(
-            self, trimmed_height, trimmed_width, margin_size, image_array, file_name, rotate
+        self, trimmed_height, trimmed_width, margin_size, image_array, file_name, rotate
     ):
         """
         Check if the trimming is okay.
@@ -101,14 +106,35 @@ class MapImageHandler(object):
                 image_array,
             )
 
-    async def async_auto_crop_data(self):
+    def __calculate_trimmed_dimensions(self):
+        """Calculate and update the dimensions after trimming."""
+        trimmed_width = max(0, self.trim_right - self.trim_left)
+        trimmed_height = max(0, self.trim_down - self.trim_up)
+
+        # Ensure shared reference dimensions are updated
+        if hasattr(self.shared, "image_ref_height") and hasattr(
+            self.shared, "image_ref_width"
+        ):
+            self.shared.image_ref_height = trimmed_height
+            self.shared.image_ref_width = trimmed_width
+        else:
+            _LOGGER.warning(
+                "Shared attributes for image dimensions are not initialized."
+            )
+        return trimmed_width, trimmed_height
+
+    async def __async_auto_crop_data(self):
         """Load the auto crop data from the disk."""
         try:
             if os.path.exists(self.path_to_data) and self.auto_crop is None:
                 temp_data = await async_load_file(self.path_to_data, True)
                 if temp_data is not None:
                     trims_data = TrimCropData.from_dict(dict(temp_data)).to_list()
-                    self.trim_left, self.trim_up, self.trim_right, self.trim_down = trims_data
+                    self.trim_left, self.trim_up, self.trim_right, self.trim_down = (
+                        trims_data
+                    )
+                    # Calculate the dimensions after trimming using min/max values
+                    _, _ = self.__calculate_trimmed_dimensions()
                     return trims_data
                 else:
                     _LOGGER.error("Trim data file is empty or corrupted.")
@@ -117,30 +143,37 @@ class MapImageHandler(object):
             _LOGGER.error(f"Failed to load trim data due to an error: {e}")
             return None
 
-    async def async_save_auto_crop_data(self):
+    async def __init_auto_crop(self):
+        if self.auto_crop is None:
+            _LOGGER.debug(f"{self.file_name}: Trying to load crop data from disk")
+            self.auto_crop = await self.__async_auto_crop_data()
+        return self.auto_crop
+
+    async def __async_save_auto_crop_data(self):
         """Save the auto crop data to the disk."""
-        if not os.path.exists(self.path_to_data):
-            _LOGGER.debug("Writing crop data to disk")
-            data = TrimCropData(
-                self.trim_left, self.trim_up, self.trim_right, self.trim_down
-            ).to_dict()
-            await async_write_json_to_disk(
-                self.path_to_data, data
-            )
+        try:
+            if not os.path.exists(self.path_to_data):
+                _LOGGER.debug("Writing crop data to disk")
+                data = TrimCropData(
+                    self.trim_left, self.trim_up, self.trim_right, self.trim_down
+                ).to_dict()
+                await async_write_json_to_disk(self.path_to_data, data)
+        except Exception as e:
+            _LOGGER.error(f"Failed to save trim data due to an error: {e}")
 
     async def async_auto_trim_and_zoom_image(
-            self,
-            image_array: NumpyArray,
-            detect_colour: Color = color_grey,
-            margin_size: int = 0,
-            rotate: int = 0,
-            zoom: bool = False,
+        self,
+        image_array: NumpyArray,
+        detect_colour: Color = color_grey,
+        margin_size: int = 0,
+        rotate: int = 0,
+        zoom: bool = False,
     ):
         """
         Automatically crops and trims a numpy array and returns the processed image.
         """
         try:
-            self.auto_crop = await self.async_auto_crop_data()
+            await self.__init_auto_crop()
             if self.auto_crop is None:
                 # Find the coordinates of the first occurrence of a non-background color
                 min_y, min_x, max_x, max_y = await self.imu.async_image_margins(
@@ -154,10 +187,7 @@ class MapImageHandler(object):
                 del min_y, min_x, max_x, max_y
 
                 # Calculate the dimensions after trimming using min/max values
-                trimmed_width = max(0, self.trim_right - self.trim_left)
-                trimmed_height = max(0, self.trim_down - self.trim_up)
-                self.shared.image_ref_height = trimmed_height
-                self.shared.image_ref_width = trimmed_width
+                trimmed_width, trimmed_height = self.__calculate_trimmed_dimensions()
 
                 # Test if the trims are okay or not
                 try:
@@ -176,7 +206,7 @@ class MapImageHandler(object):
                 self.auto_crop = TrimCropData(
                     self.trim_left, self.trim_up, self.trim_right, self.trim_down
                 ).to_list()
-                await self.async_save_auto_crop_data()
+                await self.__async_save_auto_crop_data()  # Save the crop data to the disk
             # If it is needed to zoom the image.
             trimmed = await self.imu.async_check_if_zoom_is_on(
                 image_array, margin_size, zoom
@@ -247,8 +277,8 @@ class MapImageHandler(object):
 
     # noinspection PyUnresolvedReferences,PyUnboundLocalVariable
     async def async_get_image_from_json(
-            self,
-            m_json: json | None,
+        self,
+        m_json: json | None,
     ) -> Image.Image | None:
         """Get the image from the JSON data.
         It uses the ImageDraw class to draw some of the elements of the image.
@@ -386,11 +416,11 @@ class MapImageHandler(object):
                 del img_np_array
             # reduce the image size if the zoomed image is bigger then the original.
             if (
-                    self.shared.image_auto_zoom
-                    and self.shared.vacuum_state == "cleaning"
-                    and self.zooming
-                    and self.shared.image_zoom_lock_ratio
-                    or self.shared.image_aspect_ratio != "None"
+                self.shared.image_auto_zoom
+                and self.shared.vacuum_state == "cleaning"
+                and self.zooming
+                and self.shared.image_zoom_lock_ratio
+                or self.shared.image_aspect_ratio != "None"
             ):
                 width = self.shared.image_ref_width
                 height = self.shared.image_ref_height
@@ -492,7 +522,7 @@ class MapImageHandler(object):
         return calibration_data
 
     async def async_map_coordinates_offset(
-            self, wsf: int, hsf: int, width: int, height: int
+        self, wsf: int, hsf: int, width: int, height: int
     ) -> tuple[int, int]:
         """
         Offset the coordinates to the map.

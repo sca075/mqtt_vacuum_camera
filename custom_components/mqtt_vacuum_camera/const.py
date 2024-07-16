@@ -38,7 +38,7 @@ ICON = "mdi:camera"
 NAME = "MQTT Vacuum Camera"
 
 # Logger
-caller_name = inspect.stack()[1].frame.f_globals['__name__']
+caller_name = inspect.stack()[1].frame.f_globals["__name__"]
 _LOGGER = logging.getLogger(caller_name)
 
 DEFAULT_VALUES = {

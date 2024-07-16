@@ -22,7 +22,6 @@ from .common import (
     update_options,
 )
 from .const import (
-    _LOGGER,
     CAMERA_STORAGE,
     CONF_MQTT_HOST,
     CONF_MQTT_PASS,
@@ -31,6 +30,7 @@ from .const import (
     CONF_VACUUM_CONNECTION_STRING,
     CONF_VACUUM_IDENTIFIERS,
     DOMAIN,
+    _LOGGER,
 )
 from .utils.users_data import (
     async_get_translations_vacuum_id,
@@ -260,7 +260,7 @@ async def async_setup_entry(
     hass.data[DOMAIN][entry.entry_id] = hass_data
 
     # Forward the setup to the camera platform.
-    hass.async_create_task(
+    await hass.async_create_task(
         hass.config_entries.async_forward_entry_setups(entry, ["camera"])
     )
     return True
