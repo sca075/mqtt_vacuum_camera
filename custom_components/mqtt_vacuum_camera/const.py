@@ -1,6 +1,6 @@
 """Constants for the mqtt_vacuum_camera integration."""
 
-from homeassistant.components import logger
+import logging
 
 """Version v2024.07.1"""
 
@@ -37,7 +37,7 @@ ICON = "mdi:camera"
 NAME = "MQTT Vacuum Camera"
 
 # Logger
-_LOGGER = logger.helpers.get_logger(DOMAIN)
+_LOGGER = logging.getLogger(DOMAIN)
 
 DEFAULT_VALUES = {
     "rotate_image": "0",
