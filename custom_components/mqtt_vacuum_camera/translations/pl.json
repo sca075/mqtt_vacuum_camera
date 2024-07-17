@@ -238,7 +238,8 @@
         "opt_1": "Skonfiguruj Przesuni\u0119cie Obrazu",
         "opt_2": "Skonfiguruj Tekst Statusu",
         "opt_3": "Kopiuj Dzienniki Kamery do www",
-        "opt_4": "Zmie\u0144 Nazwy Opcji Kolor\u00f3w"
+        "opt_4": "Zmie\u0144 Nazwy Opcji Kolor\u00f3w",
+        "opt_5": "Zresetuj przycięcia mapy"
       }
     },
     "camera_logs_progres": {

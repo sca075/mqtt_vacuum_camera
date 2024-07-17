@@ -238,7 +238,8 @@
         "opt_1": "Configure Offset Image",
         "opt_2": "Configure Status Text",
         "opt_3": "Copy Camera Logs to www",
-        "opt_4": "Rename Colour Options"
+        "opt_4": "Rename Colour Options",
+        "opt_5": "Reset Map Trims"
       }
     },
     "camera_logs_progres": {

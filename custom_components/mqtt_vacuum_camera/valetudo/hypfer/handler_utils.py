@@ -1,16 +1,19 @@
 """
 Image Utils Class for Valetudo Hypfer Image Handling.
 This class is used to simplify the ImageHandler class.
-Version: 2024.07.1
+Version: 2024.07.2
 """
 
 from __future__ import annotations
 
+import logging
+
 import numpy as np
 from numpy import rot90
 
-from custom_components.mqtt_vacuum_camera.const import _LOGGER
 from custom_components.mqtt_vacuum_camera.types import Color, NumpyArray
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class TrimError(Exception):

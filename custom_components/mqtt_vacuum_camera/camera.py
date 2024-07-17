@@ -1,6 +1,6 @@
 """
 Camera
-Version: v2024.07.1
+Version: v2024.07.2
 Image Processing Threading implemented on Version 1.5.7.
 """
 
@@ -10,9 +10,9 @@ import asyncio
 from asyncio import gather, get_event_loop
 import concurrent.futures
 from datetime import timedelta
-import logging
 from io import BytesIO
 import json
+import logging
 import os
 import platform
 import time

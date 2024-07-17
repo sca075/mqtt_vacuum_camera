@@ -238,7 +238,8 @@
         "opt_1": "Configura Spostamento Immagine",
         "opt_2": "Configura Testo di Stato",
         "opt_3": "Copia i Log della Fotocamera su www",
-        "opt_4": "Rinomina Opzioni di Colore"
+        "opt_4": "Rinomina Opzioni di Colore",
+        "opt_5": "Reimposta trims della mappa"
       }
     },
     "camera_logs_progres": {

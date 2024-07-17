@@ -1,10 +1,11 @@
-"""config_flow 2024.07.1
+"""config_flow 2024.07.2
 IMPORTANT: Maintain code when adding new options to the camera
 it will be mandatory to update const.py and common.py update_options.
 Format of the new constants must be CONST_NAME = "const_name" update also
 sting.json and en.json please.
 """
 
+import logging
 import os
 import shutil
 from typing import Any, Dict, Optional
@@ -36,7 +37,6 @@ from .common import (
     update_options,
 )
 from .const import (
-    _LOGGER,
     ALPHA_BACKGROUND,
     ALPHA_CHARGER,
     ALPHA_GO_TO,
@@ -86,7 +86,13 @@ from .const import (
     ROTATION_VALUES,
     TEXT_SIZE_VALUES,
 )
-from .utils.users_data import async_get_rooms_count, async_rename_room_description
+from .utils.users_data import (
+    async_del_file,
+    async_get_rooms_count,
+    async_rename_room_description,
+)
+
+_LOGGER = logging.getLogger(__name__)
 
 VACUUM_SCHEMA = vol.Schema(
     {
@@ -339,7 +345,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         """
         _LOGGER.info(f"{self.config_entry.unique_id}: Options Configuration Started.")
         errors = {}
-        self.number_of_rooms = await async_get_rooms_count(self.file_name)
+
+        self.number_of_rooms = await async_get_rooms_count(self.hass, self.file_name)
         if (
             not isinstance(self.number_of_rooms, int)
             or self.number_of_rooms < DEFAULT_ROOMS
@@ -419,6 +426,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 return await self.async_step_download_logs()
             elif next_action == "opt_4":
                 return await self.async_rename_translations()
+            elif next_action == "opt_5":
+                return await self.async_reset_map_trims()
             elif next_action == "more options":
                 """
                 From TAPO custom control component, this is,
@@ -435,6 +444,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 {"label": "configure_status_text", "value": "opt_2"},
                 {"label": "copy_camera_logs_to_www", "value": "opt_3"},
                 {"label": "rename_colours_descriptions", "value": "opt_4"},
+                {"label": "reset_map_trims", "value": "opt_5"},
             ],
             mode=SelectSelectorMode.LIST,
             translation_key="camera_config_advanced",
@@ -790,11 +800,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         camera_id = self.unique_id.split("_")
         file_name = camera_id[0].lower() + ".zip"
         destination_path = f"{ha_dir}/www/{file_name}"
-        if os.path.exists(destination_path):
-            _LOGGER.info(f"Logs removed: {destination_path}")
-            os.remove(destination_path)
-        else:
-            _LOGGER.debug(f"Logs not found: {destination_path}")
+        await async_del_file(destination_path)
         self.options = self.bk_options
         return await self.async_step_opt_save()
 
@@ -828,12 +834,11 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             errors=errors,
         )
 
-    async def async_rename_translations(self):
+    async def async_rename_translations(self, user_input=None):
         """
         Copy the logs from .storage to www config folder.
         """
         hass = self.hass
-        user_input = None
         storage_path = hass.config.path(STORAGE_DIR, CAMERA_STORAGE)
         _LOGGER.debug(f"Looking for Storage Path: {storage_path}")
         if (user_input is None) and self.bk_options:
@@ -845,6 +850,22 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             return await self.async_step_opt_save()
 
         return self.async_show_form(step_id="rename_translations")
+
+    async def async_reset_map_trims(self, user_input=None):
+        """
+        Reset the map trims.
+        """
+        if (user_input is None) and self.bk_options:
+            if self.hass:
+                _LOGGER.debug("Resetting the map trims.")
+                file_path = self.hass.config.path(
+                    STORAGE_DIR, CAMERA_STORAGE, f"auto_crop_{self.file_name}.json"
+                )
+                await async_del_file(file_path)
+                self.options = self.bk_options
+            return await self.async_step_opt_save()
+
+        return self.async_show_form(step_id="reset_map_trims")
 
     async def async_step_opt_save(self):
         """

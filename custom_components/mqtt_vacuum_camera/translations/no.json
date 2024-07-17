@@ -238,7 +238,8 @@
         "opt_1": "Konfigurer Bilde Offset",
         "opt_2": "Konfigurer Status Tekst",
         "opt_3": "Kopier Kamera Logger til www",
-        "opt_4": "Gi nytt navn til Fargealternativer"
+        "opt_4": "Gi nytt navn til Fargealternativer",
+        "opt_5": "Tilbakestill karttrim"
       }
     },
     "camera_logs_progres": {
