@@ -238,7 +238,8 @@
         "opt_1": "Configurar Desplazamiento de Imagen",
         "opt_2": "Configurar Texto de Estado",
         "opt_3": "Copiar Registros de la Cámara a www",
-        "opt_4": "Renombrar Opciones de Colores"
+        "opt_4": "Renombrar Opciones de Colores",
+        "opt_5": "Restablecer recortes del mapa"
       }
     },
     "camera_logs_progres": {

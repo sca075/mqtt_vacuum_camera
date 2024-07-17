@@ -238,7 +238,8 @@
         "opt_1": "Bildversatz konfigurieren",
         "opt_2": "Status-Text konfigurieren",
         "opt_3": "Kameraprotokolle in www kopieren",
-        "opt_4": "Farben umbenennen"
+        "opt_4": "Farben umbenennen",
+        "opt_5": "Kartenzuschnitte zurücksetzen"
       }
     },
     "camera_logs_progres": {

@@ -238,7 +238,8 @@
         "opt_1": "Beeld offset instellen",
         "opt_2": "Status Tekst instellen",
         "opt_3": "Kopieer Camera Logs naar www",
-        "opt_4": "Kleur Opties hernoemen"
+        "opt_4": "Kleur Opties hernoemen",
+        "opt_5": "Kaartbijsnijdingen resetten"
       }
     },
     "camera_logs_progres": {

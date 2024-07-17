@@ -238,7 +238,8 @@
         "opt_1": "Configurer le décalage de l'image",
         "opt_2": "Configurer le texte d'état",
         "opt_3": "Copier les journaux de la caméra vers www",
-        "opt_4": "Renommer les options de couleur"
+        "opt_4": "Renommer les options de couleur",
+        "opt_5": "Réinitialiser les découpes de la carte"
       }
     },
     "camera_logs_progres": {

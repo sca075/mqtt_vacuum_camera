@@ -238,7 +238,8 @@
             "opt_1": "Konfigurera bildoffset",
             "opt_2": "Konfigurera statustext",
             "opt_3": "Kopiera kamerajournaler till www",
-            "opt_4": "Döp om färgalternativ"
+            "opt_4": "Döp om färgalternativ",
+            "opt_5": "Återställ karttrimningar"
          }
       },
       "camera_logs_progres": {
