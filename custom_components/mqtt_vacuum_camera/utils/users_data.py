@@ -3,15 +3,15 @@ Common functions for the MQTT Vacuum Camera integration.
 Those functions are used to store and retrieve user data from the Home Assistant storage.
 The data will be stored locally in the Home Assistant in .storage/valetudo_camera directory.
 Author: @sca075
-Version: 2024.07.1
+Version: 2024.07.2
 """
 
 from __future__ import annotations
 
 import glob
 import json
-import os
 import logging
+import os
 from typing import Optional
 
 from homeassistant.core import HomeAssistant
@@ -21,10 +21,7 @@ from custom_components.mqtt_vacuum_camera.common import (
     async_load_file,
     async_write_json_to_disk,
 )
-from custom_components.mqtt_vacuum_camera.const import (
-    CAMERA_STORAGE,
-    DEFAULT_ROOMS,
-)
+from custom_components.mqtt_vacuum_camera.const import CAMERA_STORAGE, DEFAULT_ROOMS
 
 _LOGGER = logging.getLogger(__name__)
 

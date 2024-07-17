@@ -5,8 +5,8 @@ Format of the new constants must be CONST_NAME = "const_name" update also
 sting.json and en.json please.
 """
 
-import os
 import logging
+import os
 import shutil
 from typing import Any, Dict, Optional
 
@@ -87,9 +87,9 @@ from .const import (
     TEXT_SIZE_VALUES,
 )
 from .utils.users_data import (
+    async_del_file,
     async_get_rooms_count,
     async_rename_room_description,
-    async_del_file,
 )
 
 _LOGGER = logging.getLogger(__name__)

@@ -1,8 +1,9 @@
-"""Snapshot Version 2024.07.1"""
+"""Snapshot Version 2024.07.2"""
 
 import asyncio
 from asyncio import gather, get_event_loop
 import concurrent.futures
+import logging
 import os
 import shutil
 import zipfile
@@ -13,11 +14,13 @@ from custom_components.mqtt_vacuum_camera.common import (
     async_write_file_to_disk,
     async_write_json_to_disk,
 )
-from custom_components.mqtt_vacuum_camera.const import CAMERA_STORAGE, _LOGGER
+from custom_components.mqtt_vacuum_camera.const import CAMERA_STORAGE
 from custom_components.mqtt_vacuum_camera.types import Any, JsonType, PilPNG
 from custom_components.mqtt_vacuum_camera.utils.users_data import (
     async_write_languages_json,
 )
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class Snapshots:
@@ -33,32 +36,41 @@ class Snapshots:
         self._directory_path = hass.config.path()
         self.storage_path = hass.config.path(STORAGE_DIR, CAMERA_STORAGE)
         if not os.path.exists(self.storage_path):
-            self._storage_path = f"{self._directory_path}/{STORAGE_DIR}"
+            try:
+                os.makedirs(self.storage_path)
+            except Exception as e:
+                _LOGGER.warning(
+                    "Snapshot Error while creating storage folder: %s", str(e)
+                )
+                self._storage_path = hass.config.path(STORAGE_DIR)
         self.file_name = self._shared.file_name
         self.snapshot_img = f"{self.storage_path}/{self.file_name}.png"
         self._first_run = True
 
-    async def async_get_room_data(self) -> None:
+    async def async_save_room_data(self) -> bool:
         """Get the Vacuum Rooms data and save it to a file."""
-        vacuum_id = self.file_name
         # New file room_data to be saved / updated
-        data_file_path = os.path.join(self.storage_path, f"room_data_{vacuum_id}.json")
+        data_file_path = os.path.join(
+            self.storage_path, f"room_data_{self.file_name}.json"
+        )
         un_formated_room_data = self._shared.map_rooms
         if not un_formated_room_data:
-            _LOGGER.debug(f"No rooms data found for {vacuum_id} to save.")
-            return
-        room_data = {"segments": len(un_formated_room_data), "rooms": {}}
-        for room_id, room_info in un_formated_room_data.items():
-            room_data["rooms"][room_id] = {
-                "number": room_info["number"],
-                "name": room_info["name"],
-            }
-        if room_data:
+            _LOGGER.debug(f"No rooms data found for {self.file_name} to save.")
+            return False
+        else:
             try:
-                await async_write_json_to_disk(data_file_path, room_data)
-                _LOGGER.info(f"\nRooms data of {vacuum_id} saved to {data_file_path}")
+                room_data = {"segments": len(un_formated_room_data), "rooms": {}}
+                for room_id, room_info in un_formated_room_data.items():
+                    room_data["rooms"][room_id] = {
+                        "number": room_info["number"],
+                        "name": room_info["name"],
+                    }
+                if room_data:
+                    await async_write_json_to_disk(data_file_path, room_data)
+                    return True
             except Exception as e:
-                _LOGGER.warning(f"Failed to save rooms data of {vacuum_id}: {e}")
+                _LOGGER.warning(f"Failed to save rooms data of {self.file_name}: {e}")
+                return False
 
     async def async_get_filtered_logs(self):
         """Make a copy of home-assistant.log to home-assistant.tmp"""
@@ -89,18 +101,17 @@ class Snapshots:
     async def async_get_data(self, file_name: str, json_data: JsonType) -> Any:
         """Get the data to compose the snapshot logs."""
 
-        # Create the storage folder if it doesn't exist
-        if not os.path.exists(self.storage_path):
-            os.makedirs(self.storage_path)
-
         try:
             # Save the users languages data if the Camera is the first run
             if self._first_run:
                 self._first_run = False
-                _LOGGER.info(f"Getting {file_name} users languages data.")
+                _LOGGER.info(f"Writing {file_name} users languages data.")
                 await async_write_languages_json(self.hass)
                 _LOGGER.info(f"Getting {file_name} rooms data.")
-                await self.async_get_room_data()
+                if await self.async_save_room_data():
+                    _LOGGER.info(f"Rooms data saved for {file_name}.")
+                else:
+                    _LOGGER.info(f"Error in rooms data save for {file_name}.")
 
             # Save JSON data to a file
             if json_data:

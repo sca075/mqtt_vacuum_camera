@@ -16,6 +16,7 @@ from custom_components.mqtt_vacuum_camera.types import (
     NumpyArray,
     RobotPosition,
 )
+
 _LOGGER = logging.getLogger(__name__)
 
 

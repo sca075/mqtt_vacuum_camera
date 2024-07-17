@@ -7,6 +7,7 @@ Version: 2024.07.2
 from __future__ import annotations
 
 import logging
+
 import numpy as np
 from numpy import rot90
 

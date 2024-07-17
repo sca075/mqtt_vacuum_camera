@@ -1,6 +1,6 @@
 """
 Multiprocessing module
-Version: v2024.06.0
+Version: v2024.07.2
 This module provide the image multiprocessing in order to
 avoid the overload of the main_thread of Home Assistant.
 """
@@ -8,10 +8,10 @@ avoid the overload of the main_thread of Home Assistant.
 from __future__ import annotations
 
 import asyncio
+import logging
 from asyncio import gather, get_event_loop
 import concurrent.futures
 
-from .const import _LOGGER
 from .types import Color, JsonType, PilPNG
 from .utils.drawable import Drawable as Draw
 from .utils.status_text import StatusText
@@ -19,6 +19,7 @@ from .utils.users_data import async_get_active_user_language
 from .valetudo.hypfer.image_handler import MapImageHandler
 from .valetudo.rand256.image_handler import ReImageHandler
 
+_LOGGER = logging.getLogger(__name__)
 _LOGGER.propagate = True
 
 
@@ -76,7 +77,8 @@ class CameraProcessor:
 
                 self._shared.current_room = self._map_handler.get_robot_position()
                 self._shared.map_rooms = self._map_handler.room_propriety
-
+                if self._shared.map_rooms:
+                    _LOGGER.debug(f"{self._file_name}: State attributes rooms updated")
                 if not self._shared.image_size:
                     self._shared.image_size = self._map_handler.get_img_size()
 

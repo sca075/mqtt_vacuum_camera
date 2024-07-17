@@ -8,19 +8,18 @@ Version: 2024.07.2
 from __future__ import annotations
 
 import json
-import os.path
 import logging
+import os.path
 
 from PIL import Image, ImageOps
-
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import STORAGE_DIR
 
-from custom_components.mqtt_vacuum_camera.const import CAMERA_STORAGE
 from custom_components.mqtt_vacuum_camera.common import (
-    async_write_json_to_disk,
     async_load_file,
+    async_write_json_to_disk,
 )
+from custom_components.mqtt_vacuum_camera.const import CAMERA_STORAGE
 from custom_components.mqtt_vacuum_camera.types import (
     CalibrationPoints,
     ChargerPosition,
@@ -110,10 +109,14 @@ class MapImageHandler(object):
         """Calculate and update the dimensions after trimming."""
         trimmed_width = max(
             0,
-            ((self.trim_right - self.offset_right) - (self.trim_left + self.offset_left))
+            (
+                (self.trim_right - self.offset_right)
+                - (self.trim_left + self.offset_left)
+            ),
         )
         trimmed_height = max(
-            0, ((self.trim_down - self.offset_bottom) - (self.trim_up + self.offset_top))
+            0,
+            ((self.trim_down - self.offset_bottom) - (self.trim_up + self.offset_top)),
         )
 
         # Ensure shared reference dimensions are updated
@@ -157,7 +160,9 @@ class MapImageHandler(object):
             self.auto_crop[2] -= self.offset_right
             self.auto_crop[3] -= self.offset_bottom
         else:
-            _LOGGER.warning("Auto crop data is not available. Time Out Warning will occurs!")
+            _LOGGER.warning(
+                "Auto crop data is not available. Time Out Warning will occurs!"
+            )
             self.auto_crop = None
 
     async def _init_auto_crop(self):
@@ -223,7 +228,8 @@ class MapImageHandler(object):
 
                 # Store Crop area of the original image_array we will use from the next frame.
                 self.auto_crop = TrimCropData(
-                    self.trim_left, self.trim_up, self.trim_right, self.trim_down).to_list()
+                    self.trim_left, self.trim_up, self.trim_right, self.trim_down
+                ).to_list()
                 await self._async_save_auto_crop_data()  # Save the crop data to the disk
                 self.auto_crop_offset()
             # If it is needed to zoom the image.
