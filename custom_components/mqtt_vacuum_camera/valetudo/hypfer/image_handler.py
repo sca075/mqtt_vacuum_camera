@@ -2,7 +2,7 @@
 Hypfer Image Handler Class.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Version: 2024.07.1
+Version: 2024.07.2
 """
 
 from __future__ import annotations
@@ -106,10 +106,15 @@ class MapImageHandler(object):
                 image_array,
             )
 
-    def __calculate_trimmed_dimensions(self):
+    def _calculate_trimmed_dimensions(self):
         """Calculate and update the dimensions after trimming."""
-        trimmed_width = max(0, self.trim_right - self.trim_left)
-        trimmed_height = max(0, self.trim_down - self.trim_up)
+        trimmed_width = max(
+            0,
+            ((self.trim_right - self.offset_right) - (self.trim_left + self.offset_left))
+        )
+        trimmed_height = max(
+            0, ((self.trim_down - self.offset_bottom) - (self.trim_up + self.offset_top))
+        )
 
         # Ensure shared reference dimensions are updated
         if hasattr(self.shared, "image_ref_height") and hasattr(
@@ -123,7 +128,7 @@ class MapImageHandler(object):
             )
         return trimmed_width, trimmed_height
 
-    async def __async_auto_crop_data(self):
+    async def _async_auto_crop_data(self):
         """Load the auto crop data from the disk."""
         try:
             if os.path.exists(self.path_to_data) and self.auto_crop is None:
@@ -133,23 +138,36 @@ class MapImageHandler(object):
                     self.trim_left, self.trim_up, self.trim_right, self.trim_down = (
                         trims_data
                     )
+
                     # Calculate the dimensions after trimming using min/max values
-                    _, _ = self.__calculate_trimmed_dimensions()
+                    _, _ = self._calculate_trimmed_dimensions()
                     return trims_data
                 else:
-                    _LOGGER.error("Trim data file is empty or corrupted.")
+                    _LOGGER.error("Trim data file is empty.")
                     return None
         except Exception as e:
             _LOGGER.error(f"Failed to load trim data due to an error: {e}")
             return None
 
-    async def __init_auto_crop(self):
+    def auto_crop_offset(self):
+        """Calculate the crop offset."""
+        if self.auto_crop:
+            self.auto_crop[0] += self.offset_left
+            self.auto_crop[1] += self.offset_top
+            self.auto_crop[2] -= self.offset_right
+            self.auto_crop[3] -= self.offset_bottom
+        else:
+            _LOGGER.warning("Auto crop data is not available. Time Out Warning will occurs!")
+            self.auto_crop = None
+
+    async def _init_auto_crop(self):
         if self.auto_crop is None:
             _LOGGER.debug(f"{self.file_name}: Trying to load crop data from disk")
-            self.auto_crop = await self.__async_auto_crop_data()
+            self.auto_crop = await self._async_auto_crop_data()
+            self.auto_crop_offset()
         return self.auto_crop
 
-    async def __async_save_auto_crop_data(self):
+    async def _async_save_auto_crop_data(self):
         """Save the auto crop data to the disk."""
         try:
             if not os.path.exists(self.path_to_data):
@@ -173,21 +191,22 @@ class MapImageHandler(object):
         Automatically crops and trims a numpy array and returns the processed image.
         """
         try:
-            await self.__init_auto_crop()
+            await self._init_auto_crop()
             if self.auto_crop is None:
+                _LOGGER.debug(f"{self.file_name}: Calculating auto trim box")
                 # Find the coordinates of the first occurrence of a non-background color
                 min_y, min_x, max_x, max_y = await self.imu.async_image_margins(
                     image_array, detect_colour
                 )
                 # Calculate and store the trims coordinates with margins
-                self.trim_left = int(min_x) + self.offset_left - margin_size
-                self.trim_up = int(min_y) + self.offset_top - margin_size
-                self.trim_right = int(max_x) - self.offset_right + margin_size
-                self.trim_down = int(max_y) - self.offset_bottom + margin_size
+                self.trim_left = int(min_x) - margin_size
+                self.trim_up = int(min_y) - margin_size
+                self.trim_right = int(max_x) + margin_size
+                self.trim_down = int(max_y) + margin_size
                 del min_y, min_x, max_x, max_y
 
                 # Calculate the dimensions after trimming using min/max values
-                trimmed_width, trimmed_height = self.__calculate_trimmed_dimensions()
+                trimmed_width, trimmed_height = self._calculate_trimmed_dimensions()
 
                 # Test if the trims are okay or not
                 try:
@@ -204,9 +223,9 @@ class MapImageHandler(object):
 
                 # Store Crop area of the original image_array we will use from the next frame.
                 self.auto_crop = TrimCropData(
-                    self.trim_left, self.trim_up, self.trim_right, self.trim_down
-                ).to_list()
-                await self.__async_save_auto_crop_data()  # Save the crop data to the disk
+                    self.trim_left, self.trim_up, self.trim_right, self.trim_down).to_list()
+                await self._async_save_auto_crop_data()  # Save the crop data to the disk
+                self.auto_crop_offset()
             # If it is needed to zoom the image.
             trimmed = await self.imu.async_check_if_zoom_is_on(
                 image_array, margin_size, zoom

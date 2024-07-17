@@ -11,6 +11,7 @@ from __future__ import annotations
 import glob
 import json
 import os
+import logging
 from typing import Optional
 
 from homeassistant.core import HomeAssistant
@@ -21,18 +22,20 @@ from custom_components.mqtt_vacuum_camera.common import (
     async_write_json_to_disk,
 )
 from custom_components.mqtt_vacuum_camera.const import (
-    _LOGGER,
     CAMERA_STORAGE,
     DEFAULT_ROOMS,
 )
 
+_LOGGER = logging.getLogger(__name__)
+
 
 async def async_get_rooms_count(
+    hass: HomeAssistant,
     robot_name: str,
 ) -> int:
     """Get the number of segments in the room_data_{vacuum_id}.json file."""
-    file_path = os.path.join(
-        os.getcwd(), STORAGE_DIR, CAMERA_STORAGE, f"room_data_{robot_name}.json"
+    file_path = hass.config.path(
+        STORAGE_DIR, CAMERA_STORAGE, f"room_data_{robot_name}.json"
     )
     if not os.path.exists(file_path):
         _LOGGER.warning(f"File not found: {file_path}")
@@ -302,7 +305,7 @@ async def async_rename_room_description(
     # Get the languages to modify
     language = await async_load_languages(storage_path)
     _LOGGER.info(f"Languages to modify: {language}")
-    edit_path = hass.config.path(f"custom_components/mqtt_vacuum_camera/translations")
+    edit_path = hass.config.path("custom_components/mqtt_vacuum_camera/translations")
     _LOGGER.info(f"Editing the translations file for language: {language}")
     data_list = await async_load_translations_json(hass, language)
 
@@ -354,3 +357,12 @@ async def async_rename_room_description(
                 f"Room names added to the room descriptions in the {language[idx]} translations."
             )
     return True
+
+
+async def async_del_file(file):
+    """Delete a file if it exists."""
+    if os.path.exists(file):
+        _LOGGER.info(f"Removing the file {file}")
+        os.remove(file)
+    else:
+        _LOGGER.debug(f"File not found: {file}")
