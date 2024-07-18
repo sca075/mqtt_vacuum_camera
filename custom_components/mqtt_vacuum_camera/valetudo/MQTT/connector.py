@@ -1,13 +1,13 @@
 """
-Version: v2024.07.1
+Version: v2024.07.2
 - Removed the PNG decode, the json is extracted from map-data instead of map-data-hass.
 - Tested no influence on the camera performance.
 - Added gzip library used in Valetudo RE data compression.
 """
 
-import logging
 import asyncio
 import json
+import logging
 
 from homeassistant.components import mqtt
 from homeassistant.core import callback

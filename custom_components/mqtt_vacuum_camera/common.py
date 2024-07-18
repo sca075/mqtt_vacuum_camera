@@ -1,13 +1,14 @@
 """
-Common functions for the Valetudo Vacuum Camera integration.
-Version: 2024.07.0
+Common functions for the MQTT Vacuum Camera integration.
+Version: 2024.07.4
 """
 
 from __future__ import annotations
 
-import logging
 import asyncio
 import json
+import logging
+import re
 from typing import Any
 
 from homeassistant.components.mqtt import DOMAIN as MQTT_DOMAIN
@@ -167,3 +168,10 @@ async def async_write_file_to_disk(
         await loop.run_in_executor(None, _write_to_file, file_to_write, data, is_binary)
     except OSError as e:
         _LOGGER.warning(f"Blocking issue detected: {e}")
+
+
+def extract_file_name(unique_id: str) -> str:
+    """Extract from the Camera unique_id the file name."""
+    pattern = re.compile(r"_camera$")
+    file_name = re.sub(pattern, "", unique_id)
+    return file_name.lower()

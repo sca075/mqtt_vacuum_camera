@@ -1,4 +1,4 @@
-"""config_flow 2024.07.2
+"""config_flow 2024.07.4
 IMPORTANT: Maintain code when adding new options to the camera
 it will be mandatory to update const.py and common.py update_options.
 Format of the new constants must be CONST_NAME = "const_name" update also
@@ -31,6 +31,7 @@ from homeassistant.helpers.storage import STORAGE_DIR
 import voluptuous as vol
 
 from .common import (
+    extract_file_name,
     get_device_info,
     get_vacuum_mqtt_topic,
     get_vacuum_unique_id_from_mqtt_topic,
@@ -182,7 +183,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         self.unique_id = self.config_entry.unique_id
         self.options = {}
         self.bk_options = self.config_entry.options
-        self.file_name = self.unique_id.split("_")[0].lower()
+        self.file_name = extract_file_name(self.unique_id)
         self._check_alpha = False
         self.number_of_rooms = DEFAULT_ROOMS
         _LOGGER.debug(

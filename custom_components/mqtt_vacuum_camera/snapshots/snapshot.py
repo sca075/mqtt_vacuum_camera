@@ -1,4 +1,4 @@
-"""Snapshot Version 2024.07.2"""
+"""Snapshot Version 2024.07.4"""
 
 import asyncio
 from asyncio import gather, get_event_loop
@@ -14,7 +14,7 @@ from custom_components.mqtt_vacuum_camera.common import (
     async_write_file_to_disk,
     async_write_json_to_disk,
 )
-from custom_components.mqtt_vacuum_camera.const import CAMERA_STORAGE
+from custom_components.mqtt_vacuum_camera.const import CAMERA_STORAGE, DOMAIN
 from custom_components.mqtt_vacuum_camera.types import Any, JsonType, PilPNG
 from custom_components.mqtt_vacuum_camera.utils.users_data import (
     async_write_languages_json,
@@ -55,7 +55,6 @@ class Snapshots:
         )
         un_formated_room_data = self._shared.map_rooms
         if not un_formated_room_data:
-            _LOGGER.debug(f"No rooms data found for {self.file_name} to save.")
             return False
         else:
             try:
@@ -65,9 +64,16 @@ class Snapshots:
                         "number": room_info["number"],
                         "name": room_info["name"],
                     }
-                if room_data:
+                #### Logger to be removed after testing ####
+                _LOGGER.debug(
+                    f">>>>>>> Number of Segments detected:"
+                    f" {len(un_formated_room_data)}"
+                )
+                if len(un_formated_room_data) >= 1:
                     await async_write_json_to_disk(data_file_path, room_data)
                     return True
+                else:
+                    return False
             except Exception as e:
                 _LOGGER.warning(f"Failed to save rooms data of {self.file_name}: {e}")
                 return False
@@ -86,7 +92,7 @@ class Snapshots:
             if os.path.exists(tmp_log_file_path):
                 with open(tmp_log_file_path) as log_file:
                     for line in log_file:
-                        if "custom_components.mqtt_vacuum_camera" in line:
+                        if f"custom_components.{DOMAIN}" in line:
                             filtered_logs.append(line.strip())
 
                 # Delete the temporary log file
@@ -107,11 +113,10 @@ class Snapshots:
                 self._first_run = False
                 _LOGGER.info(f"Writing {file_name} users languages data.")
                 await async_write_languages_json(self.hass)
-                _LOGGER.info(f"Getting {file_name} rooms data.")
                 if await self.async_save_room_data():
                     _LOGGER.info(f"Rooms data saved for {file_name}.")
                 else:
-                    _LOGGER.info(f"Error in rooms data save for {file_name}.")
+                    _LOGGER.info(f"No rooms data save for {file_name}.")
 
             # Save JSON data to a file
             if json_data:

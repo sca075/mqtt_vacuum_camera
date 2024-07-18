@@ -8,9 +8,9 @@ avoid the overload of the main_thread of Home Assistant.
 from __future__ import annotations
 
 import asyncio
-import logging
 from asyncio import gather, get_event_loop
 import concurrent.futures
+import logging
 
 from .types import Color, JsonType, PilPNG
 from .utils.drawable import Drawable as Draw
