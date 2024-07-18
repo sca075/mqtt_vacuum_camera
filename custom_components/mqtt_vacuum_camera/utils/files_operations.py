@@ -8,19 +8,16 @@ Version: 2024.07.2
 
 from __future__ import annotations
 
+import asyncio
 import glob
 import json
 import logging
 import os
-from typing import Optional
+from typing import Any, Optional
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import STORAGE_DIR
 
-from custom_components.mqtt_vacuum_camera.common import (
-    async_load_file,
-    async_write_json_to_disk,
-)
 from custom_components.mqtt_vacuum_camera.const import CAMERA_STORAGE, DEFAULT_ROOMS
 
 _LOGGER = logging.getLogger(__name__)
@@ -363,3 +360,92 @@ async def async_del_file(file):
         os.remove(file)
     else:
         _LOGGER.debug(f"File not found: {file}")
+
+
+async def async_write_file_to_disk(
+    file_to_write: str, data, is_binary: bool = False
+) -> None:
+    """Asynchronously write data to a file."""
+    loop = asyncio.get_event_loop()
+
+    def _write_to_file(file_path, data_to_write, binary_mode):
+        """Helper function to write data to a file."""
+        if binary_mode:
+            with open(file_path, "wb") as datafile:
+                datafile.write(data_to_write)
+        else:
+            with open(file_path, "w") as datafile:
+                datafile.write(data_to_write)
+
+    try:
+        await loop.run_in_executor(None, _write_to_file, file_to_write, data, is_binary)
+    except OSError as e:
+        _LOGGER.warning(f"Blocking issue detected: {e}")
+
+
+async def async_write_json_to_disk(file_to_write: str, json_data) -> None:
+    """Asynchronously write data to a JSON file."""
+    loop = asyncio.get_event_loop()
+
+    def _write_to_file(file_path, data):
+        """Helper function to write data to a file."""
+        with open(file_path, "w") as datafile:
+            json.dump(data, datafile, indent=2)
+
+    try:
+        await loop.run_in_executor(None, _write_to_file, file_to_write, json_data)
+    except OSError as e:
+        _LOGGER.warning(f"Blocking issue detected: {e}")
+
+
+async def async_load_file(file_to_load: str, is_json: bool = False) -> Any:
+    """Asynchronously load JSON data from a file."""
+    loop = asyncio.get_event_loop()
+
+    def read_file(my_file: str, read_json: bool = False):
+        """Helper function to read data from a file."""
+        try:
+            if read_json:
+                with open(my_file) as file:
+                    return json.load(file)
+            else:
+                with open(my_file) as file:
+                    return file.read()
+        except (FileNotFoundError, json.JSONDecodeError):
+            _LOGGER.warning(f"{my_file} does not exist.")
+            return None
+
+    try:
+        return await loop.run_in_executor(None, read_file, file_to_load, is_json)
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        _LOGGER.warning(f"Blocking IO issue detected: {e}")
+        return None
+
+
+async def async_save_room_data(storage_path, file_name, map_rooms) -> bool:
+    """Get the Vacuum Rooms data and save it to a file."""
+    # New file room_data to be saved / updated
+    data_file_path = os.path.join(storage_path, f"room_data_{file_name}.json")
+    un_formated_room_data = map_rooms
+    if not un_formated_room_data:
+        return False
+    else:
+        try:
+            room_data = {"segments": len(un_formated_room_data), "rooms": {}}
+            for room_id, room_info in un_formated_room_data.items():
+                room_data["rooms"][room_id] = {
+                    "number": room_info["number"],
+                    "name": room_info["name"],
+                }
+            #### Logger to be removed after testing ####
+            _LOGGER.debug(
+                f">>>>>>> Number of Segments detected:" f" {len(un_formated_room_data)}"
+            )
+            if len(un_formated_room_data) >= 1:
+                await async_write_json_to_disk(data_file_path, room_data)
+                return True
+            else:
+                return False
+        except Exception as e:
+            _LOGGER.warning(f"Failed to save rooms data of {file_name}: {e}")
+            return False

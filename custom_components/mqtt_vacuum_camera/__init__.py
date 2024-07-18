@@ -32,7 +32,7 @@ from .const import (
     CONF_VACUUM_IDENTIFIERS,
     DOMAIN,
 )
-from .utils.users_data import (
+from .utils.files_operations import (
     async_get_translations_vacuum_id,
     async_rename_room_description,
 )

@@ -87,7 +87,7 @@ from .const import (
     ROTATION_VALUES,
     TEXT_SIZE_VALUES,
 )
-from .utils.users_data import (
+from .utils.files_operations import (
     async_del_file,
     async_get_rooms_count,
     async_rename_room_description,

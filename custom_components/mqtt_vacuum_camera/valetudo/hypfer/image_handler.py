@@ -15,10 +15,6 @@ from PIL import Image, ImageOps
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import STORAGE_DIR
 
-from custom_components.mqtt_vacuum_camera.common import (
-    async_load_file,
-    async_write_json_to_disk,
-)
 from custom_components.mqtt_vacuum_camera.const import CAMERA_STORAGE
 from custom_components.mqtt_vacuum_camera.types import (
     CalibrationPoints,
@@ -32,6 +28,10 @@ from custom_components.mqtt_vacuum_camera.types import (
 )
 from custom_components.mqtt_vacuum_camera.utils.colors_man import color_grey
 from custom_components.mqtt_vacuum_camera.utils.drawable import Drawable
+from custom_components.mqtt_vacuum_camera.utils.files_operations import (
+    async_load_file,
+    async_write_json_to_disk,
+)
 from custom_components.mqtt_vacuum_camera.utils.img_data import ImageData
 from custom_components.mqtt_vacuum_camera.valetudo.hypfer.handler_utils import (
     ImageUtils as ImUtils,

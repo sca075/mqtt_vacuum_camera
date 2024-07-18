@@ -14,8 +14,8 @@ import logging
 
 from .types import Color, JsonType, PilPNG
 from .utils.drawable import Drawable as Draw
+from .utils.files_operations import async_get_active_user_language
 from .utils.status_text import StatusText
-from .utils.users_data import async_get_active_user_language
 from .valetudo.hypfer.image_handler import MapImageHandler
 from .valetudo.rand256.image_handler import ReImageHandler
 
