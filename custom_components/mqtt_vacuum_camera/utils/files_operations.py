@@ -1,9 +1,10 @@
 """
+files_operations.py
 Common functions for the MQTT Vacuum Camera integration.
 Those functions are used to store and retrieve user data from the Home Assistant storage.
 The data will be stored locally in the Home Assistant in .storage/valetudo_camera directory.
 Author: @sca075
-Version: 2024.07.2
+Version: 2024.07.4
 """
 
 from __future__ import annotations
@@ -13,7 +14,7 @@ import glob
 import json
 import logging
 import os
-from typing import Any, Optional
+from typing import Optional, Any
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import STORAGE_DIR
@@ -24,8 +25,8 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_get_rooms_count(
-    hass: HomeAssistant,
-    robot_name: str,
+        hass: HomeAssistant,
+        robot_name: str,
 ) -> int:
     """Get the number of segments in the room_data_{vacuum_id}.json file."""
     file_path = hass.config.path(
@@ -114,7 +115,7 @@ async def async_find_last_logged_in_user(hass: HomeAssistant) -> str or None:
         # Iterate through refresh tokens to find the most recent usage
         for token in user.refresh_tokens.values():
             if token.last_used_at and (
-                last_login_time is None or token.last_used_at > last_login_time
+                    last_login_time is None or token.last_used_at > last_login_time
             ):
                 last_login_time = token.last_used_at
                 last_user = user
@@ -240,7 +241,7 @@ async def async_load_languages(storage_path: str, selected_languages=None) -> li
 
 
 async def async_load_translations_json(
-    hass: HomeAssistant, languages: list[str]
+        hass: HomeAssistant, languages: list[str]
 ) -> list[Optional[dict]]:
     """
     Load the user selected language json files and return them as a list of JSON objects.
@@ -280,7 +281,7 @@ async def async_load_room_data(storage_path: str, vacuum_id: str) -> dict:
 
 
 async def async_rename_room_description(
-    hass: HomeAssistant, storage_path: str, vacuum_id: str
+        hass: HomeAssistant, storage_path: str, vacuum_id: str
 ) -> bool:
     """
     Add room names to the room descriptions in the translations.
@@ -363,10 +364,9 @@ async def async_del_file(file):
 
 
 async def async_write_file_to_disk(
-    file_to_write: str, data, is_binary: bool = False
+        file_to_write: str, data, is_binary: bool = False
 ) -> None:
     """Asynchronously write data to a file."""
-    loop = asyncio.get_event_loop()
 
     def _write_to_file(file_path, data_to_write, binary_mode):
         """Helper function to write data to a file."""
@@ -378,14 +378,13 @@ async def async_write_file_to_disk(
                 datafile.write(data_to_write)
 
     try:
-        await loop.run_in_executor(None, _write_to_file, file_to_write, data, is_binary)
+        await asyncio.to_thread(_write_to_file, file_to_write, data, is_binary)
     except OSError as e:
         _LOGGER.warning(f"Blocking issue detected: {e}")
 
 
 async def async_write_json_to_disk(file_to_write: str, json_data) -> None:
     """Asynchronously write data to a JSON file."""
-    loop = asyncio.get_event_loop()
 
     def _write_to_file(file_path, data):
         """Helper function to write data to a file."""
@@ -393,14 +392,13 @@ async def async_write_json_to_disk(file_to_write: str, json_data) -> None:
             json.dump(data, datafile, indent=2)
 
     try:
-        await loop.run_in_executor(None, _write_to_file, file_to_write, json_data)
+        await asyncio.to_thread(_write_to_file, file_to_write, json_data)
     except OSError as e:
         _LOGGER.warning(f"Blocking issue detected: {e}")
 
 
 async def async_load_file(file_to_load: str, is_json: bool = False) -> Any:
     """Asynchronously load JSON data from a file."""
-    loop = asyncio.get_event_loop()
 
     def read_file(my_file: str, read_json: bool = False):
         """Helper function to read data from a file."""
@@ -416,7 +414,7 @@ async def async_load_file(file_to_load: str, is_json: bool = False) -> Any:
             return None
 
     try:
-        return await loop.run_in_executor(None, read_file, file_to_load, is_json)
+        return await asyncio.to_thread(read_file, file_to_load, is_json)
     except (FileNotFoundError, json.JSONDecodeError) as e:
         _LOGGER.warning(f"Blocking IO issue detected: {e}")
         return None
@@ -425,7 +423,9 @@ async def async_load_file(file_to_load: str, is_json: bool = False) -> Any:
 async def async_save_room_data(storage_path, file_name, map_rooms) -> bool:
     """Get the Vacuum Rooms data and save it to a file."""
     # New file room_data to be saved / updated
-    data_file_path = os.path.join(storage_path, f"room_data_{file_name}.json")
+    data_file_path = os.path.join(
+        storage_path, f"room_data_{file_name}.json"
+    )
     un_formated_room_data = map_rooms
     if not un_formated_room_data:
         return False
@@ -439,7 +439,8 @@ async def async_save_room_data(storage_path, file_name, map_rooms) -> bool:
                 }
             #### Logger to be removed after testing ####
             _LOGGER.debug(
-                f">>>>>>> Number of Segments detected:" f" {len(un_formated_room_data)}"
+                f">>>>>>> Number of Segments detected:"
+                f" {len(un_formated_room_data)}"
             )
             if len(un_formated_room_data) >= 1:
                 await async_write_json_to_disk(data_file_path, room_data)
