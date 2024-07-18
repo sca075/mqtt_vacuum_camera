@@ -5,6 +5,7 @@ Version: 2024.07.0
 
 from __future__ import annotations
 
+import logging
 import asyncio
 import json
 from typing import Any
@@ -15,8 +16,10 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.helpers.device_registry import DeviceEntry
 
-from .const import _LOGGER, KEYS_TO_UPDATE
+from .const import KEYS_TO_UPDATE
 from .hass_types import GET_MQTT_DATA
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def get_device_info(
