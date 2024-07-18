@@ -172,6 +172,5 @@ async def async_write_file_to_disk(
 
 def extract_file_name(unique_id: str) -> str:
     """Extract from the Camera unique_id the file name."""
-    pattern = re.compile(r"_camera$")
-    file_name = re.sub(pattern, "", unique_id)
+    file_name = re.sub(r'_camera$', '', unique_id)
     return file_name.lower()
