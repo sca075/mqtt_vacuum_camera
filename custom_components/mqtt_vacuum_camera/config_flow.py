@@ -87,11 +87,8 @@ from .const import (
     ROTATION_VALUES,
     TEXT_SIZE_VALUES,
 )
-from .utils.files_operations import (
-    async_del_file,
-    async_get_rooms_count,
-    async_rename_room_description,
-)
+from .types import RoomStore
+from .utils.files_operations import async_del_file, async_rename_room_description
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -347,7 +344,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         _LOGGER.info(f"{self.config_entry.unique_id}: Options Configuration Started.")
         errors = {}
 
-        self.number_of_rooms = await async_get_rooms_count(self.hass, self.file_name)
+        self.number_of_rooms = RoomStore().get_rooms_count(self.file_name)
         if (
             not isinstance(self.number_of_rooms, int)
             or self.number_of_rooms < DEFAULT_ROOMS

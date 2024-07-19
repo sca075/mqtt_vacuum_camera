@@ -60,7 +60,6 @@ from .snapshots.snapshot import Snapshots
 from .utils.colors_man import ColorsManagment
 from .utils.files_operations import (
     async_get_active_user_language,
-    async_save_mqtt_room_data,
     is_auth_updated,
 )
 from .valetudo.MQTT.connector import ValetudoConnector
@@ -359,15 +358,6 @@ class ValetudoCamera(Camera):
                 self.run_async_pil_to_bytes(pil_img)
             )
             return self.Image
-
-        if self.startup:
-            if await async_save_mqtt_room_data(
-                self.hass, self._file_name, self._mqtt.get_segments()
-            ):
-                _LOGGER.info(f"Rooms data saved for {self._file_name}.")
-            else:
-                _LOGGER.info(f"No rooms data save for {self._file_name}.")
-            self.startup = False
 
         # If we have data from MQTT, we process the image.
         self._shared.vacuum_battery = await self._mqtt.get_battery_level()

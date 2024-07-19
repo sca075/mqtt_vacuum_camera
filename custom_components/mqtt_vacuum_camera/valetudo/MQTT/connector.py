@@ -14,6 +14,7 @@ from homeassistant.core import callback
 from homeassistant.helpers.storage import STORAGE_DIR
 from isal import igzip, isal_zlib
 
+from custom_components.mqtt_vacuum_camera.types import RoomStore
 from custom_components.mqtt_vacuum_camera.utils.files_operations import (
     async_write_file_to_disk,
 )
@@ -348,6 +349,7 @@ class ValetudoConnector:
             await self._hass.async_create_task(self.rand256_handle_destinations(msg))
         elif self._rcv_topic == f"{self._mqtt_topic}/MapData/segments":
             self._mqtt_segments = json.loads(msg.payload)
+            RoomStore().set_rooms_data(self._file_name, self._mqtt_segments)
             _LOGGER.debug(f"Segments: {self._mqtt_segments}")
 
     async def async_subscribe_to_topics(self) -> None:

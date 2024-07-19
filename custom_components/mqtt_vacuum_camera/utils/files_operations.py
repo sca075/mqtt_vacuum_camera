@@ -20,6 +20,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import STORAGE_DIR
 
 from custom_components.mqtt_vacuum_camera.const import CAMERA_STORAGE, DEFAULT_ROOMS
+from custom_components.mqtt_vacuum_camera.types import RoomStore
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -293,17 +294,19 @@ async def async_rename_room_description(
     """
     Add room names to the room descriptions in the translations.
     """
-    room_json = await async_load_room_data(storage_path, vacuum_id)
-    room_data = room_json.get("rooms", {})
+    # Load the room data using the new MQTT-based function
+    room_data = RoomStore().get_rooms_data(vacuum_id)
     _LOGGER.info(f"Room data loaded: {room_data}")
-    if not room_json:
+
+    if not room_data:
         _LOGGER.warning(
-            f"Vacuum ID: {vacuum_id} do not support Rooms! Aborting room name addition."
+            f"Vacuum ID: {vacuum_id} does not support Rooms! Aborting room name addition."
         )
         return False
 
     # Save the vacuum_id to a JSON file
     await async_write_vacuum_id(hass, "rooms_colours_description.json", vacuum_id)
+
     # Get the languages to modify
     language = await async_load_languages(storage_path)
     _LOGGER.info(f"Languages to modify: {language}")
@@ -328,10 +331,10 @@ async def async_rename_room_description(
             end_index = 8 if i == 1 else 16
             for j in range(start_index, end_index):
                 if j < len(room_data):
-                    room_id, room_info = list(room_data.items())[j]
+                    room_id, room_name = list(room_data.items())[j]
                     data["options"]["step"][room_key]["data_description"][
                         f"color_room_{j}"
-                    ] = f"### **RoomID {room_id} {room_info['name']}**"
+                    ] = f"### **RoomID {room_id} {room_name}**"
 
     # Modify the "data" keys for alpha_2 and alpha_3
     for data in data_list:
@@ -343,10 +346,10 @@ async def async_rename_room_description(
             end_index = 8 if i == 2 else 16
             for j in range(start_index, end_index):
                 if j < len(room_data):
-                    room_id, room_info = list(room_data.items())[j]
+                    room_id, room_name = list(room_data.items())[j]
                     data["options"]["step"][alpha_key]["data"][
                         f"alpha_room_{j}"
-                    ] = f"RoomID {room_id} {room_info['name']}"
+                    ] = f"RoomID {room_id} {room_name}"
                     # "**text**" is bold as in markdown
 
     # Write the modified data back to the JSON files
