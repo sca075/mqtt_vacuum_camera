@@ -427,10 +427,14 @@ async def async_load_file(file_to_load: str, is_json: bool = False) -> Any:
         return None
 
 
-async def async_save_room_data(storage_path, file_name, map_rooms) -> bool:
+async def async_save_room_data(
+    hass: HomeAssistant, file_name: str, map_rooms: dict
+) -> bool:
     """Get the Vacuum Rooms data and save it to a file."""
     # New file room_data to be saved / updated
-    data_file_path = os.path.join(storage_path, f"room_data_{file_name}.json")
+    data_file_path = (
+        f"{hass.config.path(STORAGE_DIR, CAMERA_STORAGE)}/room_data_{file_name}.json"
+    )
     un_formated_room_data = map_rooms
     if not un_formated_room_data:
         return False
@@ -442,11 +446,33 @@ async def async_save_room_data(storage_path, file_name, map_rooms) -> bool:
                     "number": room_info["number"],
                     "name": room_info["name"],
                 }
-            #### Logger to be removed after testing ####
-            _LOGGER.debug(
-                f">>>>>>> Number of Segments detected:" f" {len(un_formated_room_data)}"
-            )
             if len(un_formated_room_data) >= 1:
+                await async_write_json_to_disk(data_file_path, room_data)
+                return True
+            else:
+                return False
+        except Exception as e:
+            _LOGGER.warning(f"Failed to save rooms data of {file_name}: {e}")
+            return False
+
+
+async def async_save_mqtt_room_data(
+    hass: HomeAssistant, file_name: str, map_rooms: dict
+) -> bool:
+    """Get the Vacuum segments and save it to a file."""
+    # New file room_data to be saved / updated
+    data_file_path = (
+        f"{hass.config.path(STORAGE_DIR, CAMERA_STORAGE)}/room_data_{file_name}.json"
+    )
+    if not map_rooms:
+        return False
+    else:
+        try:
+            if len(map_rooms) >= 1:
+                room_data = {"segments": len(map_rooms), "rooms": {}}
+                for room_id, room_name in map_rooms.items():
+                    room_data["rooms"][room_id] = {"name": room_name}
+
                 await async_write_json_to_disk(data_file_path, room_data)
                 return True
             else:

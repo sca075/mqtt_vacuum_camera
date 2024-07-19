@@ -36,6 +36,7 @@ class ValetudoConnector:
         self._payload = None
         self._img_payload = None
         self._mqtt_vac_stat = ""
+        self._mqtt_segments = {}
         self._mqtt_vac_connect_state = "disconnected"
         self._mqtt_vac_battery_level = None
         self._mqtt_vac_err = None
@@ -129,6 +130,10 @@ class ValetudoConnector:
     async def is_data_available(self) -> bool:
         """Check and Return the data availability."""
         return bool(self._data_in)
+
+    def get_segments(self) -> dict:
+        """Return the segments."""
+        return dict(self._mqtt_segments)
 
     @callback
     async def save_payload(self, file_name: str) -> None:
@@ -341,12 +346,16 @@ class ValetudoConnector:
             await self.rrm_handle_active_segments(msg)
         elif self._rcv_topic == f"{self._mqtt_topic}/destinations":
             await self._hass.async_create_task(self.rand256_handle_destinations(msg))
+        elif self._rcv_topic == f"{self._mqtt_topic}/MapData/segments":
+            self._mqtt_segments = json.loads(msg.payload)
+            _LOGGER.debug(f"Segments: {self._mqtt_segments}")
 
     async def async_subscribe_to_topics(self) -> None:
         """Subscribe to the MQTT topics for Hypfer and ValetudoRe."""
         if self._mqtt_topic:
             for x in [
                 f"{self._mqtt_topic}/MapData/map-data",
+                f"{self._mqtt_topic}/MapData/segments",
                 f"{self._mqtt_topic}/StatusStateAttribute/status",
                 f"{self._mqtt_topic}/StatusStateAttribute/error_description",
                 f"{self._mqtt_topic}/$state",

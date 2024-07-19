@@ -13,7 +13,6 @@ from homeassistant.helpers.storage import STORAGE_DIR
 from custom_components.mqtt_vacuum_camera.const import CAMERA_STORAGE, DOMAIN
 from custom_components.mqtt_vacuum_camera.types import Any, JsonType, PilPNG
 from custom_components.mqtt_vacuum_camera.utils.files_operations import (
-    async_save_room_data,
     async_write_file_to_disk,
     async_write_json_to_disk,
     async_write_languages_json,
@@ -87,12 +86,6 @@ class Snapshots:
                 self._first_run = False
                 _LOGGER.info(f"Writing {file_name} users languages data.")
                 await async_write_languages_json(self.hass)
-                if await async_save_room_data(
-                    self.storage_path, self.file_name, self._shared.map_rooms
-                ):
-                    _LOGGER.info(f"Rooms data saved for {file_name}.")
-                else:
-                    _LOGGER.info(f"No rooms data save for {file_name}.")
 
             # Save JSON data to a file
             if json_data:
