@@ -14,7 +14,7 @@ import glob
 import json
 import logging
 import os
-from typing import Optional, Any
+from typing import Any, Optional
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import STORAGE_DIR
@@ -25,8 +25,8 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_get_rooms_count(
-        hass: HomeAssistant,
-        robot_name: str,
+    hass: HomeAssistant,
+    robot_name: str,
 ) -> int:
     """Get the number of segments in the room_data_{vacuum_id}.json file."""
     file_path = hass.config.path(
@@ -45,15 +45,20 @@ async def async_get_rooms_count(
             return DEFAULT_ROOMS
 
 
-async def async_write_vacuum_id(storage_dir, vacuum_id):
+async def async_write_vacuum_id(hass: HomeAssistant, file_name, vacuum_id):
     """Write the vacuum_id to a JSON file."""
     # Create the full file path
-    json_path = os.path.join(storage_dir, "rooms_colours_description.json")
-    # Data to be written
-    data = {"vacuum_id": vacuum_id}
-    # Write data to a JSON file
-    await async_write_json_to_disk(json_path, data)
-    _LOGGER.info(f"vacuum_id saved: {vacuum_id}")
+    if vacuum_id:
+        json_path = f"{hass.config.path(STORAGE_DIR, CAMERA_STORAGE)}/{file_name}"
+        _LOGGER.debug(f"Writing vacuum_id: {vacuum_id} to {json_path}")
+        # Data to be written
+        data = {"vacuum_id": vacuum_id}
+        # Write data to a JSON file
+        await async_write_json_to_disk(json_path, data)
+        if os.path.exists(json_path):
+            _LOGGER.info(f"vacuum_id saved: {vacuum_id}")
+        else:
+            _LOGGER.warning(f"Error saving vacuum_id: {vacuum_id}")
 
 
 async def async_get_translations_vacuum_id(storage_dir):
@@ -62,6 +67,8 @@ async def async_get_translations_vacuum_id(storage_dir):
     vacuum_id_path = os.path.join(storage_dir, "rooms_colours_description.json")
     try:
         data = await async_load_file(vacuum_id_path, True)
+        if data is None:
+            return None
         vacuum_id = data.get("vacuum_id", None)
         return vacuum_id
     except json.JSONDecodeError:
@@ -115,7 +122,7 @@ async def async_find_last_logged_in_user(hass: HomeAssistant) -> str or None:
         # Iterate through refresh tokens to find the most recent usage
         for token in user.refresh_tokens.values():
             if token.last_used_at and (
-                    last_login_time is None or token.last_used_at > last_login_time
+                last_login_time is None or token.last_used_at > last_login_time
             ):
                 last_login_time = token.last_used_at
                 last_user = user
@@ -241,7 +248,7 @@ async def async_load_languages(storage_path: str, selected_languages=None) -> li
 
 
 async def async_load_translations_json(
-        hass: HomeAssistant, languages: list[str]
+    hass: HomeAssistant, languages: list[str]
 ) -> list[Optional[dict]]:
     """
     Load the user selected language json files and return them as a list of JSON objects.
@@ -281,14 +288,14 @@ async def async_load_room_data(storage_path: str, vacuum_id: str) -> dict:
 
 
 async def async_rename_room_description(
-        hass: HomeAssistant, storage_path: str, vacuum_id: str
+    hass: HomeAssistant, storage_path: str, vacuum_id: str
 ) -> bool:
     """
     Add room names to the room descriptions in the translations.
     """
     room_json = await async_load_room_data(storage_path, vacuum_id)
     room_data = room_json.get("rooms", {})
-
+    _LOGGER.info(f"Room data loaded: {room_data}")
     if not room_json:
         _LOGGER.warning(
             f"Vacuum ID: {vacuum_id} do not support Rooms! Aborting room name addition."
@@ -296,7 +303,7 @@ async def async_rename_room_description(
         return False
 
     # Save the vacuum_id to a JSON file
-    await async_write_vacuum_id(storage_path, vacuum_id)
+    await async_write_vacuum_id(hass, "rooms_colours_description.json", vacuum_id)
     # Get the languages to modify
     language = await async_load_languages(storage_path)
     _LOGGER.info(f"Languages to modify: {language}")
@@ -364,7 +371,7 @@ async def async_del_file(file):
 
 
 async def async_write_file_to_disk(
-        file_to_write: str, data, is_binary: bool = False
+    file_to_write: str, data, is_binary: bool = False
 ) -> None:
     """Asynchronously write data to a file."""
 
@@ -379,7 +386,7 @@ async def async_write_file_to_disk(
 
     try:
         await asyncio.to_thread(_write_to_file, file_to_write, data, is_binary)
-    except OSError as e:
+    except Exception as e:
         _LOGGER.warning(f"Blocking issue detected: {e}")
 
 
@@ -393,7 +400,7 @@ async def async_write_json_to_disk(file_to_write: str, json_data) -> None:
 
     try:
         await asyncio.to_thread(_write_to_file, file_to_write, json_data)
-    except OSError as e:
+    except Exception as e:
         _LOGGER.warning(f"Blocking issue detected: {e}")
 
 
@@ -423,9 +430,7 @@ async def async_load_file(file_to_load: str, is_json: bool = False) -> Any:
 async def async_save_room_data(storage_path, file_name, map_rooms) -> bool:
     """Get the Vacuum Rooms data and save it to a file."""
     # New file room_data to be saved / updated
-    data_file_path = os.path.join(
-        storage_path, f"room_data_{file_name}.json"
-    )
+    data_file_path = os.path.join(storage_path, f"room_data_{file_name}.json")
     un_formated_room_data = map_rooms
     if not un_formated_room_data:
         return False
@@ -439,8 +444,7 @@ async def async_save_room_data(storage_path, file_name, map_rooms) -> bool:
                 }
             #### Logger to be removed after testing ####
             _LOGGER.debug(
-                f">>>>>>> Number of Segments detected:"
-                f" {len(un_formated_room_data)}"
+                f">>>>>>> Number of Segments detected:" f" {len(un_formated_room_data)}"
             )
             if len(un_formated_room_data) >= 1:
                 await async_write_json_to_disk(data_file_path, room_data)

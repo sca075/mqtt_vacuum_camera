@@ -839,14 +839,13 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         """
         Copy the logs from .storage to www config folder.
         """
+        _LOGGER.debug("Renaming the translations.")
         hass = self.hass
         storage_path = hass.config.path(STORAGE_DIR, CAMERA_STORAGE)
         _LOGGER.debug(f"Looking for Storage Path: {storage_path}")
         if (user_input is None) and self.bk_options:
             if self.hass:
-                await hass.async_add_executor_job(
-                    async_rename_room_description, hass, storage_path, self.file_name
-                )
+                await async_rename_room_description(hass, storage_path, self.file_name)
                 self.options = self.bk_options
             return await self.async_step_opt_save()
 

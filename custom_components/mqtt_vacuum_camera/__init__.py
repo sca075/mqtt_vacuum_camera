@@ -303,7 +303,7 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
     async def handle_homeassistant_stop(event):
         """Handle Home Assistant stop event."""
         _LOGGER.info("Home Assistant is stopping. Writing down the rooms data.")
-        storage = hass.config.path(STORAGE_DIR, "valetudo_camera")
+        storage = hass.config.path(STORAGE_DIR, CAMERA_STORAGE)
         if not os.path.exists(storage):
             _LOGGER.debug(f"Storage path: {storage} do not exists. Aborting!")
             return False
