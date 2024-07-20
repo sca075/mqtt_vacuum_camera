@@ -1,13 +1,19 @@
 """
 This module contains type aliases for the project.
-Version 2024.07.1
+Version 2024.07.4
 """
 
+import asyncio
 from dataclasses import dataclass
+import logging
 from typing import Any, Dict, Tuple, Union
 
 from PIL import Image
 import numpy as np
+
+from .const import DEFAULT_ROOMS
+
+_LOGGER = logging.getLogger(__name__)
 
 Color = Union[Tuple[int, int, int], Tuple[int, int, int, int]]
 Colors = Dict[str, Color]
@@ -63,3 +69,31 @@ class TrimCropData:
             trim_right=data[2],
             trim_down=data[3],
         )
+
+
+class RoomStore:
+    """Store the room data for the vacuum."""
+
+    _instance = None
+    _lock = asyncio.Lock()
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(RoomStore, cls).__new__(cls)
+            cls._instance.vacuums_data = {}
+        return cls._instance
+
+    async def async_set_rooms_data(self, vacuum_id, rooms_data):
+        """Set the room data for the vacuum."""
+        self.vacuums_data[vacuum_id] = rooms_data
+
+    async def async_get_rooms_data(self, vacuum_id):
+        """Get the room data for a vacuum."""
+        return self.vacuums_data.get(vacuum_id, {})
+
+    async def async_get_rooms_count(self, vacuum_id):
+        """Count the number of rooms for a vacuum."""
+        count = len(self.vacuums_data.get(vacuum_id, {}))
+        if count == 0:
+            return DEFAULT_ROOMS
+        return count

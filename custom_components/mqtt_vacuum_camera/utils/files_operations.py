@@ -1,69 +1,58 @@
 """
+files_operations.py
 Common functions for the MQTT Vacuum Camera integration.
 Those functions are used to store and retrieve user data from the Home Assistant storage.
 The data will be stored locally in the Home Assistant in .storage/valetudo_camera directory.
 Author: @sca075
-Version: 2024.07.2
+Version: 2024.07.4
 """
 
 from __future__ import annotations
 
+import asyncio
 import glob
 import json
 import logging
 import os
-from typing import Optional
+from typing import Any, Optional
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import STORAGE_DIR
 
-from custom_components.mqtt_vacuum_camera.common import (
-    async_load_file,
-    async_write_json_to_disk,
-)
-from custom_components.mqtt_vacuum_camera.const import CAMERA_STORAGE, DEFAULT_ROOMS
+from custom_components.mqtt_vacuum_camera.const import CAMERA_STORAGE
+from custom_components.mqtt_vacuum_camera.types import RoomStore
 
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_get_rooms_count(
-    hass: HomeAssistant,
-    robot_name: str,
-) -> int:
-    """Get the number of segments in the room_data_{vacuum_id}.json file."""
-    file_path = hass.config.path(
-        STORAGE_DIR, CAMERA_STORAGE, f"room_data_{robot_name}.json"
-    )
-    if not os.path.exists(file_path):
-        _LOGGER.warning(f"File not found: {file_path}")
-        return DEFAULT_ROOMS
-    else:
-        room_data = await async_load_file(file_path, True)
-        if room_data:
-            room_count = room_data.get("segments", DEFAULT_ROOMS)
-            return room_count
-        else:
-            _LOGGER.error(f"Error decoding file: {file_path}")
-            return DEFAULT_ROOMS
-
-
-async def async_write_vacuum_id(storage_dir, vacuum_id):
+async def async_write_vacuum_id(
+    hass: HomeAssistant, file_name: str, vacuum_id: str
+) -> None:
     """Write the vacuum_id to a JSON file."""
     # Create the full file path
-    json_path = os.path.join(storage_dir, "rooms_colours_description.json")
-    # Data to be written
-    data = {"vacuum_id": vacuum_id}
-    # Write data to a JSON file
-    await async_write_json_to_disk(json_path, data)
-    _LOGGER.info(f"vacuum_id saved: {vacuum_id}")
+    if vacuum_id:
+        json_path = f"{hass.config.path(STORAGE_DIR, CAMERA_STORAGE)}/{file_name}"
+        _LOGGER.debug(f"Writing vacuum_id: {vacuum_id} to {json_path}")
+        # Data to be written
+        data = {"vacuum_id": vacuum_id}
+        # Write data to a JSON file
+        await async_write_json_to_disk(json_path, data)
+        if os.path.exists(json_path):
+            _LOGGER.info(f"vacuum_id saved: {vacuum_id}")
+        else:
+            _LOGGER.warning(f"Error saving vacuum_id: {vacuum_id}")
+    else:
+        _LOGGER.warning("No vacuum_id provided.")
 
 
-async def async_get_translations_vacuum_id(storage_dir):
+async def async_get_translations_vacuum_id(storage_dir: str) -> str or None:
     """Read the vacuum_id from a JSON file."""
     # Create the full file path
     vacuum_id_path = os.path.join(storage_dir, "rooms_colours_description.json")
     try:
         data = await async_load_file(vacuum_id_path, True)
+        if data is None:
+            return None
         vacuum_id = data.get("vacuum_id", None)
         return vacuum_id
     except json.JSONDecodeError:
@@ -221,7 +210,9 @@ async def async_write_languages_json(hass: HomeAssistant):
 
 
 async def async_load_languages(storage_path: str, selected_languages=None) -> list:
-    """Load the selected language from the language.json file."""
+    """
+    Load the selected language from the language.json file.
+    """
     if selected_languages is None:
         selected_languages = []
     language_file_path = os.path.join(storage_path, "languages.json")
@@ -247,9 +238,6 @@ async def async_load_translations_json(
 ) -> list[Optional[dict]]:
     """
     Load the user selected language json files and return them as a list of JSON objects.
-    @param hass: Home Assistant instance.
-    @param languages: List of languages to load.
-    @return: List of JSON objects containing translations for each language.
     """
     translations_list = []
     translations_path = hass.config.path(
@@ -288,17 +276,19 @@ async def async_rename_room_description(
     """
     Add room names to the room descriptions in the translations.
     """
-    room_json = await async_load_room_data(storage_path, vacuum_id)
-    room_data = room_json.get("rooms", {})
+    # Load the room data using the new MQTT-based function
+    room_data = await RoomStore().async_get_rooms_data(vacuum_id)
+    _LOGGER.info(f"Room data loaded: {room_data}")
 
-    if not room_json:
+    if not room_data:
         _LOGGER.warning(
-            f"Vacuum ID: {vacuum_id} do not support Rooms! Aborting room name addition."
+            f"Vacuum ID: {vacuum_id} does not support Rooms! Aborting room name addition."
         )
         return False
 
     # Save the vacuum_id to a JSON file
-    await async_write_vacuum_id(storage_path, vacuum_id)
+    await async_write_vacuum_id(hass, "rooms_colours_description.json", vacuum_id)
+
     # Get the languages to modify
     language = await async_load_languages(storage_path)
     _LOGGER.info(f"Languages to modify: {language}")
@@ -323,10 +313,10 @@ async def async_rename_room_description(
             end_index = 8 if i == 1 else 16
             for j in range(start_index, end_index):
                 if j < len(room_data):
-                    room_id, room_info = list(room_data.items())[j]
+                    room_id, room_name = list(room_data.items())[j]
                     data["options"]["step"][room_key]["data_description"][
                         f"color_room_{j}"
-                    ] = f"### **RoomID {room_id} {room_info['name']}**"
+                    ] = f"### **RoomID {room_id} {room_name}**"
 
     # Modify the "data" keys for alpha_2 and alpha_3
     for data in data_list:
@@ -338,10 +328,10 @@ async def async_rename_room_description(
             end_index = 8 if i == 2 else 16
             for j in range(start_index, end_index):
                 if j < len(room_data):
-                    room_id, room_info = list(room_data.items())[j]
+                    room_id, room_name = list(room_data.items())[j]
                     data["options"]["step"][alpha_key]["data"][
                         f"alpha_room_{j}"
-                    ] = f"RoomID {room_id} {room_info['name']}"
+                    ] = f"RoomID {room_id} {room_name}"
                     # "**text**" is bold as in markdown
 
     # Write the modified data back to the JSON files
@@ -363,3 +353,121 @@ async def async_del_file(file):
         os.remove(file)
     else:
         _LOGGER.debug(f"File not found: {file}")
+
+
+async def async_write_file_to_disk(
+    file_to_write: str, data, is_binary: bool = False
+) -> None:
+    """
+    Asynchronously write data to a file.
+    """
+
+    def _write_to_file(file_path, data_to_write, binary_mode):
+        """Helper function to write data to a file."""
+        if binary_mode:
+            with open(file_path, "wb") as datafile:
+                datafile.write(data_to_write)
+        else:
+            with open(file_path, "w") as datafile:
+                datafile.write(data_to_write)
+
+    try:
+        await asyncio.to_thread(_write_to_file, file_to_write, data, is_binary)
+    except (OSError, IOError) as e:
+        _LOGGER.warning(f"Error on writing data to disk.: {e}")
+    except Exception as e:
+        _LOGGER.warning(f"Unexpected issue detected: {e}")
+
+
+async def async_write_json_to_disk(file_to_write: str, json_data) -> None:
+    """Asynchronously write data to a JSON file."""
+
+    def _write_to_file(file_path, data):
+        """Helper function to write data to a file."""
+        with open(file_path, "w") as datafile:
+            json.dump(data, datafile, indent=2)
+
+    try:
+        await asyncio.to_thread(_write_to_file, file_to_write, json_data)
+    except (OSError, IOError, json.JSONDecodeError) as e:
+        _LOGGER.warning(f"Json File Operation Error: {e}")
+    except Exception as e:
+        _LOGGER.warning(f"Blocking issue detected: {e}")
+
+
+async def async_load_file(file_to_load: str, is_json: bool = False) -> Any:
+    """Asynchronously load JSON data from a file."""
+
+    def read_file(my_file: str, read_json: bool = False):
+        """Helper function to read data from a file."""
+        try:
+            if read_json:
+                with open(my_file) as file:
+                    return json.load(file)
+            else:
+                with open(my_file) as file:
+                    return file.read()
+        except (FileNotFoundError, json.JSONDecodeError):
+            _LOGGER.warning(f"{my_file} does not exist.")
+            return None
+
+    try:
+        return await asyncio.to_thread(read_file, file_to_load, is_json)
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        _LOGGER.warning(f"Blocking IO issue detected: {e}")
+        return None
+
+
+async def async_save_room_data(
+    hass: HomeAssistant, file_name: str, map_rooms: dict
+) -> bool:
+    """Get the Vacuum Rooms data and save it to a file."""
+    # New file room_data to be saved / updated
+    data_file_path = (
+        f"{hass.config.path(STORAGE_DIR, CAMERA_STORAGE)}/room_data_{file_name}.json"
+    )
+    un_formated_room_data = map_rooms
+    if not un_formated_room_data:
+        return False
+    else:
+        try:
+            room_data = {"segments": len(un_formated_room_data), "rooms": {}}
+            for room_id, room_info in un_formated_room_data.items():
+                room_data["rooms"][room_id] = {
+                    "number": room_info["number"],
+                    "name": room_info["name"],
+                }
+            if len(un_formated_room_data) >= 1:
+                await async_write_json_to_disk(data_file_path, room_data)
+                return True
+            else:
+                return False
+        except Exception as e:
+            _LOGGER.warning(f"Failed to save rooms data of {file_name}: {e}")
+            return False
+
+
+async def async_save_mqtt_room_data(
+    hass: HomeAssistant, file_name: str, map_rooms: dict
+) -> bool:
+    """Get the Vacuum segments and save it to a file."""
+    # New file room_data to be saved / updated
+    data_file_path = (
+        f"{hass.config.path(STORAGE_DIR, CAMERA_STORAGE)}/room_data_{file_name}.json"
+    )
+    if not map_rooms:
+        return False
+    else:
+        try:
+            if len(map_rooms) >= 1:
+                room_data = {"segments": len(map_rooms), "rooms": {}}
+                for room_id, room_name in map_rooms.items():
+                    room_data["rooms"][room_id] = {"name": room_name}
+
+                await async_write_json_to_disk(data_file_path, room_data)
+                return True
+            else:
+                return False
+        except Exception as e:
+            _LOGGER.warning(f"Failed to save rooms data of {file_name}: {e}")
+            return False

@@ -1,6 +1,6 @@
 """
 Camera
-Version: v2024.07.2
+Version: v2024.07.4
 Image Processing Threading implemented on Version 1.5.7.
 """
 
@@ -58,7 +58,7 @@ from .const import (
 )
 from .snapshots.snapshot import Snapshots
 from .utils.colors_man import ColorsManagment
-from .utils.users_data import async_get_active_user_language, is_auth_updated
+from .utils.files_operations import async_get_active_user_language, is_auth_updated
 from .valetudo.MQTT.connector import ValetudoConnector
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
@@ -112,6 +112,7 @@ class ValetudoCamera(Camera):
 
     def __init__(self, hass, device_info):
         super().__init__()
+        self.startup = True
         self.hass = hass
         self._attr_model = "MQTT Vacuums"
         self._attr_brand = "MQTT Vacuum Camera"

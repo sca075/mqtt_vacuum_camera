@@ -1,20 +1,19 @@
 """
-Version: v2024.07.1
+Version: v2024.07.4
 - Removed the PNG decode, the json is extracted from map-data instead of map-data-hass.
 - Tested no influence on the camera performance.
 - Added gzip library used in Valetudo RE data compression.
 """
 
-import logging
 import asyncio
 import json
+import logging
 
 from homeassistant.components import mqtt
 from homeassistant.core import callback
-from homeassistant.helpers.storage import STORAGE_DIR
 from isal import igzip, isal_zlib
 
-from custom_components.mqtt_vacuum_camera.common import async_write_file_to_disk
+from custom_components.mqtt_vacuum_camera.types import RoomStore
 from custom_components.mqtt_vacuum_camera.valetudo.rand256.rrparser import RRMapParser
 
 _LOGGER = logging.getLogger(__name__)
@@ -34,6 +33,7 @@ class ValetudoConnector:
         self._payload = None
         self._img_payload = None
         self._mqtt_vac_stat = ""
+        self._mqtt_segments = {}
         self._mqtt_vac_connect_state = "disconnected"
         self._mqtt_vac_battery_level = None
         self._mqtt_vac_err = None
@@ -127,27 +127,6 @@ class ValetudoConnector:
     async def is_data_available(self) -> bool:
         """Check and Return the data availability."""
         return bool(self._data_in)
-
-    @callback
-    async def save_payload(self, file_name: str) -> None:
-        """
-        Save payload when available.
-        """
-        if (self._img_payload and (self._data_in is True)) or (
-            self._rrm_payload is not None
-        ):
-            file_data = b"No data"
-            if self._img_payload:
-                file_data = self._img_payload
-            elif self._rrm_payload:
-                file_data = self._rrm_payload
-            await async_write_file_to_disk(
-                file_to_write=f"{self._hass.config.path(STORAGE_DIR)}"
-                f"/valetudo_camera/{file_name}.raw",
-                data=file_data,
-                is_binary=True,
-            )
-            _LOGGER.info(f"Saved image data from MQTT in {file_name}.raw!")
 
     async def hypfer_handle_image_data(self, msg) -> None:
         """
@@ -339,12 +318,17 @@ class ValetudoConnector:
             await self.rrm_handle_active_segments(msg)
         elif self._rcv_topic == f"{self._mqtt_topic}/destinations":
             await self._hass.async_create_task(self.rand256_handle_destinations(msg))
+        elif self._rcv_topic == f"{self._mqtt_topic}/MapData/segments":
+            self._mqtt_segments = json.loads(msg.payload)
+            await RoomStore().async_set_rooms_data(self._file_name, self._mqtt_segments)
+            _LOGGER.debug(f"Segments: {self._mqtt_segments}")
 
     async def async_subscribe_to_topics(self) -> None:
         """Subscribe to the MQTT topics for Hypfer and ValetudoRe."""
         if self._mqtt_topic:
             for x in [
                 f"{self._mqtt_topic}/MapData/map-data",
+                f"{self._mqtt_topic}/MapData/segments",
                 f"{self._mqtt_topic}/StatusStateAttribute/status",
                 f"{self._mqtt_topic}/StatusStateAttribute/error_description",
                 f"{self._mqtt_topic}/$state",

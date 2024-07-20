@@ -1,4 +1,4 @@
-"""config_flow 2024.07.2
+"""config_flow 2024.07.4
 IMPORTANT: Maintain code when adding new options to the camera
 it will be mandatory to update const.py and common.py update_options.
 Format of the new constants must be CONST_NAME = "const_name" update also
@@ -31,6 +31,7 @@ from homeassistant.helpers.storage import STORAGE_DIR
 import voluptuous as vol
 
 from .common import (
+    extract_file_name,
     get_device_info,
     get_vacuum_mqtt_topic,
     get_vacuum_unique_id_from_mqtt_topic,
@@ -86,11 +87,8 @@ from .const import (
     ROTATION_VALUES,
     TEXT_SIZE_VALUES,
 )
-from .utils.users_data import (
-    async_del_file,
-    async_get_rooms_count,
-    async_rename_room_description,
-)
+from .types import RoomStore
+from .utils.files_operations import async_del_file, async_rename_room_description
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -182,7 +180,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         self.unique_id = self.config_entry.unique_id
         self.options = {}
         self.bk_options = self.config_entry.options
-        self.file_name = self.unique_id.split("_")[0].lower()
+        self.file_name = extract_file_name(self.unique_id)
         self._check_alpha = False
         self.number_of_rooms = DEFAULT_ROOMS
         _LOGGER.debug(
@@ -346,7 +344,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         _LOGGER.info(f"{self.config_entry.unique_id}: Options Configuration Started.")
         errors = {}
 
-        self.number_of_rooms = await async_get_rooms_count(self.hass, self.file_name)
+        self.number_of_rooms = await RoomStore().async_get_rooms_count(self.file_name)
         if (
             not isinstance(self.number_of_rooms, int)
             or self.number_of_rooms < DEFAULT_ROOMS
@@ -838,14 +836,13 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         """
         Copy the logs from .storage to www config folder.
         """
+        _LOGGER.debug("Renaming the translations.")
         hass = self.hass
         storage_path = hass.config.path(STORAGE_DIR, CAMERA_STORAGE)
         _LOGGER.debug(f"Looking for Storage Path: {storage_path}")
         if (user_input is None) and self.bk_options:
             if self.hass:
-                await hass.async_add_executor_job(
-                    async_rename_room_description, hass, storage_path, self.file_name
-                )
+                await async_rename_room_description(hass, storage_path, self.file_name)
                 self.options = self.bk_options
             return await self.async_step_opt_save()
 
