@@ -344,7 +344,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         _LOGGER.info(f"{self.config_entry.unique_id}: Options Configuration Started.")
         errors = {}
 
-        self.number_of_rooms = RoomStore().get_rooms_count(self.file_name)
+        self.number_of_rooms = await RoomStore().async_get_rooms_count(self.file_name)
         if (
             not isinstance(self.number_of_rooms, int)
             or self.number_of_rooms < DEFAULT_ROOMS

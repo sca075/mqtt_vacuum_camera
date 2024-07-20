@@ -58,10 +58,7 @@ from .const import (
 )
 from .snapshots.snapshot import Snapshots
 from .utils.colors_man import ColorsManagment
-from .utils.files_operations import (
-    async_get_active_user_language,
-    is_auth_updated,
-)
+from .utils.files_operations import async_get_active_user_language, is_auth_updated
 from .valetudo.MQTT.connector import ValetudoConnector
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(

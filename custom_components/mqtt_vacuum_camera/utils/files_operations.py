@@ -25,28 +25,9 @@ from custom_components.mqtt_vacuum_camera.types import RoomStore
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_get_rooms_count(
-    hass: HomeAssistant,
-    robot_name: str,
-) -> int:
-    """Get the number of segments in the room_data_{vacuum_id}.json file."""
-    file_path = hass.config.path(
-        STORAGE_DIR, CAMERA_STORAGE, f"room_data_{robot_name}.json"
-    )
-    if not os.path.exists(file_path):
-        _LOGGER.warning(f"File not found: {file_path}")
-        return DEFAULT_ROOMS
-    else:
-        room_data = await async_load_file(file_path, True)
-        if room_data:
-            room_count = room_data.get("segments", DEFAULT_ROOMS)
-            return room_count
-        else:
-            _LOGGER.error(f"Error decoding file: {file_path}")
-            return DEFAULT_ROOMS
-
-
-async def async_write_vacuum_id(hass: HomeAssistant, file_name, vacuum_id):
+async def async_write_vacuum_id(
+    hass: HomeAssistant, file_name: str, vacuum_id: str
+) -> None:
     """Write the vacuum_id to a JSON file."""
     # Create the full file path
     if vacuum_id:
@@ -60,9 +41,11 @@ async def async_write_vacuum_id(hass: HomeAssistant, file_name, vacuum_id):
             _LOGGER.info(f"vacuum_id saved: {vacuum_id}")
         else:
             _LOGGER.warning(f"Error saving vacuum_id: {vacuum_id}")
+    else:
+        _LOGGER.warning("No vacuum_id provided.")
 
 
-async def async_get_translations_vacuum_id(storage_dir):
+async def async_get_translations_vacuum_id(storage_dir: str) -> str or None:
     """Read the vacuum_id from a JSON file."""
     # Create the full file path
     vacuum_id_path = os.path.join(storage_dir, "rooms_colours_description.json")
@@ -227,7 +210,9 @@ async def async_write_languages_json(hass: HomeAssistant):
 
 
 async def async_load_languages(storage_path: str, selected_languages=None) -> list:
-    """Load the selected language from the language.json file."""
+    """
+    Load the selected language from the language.json file.
+    """
     if selected_languages is None:
         selected_languages = []
     language_file_path = os.path.join(storage_path, "languages.json")
@@ -253,9 +238,6 @@ async def async_load_translations_json(
 ) -> list[Optional[dict]]:
     """
     Load the user selected language json files and return them as a list of JSON objects.
-    @param hass: Home Assistant instance.
-    @param languages: List of languages to load.
-    @return: List of JSON objects containing translations for each language.
     """
     translations_list = []
     translations_path = hass.config.path(
@@ -295,7 +277,7 @@ async def async_rename_room_description(
     Add room names to the room descriptions in the translations.
     """
     # Load the room data using the new MQTT-based function
-    room_data = RoomStore().get_rooms_data(vacuum_id)
+    room_data = await RoomStore().async_get_rooms_data(vacuum_id)
     _LOGGER.info(f"Room data loaded: {room_data}")
 
     if not room_data:
@@ -376,7 +358,9 @@ async def async_del_file(file):
 async def async_write_file_to_disk(
     file_to_write: str, data, is_binary: bool = False
 ) -> None:
-    """Asynchronously write data to a file."""
+    """
+    Asynchronously write data to a file.
+    """
 
     def _write_to_file(file_path, data_to_write, binary_mode):
         """Helper function to write data to a file."""
@@ -389,8 +373,10 @@ async def async_write_file_to_disk(
 
     try:
         await asyncio.to_thread(_write_to_file, file_to_write, data, is_binary)
+    except (OSError, IOError) as e:
+        _LOGGER.warning(f"Error on writing data to disk.: {e}")
     except Exception as e:
-        _LOGGER.warning(f"Blocking issue detected: {e}")
+        _LOGGER.warning(f"Unexpected issue detected: {e}")
 
 
 async def async_write_json_to_disk(file_to_write: str, json_data) -> None:
@@ -403,6 +389,8 @@ async def async_write_json_to_disk(file_to_write: str, json_data) -> None:
 
     try:
         await asyncio.to_thread(_write_to_file, file_to_write, json_data)
+    except (OSError, IOError, json.JSONDecodeError) as e:
+        _LOGGER.warning(f"Json File Operation Error: {e}")
     except Exception as e:
         _LOGGER.warning(f"Blocking issue detected: {e}")
 
