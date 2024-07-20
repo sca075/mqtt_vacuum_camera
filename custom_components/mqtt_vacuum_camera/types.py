@@ -3,6 +3,7 @@ This module contains type aliases for the project.
 Version 2024.07.4
 """
 
+import asyncio
 from dataclasses import dataclass
 import logging
 from typing import Any, Dict, Tuple, Union
@@ -74,6 +75,7 @@ class RoomStore:
     """Store the room data for the vacuum."""
 
     _instance = None
+    _lock = asyncio.Lock()
 
     def __new__(cls):
         if cls._instance is None:
@@ -81,15 +83,15 @@ class RoomStore:
             cls._instance.vacuums_data = {}
         return cls._instance
 
-    def set_rooms_data(self, vacuum_id, rooms_data):
+    async def async_set_rooms_data(self, vacuum_id, rooms_data):
         """Set the room data for the vacuum."""
         self.vacuums_data[vacuum_id] = rooms_data
 
-    def get_rooms_data(self, vacuum_id):
+    async def async_get_rooms_data(self, vacuum_id):
         """Get the room data for a vacuum."""
         return self.vacuums_data.get(vacuum_id, {})
 
-    def get_rooms_count(self, vacuum_id):
+    async def async_get_rooms_count(self, vacuum_id):
         """Count the number of rooms for a vacuum."""
         count = len(self.vacuums_data.get(vacuum_id, {}))
         if count == 0:
