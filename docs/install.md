@@ -27,7 +27,9 @@ Once the repository is added, please click on the repository and the home page w
 
 
 ## Step 2 Restart HA and Setup the component.
+
 **You will need to restart Home Assistant at this point** to have the integration available. Once Home Assistant will reload, please go in (plase press CTRL clicking the link this would open the link in a different tab of your browser) [**Settings** -> **Devices & Services**](https://my.home-assistant.io/redirect/config_flow_start/?domain=mqtt_vacuum_camera) then please confirm to add the integration.
+
 The setup will start, you just select here the vacuum and the camera will be configured.
 
 ![Screenshot 2024-07-18 at 13 11 04](https://github.com/user-attachments/assets/871bb739-ce32-4ee4-bccf-05d597afd399)
