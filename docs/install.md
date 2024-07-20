@@ -2,7 +2,7 @@
 
 ## Via HACS
 
-## If you click this button below we can go to step #2
+## If you click this button below we can go to step #2.
 [![Open HACS repository in Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=sca075&repository=mqtt_vacuum_camera&category=integration)
 
 ## Step 1 Download the Component.
@@ -12,7 +12,7 @@ Using [HACS](https://hacs.xyz/) add custom repositories by clicking on the three
 
 please copy the repository link below in ***Custom repositories*** section.
 
-```
+```link
 https://github.com/sca075/mqtt_vacuum_camera.git
 ```
 
@@ -28,7 +28,7 @@ Once the repository is added, please click on the repository and the home page w
 
 
 ## Step 2 Restart HA to finalize the component installation.
-**You will need to restart Home Assistant at this point** to have the integration available. Once Home Assistant will reload, please go in (plase press CTRL clicking the link this would open the link in a different tab of your browser) [**Settings** -> **Devices & Services**](https://my.home-assistant.io/redirect/config_flow_start/?domain=mqtt_vacuum_camera) then please confirm to add the integration.
+**You will need to restart Home Assistant at this point** to have the integration available. Once Home Assistant will reload, please go in (please press CTRL clicking the link this would open the link in a different tab of your browser) [**Settings** -> **Devices & Services**](https://my.home-assistant.io/redirect/config_flow_start/?domain=mqtt_vacuum_camera) then please confirm to add the integration.
 The setup will start, you just select here the vacuum and the camera will be configured.
 
 ![Screenshot 2024-07-18 at 13 11 04](https://github.com/user-attachments/assets/871bb739-ce32-4ee4-bccf-05d597afd399)
@@ -47,7 +47,7 @@ If you want to install this camera manually without HACS:
 Check the last release available and REPLACE_IT (at current v1.5.9)
 To install this integration manually you have to download mqtt_vacuum_camera.zip and extract its contents to config/custom_components/mqtt_vacuum_camera directory:
 
-```
+```shell
 mkdir -p custom_components/mqtt_vacuum_camera
 cd custom_components/mqtt_vacuum_camera
 wget https://github.com/sca075/mqtt_vacuum_camera/archive/refs/tags/v.1.5.9.zip
@@ -62,7 +62,7 @@ Once the files are in the right place, you will need to restart Home Assistant t
 Configuration of the [card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card) (thanks to [@PiotrMachowski](https://github.com/PiotrMachowski)) once the camera is installed requires:
 
 *calibration source will be set to camera **not to identity** as the camera is providing the calibration points to the card.*
-```
+```yaml
 calibration_source: 
   camera: true 
 ```
@@ -75,23 +75,22 @@ topic.
 
 ***Note: "YOUR_TOPIC_HERE" must be replaced with what you can find it in the camera attributes. The value is Case
 Sensitive.***
-```
+```yaml
 internal_variables: 
   topic: valetudo/YOUR_TOPIC_HERE  
 ```
 
-We did agree and work with the author of the card, we guess soon a [new version of the card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card/actions/runs/7005593157) will be released.
-Those settings for the internal_variables will be automatically setup in the card as soon the vacuum and camera will be setup in the card.
+We did agree and work with the author of the card, we guess a [new version of the card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card/actions/runs/7005593157) will be released.
+Those settings for the internal_variables will be, probably, automatically setup in the card as soon the vacuum and camera will be setup in the card.
 
 ### Camera Configuration:
 
-**This integration is not configuring the Vacuums**, you need to configure the vacuum in the vacuum UI. Also, it is not
-possible to change the Images options form the vacuum UI.
+**This integration is not configuring the Vacuums**, you need to configure the vacuum in the vacuum UI. 
 This project runs in parallel, is not a fork of the original Valetudo project you selected.
 
 It is possible to **configure the camera via the Home Assistant UI**, as we aim to extract the Vacuums maps in the Home
 Assistant UI.
-The camera entity created will have the same friendly name of YOUR_VACUUM_camera at the end.
+The camera entity created will have the same friendly name of **YOUR_VACUUM**"_camera" at the end.
 
 To configure the Camera Options use Home Assistant "Settings" -> "Devices & Services" -> "MQTT Vacuum Camera" in
 the "Integration" tab.
@@ -100,12 +99,13 @@ The setup of the options of the camera include:
 - [**Image Options**](https://github.com/sca075/mqtt_vacuum_camera/blob/main/docs/images_options.md)
 - [**Configure Status Text**](https://github.com/sca075/mqtt_vacuum_camera/blob/main/docs/status_text.md)
 - [**Configure the Colours**](https://github.com/sca075/mqtt_vacuum_camera/blob/main/docs/colours.md)
-- [**Export the logs of this integration**](https://github.com/sca075/mqtt_vacuum_camera/blob/main/docs/snapshots.md) 
+- [**Export the logs of this integration**](https://github.com/sca075/mqtt_vacuum_camera/blob/main/docs/snapshots.md)
 
 We filter the logs of HA. Only the Camera only entries on the logs are important to us, so we can help you better.
 The logs are stored in the .storage folder of Home Assistant. Can be export to WWW from the options of the camera.
 The Camera will delete this zip file from WWW if restarted.
-## What is in zip logs:
+
+***What is in the zipped logs:***
 - Home Assistant logs of MQTT Vacuum Camera (filtered).
 - json file of the Vacuum.
 - PNG file of output the map.
