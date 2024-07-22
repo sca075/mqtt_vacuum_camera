@@ -1,5 +1,5 @@
 """
-Version: v2024.07.4
+Version: v2024.08.0
 - Removed the PNG decode, the json is extracted from map-data instead of map-data-hass.
 - Tested no influence on the camera performance.
 - Added gzip library used in Valetudo RE data compression.
@@ -9,8 +9,11 @@ import asyncio
 import json
 import logging
 
+from typing import Any
+
 from homeassistant.components import mqtt
 from homeassistant.core import callback
+from homeassistant.components.mqtt.const import DEFAULT_ENCODING
 from isal import igzip, isal_zlib
 
 from custom_components.mqtt_vacuum_camera.types import RoomStore
@@ -139,30 +142,26 @@ class ValetudoConnector:
             self._img_payload = msg.payload
             self._data_in = True
 
-    async def hypfer_handle_status_payload(self, msg) -> None:
+    async def hypfer_handle_status_payload(self, state) -> None:
         """
         Handle new MQTT messages.
         /StatusStateAttribute/status" is for Hypfer.
-        @param msg: MQTT message
         """
-        self._payload = await self.async_decode_mqtt_payload(msg)
-        if self._payload:
-            self._mqtt_vac_stat = self._payload
+        if state:
+            self._mqtt_vac_stat = state
             _LOGGER.info(
                 f"{self._file_name}: Received vacuum {self._mqtt_vac_stat} status."
             )
             if self._mqtt_vac_stat != "docked":
                 self._ignore_data = False
 
-    async def hypfer_handle_connect_state(self, msg) -> None:
+    async def hypfer_handle_connect_state(self, connect_state) -> None:
         """
         Handle new MQTT messages.
         /$state is for Hypfer.
-        @param msg: MQTT message
         """
-        self._payload = await self.async_decode_mqtt_payload(msg)
-        if self._payload:
-            self._mqtt_vac_connect_state = self._payload
+        if connect_state:
+            self._mqtt_vac_connect_state = connect_state
             _LOGGER.info(
                 f"{self._mqtt_topic}: Received vacuum connection status: {self._mqtt_vac_connect_state}."
             )
@@ -184,25 +183,21 @@ class ValetudoConnector:
         else:
             pass
 
-    async def hypfer_handle_errors(self, msg) -> None:
+    async def hypfer_handle_errors(self, errors) -> None:
         """
         Handle new MQTT messages.
         /StatusStateAttribute/error_description is for Hypfer.
-        @param msg: MQTT message
         """
-        self._payload = await self.async_decode_mqtt_payload(msg)
-        self._mqtt_vac_err = self._payload
+        self._mqtt_vac_err = errors
         _LOGGER.info(f"{self._mqtt_topic}: Received vacuum Error: {self._mqtt_vac_err}")
 
-    async def hypfer_handle_battery_level(self, msg) -> None:
+    async def hypfer_handle_battery_level(self, battery_state) -> None:
         """
         Handle new MQTT messages.
         /BatteryStateAttribute/level is for Hypfer.
-        @param msg: MQTT message
         """
-        self._payload = await self.async_decode_mqtt_payload(msg)
-        if self._payload:
-            self._mqtt_vac_battery_level = int(self._payload)
+        if battery_state:
+            self._mqtt_vac_battery_level = int(battery_state)
             _LOGGER.info(
                 f"{self._file_name}: Received vacuum battery level: {self._mqtt_vac_battery_level}%."
             )
@@ -240,8 +235,8 @@ class ValetudoConnector:
                 f"and battery level: {self._mqtt_vac_battery_level}%."
             )
             if (
-                self._mqtt_vac_stat != "docked"
-                or int(self._mqtt_vac_battery_level) <= 100
+                    self._mqtt_vac_stat != "docked"
+                    or int(self._mqtt_vac_battery_level) <= 100
             ):
                 self._data_in = True
                 self._is_rrm = True
@@ -298,20 +293,24 @@ class ValetudoConnector:
         if self._rcv_topic == f"{self._mqtt_topic}/map_data":
             await self.rand256_handle_image_payload(msg)
         elif (self._rcv_topic == f"{self._mqtt_topic}/MapData/map-data") and (
-            not self._ignore_data
+                not self._ignore_data
         ):
             await self.hypfer_handle_image_data(msg)
         elif self._rcv_topic == f"{self._mqtt_topic}/StatusStateAttribute/status":
-            await self.hypfer_handle_status_payload(msg)
+            decoded_state = await self.async_decode_mqtt_payload(msg)
+            await self.hypfer_handle_status_payload(decoded_state)
         elif self._rcv_topic == f"{self._mqtt_topic}/$state":
-            await self.hypfer_handle_connect_state(msg)
+            decoded_connect_state = await self.async_decode_mqtt_payload(msg)
+            await self.hypfer_handle_connect_state(decoded_connect_state)
         elif (
-            self._rcv_topic
-            == f"{self._mqtt_topic}/StatusStateAttribute/error_description"
+                self._rcv_topic
+                == f"{self._mqtt_topic}/StatusStateAttribute/error_description"
         ):
-            await self.hypfer_handle_errors(msg)
+            decode_errors = await self.async_decode_mqtt_payload(msg)
+            await self.hypfer_handle_errors(decode_errors)
         elif self._rcv_topic == f"{self._mqtt_topic}/BatteryStateAttribute/level":
-            await self.hypfer_handle_battery_level(msg)
+            decoded_battery_state = await self.async_decode_mqtt_payload(msg)
+            await self.hypfer_handle_battery_level(decoded_battery_state)
         elif self._rcv_topic == f"{self._mqtt_topic}/state":
             await self.rand256_handle_statuses(msg)
         elif self._rcv_topic == f"{self._mqtt_topic}/custom_command":
@@ -358,7 +357,7 @@ class ValetudoConnector:
             cust_payload,
             _QOS,
             encoding="utf-8",
-        )
+            )
 
     async def async_unsubscribe_from_topics(self) -> None:
         """Unsubscribe from all MQTT topics."""
@@ -366,15 +365,25 @@ class ValetudoConnector:
         map(lambda x: x(), self._unsubscribe_handlers)
 
     @staticmethod
-    async def async_decode_mqtt_payload(msg):
-        """Check if we need to decode or not the payload"""
-        if isinstance(msg.payload, bytes):
-            # If it's binary data, decode it
-            payload_str = msg.payload.decode()
-            return payload_str
-        elif isinstance(msg.payload, (int, float)):
-            # If it's a number, return it as is
-            return msg.payload
-        else:
-            # If it's already a string or another type, return it as is
-            return msg.payload
+    async def async_decode_mqtt_payload(msg) -> Any:
+        """Decode the MQTT payload appropriately without altering the original payload."""
+
+        try:
+            my_payload = msg.payload
+            if isinstance(my_payload, bytes):
+                try:
+                    decoded_payload = my_payload.decode(DEFAULT_ENCODING)
+                    return decoded_payload
+                except UnicodeDecodeError:
+                    # Handle non UTF-8 payload
+                    decoded_payload = str(my_payload)
+                    return decoded_payload
+            elif isinstance(my_payload, (int, float)):
+                return my_payload
+            else:
+                _LOGGER.debug(f"Payload has type: {type(my_payload)}")
+                return my_payload
+
+        except Exception as e:
+            _LOGGER.error(f"Failed to decode payload: {e}")
+            return None
