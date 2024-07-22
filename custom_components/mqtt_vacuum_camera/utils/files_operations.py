@@ -251,9 +251,7 @@ async def async_load_room_data(storage_path: str, vacuum_id: str) -> dict:
         return {}
 
 
-async def async_rename_room_description(
-    hass: HomeAssistant, vacuum_id: str
-) -> bool:
+async def async_rename_room_description(hass: HomeAssistant, vacuum_id: str) -> bool:
     """
     Add room names to the room descriptions in the translations.
     """
