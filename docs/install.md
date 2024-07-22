@@ -101,7 +101,7 @@ The setup of the options of the camera include:
 - [**Configure the Colours**](https://github.com/sca075/mqtt_vacuum_camera/blob/main/docs/colours.md)
 - [**Export the logs of this integration**](https://github.com/sca075/mqtt_vacuum_camera/blob/main/docs/snapshots.md)
 
-We filter the logs of HA. Only the Camera only entries on the logs are important to us, so we can help you better.
+We filter the logs of HA. Only the Camera entries on the logs are important to us, so we can help you better.
 The logs are stored in the .storage folder of Home Assistant. Can be export to WWW from the options of the camera.
 The Camera will delete this zip file from WWW if restarted.
 
