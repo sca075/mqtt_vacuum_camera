@@ -135,6 +135,11 @@ async def async_get_active_user_language(hass: HomeAssistant) -> str:
     If the user's language setting is not found, default to English.
     """
     active_user_id = await async_find_last_logged_in_user(hass)
+
+    if not active_user_id:
+        _LOGGER.info("No active user found. Defaulting to English language.")
+        return "en"
+
     user_language_store = UserLanguageStore()
 
     # Try to get the language from UserLanguageStore
@@ -146,9 +151,9 @@ async def async_get_active_user_language(hass: HomeAssistant) -> str:
     user_data_path = hass.config.path(
         STORAGE_DIR, f"frontend.user_data_{active_user_id}"
     )
-    if os.path.exists(user_data_path):
-        user_data_file = await async_load_file(user_data_path)
-        try:
+    try:
+        if os.path.exists(user_data_path):
+            user_data_file = await async_load_file(user_data_path)
             if user_data_file:
                 data = json.loads(user_data_file)
                 language = data["data"]["language"]["language"]
@@ -157,11 +162,9 @@ async def async_get_active_user_language(hass: HomeAssistant) -> str:
                 return language
             else:
                 raise KeyError
-        except KeyError:
-            return "en"
-    else:
-        _LOGGER.info("Defaulting to English language.")
-        return "en"
+    except (KeyError, json.JSONDecodeError, FileNotFoundError):
+        _LOGGER.debug("Defaulting to English language.")
+    return "en"
 
 
 async def async_load_languages(selected_languages=None) -> list:
@@ -172,9 +175,12 @@ async def async_load_languages(selected_languages=None) -> list:
         selected_languages = []
 
     user_language_store = UserLanguageStore()
-    all_languages = await user_language_store.get_all_languages()
-
-    selected_languages.extend(all_languages)
+    try:
+        all_languages = await user_language_store.get_all_languages()
+        if all_languages:
+            selected_languages.extend(all_languages)
+    except Exception as e:
+        _LOGGER.warning(f"Error while loading languages: {str(e)}")
 
     return selected_languages
 
