@@ -4,6 +4,7 @@ Keep the data between the modules.
 Version: v2024.07.1
 """
 
+import asyncio
 from custom_components.mqtt_vacuum_camera.types import Colors
 
 
@@ -13,7 +14,7 @@ class CameraShared(object):
     Implements a kind of Thread Safe data shared area.
     """
 
-    def __init__(self):
+    def __init__(self, file_name):
         self.frame_number: int = 0  # camera Frame number
         self.destinations: list = []  # MQTT rand destinations
         self.rand256_active_zone: list = []  # Active zone for rand256
@@ -54,7 +55,7 @@ class CameraShared(object):
         self.export_svg = False  # Export SVG
         self.svg_path = None  # SVG Export path
         self.enable_snapshots = False  # Enable snapshots
-        self.file_name = ""  # vacuum friendly name as File name
+        self.file_name = file_name  # vacuum friendly name as File name
         self.attr_calibration_points = None  # Calibration points of the image
         self.map_rooms = None  # Rooms data from the vacuum
         self.map_pred_zones = None  # Predefined zones data
@@ -79,3 +80,30 @@ class CameraShared(object):
     def get_rooms_colors(self):
         """Get the rooms colors."""
         return self.rooms_colors
+
+    async def batch_update(self, **kwargs):
+        """Batch update multiple attributes."""
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+    async def batch_get(self, *args):
+        """Batch get multiple attributes."""
+        return {key: getattr(self, key) for key in args}
+
+
+class CameraSharedManager:
+    def __init__(self, file_name):
+        self._instances = {}
+        self._lock = asyncio.Lock()
+        self.file_name = file_name
+
+    def get_instance(self):
+        if self.file_name not in self._instances:
+            self._instances[self.file_name] = CameraShared(self.file_name)
+            self._instances[self.file_name].file_name = self.file_name
+        return self._instances[self.file_name]
+
+    async def update_instance(self, **kwargs):
+        async with self._lock:
+            instance = self.get_instance()
+            await instance.batch_update(**kwargs)

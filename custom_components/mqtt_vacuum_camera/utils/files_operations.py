@@ -276,7 +276,6 @@ async def async_rename_room_description(hass: HomeAssistant, vacuum_id: str) -> 
 
     # Get the languages to modify
     language = await async_load_languages()
-    _LOGGER.info(f"Languages to modify: {language}")
     edit_path = hass.config.path("custom_components/mqtt_vacuum_camera/translations")
     _LOGGER.info(f"Editing the translations file for language: {language}")
     data_list = await async_load_translations_json(hass, language)

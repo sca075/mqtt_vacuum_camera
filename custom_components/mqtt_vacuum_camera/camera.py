@@ -1,6 +1,6 @@
 """
 Camera
-Version: v2024.07.4
+Version: v2024.08.0
 Image Processing Threading implemented on Version 1.5.7.
 """
 
@@ -21,7 +21,7 @@ from typing import Any, Optional
 from PIL import Image
 from homeassistant import config_entries, core
 from homeassistant.components.camera import PLATFORM_SCHEMA, Camera, CameraEntityFeature
-from homeassistant.const import CONF_NAME, CONF_UNIQUE_ID
+from homeassistant.const import CONF_NAME, CONF_UNIQUE_ID, MATCH_ALL
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.reload import async_setup_reload_service
@@ -31,7 +31,7 @@ from psutil_home_assistant import PsutilWrapper as ProcInsp
 import voluptuous as vol
 
 from .camera_processing import CameraProcessor
-from .camera_shared import CameraShared
+from .camera_shared import CameraSharedManager
 from .common import get_vacuum_unique_id_from_mqtt_topic
 from .const import (
     ATTR_MARGINS,
@@ -109,6 +109,7 @@ class ValetudoCamera(Camera):
     """
 
     _attr_has_entity_name = True
+    _unrecorded_attributes = frozenset({MATCH_ALL})
 
     def __init__(self, hass, device_info):
         super().__init__()
@@ -119,11 +120,13 @@ class ValetudoCamera(Camera):
         self._attr_name = "Camera"
         self._attr_is_on = True
         self._directory_path = self.hass.config.path()  # get Home Assistant path
-        self._shared = CameraShared()  # Camera Shared data between threads.
         self._mqtt_listen_topic = device_info.get(CONF_VACUUM_CONNECTION_STRING)
         if self._mqtt_listen_topic:
             self._mqtt_listen_topic = str(self._mqtt_listen_topic)
-            self._shared.file_name = self._mqtt_listen_topic.split("/")[1].lower()
+            self.manager = CameraSharedManager(
+                self._mqtt_listen_topic.split("/")[1].lower()
+            )
+            self._shared = self.manager.get_instance()
             self._file_name = self._shared.file_name
             _LOGGER.debug(f"Camera {self._file_name} Starting up..")
             _LOGGER.info(f"System Release: {platform.node()}, {platform.release()}")
