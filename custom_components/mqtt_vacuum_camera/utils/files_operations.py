@@ -4,7 +4,7 @@ Common functions for the MQTT Vacuum Camera integration.
 Those functions are used to store and retrieve user data from the Home Assistant storage.
 The data will be stored locally in the Home Assistant in .storage/valetudo_camera directory.
 Author: @sca075
-Version: 2024.07.4
+Version: 2024.08.0
 """
 
 from __future__ import annotations
@@ -164,53 +164,6 @@ async def async_get_active_user_language(hass: HomeAssistant) -> str:
         return "en"
 
 
-async def async_write_languages_json(hass: HomeAssistant):
-    """
-    Write the languages.json file with languages for all users excluding system accounts.
-    Populate the UserLanguageStore with the retrieved languages.
-    """
-    try:
-        user_ids = await async_get_user_ids(hass)  # This function excludes system users
-        _LOGGER.info(f"Saving User IDs: {user_ids} languages...")
-        languages = {"languages": []}
-        user_language_store = UserLanguageStore()
-
-        for user_id in user_ids:
-            user_data_file = hass.config.path(
-                STORAGE_DIR, f"frontend.user_data_{user_id}"
-            )
-
-            if os.path.exists(user_data_file):
-                user_data = await async_load_file(user_data_file)
-                try:
-                    data = json.loads(user_data)
-                    language = data["data"]["language"]["language"]
-                    languages["languages"].append(
-                        {"user_id": user_id, "language": language}
-                    )
-                    await user_language_store.set_user_language(user_id, language)
-                except KeyError:
-                    _LOGGER.error(f"Key error while processing user ID: {user_id}")
-                except json.JSONDecodeError as json_error:
-                    _LOGGER.error(
-                        f"JSON decode error for user ID: {user_id}: {json_error}"
-                    )
-                else:
-                    _LOGGER.info(f"User ID: {user_id}, language: {language}")
-            else:
-                _LOGGER.info(f"User ID: {user_id}, skipping...")
-                continue
-
-        # Write the consolidated languages to a JSON file
-        out_languages_file = hass.config.path(
-            STORAGE_DIR, CAMERA_STORAGE, "languages.json"
-        )
-        await async_write_json_to_disk(out_languages_file, languages)
-
-    except Exception as e:
-        _LOGGER.warning(f"Error while writing languages.json: {str(e)}")
-
-
 async def async_load_languages(selected_languages=None) -> list:
     """
     Load the selected languages from UserLanguageStore.
@@ -299,7 +252,7 @@ async def async_load_room_data(storage_path: str, vacuum_id: str) -> dict:
 
 
 async def async_rename_room_description(
-    hass: HomeAssistant, storage_path: str, vacuum_id: str
+    hass: HomeAssistant, vacuum_id: str
 ) -> bool:
     """
     Add room names to the room descriptions in the translations.
@@ -344,7 +297,7 @@ async def async_rename_room_description(
                     room_id, room_name = list(room_data.items())[j]
                     data["options"]["step"][room_key]["data_description"][
                         f"color_room_{j}"
-                    ] = f"### **RoomID {room_id} {room_name}**"
+                    ] = f"### **RoomID {room_id} {room_name}**"  # Markdown format
 
     # Modify the "data" keys for alpha_2 and alpha_3
     for data in data_list:
@@ -360,7 +313,6 @@ async def async_rename_room_description(
                     data["options"]["step"][alpha_key]["data"][
                         f"alpha_room_{j}"
                     ] = f"RoomID {room_id} {room_name}"
-                    # "**text**" is bold as in markdown
 
     # Write the modified data back to the JSON files
     for idx, data in enumerate(data_list):
@@ -420,7 +372,7 @@ async def async_write_json_to_disk(file_to_write: str, json_data) -> None:
     except (OSError, IOError, json.JSONDecodeError) as e:
         _LOGGER.warning(f"Json File Operation Error: {e}")
     except Exception as e:
-        _LOGGER.warning(f"Blocking issue detected: {e}")
+        _LOGGER.warning(f"Unexpected issue detected: {e}")
 
 
 async def async_load_file(file_to_load: str, is_json: bool = False) -> Any:
