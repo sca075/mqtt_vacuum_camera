@@ -11,7 +11,6 @@ import logging
 from typing import Any
 
 from homeassistant.components import mqtt
-from homeassistant.components.mqtt.const import DEFAULT_ENCODING
 from homeassistant.core import callback
 from isal import igzip, isal_zlib
 
@@ -324,23 +323,75 @@ class ValetudoConnector:
     async def async_subscribe_to_topics(self) -> None:
         """Subscribe to the MQTT topics for Hypfer and ValetudoRe."""
         if self._mqtt_topic:
-            for x in [
+            topics_with_none_encoding = {
                 f"{self._mqtt_topic}/MapData/map-data",
+                f"{self._mqtt_topic}/map_data",  # added for ValetudoRe
+            }
+
+            topics_with_default_encoding = {
                 f"{self._mqtt_topic}/MapData/segments",
                 f"{self._mqtt_topic}/StatusStateAttribute/status",
                 f"{self._mqtt_topic}/StatusStateAttribute/error_description",
                 f"{self._mqtt_topic}/$state",
                 f"{self._mqtt_topic}/BatteryStateAttribute/level",
-                f"{self._mqtt_topic}/map_data",  # added for ValetudoRe
                 f"{self._mqtt_topic}/state",  # added for ValetudoRe
                 f"{self._mqtt_topic}/destinations",  # added for ValetudoRe
                 f"{self._mqtt_topic}/custom_command",  # added for ValetudoRe
-            ]:
+            }
+
+            for x in topics_with_none_encoding:
                 self._unsubscribe_handlers.append(
                     await mqtt.async_subscribe(
                         self._hass, x, self.async_message_received, _QOS, encoding=None
                     )
                 )
+
+            for x in topics_with_default_encoding:
+                self._unsubscribe_handlers.append(
+                    await mqtt.async_subscribe(
+                        self._hass, x, self.async_message_received, _QOS
+                    )
+                )
+
+    async def async_unsubscribe_from_topics(self) -> None:
+        """Unsubscribe from all MQTT topics."""
+        _LOGGER.debug("Unsubscribing topics!!!")
+        map(lambda x: x(), self._unsubscribe_handlers)
+
+    @staticmethod
+    async def async_decode_mqtt_payload(msg) -> Any:
+        """Decode the MQTT payload appropriately without altering the original payload."""
+
+        my_payload = msg.payload
+
+        try:
+            if isinstance(my_payload, str):
+                if my_payload.startswith("{") and my_payload.endswith("}"):
+                    try:
+                        return json.loads(my_payload)
+                    except json.JSONDecodeError:
+                        pass
+                # Check if the string is a number (integer or float)
+                if my_payload.isdigit() or my_payload.replace(".", "", 1).isdigit():
+                    try:
+                        if "." in my_payload:
+                            return float(my_payload)
+                        else:
+                            return int(my_payload)
+                    except ValueError:
+                        pass
+                return my_payload
+            elif isinstance(my_payload, (int, float)):
+                return my_payload
+            elif isinstance(my_payload, bytes):
+                _LOGGER.debug("Payload is bytes, no decoding necessary")
+                return my_payload
+            else:
+                return my_payload
+
+        except Exception as e:
+            _LOGGER.error(f"Failed to decode payload: {e}")
+            return None
 
     async def rrm_publish_destinations(self) -> None:
         """
@@ -357,78 +408,3 @@ class ValetudoConnector:
             _QOS,
             encoding="utf-8",
         )
-
-    async def async_unsubscribe_from_topics(self) -> None:
-        """Unsubscribe from all MQTT topics."""
-        _LOGGER.debug("Unsubscribing topics!!!")
-        map(lambda x: x(), self._unsubscribe_handlers)
-
-    async def _async_json_payload(self, payload: str) -> Any:
-        """Attempt to parse a string as JSON."""
-        if payload.startswith('{') and payload.endswith('}'):
-            try:
-                return json.loads(payload)
-            except json.JSONDecodeError:
-                _LOGGER.debug("Failed to parse JSON, returning original payload")
-                return payload
-        else:
-            return payload
-
-    @staticmethod
-    async def async_decode_mqtt_payload(msg) -> Any:
-        """Decode the MQTT payload appropriately without altering the original payload."""
-
-        my_payload = msg.payload
-        _LOGGER.debug(f"Payload has type: {type(my_payload)}")
-
-        try:
-            if isinstance(my_payload, bytes):
-                try:
-                    decoded_payload = my_payload.decode(DEFAULT_ENCODING)
-                except UnicodeDecodeError:
-                    _LOGGER.debug("Failed to decode with UTF-8")
-                    try:
-                        _LOGGER.debug("Trying to decode with UTF-16")
-                        decoded_payload = my_payload.decode("utf-16")
-                    except UnicodeDecodeError:
-                        _LOGGER.debug("Failed to decode with UTF-16, returning as string")
-                        decoded_payload = str(my_payload)
-
-                # Check if the decoded payload is a JSON object
-                if decoded_payload.startswith('{') and decoded_payload.endswith('}'):
-                    _LOGGER.debug("Decoded payload is a JSON object")
-                    try:
-                        json_payload = json.loads(decoded_payload)
-                        return json_payload
-                    except json.JSONDecodeError:
-                        pass
-
-                # Check if the decoded payload is a number (integer or float)
-                if decoded_payload.isdigit() or decoded_payload.replace('.', '', 1).isdigit():
-                    _LOGGER.debug("Decoded payload is a numeric string (integer or float)")
-                    try:
-                        if '.' in decoded_payload:
-                            return float(decoded_payload)
-                        else:
-                            return int(decoded_payload)
-                    except ValueError:
-                        pass
-
-                return decoded_payload
-            elif isinstance(my_payload, str):
-                _LOGGER.debug("Payload is a string")
-                if my_payload.startswith('{') and my_payload.endswith('}'):
-                    try:
-                        return json.loads(my_payload)
-                    except json.JSONDecodeError:
-                        return my_payload
-                else:
-                    return my_payload
-            elif isinstance(my_payload, (int, float)):
-                _LOGGER.debug("Payload is an integer or float")
-                return my_payload
-            else:
-                return my_payload
-        except Exception as e:
-            _LOGGER.error(f"Failed to decode payload: {e}")
-            return None
