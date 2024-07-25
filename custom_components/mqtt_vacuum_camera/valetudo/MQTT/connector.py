@@ -1,5 +1,5 @@
 """
-Version: v2024.08.0
+Version: v2024.08.0b0
 - Removed the PNG decode, the json is extracted from map-data instead of map-data-hass.
 - Tested no influence on the camera performance.
 - Added gzip library used in Valetudo RE data compression.
@@ -8,12 +8,11 @@ Version: v2024.08.0
 import asyncio
 import json
 import logging
-
 from typing import Any
 
 from homeassistant.components import mqtt
-from homeassistant.core import callback
 from homeassistant.components.mqtt.const import DEFAULT_ENCODING
+from homeassistant.core import callback
 from isal import igzip, isal_zlib
 
 from custom_components.mqtt_vacuum_camera.types import RoomStore
@@ -235,8 +234,8 @@ class ValetudoConnector:
                 f"and battery level: {self._mqtt_vac_battery_level}%."
             )
             if (
-                    self._mqtt_vac_stat != "docked"
-                    or int(self._mqtt_vac_battery_level) <= 100
+                self._mqtt_vac_stat != "docked"
+                or int(self._mqtt_vac_battery_level) <= 100
             ):
                 self._data_in = True
                 self._is_rrm = True
@@ -293,7 +292,7 @@ class ValetudoConnector:
         if self._rcv_topic == f"{self._mqtt_topic}/map_data":
             await self.rand256_handle_image_payload(msg)
         elif (self._rcv_topic == f"{self._mqtt_topic}/MapData/map-data") and (
-                not self._ignore_data
+            not self._ignore_data
         ):
             await self.hypfer_handle_image_data(msg)
         elif self._rcv_topic == f"{self._mqtt_topic}/StatusStateAttribute/status":
@@ -303,8 +302,8 @@ class ValetudoConnector:
             decoded_connect_state = await self.async_decode_mqtt_payload(msg)
             await self.hypfer_handle_connect_state(decoded_connect_state)
         elif (
-                self._rcv_topic
-                == f"{self._mqtt_topic}/StatusStateAttribute/error_description"
+            self._rcv_topic
+            == f"{self._mqtt_topic}/StatusStateAttribute/error_description"
         ):
             decode_errors = await self.async_decode_mqtt_payload(msg)
             await self.hypfer_handle_errors(decode_errors)
@@ -318,7 +317,7 @@ class ValetudoConnector:
         elif self._rcv_topic == f"{self._mqtt_topic}/destinations":
             await self._hass.async_create_task(self.rand256_handle_destinations(msg))
         elif self._rcv_topic == f"{self._mqtt_topic}/MapData/segments":
-            self._mqtt_segments = json.loads(msg.payload)
+            self._mqtt_segments = await self.async_decode_mqtt_payload(msg)
             await RoomStore().async_set_rooms_data(self._file_name, self._mqtt_segments)
             _LOGGER.debug(f"Segments: {self._mqtt_segments}")
 
@@ -357,33 +356,79 @@ class ValetudoConnector:
             cust_payload,
             _QOS,
             encoding="utf-8",
-            )
+        )
 
     async def async_unsubscribe_from_topics(self) -> None:
         """Unsubscribe from all MQTT topics."""
         _LOGGER.debug("Unsubscribing topics!!!")
         map(lambda x: x(), self._unsubscribe_handlers)
 
+    async def _async_json_payload(self, payload: str) -> Any:
+        """Attempt to parse a string as JSON."""
+        if payload.startswith('{') and payload.endswith('}'):
+            try:
+                return json.loads(payload)
+            except json.JSONDecodeError:
+                _LOGGER.debug("Failed to parse JSON, returning original payload")
+                return payload
+        else:
+            return payload
+
     @staticmethod
     async def async_decode_mqtt_payload(msg) -> Any:
         """Decode the MQTT payload appropriately without altering the original payload."""
 
+        my_payload = msg.payload
+        _LOGGER.debug(f"Payload has type: {type(my_payload)}")
+
         try:
-            my_payload = msg.payload
             if isinstance(my_payload, bytes):
                 try:
                     decoded_payload = my_payload.decode(DEFAULT_ENCODING)
-                    return decoded_payload
                 except UnicodeDecodeError:
-                    # Handle non UTF-8 payload
-                    decoded_payload = str(my_payload)
-                    return decoded_payload
+                    _LOGGER.debug("Failed to decode with UTF-8")
+                    try:
+                        _LOGGER.debug("Trying to decode with UTF-16")
+                        decoded_payload = my_payload.decode("utf-16")
+                    except UnicodeDecodeError:
+                        _LOGGER.debug("Failed to decode with UTF-16, returning as string")
+                        decoded_payload = str(my_payload)
+
+                # Check if the decoded payload is a JSON object
+                if decoded_payload.startswith('{') and decoded_payload.endswith('}'):
+                    _LOGGER.debug("Decoded payload is a JSON object")
+                    try:
+                        json_payload = json.loads(decoded_payload)
+                        return json_payload
+                    except json.JSONDecodeError:
+                        pass
+
+                # Check if the decoded payload is a number (integer or float)
+                if decoded_payload.isdigit() or decoded_payload.replace('.', '', 1).isdigit():
+                    _LOGGER.debug("Decoded payload is a numeric string (integer or float)")
+                    try:
+                        if '.' in decoded_payload:
+                            return float(decoded_payload)
+                        else:
+                            return int(decoded_payload)
+                    except ValueError:
+                        pass
+
+                return decoded_payload
+            elif isinstance(my_payload, str):
+                _LOGGER.debug("Payload is a string")
+                if my_payload.startswith('{') and my_payload.endswith('}'):
+                    try:
+                        return json.loads(my_payload)
+                    except json.JSONDecodeError:
+                        return my_payload
+                else:
+                    return my_payload
             elif isinstance(my_payload, (int, float)):
+                _LOGGER.debug("Payload is an integer or float")
                 return my_payload
             else:
-                _LOGGER.debug(f"Payload has type: {type(my_payload)}")
                 return my_payload
-
         except Exception as e:
             _LOGGER.error(f"Failed to decode payload: {e}")
             return None
