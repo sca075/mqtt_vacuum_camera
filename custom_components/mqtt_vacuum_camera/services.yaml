@@ -20,6 +20,6 @@ snapshot:
   fields:
     filename:
       required: true
-      example: "/config/www/snapshot_.png"
+      example: "config/www/snapshot_.png"
       selector:
-        text: "/config/www/snapshot_.png"
+        text:
