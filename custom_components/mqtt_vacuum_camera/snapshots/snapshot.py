@@ -1,4 +1,4 @@
-"""Snapshot Version 2024.07.4"""
+"""Snapshot Version 2024.08.0"""
 
 import asyncio
 from asyncio import gather, get_event_loop
@@ -11,7 +11,12 @@ import zipfile
 from homeassistant.helpers.storage import STORAGE_DIR
 
 from custom_components.mqtt_vacuum_camera.const import CAMERA_STORAGE, DOMAIN
-from custom_components.mqtt_vacuum_camera.types import Any, JsonType, PilPNG
+from custom_components.mqtt_vacuum_camera.types import (
+    Any,
+    JsonType,
+    PilPNG,
+    SnapshotStore,
+)
 from custom_components.mqtt_vacuum_camera.utils.files_operations import (
     async_populate_user_languages,
     async_write_file_to_disk,
@@ -27,11 +32,11 @@ class Snapshots:
     We will use this class to save the JSON data and the filtered logs to a ZIP archive.
     """
 
-    def __init__(self, hass, mqtt, shared):
-        self._mqtt = mqtt
+    def __init__(self, hass, shared):
         self.hass = hass
         self._shared = shared
         self._directory_path = hass.config.path()
+        self._store_all = SnapshotStore()
         self.storage_path = self.confirm_storage_path(hass)
         self.file_name = self._shared.file_name
         self.snapshot_img = f"{self.storage_path}/{self.file_name}.png"
@@ -79,14 +84,7 @@ class Snapshots:
 
     async def async_get_data(self, file_name: str, json_data: JsonType) -> Any:
         """Get the data to compose the snapshot logs."""
-
         try:
-            # Save the users languages data if the Camera is the first run
-            if self._first_run:
-                self._first_run = False
-                _LOGGER.info(f"Writing {file_name} users languages data.")
-                await async_populate_user_languages(self.hass)
-
             # Save JSON data to a file
             if json_data:
                 json_file_name = os.path.join(self.storage_path, f"{file_name}.json")
@@ -147,20 +145,32 @@ class Snapshots:
         :param json_data: Vacuum JSON data
         """
         try:
-            await self.async_get_data(file_name, json_data)
-            self.zip_snapshot(file_name)
+            # When logger is active.
+            if (_LOGGER.getEffectiveLevel() > 0) and (
+                _LOGGER.getEffectiveLevel() != 30
+            ):
+                await self.async_get_data(file_name, json_data)
+                self.zip_snapshot(file_name)
         except Exception as e:
             _LOGGER.warning("Error while creating logs snapshot: %s", str(e))
 
     async def async_take_snapshot(self, json_data: Any, image_data: PilPNG) -> None:
         """Camera Automatic Snapshots."""
-        try:
-            # When logger is active.
-            if (_LOGGER.getEffectiveLevel() > 0) and (
-                _LOGGER.getEffectiveLevel() != 30
-            ):
-                # Write the JSON and data to the file.
+        # Save the users languages data if the Camera is the first run
+        if self._first_run:
+            self._first_run = False
+            _LOGGER.info(f"Writing {self.file_name} users languages data.")
+            await async_populate_user_languages(self.hass)
+        await self._store_all.async_set_vacuum_json(self.file_name, json_data)
+        if await self._store_all.async_get_snapshot_save_data(self.file_name):
+
+            try:
                 await self.async_data_snapshot(self.file_name, json_data)
+            except IOError as e:
+                _LOGGER.warning(
+                    f"Error Saving {self.file_name}: Snapshot data, {str(e)}"
+                )
+        try:
             # Save image ready for snapshot.
             image_data.save(self.snapshot_img)
             # Copy the image in WWW if user want it.
@@ -170,16 +180,11 @@ class Snapshots:
                         f"{self.storage_path}/{self.file_name}.png",
                         f"{self._directory_path}/www/snapshot_{self.file_name}.png",
                     )
-        except IOError:
-            self._shared.snapshot_take = None
-            _LOGGER.warning(
-                f"Error Saving {self.file_name}: Snapshot, will not be available till restart."
-            )
-        else:
-            _LOGGER.debug(
-                f"\n{self.file_name}: Snapshot acquire and saved on WWW during "
-                f"{self._shared.vacuum_state} Vacuum State."
-            )
+                _LOGGER.debug(
+                    f"\n{self.file_name}: Snapshot image saved in WWW folder."
+                )
+        except IOError as e:
+            _LOGGER.warning(f"Error Saving {self.file_name}: Snapshot image, {str(e)}")
 
     def process_snapshot(self, json_data: Any, image_data: PilPNG):
         """Async function to thread the snapshot process."""

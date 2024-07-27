@@ -22,4 +22,4 @@ snapshot:
       required: true
       example: "/config/www/snapshot_.png"
       selector:
-        text: "/config/www/snapshot_.png"
+        text: ""

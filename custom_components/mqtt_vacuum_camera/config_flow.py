@@ -784,7 +784,9 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         destination_path = f"{ha_dir}/www/{file_name}"
         if os.path.exists(source_path):
             _LOGGER.info(f"Logs found in {source_path}")
-            shutil.copy(source_path, destination_path)
+            await self.hass.async_create_task(
+                shutil.copy(source_path, destination_path)
+            )
         else:
             _LOGGER.debug(f"Logs not found in {source_path}")
         self.options = self.bk_options

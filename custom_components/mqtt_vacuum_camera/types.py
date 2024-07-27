@@ -4,6 +4,7 @@ Version 2024.07.4
 """
 
 import asyncio
+import json
 from dataclasses import dataclass
 import logging
 from typing import Any, Dict, Tuple, Union
@@ -12,6 +13,8 @@ from PIL import Image
 import numpy as np
 
 from .const import DEFAULT_ROOMS
+
+# from .snapshots.snapshot import Snapshots
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -91,7 +94,11 @@ class RoomStore:
     async def async_get_rooms_data(self, vacuum_id: str) -> dict:
         """Get the room data for a vacuum."""
         async with self._lock:
-            return self.vacuums_data.get(vacuum_id, {})
+            data = self.vacuums_data.get(vacuum_id, {})
+            if isinstance(data, str):
+                json_data = json.loads(data)
+                return json_data
+            return data
 
     async def async_get_rooms_count(self, vacuum_id: str) -> int:
         """Count the number of rooms for a vacuum."""
@@ -130,3 +137,39 @@ class UserLanguageStore:
             if not self.user_languages:
                 return ["en"]
             return list(self.user_languages.values())
+
+
+class SnapshotStore:
+    """Store the snapshot data."""
+
+    _instance = None
+    _lock = asyncio.Lock()
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(SnapshotStore, cls).__new__(cls)
+            cls._instance.snapshot_save_data = {}
+            cls._instance.vacuum_json_data = {}
+        return cls._instance
+
+    async def async_set_snapshot_save_data(
+        self, vacuum_id: str, snapshot_data: bool = False
+    ) -> None:
+        """Set the snapshot save data for the vacuum."""
+        async with self._lock:
+            self.snapshot_save_data[vacuum_id] = snapshot_data
+
+    async def async_get_snapshot_save_data(self, vacuum_id: str) -> bool:
+        """Get the snapshot save data for a vacuum."""
+        async with self._lock:
+            return self.snapshot_save_data.get(vacuum_id, False)
+
+    async def async_get_vacuum_json(self, vacuum_id: str) -> Any:
+        """Get the JSON data for a vacuum."""
+        async with self._lock:
+            return self.vacuum_json_data.get(vacuum_id, {})
+
+    async def async_set_vacuum_json(self, vacuum_id: str, json_data: Any) -> None:
+        """Set the JSON data for the vacuum."""
+        async with self._lock:
+            self.vacuum_json_data[vacuum_id] = json_data
