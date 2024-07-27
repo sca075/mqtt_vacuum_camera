@@ -57,6 +57,7 @@ from .const import (
     PLATFORMS,
 )
 from .snapshots.snapshot import Snapshots
+from .types import SnapshotStore
 from .utils.colors_man import ColorsManagment
 from .utils.files_operations import async_get_active_user_language, is_auth_updated
 from .valetudo.MQTT.connector import ValetudoConnector
@@ -151,7 +152,7 @@ class ValetudoCamera(Camera):
             )
         self._mqtt = ValetudoConnector(self._mqtt_listen_topic, self.hass, self._shared)
         self._identifiers = device_info.get(CONF_VACUUM_IDENTIFIERS)
-        self._snapshots = Snapshots(self.hass, self._mqtt, self._shared)
+        self._snapshots = Snapshots(self.hass, self._shared)
         self.Image = None
         self._image_bk = None  # Backup image for testing.
         self._processing = False
@@ -329,6 +330,8 @@ class ValetudoCamera(Camera):
 
     async def take_snapshot(self, json_data: Any, image_data: Image.Image) -> None:
         """Camera Automatic Snapshots."""
+        partial_snapshot = SnapshotStore()
+        await partial_snapshot.async_set_snapshot_save_data(self._file_name)
         await self._snapshots.run_async_take_snapshot(json_data, image_data)
 
     async def load_test_json(self, file_path: str = None) -> Any:
