@@ -2,23 +2,24 @@
 MQTT Vacuum Camera component for Home Assistant
 Version: v2024.08.0"""
 
-
 import asyncio
 from asyncio import gather, get_event_loop
 import concurrent.futures
+import logging
 import os
 import shutil
-import zipfile
-import logging
 from typing import Any
+import zipfile
+
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import STORAGE_DIR
+
 from custom_components.mqtt_vacuum_camera.const import CAMERA_STORAGE, DOMAIN
+from custom_components.mqtt_vacuum_camera.types import SnapshotStore
 from custom_components.mqtt_vacuum_camera.utils.files_operations import (
     async_write_file_to_disk,
-    async_write_json_to_disk
+    async_write_json_to_disk,
 )
-from custom_components.mqtt_vacuum_camera.types import SnapshotStore
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -90,7 +91,9 @@ def zip_logs(storage_dir: str, file_name: str) -> Any:
         _LOGGER.warning("Error while creating logs ZIP archive: %s", str(e))
 
 
-async def async_get_data(base_path: str, storage_path: str, file_name: str, json_data: Any) -> Any:
+async def async_get_data(
+    base_path: str, storage_path: str, file_name: str, json_data: Any
+) -> Any:
     """Get the data to compose the snapshot logs."""
     try:
         # Save JSON data to a file
@@ -118,9 +121,7 @@ async def async_logs_store(hass: HomeAssistant, file_name: str) -> None:
     vacuum_json = await SnapshotStore().async_get_vacuum_json(file_name)
     try:
         # When logger is active.
-        if (_LOGGER.getEffectiveLevel() > 0) and (
-                _LOGGER.getEffectiveLevel() != 30
-        ):
+        if (_LOGGER.getEffectiveLevel() > 0) and (_LOGGER.getEffectiveLevel() != 30):
             await async_get_data(base_path, storage_path, file_name, vacuum_json)
             zip_logs(storage_path, file_name)
             if os.path.exists(f"{storage_path}/{file_name}.zip"):
@@ -138,9 +139,7 @@ def confirm_storage_path(hass) -> str:
         try:
             os.makedirs(storage_path)
         except Exception as e:
-            _LOGGER.warning(
-                "Snapshot Error while creating storage folder: %s", str(e)
-            )
+            _LOGGER.warning("Snapshot Error while creating storage folder: %s", str(e))
             return hass.config.path(STORAGE_DIR)
     return storage_path
 
@@ -150,9 +149,7 @@ def process_logs(hass: HomeAssistant, file_name: str):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     try:
-        result = loop.run_until_complete(
-            async_logs_store(hass, file_name)
-        )
+        result = loop.run_until_complete(async_logs_store(hass, file_name))
     finally:
         loop.close()
     return result
@@ -163,7 +160,7 @@ async def run_async_save_logs(hass: HomeAssistant, file_name: str) -> None:
     loop = get_event_loop()
 
     with concurrent.futures.ThreadPoolExecutor(
-            max_workers=1, thread_name_prefix=f"{file_name}_LogsSave"
+        max_workers=1, thread_name_prefix=f"{file_name}_LogsSave"
     ) as executor:
         tasks = [
             loop.run_in_executor(
@@ -173,11 +170,10 @@ async def run_async_save_logs(hass: HomeAssistant, file_name: str) -> None:
                 file_name,
             )
         ]
-        images = await gather(*tasks)
+        logs_save = await gather(*tasks)
 
-    if isinstance(images, list) and len(images) > 0:
-        result = images[0]
-    else:
-        result = None
+    result = (
+        logs_save[0] if isinstance(logs_save, list) and len(logs_save) > 0 else None
+    )
 
     return result

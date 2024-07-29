@@ -10,11 +10,7 @@ import shutil
 from homeassistant.helpers.storage import STORAGE_DIR
 
 from custom_components.mqtt_vacuum_camera.const import CAMERA_STORAGE
-from custom_components.mqtt_vacuum_camera.types import (
-    Any,
-    PilPNG,
-    SnapshotStore,
-)
+from custom_components.mqtt_vacuum_camera.types import Any, PilPNG, SnapshotStore
 from custom_components.mqtt_vacuum_camera.utils.files_operations import (
     async_populate_user_languages,
 )
