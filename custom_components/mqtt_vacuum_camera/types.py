@@ -83,17 +83,50 @@ class RoomStore:
             cls._instance.vacuums_data = {}
         return cls._instance
 
-    async def async_set_rooms_data(self, vacuum_id, rooms_data):
+    async def async_set_rooms_data(self, vacuum_id: str, rooms_data: dict) -> None:
         """Set the room data for the vacuum."""
-        self.vacuums_data[vacuum_id] = rooms_data
+        async with self._lock:
+            self.vacuums_data[vacuum_id] = rooms_data
 
-    async def async_get_rooms_data(self, vacuum_id):
+    async def async_get_rooms_data(self, vacuum_id: str) -> dict:
         """Get the room data for a vacuum."""
-        return self.vacuums_data.get(vacuum_id, {})
+        async with self._lock:
+            return self.vacuums_data.get(vacuum_id, {})
 
-    async def async_get_rooms_count(self, vacuum_id):
+    async def async_get_rooms_count(self, vacuum_id: str) -> int:
         """Count the number of rooms for a vacuum."""
-        count = len(self.vacuums_data.get(vacuum_id, {}))
-        if count == 0:
-            return DEFAULT_ROOMS
-        return count
+        async with self._lock:
+            count = len(self.vacuums_data.get(vacuum_id, {}))
+            if count == 0:
+                return DEFAULT_ROOMS
+            return count
+
+
+class UserLanguageStore:
+    """Store the user language data."""
+
+    _instance = None
+    _lock = asyncio.Lock()
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(UserLanguageStore, cls).__new__(cls)
+            cls._instance.user_languages = {}
+        return cls._instance
+
+    async def set_user_language(self, user_id: str, language: str) -> None:
+        """Set the user language."""
+        async with self._lock:
+            self.user_languages[user_id] = language
+
+    async def get_user_language(self, user_id: str) -> str or None:
+        """Get the user language."""
+        async with self._lock:
+            return self.user_languages.get(user_id, None)
+
+    async def get_all_languages(self):
+        """Get all the user languages."""
+        async with self._lock:
+            if not self.user_languages:
+                return ["en"]
+            return list(self.user_languages.values())

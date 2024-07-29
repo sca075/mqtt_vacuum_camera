@@ -4,7 +4,7 @@ Common functions for the MQTT Vacuum Camera integration.
 Those functions are used to store and retrieve user data from the Home Assistant storage.
 The data will be stored locally in the Home Assistant in .storage/valetudo_camera directory.
 Author: @sca075
-Version: 2024.07.4
+Version: 2024.08.0
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import STORAGE_DIR
 
 from custom_components.mqtt_vacuum_camera.const import CAMERA_STORAGE
-from custom_components.mqtt_vacuum_camera.types import RoomStore
+from custom_components.mqtt_vacuum_camera.types import RoomStore, UserLanguageStore
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -131,51 +131,69 @@ async def async_get_user_ids(hass: HomeAssistant) -> list[str]:
 
 async def async_get_active_user_language(hass: HomeAssistant) -> str:
     """
-    Retrieve the language of the last logged-in user from languages.json.
+    Retrieve the language of the last logged-in user from UserLanguageStore.
     If the user's language setting is not found, default to English.
     """
     active_user_id = await async_find_last_logged_in_user(hass)
-    languages_path = hass.config.path(STORAGE_DIR, CAMERA_STORAGE, "languages.json")
+
+    if not active_user_id:
+        _LOGGER.info("No active user found. Defaulting to English language.")
+        return "en"
+
+    user_language_store = UserLanguageStore()
+
+    # Try to get the language from UserLanguageStore
+    language = await user_language_store.get_user_language(active_user_id)
+    if language:
+        return language
+
+    # Fallback to loading from user_data_path if not found in UserLanguageStore
     user_data_path = hass.config.path(
         STORAGE_DIR, f"frontend.user_data_{active_user_id}"
     )
-    if os.path.exists(languages_path):
-        languages_file = await async_load_file(languages_path)
-        if languages_file:
-            languages_data = json.loads(languages_file)
-            for language_info in languages_data.get("languages", []):
-                if language_info.get("user_id") == active_user_id:
-                    return language_info.get("language", "en")
-        else:
-            _LOGGER.info(
-                "Cannot load languages.json file. Defaulting to English language."
-            )
-            return "en"
-    elif os.path.exists(user_data_path):
-        user_data_file = await async_load_file(user_data_path)
-        try:
+    try:
+        if os.path.exists(user_data_path):
+            user_data_file = await async_load_file(user_data_path)
             if user_data_file:
                 data = json.loads(user_data_file)
                 language = data["data"]["language"]["language"]
+                # Optionally, update the UserLanguageStore with this information
+                await user_language_store.set_user_language(active_user_id, language)
                 return language
             else:
                 raise KeyError
-        except KeyError:
-            return "en"
-
-    else:
-        _LOGGER.info("Defaulting to English language.")
-        return "en"
+    except (KeyError, json.JSONDecodeError, FileNotFoundError):
+        _LOGGER.debug("Defaulting to English language.")
+    return "en"
 
 
-async def async_write_languages_json(hass: HomeAssistant):
+async def async_load_languages(selected_languages=None) -> list:
     """
-    Write the languages.json file with languages for all users excluding system accounts.
+    Load the selected languages from UserLanguageStore.
+    """
+    if selected_languages is None:
+        selected_languages = []
+
+    user_language_store = UserLanguageStore()
+    try:
+        all_languages = await user_language_store.get_all_languages()
+        if all_languages:
+            selected_languages.extend(all_languages)
+    except Exception as e:
+        _LOGGER.warning(f"Error while loading languages: {str(e)}")
+
+    return selected_languages
+
+
+async def async_populate_user_languages(hass: HomeAssistant):
+    """
+    Populate the UserLanguageStore with languages for all users excluding system accounts.
     """
     try:
-        user_ids = await async_get_user_ids(hass)  # This function exclude system users
+        user_ids = await async_get_user_ids(hass)  # This function excludes system users
         _LOGGER.info(f"Saving User IDs: {user_ids} languages...")
-        languages = {"languages": []}
+        user_language_store = UserLanguageStore()
+
         for user_id in user_ids:
             user_data_file = hass.config.path(
                 STORAGE_DIR, f"frontend.user_data_{user_id}"
@@ -186,51 +204,20 @@ async def async_write_languages_json(hass: HomeAssistant):
                 try:
                     data = json.loads(user_data)
                     language = data["data"]["language"]["language"]
-                    languages["languages"].append(
-                        {"user_id": user_id, "language": language}
-                    )
-                except KeyError:
-                    raise KeyError
-                except json.JSONDecodeError:
-                    raise json.JSONDecodeError
-                else:
+                    await user_language_store.set_user_language(user_id, language)
                     _LOGGER.info(f"User ID: {user_id}, language: {language}")
+                except KeyError:
+                    _LOGGER.error(f"Key error while processing user ID: {user_id}")
+                except json.JSONDecodeError as json_error:
+                    _LOGGER.error(
+                        f"JSON decode error for user ID: {user_id}: {json_error}"
+                    )
             else:
                 _LOGGER.info(f"User ID: {user_id}, skipping...")
-                return None
-
-        # Write the consolidated languages to a JSON file
-        out_languages_file = hass.config.path(
-            STORAGE_DIR, CAMERA_STORAGE, "languages.json"
-        )
-        await async_write_json_to_disk(out_languages_file, languages)
+                continue
 
     except Exception as e:
-        _LOGGER.warning(f"Error while writing languages.json: {str(e)}")
-
-
-async def async_load_languages(storage_path: str, selected_languages=None) -> list:
-    """
-    Load the selected language from the language.json file.
-    """
-    if selected_languages is None:
-        selected_languages = []
-    language_file_path = os.path.join(storage_path, "languages.json")
-    if os.path.exists(language_file_path):
-        language_file = await async_load_file(language_file_path)
-        if language_file:
-            try:
-                languages_data = json.loads(language_file)
-            except json.JSONDecodeError:
-                _LOGGER.error(f"Error decoding language file: {language_file_path}")
-                return []
-            for language_info in languages_data.get("languages", []):
-                language = language_info.get("language", "")
-                selected_languages.append(language)
-            return selected_languages
-        else:
-            _LOGGER.warning(f"Language file not found in {storage_path}.")
-            return []
+        _LOGGER.warning(f"Error while populating UserLanguageStore: {str(e)}")
 
 
 async def async_load_translations_json(
@@ -270,9 +257,7 @@ async def async_load_room_data(storage_path: str, vacuum_id: str) -> dict:
         return {}
 
 
-async def async_rename_room_description(
-    hass: HomeAssistant, storage_path: str, vacuum_id: str
-) -> bool:
+async def async_rename_room_description(hass: HomeAssistant, vacuum_id: str) -> bool:
     """
     Add room names to the room descriptions in the translations.
     """
@@ -290,7 +275,7 @@ async def async_rename_room_description(
     await async_write_vacuum_id(hass, "rooms_colours_description.json", vacuum_id)
 
     # Get the languages to modify
-    language = await async_load_languages(storage_path)
+    language = await async_load_languages()
     _LOGGER.info(f"Languages to modify: {language}")
     edit_path = hass.config.path("custom_components/mqtt_vacuum_camera/translations")
     _LOGGER.info(f"Editing the translations file for language: {language}")
@@ -316,7 +301,7 @@ async def async_rename_room_description(
                     room_id, room_name = list(room_data.items())[j]
                     data["options"]["step"][room_key]["data_description"][
                         f"color_room_{j}"
-                    ] = f"### **RoomID {room_id} {room_name}**"
+                    ] = f"### **RoomID {room_id} {room_name}**"  # Markdown format
 
     # Modify the "data" keys for alpha_2 and alpha_3
     for data in data_list:
@@ -332,7 +317,6 @@ async def async_rename_room_description(
                     data["options"]["step"][alpha_key]["data"][
                         f"alpha_room_{j}"
                     ] = f"RoomID {room_id} {room_name}"
-                    # "**text**" is bold as in markdown
 
     # Write the modified data back to the JSON files
     for idx, data in enumerate(data_list):
@@ -392,7 +376,7 @@ async def async_write_json_to_disk(file_to_write: str, json_data) -> None:
     except (OSError, IOError, json.JSONDecodeError) as e:
         _LOGGER.warning(f"Json File Operation Error: {e}")
     except Exception as e:
-        _LOGGER.warning(f"Blocking issue detected: {e}")
+        _LOGGER.warning(f"Unexpected issue detected: {e}")
 
 
 async def async_load_file(file_to_load: str, is_json: bool = False) -> Any:
