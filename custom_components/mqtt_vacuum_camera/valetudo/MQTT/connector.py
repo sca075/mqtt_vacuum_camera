@@ -286,6 +286,7 @@ class ValetudoConnector:
         """
         Handle new MQTT messages.
         MapData/map_data is for Hypfer, and map-data is for Rand256.
+
         """
         self._rcv_topic = msg.topic
         if self._rcv_topic == f"{self._mqtt_topic}/map_data":
