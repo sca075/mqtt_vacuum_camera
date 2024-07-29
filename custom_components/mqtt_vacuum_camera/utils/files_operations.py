@@ -162,8 +162,8 @@ async def async_get_active_user_language(hass: HomeAssistant) -> str:
                 return language
             else:
                 raise KeyError
-    except (KeyError, json.JSONDecodeError, FileNotFoundError):
-        _LOGGER.debug("Defaulting to English language.")
+    except (KeyError, json.JSONDecodeError, FileNotFoundError) as e:
+        _LOGGER.debug(f"Defaulting to English language due to error: {e}")
     return "en"
 
 
