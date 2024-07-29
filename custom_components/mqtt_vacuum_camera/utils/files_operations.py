@@ -162,8 +162,8 @@ async def async_get_active_user_language(hass: HomeAssistant) -> str:
                 return language
             else:
                 raise KeyError
-    except (KeyError, json.JSONDecodeError, FileNotFoundError):
-        _LOGGER.debug("Defaulting to English language.")
+    except (KeyError, json.JSONDecodeError, FileNotFoundError) as e:
+        _LOGGER.debug(f"Defaulting to English language due to error: {e}")
     return "en"
 
 
@@ -276,11 +276,10 @@ async def async_rename_room_description(hass: HomeAssistant, vacuum_id: str) -> 
 
     # Get the languages to modify
     language = await async_load_languages()
-    _LOGGER.info(f"Languages to modify: {language}")
     edit_path = hass.config.path("custom_components/mqtt_vacuum_camera/translations")
     _LOGGER.info(f"Editing the translations file for language: {language}")
     data_list = await async_load_translations_json(hass, language)
-
+    _LOGGER.info(f"Translations loaded: {data_list}")
     if None in data_list:
         _LOGGER.warning(
             f"Translation for {language} not found."

@@ -7,7 +7,6 @@ sting.json and en.json please.
 
 import logging
 import os
-import shutil
 from typing import Any, Dict, Optional
 
 from homeassistant import config_entries
@@ -87,6 +86,7 @@ from .const import (
     ROTATION_VALUES,
     TEXT_SIZE_VALUES,
 )
+from .snapshots.log_files import run_async_save_logs
 from .types import RoomStore
 from .utils.files_operations import async_del_file, async_rename_room_description
 
@@ -777,16 +777,12 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         """
         Move the logs from www config folder to .storage.
         """
-        ha_dir = self.hass.config.path()
-        ha_storage = self.hass.config.path(STORAGE_DIR)
-        file_name = f"{self.file_name}.zip"
-        source_path = f"{ha_storage}/{CAMERA_STORAGE}/{file_name}"
-        destination_path = f"{ha_dir}/www/{file_name}"
-        if os.path.exists(source_path):
-            _LOGGER.info(f"Logs found in {source_path}")
-            shutil.copy(source_path, destination_path)
-        else:
-            _LOGGER.debug(f"Logs not found in {source_path}")
+
+        _LOGGER.debug("Generating and Moving the logs.")
+        await self.hass.async_create_task(
+            run_async_save_logs(self.hass, self.file_name)
+        )
+
         self.options = self.bk_options
         return await self.async_step_opt_save()
 
@@ -795,9 +791,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         Remove the logs from www config folder.
         """
         ha_dir = self.hass.config.path()
-        camera_id = self.unique_id.split("_")
-        file_name = camera_id[0].lower() + ".zip"
-        destination_path = f"{ha_dir}/www/{file_name}"
+        destination_path = f"{ha_dir}/www/{self.file_name}.zip"
         await async_del_file(destination_path)
         self.options = self.bk_options
         return await self.async_step_opt_save()
