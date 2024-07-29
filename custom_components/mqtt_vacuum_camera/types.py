@@ -1,11 +1,11 @@
 """
 This module contains type aliases for the project.
-Version 2024.07.4
+Version 2024.08.0b0
 """
 
 import asyncio
-import json
 from dataclasses import dataclass
+import json
 import logging
 from typing import Any, Dict, Tuple, Union
 

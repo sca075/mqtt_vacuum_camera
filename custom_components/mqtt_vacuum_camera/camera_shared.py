@@ -1,10 +1,11 @@
 """
 Class Camera Shared.
 Keep the data between the modules.
-Version: v2024.07.1
+Version: v2024.08.0b0
 """
 
 import asyncio
+
 from custom_components.mqtt_vacuum_camera.types import Colors
 
 
