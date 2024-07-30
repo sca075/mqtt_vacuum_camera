@@ -190,9 +190,16 @@ async def async_populate_user_languages(hass: HomeAssistant):
     Populate the UserLanguageStore with languages for all users excluding system accounts.
     """
     try:
+        user_language_store = UserLanguageStore()
+
+        # Check if already initialized
+        test_instance = await UserLanguageStore.is_initialized()
+        if test_instance:
+            _LOGGER.info("UserLanguageStore is already initialized.")
+            return
+
         user_ids = await async_get_user_ids(hass)  # This function excludes system users
         _LOGGER.info(f"Saving User IDs: {user_ids} languages...")
-        user_language_store = UserLanguageStore()
 
         for user_id in user_ids:
             user_data_file = hass.config.path(
@@ -215,6 +222,9 @@ async def async_populate_user_languages(hass: HomeAssistant):
             else:
                 _LOGGER.info(f"User ID: {user_id}, skipping...")
                 continue
+
+        # Mark as initialized after populating
+        UserLanguageStore._initialized = True
 
     except Exception as e:
         _LOGGER.warning(f"Error while populating UserLanguageStore: {str(e)}")
@@ -263,7 +273,6 @@ async def async_rename_room_description(hass: HomeAssistant, vacuum_id: str) -> 
     """
     # Load the room data using the new MQTT-based function
     room_data = await RoomStore().async_get_rooms_data(vacuum_id)
-    _LOGGER.info(f"Room data loaded: {room_data}")
 
     if not room_data:
         _LOGGER.warning(
@@ -279,7 +288,6 @@ async def async_rename_room_description(hass: HomeAssistant, vacuum_id: str) -> 
     edit_path = hass.config.path("custom_components/mqtt_vacuum_camera/translations")
     _LOGGER.info(f"Editing the translations file for language: {language}")
     data_list = await async_load_translations_json(hass, language)
-    _LOGGER.info(f"Translations loaded: {data_list}")
     if None in data_list:
         _LOGGER.warning(
             f"Translation for {language} not found."
