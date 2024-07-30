@@ -141,9 +141,7 @@ class UserLanguageStore:
     async def is_initialized(cls):
         """Return if the instance is initialized."""
         async with cls._lock:
-            if cls._initialized:
-                return True
-            return False
+            return bool(cls._initialized)
 
     @classmethod
     async def initialize_if_needed(cls, other_instance=None):
