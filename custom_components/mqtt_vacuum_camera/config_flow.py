@@ -1,4 +1,4 @@
-"""config_flow 2024.07.4
+"""config_flow 2024.08.0
 IMPORTANT: Maintain code when adding new options to the camera
 it will be mandatory to update const.py and common.py update_options.
 Format of the new constants must be CONST_NAME = "const_name" update also
@@ -68,6 +68,7 @@ from .const import (
     CONF_OFFSET_RIGHT,
     CONF_OFFSET_TOP,
     CONF_SNAPSHOTS_ENABLE,
+    # CONF_TRIMS_SAVE,
     CONF_VAC_STAT,
     CONF_VAC_STAT_FONT,
     CONF_VAC_STAT_POS,
