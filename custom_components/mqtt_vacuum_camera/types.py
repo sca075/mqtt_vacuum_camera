@@ -14,8 +14,6 @@ import numpy as np
 
 from .const import DEFAULT_ROOMS
 
-# from .snapshots.snapshot import Snapshots
-
 _LOGGER = logging.getLogger(__name__)
 
 Color = Union[Tuple[int, int, int], Tuple[int, int, int, int]]
@@ -114,6 +112,7 @@ class UserLanguageStore:
 
     _instance = None
     _lock = asyncio.Lock()
+    _initialized = False
 
     def __new__(cls):
         if cls._instance is None:
@@ -137,6 +136,20 @@ class UserLanguageStore:
             if not self.user_languages:
                 return ["en"]
             return list(self.user_languages.values())
+
+    @classmethod
+    async def is_initialized(cls):
+        """Return if the instance is initialized."""
+        async with cls._lock:
+            return bool(cls._initialized)
+
+    @classmethod
+    async def initialize_if_needed(cls, other_instance=None):
+        """Initialize the instance if needed by copying from another instance if available."""
+        async with cls._lock:
+            if not cls._initialized and other_instance is not None:
+                cls._instance.user_languages = other_instance.user_languages
+                cls._initialized = True
 
 
 class SnapshotStore:
