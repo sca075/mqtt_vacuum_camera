@@ -2,6 +2,6 @@
   "name": "MQTT Vacuum Camera",
   "zip_release": true,
   "render_readme": true,
-  "homeassistant": "2024.8.0b1",
+  "homeassistant": "2024.8.0b0",
   "filename": "mqtt_vacuum_camera.zip"
 }

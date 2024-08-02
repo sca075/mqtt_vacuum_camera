@@ -16,7 +16,7 @@ import logging
 import os
 from typing import Any, Optional
 
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, ServiceCall, ServiceResponse
 from homeassistant.helpers.storage import STORAGE_DIR
 
 from custom_components.mqtt_vacuum_camera.const import CAMERA_STORAGE
@@ -199,7 +199,6 @@ async def async_populate_user_languages(hass: HomeAssistant):
             return
 
         user_ids = await async_get_user_ids(hass)  # This function excludes system users
-        _LOGGER.info(f"Saving User IDs: {user_ids} languages...")
 
         for user_id in user_ids:
             user_data_file = hass.config.path(
@@ -462,3 +461,63 @@ async def async_save_mqtt_room_data(
         except Exception as e:
             _LOGGER.warning(f"Failed to save rooms data of {file_name}: {e}")
             return False
+
+
+async def reset_trims(call: ServiceCall) -> ServiceResponse:
+    """Search in the date range and return the matching items."""
+    items = await async_reset_map_trims()
+    return {"done": items}
+
+
+async def async_glob(directory: str, pattern: str) -> list:
+    """
+    Asynchronously list files in a directory matching a given pattern.
+    """
+    loop = asyncio.get_running_loop()
+    files = []
+
+    # Split the pattern into prefix and suffix
+    if '*' in pattern:
+        prefix, suffix = pattern.split('*', 1)
+    else:
+        prefix, suffix = pattern, ''
+
+    def scan_dir():
+        """Scanning the directory to found the pattern"""
+        try:
+            with os.scandir(directory) as entries:
+                for entry in entries:
+                    if entry.is_file() and entry.name.startswith(prefix) and entry.name.endswith(suffix):
+                        files.append(entry.path)
+                    elif entry.is_file():
+                        _LOGGER.debug(f"Non-matching file entry: {entry.name}")
+                    else:
+                        _LOGGER.debug(f"Non-file entry: {entry.name}")
+        except Exception as e:
+            _LOGGER.error(f"Error scanning directory: {e}")
+
+    # Run the directory scan in a separate thread to avoid blocking
+    await loop.run_in_executor(None, scan_dir)
+    return files
+
+
+async def async_reset_map_trims() -> bool:
+    """
+    Reset the map trims.
+    """
+    hass = HomeAssistant(os.getcwd())
+    _LOGGER.debug("Resetting the map trims.")
+    files_path = hass.config.path(STORAGE_DIR, CAMERA_STORAGE)
+
+    # Collect files to delete
+    files_to_delete = await async_glob(files_path, "auto_crop_*.json")
+
+    # Loop through the list of files and remove each one asynchronously
+    if not files_to_delete:
+        _LOGGER.debug("No files found to delete.")
+        return False
+
+    for file_path in files_to_delete:
+        await async_del_file(file_path)
+
+    return True

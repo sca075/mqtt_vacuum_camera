@@ -1,7 +1,7 @@
 ---
 reload:
   name: Reload
-  description: Reload all entities of Valetudo Map Extractor platform
+  description: Reload all entities of MQTT Vacuum Camera platform
 
 turn_off:
   target:
@@ -23,3 +23,8 @@ snapshot:
       example: "config/www/snapshot_.png"
       selector:
         text:
+
+reset_trims:
+  target:
+    entity:
+      domain: camera

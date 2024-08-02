@@ -40,16 +40,6 @@
           "camera_logs_progres": "What to do?"
         }
       },
-      "trims_opts": {
-        "title": "MQTT Camera Log File",
-        "description": "### _Image Trims Options_:",
-        "data": {
-          "save_trims": true
-        },
-        "data_description": {
-          "save_trims": "Save Trims / Fast Load."
-        }
-      },
       "image_opt": {
         "data": {
           "rotate_image": "Rotate",
@@ -249,7 +239,7 @@
         "opt_2": "Configure Status Text",
         "opt_3": "Copy Camera Logs to www",
         "opt_4": "Rename Colour Options",
-        "opt_5": "Trims Options"
+        "opt_5": "Reset Map Trims"
       }
     },
     "camera_logs_progres": {
