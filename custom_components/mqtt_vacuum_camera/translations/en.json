@@ -270,6 +270,10 @@
       "name": "[%key:common::action::turn_on%]",
       "description": "Turns on the camera."
     },
+    "reset_trims": {
+      "name": "Reset images trims",
+      "description": "Resets the trims of the maps."
+    },
     "snapshot": {
       "name": "Take snapshot",
       "description": "Takes a snapshot from a camera.",
