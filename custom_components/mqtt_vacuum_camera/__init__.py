@@ -35,7 +35,7 @@ from .const import (
 from .utils.files_operations import (
     async_get_translations_vacuum_id,
     async_rename_room_description,
-    async_reset_map_trims,
+    reset_trims,
 )
 
 PLATFORMS = [Platform.CAMERA]
@@ -261,7 +261,7 @@ async def async_setup_entry(
     hass_data["unsub_options_update_listener"] = unsub_options_update_listener
     hass.data[DOMAIN][entry.entry_id] = hass_data
     # Register Services
-    hass.services.async_register(DOMAIN, "reset_trims", async_reset_map_trims, hass)
+    hass.services.async_register(DOMAIN, "reset_trims", reset_trims)
     # Forward the setup to the camera platform.
     await hass.async_create_task(
         hass.config_entries.async_forward_entry_setups(entry, ["camera"])
