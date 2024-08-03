@@ -1,6 +1,7 @@
 {
     "services": {
         "reload": "mdi:reload",
+        "reset_trims": "mdi:image-frame",
         "snapshot": "mdi:camera",
         "turn_off": "mdi:video-off",
         "turn_on": "mdi:video"

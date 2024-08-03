@@ -14,9 +14,10 @@ import glob
 import json
 import logging
 import os
+import re
 from typing import Any, Optional
 
-from homeassistant.core import HomeAssistant, ServiceCall, ServiceResponse
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import STORAGE_DIR
 
 from custom_components.mqtt_vacuum_camera.const import CAMERA_STORAGE
@@ -463,54 +464,38 @@ async def async_save_mqtt_room_data(
             return False
 
 
-async def reset_trims(call: ServiceCall) -> ServiceResponse:
-    """Search in the date range and return the matching items."""
-    items = await async_reset_map_trims()
-    return {"done": items}
-
-
-async def async_glob(directory: str, pattern: str) -> list:
+def extract_core_entity_ids(entity_ids):
     """
-    Asynchronously list files in a directory matching a given pattern.
+    Extracts the core part of the entity IDs.
     """
-    loop = asyncio.get_running_loop()
-    files = []
-
-    # Split the pattern into prefix and suffix
-    if '*' in pattern:
-        prefix, suffix = pattern.split('*', 1)
-    else:
-        prefix, suffix = pattern, ''
-
-    def scan_dir():
-        """Scanning the directory to found the pattern"""
-        try:
-            with os.scandir(directory) as entries:
-                for entry in entries:
-                    if entry.is_file() and entry.name.startswith(prefix) and entry.name.endswith(suffix):
-                        files.append(entry.path)
-                    elif entry.is_file():
-                        _LOGGER.debug(f"Non-matching file entry: {entry.name}")
-                    else:
-                        _LOGGER.debug(f"Non-file entry: {entry.name}")
-        except Exception as e:
-            _LOGGER.error(f"Error scanning directory: {e}")
-
-    # Run the directory scan in a separate thread to avoid blocking
-    await loop.run_in_executor(None, scan_dir)
-    return files
+    core_entity_ids = []
+    for entity_id in entity_ids:
+        if entity_id.startswith("camera."):
+            core_id = entity_id.split("camera.")[1]
+            # Strip known prefixes and suffixes
+            core_id = re.sub(r"^(valetudo_[^_]*_)?(.*?)(_camera)?$", r"\2", core_id)
+            core_entity_ids.append(core_id)
+    return core_entity_ids
 
 
-async def async_reset_map_trims() -> bool:
+async def get_trims_files_names(entity_ids):
+    """
+    Generates the list of file names to delete based on the core entity IDs.
+    """
+    core_entity_ids = extract_core_entity_ids(entity_ids)
+    file_names = [f"auto_crop_{core_id}.json" for core_id in core_entity_ids]
+    return file_names
+
+
+async def async_reset_map_trims(hass: HomeAssistant, entity_list: list) -> bool:
     """
     Reset the map trims.
     """
-    hass = HomeAssistant(os.getcwd())
     _LOGGER.debug("Resetting the map trims.")
     files_path = hass.config.path(STORAGE_DIR, CAMERA_STORAGE)
 
     # Collect files to delete
-    files_to_delete = await async_glob(files_path, "auto_crop_*.json")
+    files_to_delete = await get_trims_files_names(entity_list)
 
     # Loop through the list of files and remove each one asynchronously
     if not files_to_delete:
