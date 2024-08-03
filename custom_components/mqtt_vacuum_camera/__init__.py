@@ -10,9 +10,12 @@ from homeassistant.components import mqtt
 from homeassistant.const import (
     CONF_UNIQUE_ID,
     EVENT_HOMEASSISTANT_FINAL_WRITE,
+    SERVICE_RELOAD,
     Platform,
 )
+from homeassistant.core import ServiceCall, ServiceResponse
 from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.helpers.reload import async_register_admin_service
 from homeassistant.helpers.storage import STORAGE_DIR
 
 from .common import (
@@ -35,7 +38,7 @@ from .const import (
 from .utils.files_operations import (
     async_get_translations_vacuum_id,
     async_rename_room_description,
-    reset_trims,
+    async_reset_map_trims,
 )
 
 PLATFORMS = [Platform.CAMERA]
@@ -231,6 +234,20 @@ async def async_setup_entry(
     hass: core.HomeAssistant, entry: config_entries.ConfigEntry
 ) -> bool:
     """Set up platform from a ConfigEntry."""
+
+    async def _reload_config(call: ServiceCall) -> None:
+        """Reload the platforms."""
+        # await async_unload_entry(hass, entry)
+        # await async_setup_entry(hass, entry)
+        _LOGGER.debug("Reloading the config entry")
+
+    async def reset_trims(call: ServiceCall) -> ServiceResponse:
+        """Search in the date range and return the matching items."""
+        entity_ids = call.data.get("entity_id")
+        _LOGGER.debug(f"Resetting trims for {entity_ids}")
+        items = await async_reset_map_trims(hass, entity_ids)
+        return {"done": items}
+
     hass.data.setdefault(DOMAIN, {})
     hass_data = dict(entry.data)
 
@@ -262,6 +279,8 @@ async def async_setup_entry(
     hass.data[DOMAIN][entry.entry_id] = hass_data
     # Register Services
     hass.services.async_register(DOMAIN, "reset_trims", reset_trims)
+    if not hass.services.has_service(DOMAIN, SERVICE_RELOAD):
+        async_register_admin_service(hass, DOMAIN, SERVICE_RELOAD, _reload_config)
     # Forward the setup to the camera platform.
     await hass.async_create_task(
         hass.config_entries.async_forward_entry_setups(entry, ["camera"])
