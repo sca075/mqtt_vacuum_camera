@@ -290,6 +290,8 @@
     }
   },
   "exceptions": {
-    "no_entity_id_provided": "entity_id ontbreekt in de serviceconfiguratie."
+    "no_entity_id_provided": {
+      "message": "entity_id ontbreekt in de serviceconfiguratie."
+    }
   }
 }

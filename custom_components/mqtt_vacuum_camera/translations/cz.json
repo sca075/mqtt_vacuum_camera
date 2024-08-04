@@ -290,6 +290,8 @@
     }
   },
   "exceptions": {
-    "no_entity_id_provided": "V konfiguraci služby chybí entity_id."
+    "no_entity_id_provided": {
+      "message": "V konfiguraci služby chybí entity_id."
+    }
   }
 }

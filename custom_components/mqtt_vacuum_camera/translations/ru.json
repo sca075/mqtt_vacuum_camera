@@ -290,6 +290,8 @@
     }
   },
   "exceptions": {
-    "no_entity_id_provided": "В конфигурации сервиса отсутствует entity_id."
+    "no_entity_id_provided": {
+      "message": "В конфигурации сервиса отсутствует entity_id."
+    }
   }
 }

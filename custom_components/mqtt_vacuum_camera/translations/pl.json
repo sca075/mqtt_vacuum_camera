@@ -290,6 +290,8 @@
     }
   },
   "exceptions": {
-    "no_entity_id_provided": "Brak entity_id w konfiguracji usługi."
+    "no_entity_id_provided": {
+      "message": "Brak entity_id w konfiguracji usługi."
+    }
   }
 }

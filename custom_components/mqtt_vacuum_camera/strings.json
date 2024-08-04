@@ -290,6 +290,8 @@
     }
   },
   "exceptions": {
-    "no_entity_id_provided": "Missing entity_id in the configuration."
+    "no_entity_id_provided": {
+      "message": "Missing entity_id in the configuration."
+    }
   }
 }

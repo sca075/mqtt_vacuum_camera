@@ -290,6 +290,8 @@
     }
   },
   "exceptions": {
-    "no_entity_id_provided": "لم يتم تقديم entity_id في تكوين الخدمة."
+    "no_entity_id_provided": {
+      "message": "لم يتم تقديم entity_id في تكوين الخدمة."
+    }
   }
 }

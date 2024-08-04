@@ -290,6 +290,8 @@
       }
    },
    "exceptions": {
-      "no_entity_id_provided": "entity_id saknas i tjänstekonfigurationen."
+      "no_entity_id_provided": {
+         "message": "entity_id saknas i tjänstekonfigurationen."
+      }
    }
 }

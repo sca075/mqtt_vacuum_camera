@@ -290,6 +290,8 @@
     }
   },
   "exceptions": {
-    "no_entity_id_provided": "Falta entity_id en la configuración del servicio."
+    "no_entity_id_provided": {
+      "message": "Falta entity_id en la configuración del servicio."
+    }
   }
 }

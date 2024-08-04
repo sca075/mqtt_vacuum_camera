@@ -290,6 +290,8 @@
     }
   },
   "exceptions": {
-    "no_entity_id_provided": "服務配置中缺少entity_id。"
+    "no_entity_id_provided": {
+      "message": "服務配置中缺少entity_id。"
+    }
   }
 }

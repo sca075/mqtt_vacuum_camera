@@ -290,6 +290,8 @@
     }
   },
   "exceptions": {
-    "no_entity_id_provided": "サービス構成にentity_idがありません。"
+    "no_entity_id_provided": {
+      "message": "サービス構成にentity_idがありません。"
+    }
   }
 }
