@@ -69,7 +69,7 @@ async def async_setup_entry(
         """Search in the date range and return the matching items."""
         try:
             entity_ids = call.data.get("entity_id")
-        except ValueError or KeyError:
+        except (ValueError, KeyError):
             raise ServiceValidationError("no_entity_id_provided") from None
         else:
             _LOGGER.debug(f"Resetting trims for {entity_ids}")
