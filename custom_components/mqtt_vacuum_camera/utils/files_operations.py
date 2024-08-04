@@ -14,10 +14,14 @@ import glob
 import json
 import logging
 import os
+import re
 from typing import Any, Optional
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import STORAGE_DIR
+from homeassistant.exceptions import (
+    ServiceValidationError,
+)
 
 from custom_components.mqtt_vacuum_camera.const import CAMERA_STORAGE
 from custom_components.mqtt_vacuum_camera.types import RoomStore, UserLanguageStore
@@ -199,7 +203,6 @@ async def async_populate_user_languages(hass: HomeAssistant):
             return
 
         user_ids = await async_get_user_ids(hass)  # This function excludes system users
-        _LOGGER.info(f"Saving User IDs: {user_ids} languages...")
 
         for user_id in user_ids:
             user_data_file = hass.config.path(
@@ -253,18 +256,6 @@ async def async_load_translations_json(
             translations_list.append(None)
 
     return translations_list
-
-
-async def async_load_room_data(storage_path: str, vacuum_id: str) -> dict:
-    """Load the room data from the room_data_{vacuum_id}.json file."""
-    data_file_path = os.path.join(storage_path, f"room_data_{vacuum_id}.json")
-    if os.path.exists(data_file_path):
-        data = await async_load_file(data_file_path, True)
-        _LOGGER.debug(f"Room data loaded from: {data_file_path}")
-        return data
-    else:
-        _LOGGER.debug(f"File not found: {data_file_path}")
-        return {}
 
 
 async def async_rename_room_description(hass: HomeAssistant, vacuum_id: str) -> bool:
@@ -409,56 +400,48 @@ async def async_load_file(file_to_load: str, is_json: bool = False) -> Any:
         return None
 
 
-async def async_save_room_data(
-    hass: HomeAssistant, file_name: str, map_rooms: dict
-) -> bool:
-    """Get the Vacuum Rooms data and save it to a file."""
-    # New file room_data to be saved / updated
-    data_file_path = (
-        f"{hass.config.path(STORAGE_DIR, CAMERA_STORAGE)}/room_data_{file_name}.json"
-    )
-    un_formated_room_data = map_rooms
-    if not un_formated_room_data:
+def extract_core_entity_ids(entity_ids: list[str]) -> list[str]:
+    """
+    Extracts the core part of the entity IDs.
+    """
+    core_entity_ids = []
+    for entity_id in entity_ids:
+        if entity_id.startswith("camera."):
+            core_id = entity_id.split("camera.")[1]
+            # Strip known prefixes and suffixes
+            core_id = re.sub(r"^(valetudo_[^_]*_)?(.*?)(_camera)?$", r"\2", core_id)
+            core_entity_ids.append(core_id)
+    return core_entity_ids
+
+
+async def get_trims_files_names(path: str, entity_ids: list[str]) -> list[str]:
+    """
+    Generates the list of file names to delete based on the core entity IDs.
+    """
+    core_entity_ids = extract_core_entity_ids(entity_ids)
+    file_names = [f"{path}/auto_crop_{core_id}.json" for core_id in core_entity_ids]
+    return file_names
+
+
+async def async_reset_map_trims(hass: HomeAssistant, entity_list: list) -> bool:
+    """
+    Reset the map trims.
+    """
+    if not entity_list:
+        _LOGGER.debug("No entity IDs provided.")
+        raise ServiceValidationError("no_entity_id_provided")
+    _LOGGER.debug("Resetting the map trims.")
+    files_path = hass.config.path(STORAGE_DIR, CAMERA_STORAGE)
+
+    # Collect files to delete
+    files_to_delete = await get_trims_files_names(files_path, entity_list)
+
+    # Loop through the list of files and remove each one asynchronously
+    if not files_to_delete:
+        _LOGGER.debug("No files found to delete.")
         return False
-    else:
-        try:
-            room_data = {"segments": len(un_formated_room_data), "rooms": {}}
-            for room_id, room_info in un_formated_room_data.items():
-                room_data["rooms"][room_id] = {
-                    "number": room_info["number"],
-                    "name": room_info["name"],
-                }
-            if len(un_formated_room_data) >= 1:
-                await async_write_json_to_disk(data_file_path, room_data)
-                return True
-            else:
-                return False
-        except Exception as e:
-            _LOGGER.warning(f"Failed to save rooms data of {file_name}: {e}")
-            return False
 
+    for file_path in files_to_delete:
+        await async_del_file(file_path)
 
-async def async_save_mqtt_room_data(
-    hass: HomeAssistant, file_name: str, map_rooms: dict
-) -> bool:
-    """Get the Vacuum segments and save it to a file."""
-    # New file room_data to be saved / updated
-    data_file_path = (
-        f"{hass.config.path(STORAGE_DIR, CAMERA_STORAGE)}/room_data_{file_name}.json"
-    )
-    if not map_rooms:
-        return False
-    else:
-        try:
-            if len(map_rooms) >= 1:
-                room_data = {"segments": len(map_rooms), "rooms": {}}
-                for room_id, room_name in map_rooms.items():
-                    room_data["rooms"][room_id] = {"name": room_name}
-
-                await async_write_json_to_disk(data_file_path, room_data)
-                return True
-            else:
-                return False
-        except Exception as e:
-            _LOGGER.warning(f"Failed to save rooms data of {file_name}: {e}")
-            return False
+    return True

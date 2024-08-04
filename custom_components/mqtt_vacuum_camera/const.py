@@ -31,6 +31,7 @@ CONF_SNAPSHOTS_ENABLE = "enable_www_snapshots"
 CONF_EXPORT_SVG = "get_svg_file"
 CONF_AUTO_ZOOM = "auto_zoom"
 CONF_ZOOM_LOCK_RATIO = "zoom_lock_ratio"
+CONF_TRIMS_SAVE = "save_trims"
 ICON = "mdi:camera"
 NAME = "MQTT Vacuum Camera"
 
@@ -50,6 +51,7 @@ DEFAULT_VALUES = {
     "vac_status_size": 50,
     "vac_status_position": True,
     "get_svg_file": False,
+    "save_trims": True,
     "enable_www_snapshots": False,
     "color_charger": [255, 128, 0],
     "color_move": [238, 247, 255],

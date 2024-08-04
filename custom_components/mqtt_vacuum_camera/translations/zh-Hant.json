@@ -262,6 +262,10 @@
     }
   },
   "services": {
+    "reload": {
+      "name": "重新載入",
+      "description": "重新載入MQTT吸塵器相機平台。"
+    },
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",
       "description": "關閉相機。"
@@ -270,15 +274,24 @@
       "name": "[%key:common::action::turn_on%]",
       "description": "開啟相機。"
     },
+    "reset_trims": {
+      "name": "重置圖像修剪",
+      "description": "重置地圖的修剪。"
+    },
     "snapshot": {
       "name": "拍攝快照",
       "description": "從相機拍攝快照。",
       "fields": {
         "filename": {
           "name": "文件名",
-          "description": "文件名模板。可用變量為`entity_id`。"
+          "description": "文件名模板。可用變量是`entity_id`。"
         }
       }
+    }
+  },
+  "exceptions": {
+    "no_entity_id_provided": {
+      "message": "服務配置中缺少entity_id。"
     }
   }
 }
