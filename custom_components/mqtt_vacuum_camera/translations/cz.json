@@ -262,13 +262,21 @@
     }
   },
   "services": {
+    "reload": {
+      "name": "Načíst znovu",
+      "description": "Načíst znovu platformu kamery MQTT Vacuum."
+    },
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",
-      "description": "Vypne kameru."
+      "description": "Vypnout kameru."
     },
     "turn_on": {
       "name": "[%key:common::action::turn_on%]",
-      "description": "Zapne kameru."
+      "description": "Zapnout kameru."
+    },
+    "reset_trims": {
+      "name": "Obnovit ořezy obrázků",
+      "description": "Obnoví ořezy map."
     },
     "snapshot": {
       "name": "Pořídit snímek",
@@ -280,5 +288,8 @@
         }
       }
     }
+  },
+  "exceptions": {
+    "no_entity_id_provided": "V konfiguraci služby chybí entity_id."
   }
 }

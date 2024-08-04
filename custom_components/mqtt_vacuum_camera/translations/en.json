@@ -262,6 +262,10 @@
     }
   },
   "services": {
+    "reload": {
+      "name": "Reload",
+      "description": "Reload the MQTT Vacuum Camera Platform."
+    },
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",
       "description": "Turns off the camera."
@@ -271,7 +275,7 @@
       "description": "Turns on the camera."
     },
     "reset_trims": {
-      "name": "Reset images trims",
+      "name": "Reset Images Trims",
       "description": "Resets the trims of the maps."
     },
     "snapshot": {
@@ -284,5 +288,8 @@
         }
       }
     }
+  },
+  "exceptions": {
+    "no_entity_id_provided": "Missing entity_id in the service configuration."
   }
 }

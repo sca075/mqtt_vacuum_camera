@@ -262,6 +262,10 @@
     }
   },
   "services": {
+    "reload": {
+      "name": "Last inn på nytt",
+      "description": "Last inn MQTT Vacuum Camera Platform på nytt."
+    },
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",
       "description": "Slår av kameraet."
@@ -270,15 +274,22 @@
       "name": "[%key:common::action::turn_on%]",
       "description": "Slår på kameraet."
     },
+    "reset_trims": {
+      "name": "Tilbakestill bildebeskjæringer",
+      "description": "Tilbakestiller beskjæringene av kartene."
+    },
     "snapshot": {
-      "name": "Ta snapshot",
-      "description": "Tar et snapshot fra et kamera.",
+      "name": "Ta øyeblikksbilde",
+      "description": "Tar et øyeblikksbilde fra et kamera.",
       "fields": {
         "filename": {
           "name": "Filnavn",
-          "description": "Mal for et filnavn. Variabelen tilgjengelig er `entity_id`."
+          "description": "Mal for et filnavn. Tilgjengelig variabel er `entity_id`."
         }
       }
     }
+  },
+  "exceptions": {
+    "no_entity_id_provided": "entity_id mangler i tjenestekonfigurasjonen."
   }
 }

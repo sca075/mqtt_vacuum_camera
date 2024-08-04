@@ -262,23 +262,34 @@
     }
   },
   "services": {
+    "reload": {
+      "name": "Przeładuj",
+      "description": "Przeładuj platformę kamery MQTT Vacuum."
+    },
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",
-      "description": "Wy\u0142\u0105cza kamer\u0119."
+      "description": "Wyłącza kamerę."
     },
     "turn_on": {
       "name": "[%key:common::action::turn_on%]",
-      "description": "W\u0142\u0105cza kamer\u0119."
+      "description": "Włącza kamerę."
+    },
+    "reset_trims": {
+      "name": "Zresetuj przycięcia obrazu",
+      "description": "Resetuje przycięcia map."
     },
     "snapshot": {
-      "name": "Zr\u00f3b migawk\u0119",
-      "description": "Robi migawk\u0119 z kamery.",
+      "name": "Zrób zdjęcie",
+      "description": "Robi zdjęcie z kamery.",
       "fields": {
         "filename": {
           "name": "Nazwa pliku",
-          "description": "Szablon nazwy pliku. Dost\u0119pna zmienna to `entity_id`."
+          "description": "Szablon nazwy pliku. Dostępna zmienna to `entity_id`."
         }
       }
     }
+  },
+  "exceptions": {
+    "no_entity_id_provided": "Brak entity_id w konfiguracji usługi."
   }
 }

@@ -262,6 +262,10 @@
     }
   },
   "services": {
+    "reload": {
+      "name": "Перезагрузить",
+      "description": "Перезагрузить платформу MQTT Vacuum Camera."
+    },
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",
       "description": "Выключает камеру."
@@ -270,15 +274,22 @@
       "name": "[%key:common::action::turn_on%]",
       "description": "Включает камеру."
     },
+    "reset_trims": {
+      "name": "Сбросить обрезки изображений",
+      "description": "Сбрасывает обрезки карт."
+    },
     "snapshot": {
       "name": "Сделать снимок",
       "description": "Делает снимок с камеры.",
       "fields": {
         "filename": {
           "name": "Имя файла",
-          "description": "Шаблон имени файла. Доступная переменная: `entity_id`."
+          "description": "Шаблон имени файла. Доступная переменная — `entity_id`."
         }
       }
     }
+  },
+  "exceptions": {
+    "no_entity_id_provided": "В конфигурации сервиса отсутствует entity_id."
   }
 }

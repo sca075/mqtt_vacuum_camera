@@ -262,6 +262,10 @@
     }
   },
   "services": {
+    "reload": {
+      "name": "Recargar",
+      "description": "Recargar la plataforma de cámara MQTT Vacuum."
+    },
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",
       "description": "Apaga la cámara."
@@ -270,15 +274,22 @@
       "name": "[%key:common::action::turn_on%]",
       "description": "Enciende la cámara."
     },
+    "reset_trims": {
+      "name": "Restablecer recortes de imágenes",
+      "description": "Restablece los recortes de los mapas."
+    },
     "snapshot": {
-      "name": "Tomar captura",
-      "description": "Toma una captura de una cámara.",
+      "name": "Tomar instantánea",
+      "description": "Toma una instantánea de una cámara.",
       "fields": {
         "filename": {
           "name": "Nombre del archivo",
-          "description": "Plantilla de nombre de archivo. La variable disponible es `entity_id`."
+          "description": "Plantilla de un nombre de archivo. La variable disponible es `entity_id`."
         }
       }
     }
+  },
+  "exceptions": {
+    "no_entity_id_provided": "Falta entity_id en la configuración del servicio."
   }
 }

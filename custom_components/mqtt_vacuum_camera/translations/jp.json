@@ -262,23 +262,34 @@
     }
   },
   "services": {
+    "reload": {
+      "name": "リロード",
+      "description": "MQTTバキュームカメラプラットフォームをリロードします。"
+    },
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",
-      "description": "カメラをオフにする。"
+      "description": "カメラをオフにします。"
     },
     "turn_on": {
       "name": "[%key:common::action::turn_on%]",
-      "description": "カメラをオンにする。"
+      "description": "カメラをオンにします。"
+    },
+    "reset_trims": {
+      "name": "画像のトリムをリセット",
+      "description": "地図のトリムをリセットします。"
     },
     "snapshot": {
       "name": "スナップショットを撮る",
-      "description": "カメラからスナップショットを撮る。",
+      "description": "カメラからスナップショットを撮ります。",
       "fields": {
         "filename": {
           "name": "ファイル名",
-          "description": "ファイル名のテンプレート。利用可能な変数は `entity_id`です。"
+          "description": "ファイル名のテンプレート。利用可能な変数は`entity_id`です。"
         }
       }
     }
+  },
+  "exceptions": {
+    "no_entity_id_provided": "サービス構成にentity_idがありません。"
   }
 }

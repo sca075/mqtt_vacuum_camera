@@ -262,6 +262,10 @@
     }
   },
   "services": {
+    "reload": {
+      "name": "Neu laden",
+      "description": "Lädt die MQTT Vacuum Camera Plattform neu."
+    },
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",
       "description": "Schaltet die Kamera aus."
@@ -270,9 +274,13 @@
       "name": "[%key:common::action::turn_on%]",
       "description": "Schaltet die Kamera ein."
     },
+    "reset_trims": {
+      "name": "Bilderbeschnitte zurücksetzen",
+      "description": "Setzt die Beschnitte der Karten zurück."
+    },
     "snapshot": {
       "name": "Schnappschuss machen",
-      "description": "Macht einen Schnappschuss von einer Kamera.",
+      "description": "Macht einen Schnappschuss von der Kamera.",
       "fields": {
         "filename": {
           "name": "Dateiname",
@@ -280,5 +288,8 @@
         }
       }
     }
+  },
+  "exceptions": {
+    "no_entity_id_provided": "In der Dienstkonfiguration fehlt die entity_id."
   }
 }

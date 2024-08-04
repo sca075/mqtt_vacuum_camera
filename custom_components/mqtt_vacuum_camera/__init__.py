@@ -1,11 +1,8 @@
 """MQTT Vacuum Camera.
 Version: 2024.08.0"""
 
-
-import glob
 import logging
 import os
-import shutil
 
 from homeassistant import config_entries, core
 from homeassistant.components import mqtt
@@ -19,6 +16,9 @@ from homeassistant.core import ServiceCall, ServiceResponse
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.reload import async_register_admin_service
 from homeassistant.helpers.storage import STORAGE_DIR
+from homeassistant.exceptions import (
+    ServiceValidationError,
+)
 
 from .common import (
     get_device_info,
@@ -67,11 +67,16 @@ async def async_setup_entry(
 
     async def reset_trims(call: ServiceCall) -> ServiceResponse:
         """Search in the date range and return the matching items."""
-        entity_ids = call.data.get("entity_id")
-        _LOGGER.debug(f"Resetting trims for {entity_ids}")
-        items = await async_reset_map_trims(hass, entity_ids)
-        await hass.services.async_call(DOMAIN, "reload")
-        return {"done": items}
+        try:
+            entity_ids = call.data.get("entity_id")
+        except KeyError:
+            raise ServiceValidationError("no_entity_id_provided")
+        else:
+            _LOGGER.debug(f"Resetting trims for {entity_ids}")
+            items = await async_reset_map_trims(hass, entity_ids)
+            await hass.services.async_call(DOMAIN, "reload")
+            hass.bus.async_fire(f"event_{DOMAIN}_reset_trims", context=call.context)
+            return {"done": items}
 
     hass.data.setdefault(DOMAIN, {})
     hass_data = dict(entry.data)
@@ -129,23 +134,6 @@ async def async_unload_entry(
     return unload_ok
 
 
-def find_vacuum_files(directory) -> list[str] or None:
-    """Find all 'room_data*.json' files and extract vacuum names."""
-    # Create the full path pattern for glob to match
-    path_pattern = os.path.join(directory, "room_data*.json")
-    # Find all files matching the pattern
-    files = glob.glob(path_pattern)
-    if not files:
-        _LOGGER.debug(f"No room data files found in {directory}.")
-        return None
-    # Extract vacuum names from filenames
-    vacuum_names = [
-        os.path.splitext(os.path.basename(file))[0].split("room_data_")[1]
-        for file in files
-    ]
-    return vacuum_names
-
-
 # noinspection PyCallingNonCallable
 async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
     """Set up the Valetudo Camera Custom component from yaml configuration."""
@@ -176,29 +164,3 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
         return False
     hass.data.setdefault(DOMAIN, {})
     return True
-
-
-async def move_data_to_valetudo_camera(storage):
-    """Move files from .storage folder to valetudo_camera folder."""
-    if os.path.exists(storage):
-        storage_folder = f"{storage}/{CAMERA_STORAGE}"
-        _LOGGER.debug(f"Creating the {storage_folder} path.")
-        try:
-            os.mkdir(storage_folder)
-        except FileExistsError:
-            _LOGGER.debug(f"Path {storage_folder} already exist.")
-        # Move files matching the patterns to the valetudo_camera folder
-        else:
-            file_patterns = ["*.zip", "*.png", "*.log", "*.raw"]
-            for pattern in file_patterns:
-                files_to_move = glob.glob(os.path.join(storage_folder, pattern))
-                for file_path in files_to_move:
-                    file_name = os.path.basename(file_path)
-                    destination_path = os.path.join(storage_folder, file_name)
-                    if os.path.exists(file_path):
-                        shutil.move(file_path, destination_path)
-                        _LOGGER.debug(f"Moved {file_name} to valetudo_camera folder.")
-                    else:
-                        _LOGGER.debug(f"File {file_name} not found in .storage folder.")
-    else:
-        _LOGGER.warning(f"{storage} do not exists.")

@@ -262,6 +262,10 @@
     }
   },
   "services": {
+    "reload": {
+      "name": "Recharger",
+      "description": "Recharger la plateforme de caméra MQTT Vacuum."
+    },
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",
       "description": "Éteint la caméra."
@@ -270,15 +274,22 @@
       "name": "[%key:common::action::turn_on%]",
       "description": "Allume la caméra."
     },
+    "reset_trims": {
+      "name": "Réinitialiser les découpes d'images",
+      "description": "Réinitialise les découpes des cartes."
+    },
     "snapshot": {
-      "name": "Prendre une capture d'écran",
-      "description": "Prend une capture d'écran depuis une caméra.",
+      "name": "Prendre une capture",
+      "description": "Prend une capture d'une caméra.",
       "fields": {
         "filename": {
           "name": "Nom de fichier",
-          "description": "Modèle d'un nom de fichier. La variable disponible est `entity_id`."
+          "description": "Modèle de nom de fichier. La variable disponible est `entity_id`."
         }
       }
     }
+  },
+  "exceptions": {
+    "no_entity_id_provided": "entity_id manquant dans la configuration du service."
   }
 }

@@ -262,23 +262,34 @@
     }
   },
   "services": {
+    "reload": {
+      "name": "Herladen",
+      "description": "Herladen van het MQTT Vacuum Camera Platform."
+    },
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",
-      "description": "Schakelt de camera uit."
+      "description": "Zet de camera uit."
     },
     "turn_on": {
       "name": "[%key:common::action::turn_on%]",
-      "description": "Schakelt de camera in."
+      "description": "Zet de camera aan."
+    },
+    "reset_trims": {
+      "name": "Herstel afbeelding uitsnijdingen",
+      "description": "Herstelt de uitsnijdingen van de kaarten."
     },
     "snapshot": {
-      "name": "Maak een snapshot",
-      "description": "Maakt een snapshot van een camera.",
+      "name": "Neem een snapshot",
+      "description": "Neemt een snapshot van een camera.",
       "fields": {
         "filename": {
           "name": "Bestandsnaam",
-          "description": "Sjabloon van een bestandsnaam. Beschikbare variabele is `entity_id`."
+          "description": "Sjabloon voor een bestandsnaam. Beschikbare variabele is `entity_id`."
         }
       }
     }
+  },
+  "exceptions": {
+    "no_entity_id_provided": "entity_id ontbreekt in de serviceconfiguratie."
   }
 }

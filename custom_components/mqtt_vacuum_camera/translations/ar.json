@@ -262,17 +262,25 @@
     }
   },
   "services": {
+    "reload": {
+      "name": "إعادة تحميل",
+      "description": "إعادة تحميل منصة كاميرا الفراغ MQTT."
+    },
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",
-      "description": "يوقف الكاميرا."
+      "description": "إيقاف تشغيل الكاميرا."
     },
     "turn_on": {
       "name": "[%key:common::action::turn_on%]",
-      "description": "يشغل الكاميرا."
+      "description": "تشغيل الكاميرا."
+    },
+    "reset_trims": {
+      "name": "إعادة تعيين تقليم الصور",
+      "description": "إعادة تعيين تقليم الخرائط."
     },
     "snapshot": {
-      "name": "التقاط صورة",
-      "description": "يأخذ لقطة من الكاميرا.",
+      "name": "التقاط لقطة",
+      "description": "التقاط لقطة من الكاميرا.",
       "fields": {
         "filename": {
           "name": "اسم الملف",
@@ -280,5 +288,8 @@
         }
       }
     }
+  },
+  "exceptions": {
+    "no_entity_id_provided": "لم يتم تقديم entity_id في تكوين الخدمة."
   }
 }
