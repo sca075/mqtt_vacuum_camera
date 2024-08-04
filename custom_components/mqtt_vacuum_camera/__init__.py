@@ -12,7 +12,7 @@ from homeassistant.const import (
     SERVICE_RELOAD,
     Platform,
 )
-from homeassistant.core import ServiceCall, ServiceResponse
+from homeassistant.core import ServiceCall
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.reload import async_register_admin_service
 from homeassistant.helpers.storage import STORAGE_DIR
@@ -65,18 +65,17 @@ async def async_setup_entry(
         await async_setup_entry(hass, entry)
         hass.bus.async_fire(f"event_{DOMAIN}_reloaded", context=call.context)
 
-    async def reset_trims(call: ServiceCall) -> ServiceResponse:
+    async def reset_trims(call: ServiceCall) -> None:
         """Search in the date range and return the matching items."""
         try:
             entity_ids = call.data.get("entity_id")
         except KeyError:
-            raise ServiceValidationError("no_entity_id_provided")
+            raise ServiceValidationError("no_entity_id_provided") from None
         else:
             _LOGGER.debug(f"Resetting trims for {entity_ids}")
             items = await async_reset_map_trims(hass, entity_ids)
             await hass.services.async_call(DOMAIN, "reload")
             hass.bus.async_fire(f"event_{DOMAIN}_reset_trims", context=call.context)
-            return {"done": items}
 
     hass.data.setdefault(DOMAIN, {})
     hass_data = dict(entry.data)
