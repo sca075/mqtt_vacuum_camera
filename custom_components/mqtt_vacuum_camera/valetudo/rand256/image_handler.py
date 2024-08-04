@@ -191,7 +191,7 @@ class ReImageHandler(object):
             json_data, size_x, size_y, top, left, True
         )
         del dummy_segments  # free memory
-        dest_json = json.loads(destinations)
+        dest_json = destinations
         room_data = dict(dest_json).get("rooms", [])
         zones_data = dict(dest_json).get("zones", [])
         points_data = dict(dest_json).get("spots", [])
@@ -420,16 +420,16 @@ class ReImageHandler(object):
                             img_np_array, walls, pixel_size, color_wall
                         )
                         _LOGGER.info(self.file_name + ": Completed base Layers")
-                    if (room_id > 0) and not self.room_propriety:
-                        self.room_propriety = await self.get_rooms_attributes(
-                            destinations
-                        )
-                        if self.rooms_pos:
-                            self.robot_pos = await self.async_get_robot_in_room(
-                                (robot_position[0] * 10),
-                                (robot_position[1] * 10),
-                                robot_position_angle,
-                            )
+                    # if (room_id > 0) and not self.room_propriety:
+                    #     self.room_propriety = await self.get_rooms_attributes(
+                    #         destinations
+                    #     )
+                    #     if self.rooms_pos:
+                    #         self.robot_pos = await self.async_get_robot_in_room(
+                    #             (robot_position[0] * 10),
+                    #             (robot_position[1] * 10),
+                    #             robot_position_angle,
+                    #         )
                     self.img_base_layer = await self.async_copy_array(img_np_array)
 
                 # If there is a zone clean we draw it now.
