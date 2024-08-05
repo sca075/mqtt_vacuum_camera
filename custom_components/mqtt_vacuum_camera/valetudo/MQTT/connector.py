@@ -1,5 +1,5 @@
 """
-Version: v2024.08.0b0
+Version: v2024.08.0
 - Removed the PNG decode, the json is extracted from map-data instead of map-data-hass.
 - Tested no influence on the camera performance.
 - Added gzip library used in Valetudo RE data compression.
@@ -170,7 +170,7 @@ class ValetudoConnector:
         Disconnect the vacuum detected.
         Generate a Warning message if the vacuum is disconnected.
         """
-        if self._mqtt_vac_connect_state == "disconnected":
+        if self._mqtt_vac_connect_state == "disconnected" or self._mqtt_vac_connect_state == "lost":
             _LOGGER.debug(
                 f"{self._mqtt_topic}: Vacuum Disconnected from MQTT, waiting for connection."
             )
@@ -248,6 +248,9 @@ class ValetudoConnector:
         self._payload = msg.payload
         tmp_data = await self.async_decode_mqtt_payload(msg)
         self._rrm_destinations = tmp_data
+        if 'rooms' in tmp_data:
+            rooms_data = {str(room['id']): room['name'].strip('#') for room in tmp_data['rooms']}
+            await RoomStore().async_set_rooms_data(self._file_name, rooms_data)
         _LOGGER.info(
             f"{self._file_name}: Received vacuum destinations: {self._rrm_destinations}"
         )
