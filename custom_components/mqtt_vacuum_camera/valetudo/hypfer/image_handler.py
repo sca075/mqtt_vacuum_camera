@@ -2,7 +2,7 @@
 Hypfer Image Handler Class.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Version: 2024.07.2
+Version: 2024.08.0
 """
 
 from __future__ import annotations
@@ -270,7 +270,7 @@ class MapImageHandler(object):
                     compressed_pixels = layer.get("compressedPixels", [])
                     pixels = self.data.sublist(compressed_pixels, 3)
                     # Calculate x and y min/max from compressed pixels
-                    x_min, y_min, x_max, y_max = await self.data.get_rooms_coordinates(
+                    x_min, y_min, x_max, y_max = await self.data.async_get_rooms_coordinates(
                         pixels, pixel_size
                     )
                     corners = [
