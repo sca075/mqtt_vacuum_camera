@@ -3,7 +3,7 @@ Collections of Json and List routines
 ImageData is part of the Image_Handler
 used functions to search data in the json
 provided for the creation of the new camera frame
-Version: v2024.06.1
+Version: v2024.08.0
 """
 
 from __future__ import annotations
@@ -173,7 +173,7 @@ class ImageData:
         return virtual_walls
 
     @staticmethod
-    async def get_rooms_coordinates(
+    async def async_get_rooms_coordinates(
         pixels: list, pixel_size: int = 5, rand: bool = False
     ) -> tuple:
         """
@@ -463,10 +463,11 @@ class ImageData:
         return img.get("pixels", {}).get("walls", [])
 
     @staticmethod
-    def get_rrm_segments(
+    async def async_get_rrm_segments(
         json_data, size_x, size_y, pos_top, pos_left, out_lines: bool = False
     ):
         """Get the segments data from the json."""
+
         img = ImageData.get_rrm_image(json_data)
         seg_data = img.get("segments", {})
         seg_ids = seg_data.get("id")
@@ -485,12 +486,11 @@ class ImageData:
                 )
             )
             if out_lines:
-                outlines.append(
-                    ImageData.get_rooms_coordinates(
-                        pixels=segments[count_seg], rand=True
-                    )
-                )
-            count_seg += 1
+                room_coords = await ImageData.async_get_rooms_coordinates(
+                    pixels=segments[count_seg],
+                    rand=True)
+                outlines.append(room_coords)
+                count_seg += 1
         if count_seg > 0:
             if out_lines:
                 return segments, outlines

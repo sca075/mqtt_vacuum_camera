@@ -115,18 +115,18 @@ class CameraProcessor:
             )
 
             if pil_img is not None:
-                # if self._shared.map_rooms is None:
-                #     destinations = self._shared.destinations
-                #     if destinations is not None:
-                #         (
-                #             self._shared.map_rooms,
-                #             self._shared.map_pred_zones,
-                #             self._shared.map_pred_points,
-                #         ) = await self._re_handler.get_rooms_attributes(destinations)
-                #     if self._shared.map_rooms:
-                #         _LOGGER.debug(
-                #             f"\n{self._file_name}: State attributes rooms updated"
-                #         )
+                if self._shared.map_rooms is None:
+                    destinations = self._shared.destinations
+                    if destinations is not None:
+                        (
+                            self._shared.map_rooms,
+                            self._shared.map_pred_zones,
+                            self._shared.map_pred_points,
+                        ) = await self._re_handler.get_rooms_attributes(destinations)
+                    if self._shared.map_rooms:
+                        _LOGGER.debug(
+                            f"\n{self._file_name}: State attributes rooms updated"
+                        )
 
                 if self._shared.attr_calibration_points is None:
                     self._shared.attr_calibration_points = (

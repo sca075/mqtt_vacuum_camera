@@ -2,12 +2,11 @@
 Image Handler Module for Valetudo Re Vacuums.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Version: v2024.04.3
+Version: v2024.08.0
 """
 
 from __future__ import annotations
 
-import json
 import logging
 import uuid
 
@@ -37,6 +36,8 @@ class ReImageHandler(object):
 
     def __init__(self, camera_shared):
         self.auto_crop = None  # Auto crop flag
+        self.segment_data = None  # Segment data
+        self.outlines = None  # Outlines data
         self.calibration_data = None  # Calibration data
         self.charger_pos = None  # Charger position
         self.crop_area = None  # Crop area
@@ -153,7 +154,7 @@ class ReImageHandler(object):
         del image_array
         # Rotate the cropped image based on the given angle
         if rotate == 90:
-            rotated = np.rot90(trimmed, 1)
+            rotated = np.rot90(trimmed)
             self.crop_area = [
                 self.trim_left,
                 self.trim_up,
@@ -180,96 +181,104 @@ class ReImageHandler(object):
         _LOGGER.debug("Trimmed image size: %s", self.crop_img_size)
         return rotated
 
-    def extract_room_properties(
+    async def extract_room_properties(
         self, json_data: JsonType, destinations: JsonType
     ) -> RoomsProperties:
         """Extract the room properties."""
         unsorted_id = ImageData.get_rrm_segments_ids(json_data)
         size_x, size_y = ImageData.get_rrm_image_size(json_data)
         top, left = ImageData.get_rrm_image_position(json_data)
-        dummy_segments, outlines = ImageData.get_rrm_segments(
-            json_data, size_x, size_y, top, left, True
-        )
-        del dummy_segments  # free memory
-        dest_json = destinations
-        room_data = dict(dest_json).get("rooms", [])
-        zones_data = dict(dest_json).get("zones", [])
-        points_data = dict(dest_json).get("spots", [])
-        room_id_to_data = {room["id"]: room for room in room_data}
-        self.rooms_pos = []
-        room_properties = {}
-        zone_properties = {}
-        point_properties = {}
-        for id_x, room_id in enumerate(unsorted_id):
-            if room_id in room_id_to_data:
-                room_info = room_id_to_data[room_id]
-                name = room_info.get("name")
-                # Calculate x and y min/max from outlines
-                x_min = outlines[id_x][0][0]
-                x_max = outlines[id_x][1][0]
-                y_min = outlines[id_x][0][1]
-                y_max = outlines[id_x][1][1]
-                corners = [
-                    (x_min, y_min),
-                    (x_max, y_min),
-                    (x_max, y_max),
-                    (x_min, y_max),
-                ]
-                # rand256 vacuums accept int(room_id) or str(name)
-                # the card will soon support int(room_id) but the camera will send name
-                # this avoids the manual change of the values in the card.
-                self.rooms_pos.append(
-                    {
-                        "name": name,
-                        "corners": corners,
-                    }
-                )
-                room_properties[int(room_id)] = {
-                    "number": int(room_id),
-                    "outline": corners,
-                    "name": name,
-                    "x": (x_min + x_max) // 2,
-                    "y": (y_min + y_max) // 2,
-                }
-        id_count = 1
-        for zone in zones_data:
-            zone_name = zone.get("name")
-            coordinates = zone.get("coordinates")
-            if coordinates and len(coordinates) > 0:
-                coordinates[0].pop()
-                x1, y1, x2, y2 = coordinates[0]
-                zone_properties[zone_name] = {
-                    "zones": coordinates,
-                    "name": zone_name,
-                    "x": ((x1 + x2) // 2),
-                    "y": ((y1 + y2) // 2),
-                }
-                id_count += 1
-        id_count = 1
-        for point in points_data:
-            point_name = point.get("name")
-            coordinates = point.get("coordinates")
-            if coordinates and len(coordinates) > 0:
-                coordinates = point.get("coordinates")
-                x1, y1 = coordinates
-                point_properties[id_count] = {
-                    "position": coordinates,
-                    "name": point_name,
-                    "x": x1,
-                    "y": y1,
-                }
-                id_count += 1
-        if room_properties != {}:
-            if zone_properties != {}:
-                _LOGGER.debug("Rooms and Zones, data extracted!")
-            else:
-                _LOGGER.debug("Rooms, data extracted!")
-        elif zone_properties != {}:
-            _LOGGER.debug("Zones, data extracted!")
-        else:
-            self.rooms_pos = None
-            _LOGGER.debug("Rooms and Zones data not available!")
-        return room_properties, zone_properties, point_properties
+        if not self.segment_data or not self.outlines:
+            self.segment_data, self.outlines = await ImageData.async_get_rrm_segments(
+                json_data, size_x, size_y, top, left, True
+            )
+        try:
+            dest_json = destinations
+            room_data = dict(dest_json).get("rooms", [])
+            zones_data = dict(dest_json).get("zones", [])
+            points_data = dict(dest_json).get("spots", [])
+            room_id_to_data = {room["id"]: room for room in room_data}
+            self.rooms_pos = []
+            room_properties = {}
+            zone_properties = {}
+            point_properties = {}
+            if self.outlines:
+                for id_x, room_id in enumerate(unsorted_id):
+                    if room_id in room_id_to_data:
+                        room_info = room_id_to_data[room_id]
+                        name = room_info.get("name")
+                        # Calculate x and y min/max from outlines
+                        x_min = self.outlines[id_x][0][0]
+                        x_max = self.outlines[id_x][1][0]
+                        y_min = self.outlines[id_x][0][1]
+                        y_max = self.outlines[id_x][1][1]
+                        corners = [
+                            (x_min, y_min),
+                            (x_max, y_min),
+                            (x_max, y_max),
+                            (x_min, y_max),
+                        ]
+                        # rand256 vacuums accept int(room_id) or str(name)
+                        # the card will soon support int(room_id) but the camera will send name
+                        # this avoids the manual change of the values in the card.
+                        self.rooms_pos.append(
+                            {
+                                "name": name,
+                                "corners": corners,
+                            }
+                        )
+                        room_properties[int(room_id)] = {
+                            "number": int(room_id),
+                            "outline": corners,
+                            "name": name,
+                            "x": (x_min + x_max) // 2,
+                            "y": (y_min + y_max) // 2,
+                        }
+                id_count = 1
+                for zone in zones_data:
+                    zone_name = zone.get("name")
+                    coordinates = zone.get("coordinates")
+                    if coordinates and len(coordinates) > 0:
+                        coordinates[0].pop()
+                        x1, y1, x2, y2 = coordinates[0]
+                        zone_properties[zone_name] = {
+                            "zones": coordinates,
+                            "name": zone_name,
+                            "x": ((x1 + x2) // 2),
+                            "y": ((y1 + y2) // 2),
+                        }
+                        id_count += 1
+                id_count = 1
+                for point in points_data:
+                    point_name = point.get("name")
+                    coordinates = point.get("coordinates")
+                    if coordinates and len(coordinates) > 0:
+                        coordinates = point.get("coordinates")
+                        x1, y1 = coordinates
+                        point_properties[id_count] = {
+                            "position": coordinates,
+                            "name": point_name,
+                            "x": x1,
+                            "y": y1,
+                        }
+                        id_count += 1
+                if room_properties != {}:
+                    if zone_properties != {}:
+                        _LOGGER.debug("Rooms and Zones, data extracted!")
+                    else:
+                        _LOGGER.debug("Rooms, data extracted!")
+                elif zone_properties != {}:
+                    _LOGGER.debug("Zones, data extracted!")
+                else:
+                    self.rooms_pos = None
+                    _LOGGER.debug("Rooms and Zones data not available!")
+                return room_properties, zone_properties, point_properties
+        except Exception as e:
+            _LOGGER.warning(
+                f"{self.file_name} : Error in extract_room_properties: {e}",
+                exc_info=True,
+            )
+            return None, None, None
 
     async def get_image_from_rrm(
         self,
@@ -367,10 +376,12 @@ class ReImageHandler(object):
                         image_left=pos_left,
                     )
                     # checking if there are segments too (sorted pixels in the raw data).
-                    segments = self.data.get_rrm_segments(
-                        m_json, size_x, size_y, pos_top, pos_left
-                    )
-                    if (segments and pixels) or pixels:
+                    if not self.segment_data:
+                        self.segment_data, self.outlines = await self.data.async_get_rrm_segments(
+                            m_json, size_x, size_y, pos_top, pos_left, True
+                        )
+                        
+                    if (self.segment_data and pixels) or pixels:
                         room_color = self.shared.rooms_colors[room_id]
                         # drawing floor
                         if pixels:
@@ -380,8 +391,9 @@ class ReImageHandler(object):
                         # drawing segments floor
                         room_id = 0
                         rooms_list = [color_wall]
-                        if segments:
-                            for pixels in segments:
+                        if self.segment_data:
+                            _LOGGER.info(self.file_name + ": Drawing segments ")
+                            for pixels in self.segment_data:
                                 room_color = self.shared.rooms_colors[room_id]
                                 rooms_list.append(room_color)
                                 if (
@@ -420,16 +432,16 @@ class ReImageHandler(object):
                             img_np_array, walls, pixel_size, color_wall
                         )
                         _LOGGER.info(self.file_name + ": Completed base Layers")
-                    # if (room_id > 0) and not self.room_propriety:
-                    #     self.room_propriety = await self.get_rooms_attributes(
-                    #         destinations
-                    #     )
-                    #     if self.rooms_pos:
-                    #         self.robot_pos = await self.async_get_robot_in_room(
-                    #             (robot_position[0] * 10),
-                    #             (robot_position[1] * 10),
-                    #             robot_position_angle,
-                    #         )
+                    if (room_id > 0) and not self.room_propriety:
+                        self.room_propriety = await self.get_rooms_attributes(
+                            destinations
+                        )
+                        if self.rooms_pos:
+                            self.robot_pos = await self.async_get_robot_in_room(
+                                (robot_position[0] * 10),
+                                (robot_position[1] * 10),
+                                robot_position_angle,
+                            )
                     self.img_base_layer = await self.async_copy_array(img_np_array)
 
                 # If there is a zone clean we draw it now.
@@ -573,7 +585,7 @@ class ReImageHandler(object):
             return self.room_propriety
         if self.json_data and destinations:
             _LOGGER.debug("Checking for rooms data..")
-            self.room_propriety = self.extract_room_properties(
+            self.room_propriety = await self.extract_room_properties(
                 self.json_data, destinations
             )
             if self.room_propriety:
