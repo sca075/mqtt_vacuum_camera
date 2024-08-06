@@ -270,8 +270,8 @@ class MapImageHandler(object):
                     compressed_pixels = layer.get("compressedPixels", [])
                     pixels = self.data.sublist(compressed_pixels, 3)
                     # Calculate x and y min/max from compressed pixels
-                    x_min, y_min, x_max, y_max = await self.data.async_get_rooms_coordinates(
-                        pixels, pixel_size
+                    x_min, y_min, x_max, y_max = (
+                        await self.data.async_get_rooms_coordinates(pixels, pixel_size)
                     )
                     corners = [
                         (x_min, y_min),

@@ -487,8 +487,8 @@ class ImageData:
             )
             if out_lines:
                 room_coords = await ImageData.async_get_rooms_coordinates(
-                    pixels=segments[count_seg],
-                    rand=True)
+                    pixels=segments[count_seg], rand=True
+                )
                 outlines.append(room_coords)
                 count_seg += 1
         if count_seg > 0:

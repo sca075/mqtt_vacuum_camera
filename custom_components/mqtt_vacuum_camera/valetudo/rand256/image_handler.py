@@ -8,11 +8,15 @@ Version: v2024.08.0
 from __future__ import annotations
 
 import logging
+import os.path
 import uuid
 
 from PIL import Image, ImageOps
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.storage import STORAGE_DIR
 import numpy as np
 
+from custom_components.mqtt_vacuum_camera.const import CAMERA_STORAGE
 from custom_components.mqtt_vacuum_camera.types import (
     Color,
     JsonType,
@@ -20,10 +24,19 @@ from custom_components.mqtt_vacuum_camera.types import (
     PilPNG,
     RobotPosition,
     RoomsProperties,
+    TrimCropData,
 )
 from custom_components.mqtt_vacuum_camera.utils.colors_man import color_grey
 from custom_components.mqtt_vacuum_camera.utils.drawable import Drawable
+from custom_components.mqtt_vacuum_camera.utils.files_operations import (
+    async_load_file,
+    async_write_json_to_disk,
+)
 from custom_components.mqtt_vacuum_camera.utils.img_data import ImageData
+from custom_components.mqtt_vacuum_camera.valetudo.hypfer.handler_utils import (
+    ImageUtils as ImUtils,
+    TrimError,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -34,7 +47,8 @@ class ReImageHandler(object):
     Image Handler for Valetudo Re Vacuums.
     """
 
-    def __init__(self, camera_shared):
+    def __init__(self, camera_shared, hass: HomeAssistant):
+        self.hass = hass
         self.auto_crop = None  # Auto crop flag
         self.segment_data = None  # Segment data
         self.outlines = None  # Outlines data
@@ -64,121 +78,178 @@ class ReImageHandler(object):
         self.trim_up = None  # Trim up
         self.zooming = False  # Zooming flag
         self.file_name = self.shared.file_name  # File name
+        self.path_to_data = self.hass.config.path(
+            STORAGE_DIR, CAMERA_STORAGE, f"auto_crop_{self.file_name}.json"
+        )  # path to the data
         self.offset_x = 0  # offset x for the aspect ratio.
         self.offset_y = 0  # offset y for the aspect ratio.
         self.offset_top = self.shared.offset_top  # offset top
         self.offset_bottom = self.shared.offset_down  # offset bottom
         self.offset_left = self.shared.offset_left  # offset left
         self.offset_right = self.shared.offset_right  # offset right
+        self.imu = ImUtils(self)
 
-    async def auto_crop_and_trim_array(
+    def check_trim(
+        self, trimmed_height, trimmed_width, margin_size, image_array, file_name, rotate
+    ):
+        """
+        Check if the trimming is okay.
+        """
+        if trimmed_height <= margin_size or trimmed_width <= margin_size:
+            self.crop_area = [0, 0, image_array.shape[1], image_array.shape[0]]
+            self.img_size = (image_array.shape[1], image_array.shape[0])
+            raise TrimError(
+                f"{file_name}: Trimming failed at rotation {rotate}.",
+                image_array,
+            )
+
+    def _calculate_trimmed_dimensions(self):
+        """Calculate and update the dimensions after trimming."""
+        trimmed_width = max(
+            0,
+            (
+                (self.trim_right - self.offset_right)
+                - (self.trim_left + self.offset_left)
+            ),
+        )
+        trimmed_height = max(
+            0,
+            ((self.trim_down - self.offset_bottom) - (self.trim_up + self.offset_top)),
+        )
+
+        # Ensure shared reference dimensions are updated
+        if hasattr(self.shared, "image_ref_height") and hasattr(
+            self.shared, "image_ref_width"
+        ):
+            self.shared.image_ref_height = trimmed_height
+            self.shared.image_ref_width = trimmed_width
+        else:
+            _LOGGER.warning(
+                "Shared attributes for image dimensions are not initialized."
+            )
+        return trimmed_width, trimmed_height
+
+    async def _async_auto_crop_data(self):
+        """Load the auto crop data from the disk."""
+        try:
+            if os.path.exists(self.path_to_data) and self.auto_crop is None:
+                temp_data = await async_load_file(self.path_to_data, True)
+                if temp_data is not None:
+                    trims_data = TrimCropData.from_dict(dict(temp_data)).to_list()
+                    self.trim_left, self.trim_up, self.trim_right, self.trim_down = (
+                        trims_data
+                    )
+
+                    # Calculate the dimensions after trimming using min/max values
+                    _, _ = self._calculate_trimmed_dimensions()
+                    return trims_data
+                else:
+                    _LOGGER.error("Trim data file is empty.")
+                    return None
+        except Exception as e:
+            _LOGGER.error(f"Failed to load trim data due to an error: {e}")
+            return None
+
+    def auto_crop_offset(self):
+        """Calculate the crop offset."""
+        if self.auto_crop:
+            self.auto_crop[0] += self.offset_left
+            self.auto_crop[1] += self.offset_top
+            self.auto_crop[2] -= self.offset_right
+            self.auto_crop[3] -= self.offset_bottom
+        else:
+            _LOGGER.warning(
+                "Auto crop data is not available. Time Out Warning will occurs!"
+            )
+            self.auto_crop = None
+
+    async def _init_auto_crop(self):
+        if self.auto_crop is None:
+            _LOGGER.debug(f"{self.file_name}: Trying to load crop data from disk")
+            self.auto_crop = await self._async_auto_crop_data()
+            self.auto_crop_offset()
+        return self.auto_crop
+
+    async def _async_save_auto_crop_data(self):
+        """Save the auto crop data to the disk."""
+        try:
+            if not os.path.exists(self.path_to_data):
+                _LOGGER.debug("Writing crop data to disk")
+                data = TrimCropData(
+                    self.trim_left, self.trim_up, self.trim_right, self.trim_down
+                ).to_dict()
+                await async_write_json_to_disk(self.path_to_data, data)
+        except Exception as e:
+            _LOGGER.error(f"Failed to save trim data due to an error: {e}")
+
+    async def async_auto_trim_and_zoom_image(
         self,
         image_array: NumpyArray,
-        detect_colour: Color,
+        detect_colour: Color = color_grey,
         margin_size: int = 0,
         rotate: int = 0,
-    ) -> NumpyArray:
+        zoom: bool = False,
+    ):
         """
         Automatically crops and trims a numpy array and returns the processed image.
         """
-        if not self.auto_crop:
-            _LOGGER.debug(
-                f"Image original size: {image_array.shape[1]}, {image_array.shape[0]}"
-            )
-            # Find the coordinates of the first occurrence of a non-background color
-            nonzero_coords = np.column_stack(
-                np.where(image_array != list(detect_colour))
-            )
-            # Calculate the crop box based on the first and last occurrences
-            min_y, min_x, dummy = np.min(nonzero_coords, axis=0)
-            max_y, max_x, dummy = np.max(nonzero_coords, axis=0)
-            del dummy, nonzero_coords
-            _LOGGER.debug(
-                "Found crop max and min values (y,x) ({}, {}) ({},{})...".format(
-                    int(max_y), int(max_x), int(min_y), int(min_x)
+        try:
+            await self._init_auto_crop()
+            if self.auto_crop is None:
+                _LOGGER.debug(f"{self.file_name}: Calculating auto trim box")
+                # Find the coordinates of the first occurrence of a non-background color
+                min_y, min_x, max_x, max_y = await self.imu.async_image_margins(
+                    image_array, detect_colour
                 )
+                # Calculate and store the trims coordinates with margins
+                self.trim_left = int(min_x) - margin_size
+                self.trim_up = int(min_y) - margin_size
+                self.trim_right = int(max_x) + margin_size
+                self.trim_down = int(max_y) + margin_size
+                del min_y, min_x, max_x, max_y
+
+                # Calculate the dimensions after trimming using min/max values
+                trimmed_width, trimmed_height = self._calculate_trimmed_dimensions()
+
+                # Test if the trims are okay or not
+                try:
+                    self.check_trim(
+                        trimmed_height,
+                        trimmed_width,
+                        margin_size,
+                        image_array,
+                        self.file_name,
+                        rotate,
+                    )
+                except TrimError as e:
+                    return e.image
+
+                # Store Crop area of the original image_array we will use from the next frame.
+                self.auto_crop = TrimCropData(
+                    self.trim_left, self.trim_up, self.trim_right, self.trim_down
+                ).to_list()
+                await self._async_save_auto_crop_data()  # Save the crop data to the disk
+                self.auto_crop_offset()
+            # If it is needed to zoom the image.
+            trimmed = await self.imu.async_check_if_zoom_is_on(
+                image_array, margin_size, zoom
             )
-            # Calculate and store the trims coordinates with margins
-            self.trim_left = int(min_x) + self.offset_left - margin_size
-            self.trim_up = int(min_y) + self.offset_top - margin_size
-            self.trim_right = int(max_x) - self.offset_right + margin_size
-            self.trim_down = int(max_y) - self.offset_bottom + margin_size
-            del min_y, min_x, max_x, max_y
+            del image_array  # Free memory.
+            # Rotate the cropped image based on the given angle
+            rotated = await self.imu.async_rotate_the_image(trimmed, rotate)
+            del trimmed  # Free memory.
+            _LOGGER.debug(f"{self.file_name}: Auto Trim Box data: {self.crop_area}")
+            self.crop_img_size = [rotated.shape[1], rotated.shape[0]]
             _LOGGER.debug(
-                "Calculated trims coordinates right {}, bottom {}, left {}, up {} ".format(
-                    self.trim_right, self.trim_down, self.trim_left, self.trim_up
-                )
+                f"{self.file_name}: Auto Trimmed image size: {self.crop_img_size}"
             )
-            # Calculate the dimensions after trimming using min/max values
-            trimmed_width = max(0, self.trim_right - self.trim_left)
-            trimmed_height = max(0, self.trim_down - self.trim_up)
-            trim_r = image_array.shape[1] - self.trim_right
-            trim_d = image_array.shape[0] - self.trim_down
-            trim_l = image_array.shape[1] - self.trim_left
-            trim_u = image_array.shape[0] - self.trim_up
-            _LOGGER.debug(
-                "Calculated trims values for right {}, bottom {}, left {} and up {}.".format(
-                    trim_r, trim_d, trim_l, trim_u
-                )
+
+        except Exception as e:
+            _LOGGER.warning(
+                f"{self.file_name}: Error {e} during auto trim and zoom.",
+                exc_info=True,
             )
-            _LOGGER.debug(
-                "Calculated trim width {} and trim height {}".format(
-                    trimmed_width, trimmed_height
-                )
-            )
-            # Test if the trims are okay or not
-            if trimmed_height <= margin_size or trimmed_width <= margin_size:
-                _LOGGER.debug(f"Background colour not detected at rotation {rotate}.")
-                pos_0 = 0
-                self.crop_area = (
-                    pos_0,
-                    pos_0,
-                    image_array.shape[1],
-                    image_array.shape[0],
-                )
-                self.img_size = (image_array.shape[1], image_array.shape[0])
-                del trimmed_width, trimmed_height
-                return image_array
-            # Store Crop area of the original image_array we will use from the next frame.
-            self.auto_crop = [
-                self.trim_left,
-                self.trim_up,
-                self.trim_right,
-                self.trim_down,
-            ]
-        # Apply the auto-calculated trims to the rotated image
-        trimmed = image_array[
-            self.auto_crop[1] : self.auto_crop[3],
-            self.auto_crop[0] : self.auto_crop[2],
-        ]
-        del image_array
-        # Rotate the cropped image based on the given angle
-        if rotate == 90:
-            rotated = np.rot90(trimmed)
-            self.crop_area = [
-                self.trim_left,
-                self.trim_up,
-                self.trim_right,
-                self.trim_down,
-            ]
-        elif rotate == 180:
-            rotated = np.rot90(trimmed, 2)
-            self.crop_area = self.auto_crop
-        elif rotate == 270:
-            rotated = np.rot90(trimmed, 3)
-            self.crop_area = [
-                self.trim_left,
-                self.trim_up,
-                self.trim_right,
-                self.trim_down,
-            ]
-        else:
-            rotated = trimmed
-            self.crop_area = self.auto_crop
-        del trimmed
-        _LOGGER.debug("Auto Trim Box data: %s", self.crop_area)
-        self.crop_img_size = [rotated.shape[1], rotated.shape[0]]
-        _LOGGER.debug("Trimmed image size: %s", self.crop_img_size)
+            return None
         return rotated
 
     async def extract_room_properties(
@@ -377,10 +448,12 @@ class ReImageHandler(object):
                     )
                     # checking if there are segments too (sorted pixels in the raw data).
                     if not self.segment_data:
-                        self.segment_data, self.outlines = await self.data.async_get_rrm_segments(
-                            m_json, size_x, size_y, pos_top, pos_left, True
+                        self.segment_data, self.outlines = (
+                            await self.data.async_get_rrm_segments(
+                                m_json, size_x, size_y, pos_top, pos_left, True
+                            )
                         )
-                        
+
                     if (self.segment_data and pixels) or pixels:
                         room_color = self.shared.rooms_colors[room_id]
                         # drawing floor
@@ -392,10 +465,16 @@ class ReImageHandler(object):
                         room_id = 0
                         rooms_list = [color_wall]
                         if self.segment_data:
-                            _LOGGER.info(self.file_name + ": Drawing segments ")
+                            _LOGGER.info(
+                                f"{self.file_name}: Drawing segments >>>>>>>>>>>>>< "
+                            )
                             for pixels in self.segment_data:
                                 room_color = self.shared.rooms_colors[room_id]
                                 rooms_list.append(room_color)
+                                _LOGGER.debug(
+                                    f"Room {room_id} color: {room_color}",
+                                    {tuple(self.active_zones)},
+                                )
                                 if (
                                     self.active_zones
                                     and len(self.active_zones) > room_id
@@ -503,11 +582,12 @@ class ReImageHandler(object):
                     f"{self.file_name}:"
                     f" Auto cropping the image with rotation {int(self.shared.image_rotate)}"
                 )
-                img_np_array = await self.auto_crop_and_trim_array(
+                img_np_array = await self.async_auto_trim_and_zoom_image(
                     img_np_array,
                     color_background,
                     int(self.shared.margins),
                     int(self.shared.image_rotate),
+                    self.zooming,
                 )
                 pil_img = Image.fromarray(img_np_array, mode="RGBA")
                 del img_np_array  # unload memory

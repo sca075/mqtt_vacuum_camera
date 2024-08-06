@@ -170,7 +170,10 @@ class ValetudoConnector:
         Disconnect the vacuum detected.
         Generate a Warning message if the vacuum is disconnected.
         """
-        if self._mqtt_vac_connect_state == "disconnected" or self._mqtt_vac_connect_state == "lost":
+        if (
+            self._mqtt_vac_connect_state == "disconnected"
+            or self._mqtt_vac_connect_state == "lost"
+        ):
             _LOGGER.debug(
                 f"{self._mqtt_topic}: Vacuum Disconnected from MQTT, waiting for connection."
             )
@@ -248,8 +251,10 @@ class ValetudoConnector:
         self._payload = msg.payload
         tmp_data = await self.async_decode_mqtt_payload(msg)
         self._rrm_destinations = tmp_data
-        if 'rooms' in tmp_data:
-            rooms_data = {str(room['id']): room['name'].strip('#') for room in tmp_data['rooms']}
+        if "rooms" in tmp_data:
+            rooms_data = {
+                str(room["id"]): room["name"].strip("#") for room in tmp_data["rooms"]
+            }
             await RoomStore().async_set_rooms_data(self._file_name, rooms_data)
         _LOGGER.info(
             f"{self._file_name}: Received vacuum destinations: {self._rrm_destinations}"
@@ -257,32 +262,35 @@ class ValetudoConnector:
 
     async def rrm_handle_active_segments(self, msg) -> None:
         """
-        Handle new MQTT messages.
+        Handle new MQTT messages regarding active segments.
         /active_segments is for Rand256.
-        @param msg: MQTT message
-        { "command": "segmented_cleanup", "segment_ids": [2], "repeats": 1, "afterCleaning": "Base" }
         """
-        command_status = json.loads(msg.payload)
+        command_status = await self.async_decode_mqtt_payload(msg)
+        _LOGGER.debug(f"Command Status: {command_status}")
         command = command_status.get("command", None)
 
-        if command == "segmented_cleanup" and self._rrm_destinations:
+        if command == "segmented_cleanup":
             segment_ids = command_status.get("segment_ids", [])
-            # Parse rooms JSON from _rrm_destinations
-            rooms_json = json.loads(self._rrm_destinations)
-            rooms = rooms_json.get("rooms", [])
-            # Create a mapping of room IDs to their positions in rooms list
-            room_ids = {room["id"]: idx for idx, room in enumerate(rooms, start=1)}
-            # Initialize rrm_active_segments with zeros
-            self._rrm_active_segments = [0] * len(rooms)
+            _LOGGER.debug(f"Segment IDs: {segment_ids}")
+
+            # Retrieve room data from RoomStore
+            rooms_data = await RoomStore().async_get_rooms_data(self._file_name)
+            rrm_active_segments = [0] * len(
+                rooms_data
+            )  # Initialize based on the number of rooms
 
             for segment_id in segment_ids:
-                if segment_id in room_ids:
-                    room_idx = room_ids[segment_id] - 1  # Index start from 0
-                    self._rrm_active_segments[room_idx] = 1
-            self._shared.rand256_active_zone = self._rrm_active_segments
-            _LOGGER.debug(
-                f"Active Segments of {self._file_name}: {self._rrm_active_segments}"
-            )
+                room_name = rooms_data.get(str(segment_id))
+                if room_name:
+                    # Convert room ID to index; since dict doesn't preserve order, find index manually
+                    room_idx = list(rooms_data.keys()).index(str(segment_id))
+                    rrm_active_segments[room_idx] = 1
+
+            self._shared.rand256_active_zone = rrm_active_segments
+            _LOGGER.debug(f"Updated Active Segments: {rrm_active_segments}")
+        else:
+            self._shared.rand256_active_zone = []
+            _LOGGER.debug("No valid command or room data; segments cleared.")
 
     @callback
     async def async_message_received(self, msg) -> None:

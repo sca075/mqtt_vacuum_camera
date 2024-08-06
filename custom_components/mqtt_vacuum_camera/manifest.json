@@ -7,6 +7,6 @@
     "documentation": "https://github.com/sca075/mqtt_vacuum_camera",
     "iot_class": "local_polling",
     "issue_tracker": "https://github.com/sca075/mqtt_vacuum_camera/issues",
-    "requirements": ["pillow", "numpy"],
-    "version": "2024.08.0b3"
+    "requirements": ["pillow>=10.3.0,<11.0.0", "numpy"],
+    "version": "2024.08.0"
 }
