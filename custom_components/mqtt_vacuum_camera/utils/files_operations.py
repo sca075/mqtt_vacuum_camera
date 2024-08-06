@@ -18,10 +18,8 @@ import re
 from typing import Any, Optional
 
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.storage import STORAGE_DIR
-from homeassistant.exceptions import (
-    ServiceValidationError,
-)
 
 from custom_components.mqtt_vacuum_camera.const import CAMERA_STORAGE
 from custom_components.mqtt_vacuum_camera.types import RoomStore, UserLanguageStore

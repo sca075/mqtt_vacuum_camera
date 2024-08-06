@@ -13,12 +13,9 @@ from homeassistant.const import (
     Platform,
 )
 from homeassistant.core import ServiceCall
-from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.exceptions import ConfigEntryNotReady, ServiceValidationError
 from homeassistant.helpers.reload import async_register_admin_service
 from homeassistant.helpers.storage import STORAGE_DIR
-from homeassistant.exceptions import (
-    ServiceValidationError,
-)
 
 from .common import (
     get_device_info,
