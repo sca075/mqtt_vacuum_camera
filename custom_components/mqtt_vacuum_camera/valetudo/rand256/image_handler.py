@@ -2,7 +2,7 @@
 Image Handler Module for Valetudo Re Vacuums.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Version: v2024.08.0
+Version: v2024.08.1
 """
 
 from __future__ import annotations
@@ -13,25 +13,24 @@ import uuid
 from PIL import Image, ImageOps
 from homeassistant.core import HomeAssistant
 
-import numpy as np
-
+from custom_components.mqtt_vacuum_camera.const import (
+    DEFAULT_IMAGE_SIZE,
+    DEFAULT_PIXEL_SIZE,
+)
 from custom_components.mqtt_vacuum_camera.types import (
     Color,
     JsonType,
-    NumpyArray,
     PilPNG,
     RobotPosition,
     RoomsProperties,
 )
-from custom_components.mqtt_vacuum_camera.utils.colors_man import color_grey
-from custom_components.mqtt_vacuum_camera.utils.drawable import Drawable
-
 from custom_components.mqtt_vacuum_camera.utils.auto_crop import AutoCrop
-from custom_components.mqtt_vacuum_camera.utils.img_data import ImageData
 from custom_components.mqtt_vacuum_camera.utils.handler_utils import (
     ImageUtils as ImUtils,
 )
+from custom_components.mqtt_vacuum_camera.utils.img_data import ImageData
 
+from .reimg_draw import ImageDraw
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -52,7 +51,6 @@ class ReImageHandler(object):
         self.crop_area = None  # Crop area
         self.crop_img_size = None  # Crop image size
         self.data = ImageData  # Image Data
-        self.draw = Drawable  # Drawable
         self.frame_number = 0  # Image Frame number
         self.go_to = None  # Go to position data
         self.img_base_layer = None  # Base image layer
@@ -79,6 +77,7 @@ class ReImageHandler(object):
         self.offset_bottom = self.shared.offset_down  # offset bottom
         self.offset_left = self.shared.offset_left  # offset left
         self.offset_right = self.shared.offset_right  # offset right
+        self.imd = ImageDraw(self)  # Image Draw
         self.imu = ImUtils(self)  # Image Utils
         self.ac = AutoCrop(self, self.hass)
 
@@ -103,8 +102,6 @@ class ReImageHandler(object):
             room_id_to_data = {room["id"]: room for room in room_data}
             self.rooms_pos = []
             room_properties = {}
-            zone_properties = {}
-            point_properties = {}
             if self.outlines:
                 for id_x, room_id in enumerate(unsorted_id):
                     if room_id in room_id_to_data:
@@ -137,34 +134,11 @@ class ReImageHandler(object):
                             "x": (x_min + x_max) // 2,
                             "y": (y_min + y_max) // 2,
                         }
-                id_count = 1
-                for zone in zones_data:
-                    zone_name = zone.get("name")
-                    coordinates = zone.get("coordinates")
-                    if coordinates and len(coordinates) > 0:
-                        coordinates[0].pop()
-                        x1, y1, x2, y2 = coordinates[0]
-                        zone_properties[zone_name] = {
-                            "zones": coordinates,
-                            "name": zone_name,
-                            "x": ((x1 + x2) // 2),
-                            "y": ((y1 + y2) // 2),
-                        }
-                        id_count += 1
-                id_count = 1
-                for point in points_data:
-                    point_name = point.get("name")
-                    coordinates = point.get("coordinates")
-                    if coordinates and len(coordinates) > 0:
-                        coordinates = point.get("coordinates")
-                        x1, y1 = coordinates
-                        point_properties[id_count] = {
-                            "position": coordinates,
-                            "name": point_name,
-                            "x": x1,
-                            "y": y1,
-                        }
-                        id_count += 1
+                # get the zones and points data
+                zone_properties = await self.imu.async_zone_propriety(zones_data)
+                # get the points data
+                point_properties = await self.imu.async_points_propriety(points_data)
+
                 if room_properties != {}:
                     if zone_properties != {}:
                         _LOGGER.debug("Rooms and Zones, data extracted!")
@@ -204,147 +178,28 @@ class ReImageHandler(object):
                 _LOGGER.info(self.file_name + ":Composing the image for the camera.")
                 # buffer json data
                 self.json_data = m_json
-                if self.room_propriety:
-                    _LOGGER.info(self.file_name + ": Supporting Rooms Cleaning!")
+                # get the image size
                 size_x, size_y = self.data.get_rrm_image_size(m_json)
                 ##########################
-                self.img_size = {
-                    "x": 5120,
-                    "y": 5120,
-                    "centre": [(5120 // 2), (5120 // 2)],
-                }
+                self.img_size = DEFAULT_IMAGE_SIZE
                 ###########################
                 self.json_id = str(uuid.uuid4())  # image id
                 _LOGGER.info("Vacuum Data ID: %s", self.json_id)
-                # grab data from the json data
-                pos_top, pos_left = self.data.get_rrm_image_position(m_json)
-                floor_data = self.data.get_rrm_floor(m_json)
-                walls_data = self.data.get_rrm_walls(m_json)
-                robot_pos = self.data.get_rrm_robot_position(m_json)
-                go_to = self.data.get_rrm_goto_target(m_json)
-                charger_pos = self.data.rrm_coordinates_to_valetudo(
-                    self.data.get_rrm_charger_position(m_json)
+                # get the robot position
+                robot_pos, robot_position, robot_position_angle = (
+                    await self.imd.async_get_robot_position(m_json)
                 )
-                zone_clean = self.data.get_rrm_currently_cleaned_zones(m_json)
-                no_go_area = self.data.get_rrm_forbidden_zones(m_json)
-                virtual_walls = self.data.get_rrm_virtual_walls(m_json)
-                path_pixel = self.data.get_rrm_path(m_json)
-                path_pixel2 = self.data.sublist_join(
-                    self.data.rrm_valetudo_path_array(path_pixel["points"]), 2
-                )
-                robot_position = None
-                robot_position_angle = None
-                # convert the data to reuse the current drawing library
-                robot_pos = self.data.rrm_coordinates_to_valetudo(robot_pos)
-                if robot_pos:
-                    robot_position = robot_pos
-                    angle = self.data.get_rrm_robot_angle(m_json)
-                    robot_position_angle = round(angle[0], 0)
-                    _LOGGER.debug(
-                        f"robot position: {robot_pos}, robot angle: {robot_position_angle}"
-                    )
-                    if self.rooms_pos is None:
-                        self.robot_pos = {
-                            "x": robot_position[0] * 10,
-                            "y": robot_position[1] * 10,
-                            "angle": robot_position_angle,
-                        }
-                    else:
-                        self.robot_pos = await self.async_get_robot_in_room(
-                            (robot_position[0] * 10),
-                            (robot_position[1] * 10),
-                            robot_position_angle,
-                        )
-                _LOGGER.debug("charger position: %s", charger_pos)
-                if charger_pos:
-                    self.charger_pos = {
-                        "x": (charger_pos[0] * 10),
-                        "y": (charger_pos[1] * 10),
-                    }
-
-                pixel_size = 5
-                room_id = 0
                 if self.frame_number == 0:
-                    _LOGGER.info(self.file_name + ": Empty image with background color")
-                    img_np_array = await self.draw.create_empty_image(
-                        5120, 5120, color_background
+                    room_id, img_np_array = await self.imd.async_draw_base_layer(
+                        m_json,
+                        size_x,
+                        size_y,
+                        color_wall,
+                        color_zone_clean,
+                        color_background,
+                        DEFAULT_PIXEL_SIZE,
                     )
-                    _LOGGER.info(self.file_name + ": Overlapping Layers")
-                    # this below are floor data
-                    pixels = self.data.from_rrm_to_compressed_pixels(
-                        floor_data,
-                        image_width=size_x,
-                        image_height=size_y,
-                        image_top=pos_top,
-                        image_left=pos_left,
-                    )
-                    # checking if there are segments too (sorted pixels in the raw data).
-                    try:
-                        if not self.segment_data:
-                            self.segment_data, self.outlines = (
-                                await self.data.async_get_rrm_segments(
-                                    m_json, size_x, size_y, pos_top, pos_left, True
-                                )
-                            )
-                    except ValueError as e:
-                        self.segment_data = None
-                        _LOGGER.info(f"{self.file_name}: No segments data found. {e}")
-
-                    if (self.segment_data and pixels) or pixels:
-                        room_color = self.shared.rooms_colors[room_id]
-                        # drawing floor
-                        if pixels:
-                            img_np_array = await self.draw.from_json_to_image(
-                                img_np_array, pixels, pixel_size, room_color
-                            )
-                        # drawing segments floor
-                        room_id = 0
-                        rooms_list = [color_wall]
-                        if self.segment_data:
-                            _LOGGER.info(f"{self.file_name}: Drawing segments.")
-                            for pixels in self.segment_data:
-                                room_color = self.shared.rooms_colors[room_id]
-                                rooms_list.append(room_color)
-                                _LOGGER.debug(
-                                    f"Room {room_id} color: {room_color}",
-                                    {tuple(self.active_zones)},
-                                )
-                                if (
-                                    self.active_zones
-                                    and len(self.active_zones) > room_id
-                                    and self.active_zones[room_id] == 1
-                                ):
-                                    room_color = (
-                                        ((2 * room_color[0]) + color_zone_clean[0])
-                                        // 3,
-                                        ((2 * room_color[1]) + color_zone_clean[1])
-                                        // 3,
-                                        ((2 * room_color[2]) + color_zone_clean[2])
-                                        // 3,
-                                        ((2 * room_color[3]) + color_zone_clean[3])
-                                        // 3,
-                                    )
-                                img_np_array = await self.draw.from_json_to_image(
-                                    img_np_array, pixels, pixel_size, room_color
-                                )
-                                room_id += 1
-                                if room_id > 15:
-                                    room_id = 0
-
-                    _LOGGER.info(self.file_name + ": Completed floor Layers")
-                    # Drawing walls.
-                    walls = self.data.from_rrm_to_compressed_pixels(
-                        walls_data,
-                        image_width=size_x,
-                        image_height=size_y,
-                        image_left=pos_left,
-                        image_top=pos_top,
-                    )
-                    if walls:
-                        img_np_array = await self.draw.from_json_to_image(
-                            img_np_array, walls, pixel_size, color_wall
-                        )
-                        _LOGGER.info(self.file_name + ": Completed base Layers")
+                    _LOGGER.info(self.file_name + ": Completed base Layers")
                     if (room_id > 0) and not self.room_propriety:
                         self.room_propriety = await self.get_rooms_attributes(
                             destinations
@@ -355,63 +210,37 @@ class ReImageHandler(object):
                                 (robot_position[1] * 10),
                                 robot_position_angle,
                             )
-                    self.img_base_layer = await self.async_copy_array(img_np_array)
+                    self.img_base_layer = await self.imd.async_copy_array(img_np_array)
 
                 # If there is a zone clean we draw it now.
                 self.frame_number += 1
-                img_np_array = await self.async_copy_array(self.img_base_layer)
+                img_np_array = await self.imd.async_copy_array(self.img_base_layer)
                 _LOGGER.debug(self.file_name + ": Frame number %s", self.frame_number)
                 if self.frame_number > 5:
                     self.frame_number = 0
                 # All below will be drawn each time
                 # charger
-                if charger_pos:
-                    img_np_array = await self.draw.battery_charger(
-                        img_np_array, charger_pos[0], charger_pos[1], color_charger
-                    )
+                img_np_array, self.charger_pos = await self.imd.async_draw_charger(
+                    img_np_array, m_json, color_charger
+                )
                 # zone clean
-                if zone_clean:
-                    img_np_array = await self.draw.zones(
-                        img_np_array, zone_clean, color_zone_clean
-                    )
-                # no-go zones
-                if no_go_area:
-                    img_np_array = await self.draw.zones(
-                        img_np_array, no_go_area, color_no_go
-                    )
+                img_np_array = await self.imd.async_draw_zones(
+                    m_json, img_np_array, color_zone_clean, color_no_go
+                )
                 # virtual walls
-                if virtual_walls:
-                    img_np_array = await self.draw.draw_virtual_walls(
-                        img_np_array, virtual_walls, color_no_go
-                    )
+                img_np_array = await self.imd.async_draw_virtual_restrictions(
+                    m_json, img_np_array, color_no_go
+                )
                 # draw path
-                if path_pixel2:
-                    img_np_array = await self.draw.lines(
-                        img_np_array, path_pixel2, 5, color_move
-                    )
+                img_np_array = await self.imd.async_draw_path(
+                    img_np_array, m_json, color_move
+                )
                 # go to flag and predicted path
-                if go_to:
-                    img_np_array = await self.draw.go_to_flag(
-                        img_np_array,
-                        (go_to[0], go_to[1]),
-                        self.img_rotate,
-                        color_go_to,
-                    )
-                    predicted_path = self.data.get_rrm_goto_predicted_path(m_json)
-                    if predicted_path:
-                        img_np_array = await self.draw.lines(
-                            img_np_array, predicted_path, 3, color_grey
-                        )
+                await self.imd.async_draw_go_to_flag(img_np_array, m_json, color_go_to)
                 # draw the robot
-                if robot_position and robot_position_angle:
-                    img_np_array = await self.draw.robot(
-                        img_np_array,
-                        robot_position[0],
-                        robot_position[1],
-                        robot_position_angle,
-                        color_robot,
-                        self.file_name,
-                    )
+                img_np_array = await self.imd.async_draw_robot_on_map(
+                    img_np_array, robot_position, robot_position_angle, color_robot
+                )
                 _LOGGER.debug(
                     f"{self.file_name}:"
                     f" Auto cropping the image with rotation {int(self.shared.image_rotate)}"
@@ -529,6 +358,15 @@ class ReImageHandler(object):
                     "angle": angle,
                     "in_room": self.robot_in_room["room"],
                 }
+                if self.active_zones and (
+                    self.robot_in_room["id"] in range(len(self.active_zones))
+                ):  # issue #100 Index out of range.
+                    _LOGGER.debug(
+                        f"{self.file_name} is in {self.robot_in_room['id']} and {self.active_zones}"
+                    )
+                    self.zooming = bool(self.active_zones[self.robot_in_room["id"]])
+                else:
+                    self.zooming = False
                 return temp
         # else we need to search and use the async method
         _LOGGER.debug(f"{self.file_name} changed room.. searching..")
@@ -586,9 +424,7 @@ class ReImageHandler(object):
         if not self.calibration_data:
             self.calibration_data = []
             _LOGGER.info(f"Getting Calibrations points {self.crop_area}")
-            # Calculate the calibration points in the vacuum coordinate system
-            # Valetudo Re version need corrections of the coordinates and are implemented with *10
-            vacuum_points = self.imu.re_get_vacuum_points(rotation_angle)
+
             # Define the map points (fixed)
             map_points = [
                 {"x": 0, "y": 0},  # Top-left corner 0
@@ -600,28 +436,8 @@ class ReImageHandler(object):
                 {"x": 0, "y": self.crop_img_size[1]},  # Bottom-left corner (optional) 3
             ]
 
-            # Rotate the vacuum points based on the rotation angle
-            if rotation_angle == 90:
-                vacuum_points = [
-                    vacuum_points[1],
-                    vacuum_points[2],
-                    vacuum_points[3],
-                    vacuum_points[0],
-                ]
-            elif rotation_angle == 180:
-                vacuum_points = [
-                    vacuum_points[2],
-                    vacuum_points[3],
-                    vacuum_points[0],
-                    vacuum_points[1],
-                ]
-            elif rotation_angle == 270:
-                vacuum_points = [
-                    vacuum_points[3],
-                    vacuum_points[0],
-                    vacuum_points[1],
-                    vacuum_points[2],
-                ]
+            # Valetudo Re version need corrections of the coordinates and are implemented with *10
+            vacuum_points = self.imu.re_get_vacuum_points(rotation_angle)
 
             # Create the calibration data for each point
             for vacuum_point, map_point in zip(vacuum_points, map_points):
@@ -636,89 +452,26 @@ class ReImageHandler(object):
         self, wsf: int, hsf: int, width: int, height: int
     ) -> tuple[int, int]:
         """
-        Convert the coordinates to the map.
-        :param wsf: Width scale factor.
-        :param hsf: Height scale factor.
-        :param width: Width of the image.
-        :param height: Height of the image.
+        Offset the coordinates to the map.
         """
 
-        rotation = self.shared.image_rotate
-
-        _LOGGER.debug(f"Image Size: Width: {width} Height: {height}")
-        _LOGGER.debug(
-            f"Trimmed Image Size: Width: {self.crop_img_size[0]} Height: {self.crop_img_size[1]}"
-        )
         if wsf == 1 and hsf == 1:
-            if rotation == 0 or rotation == 180:
-                self.offset_y = (width - self.crop_img_size[0]) // 2
-                self.offset_x = self.crop_img_size[1] - height
-            elif rotation == 90 or rotation == 270:
-                self.offset_y = (self.crop_img_size[0] - width) // 2
-                self.offset_x = self.crop_img_size[1] - height
-            _LOGGER.debug(
-                f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
-            )
+            self.imu.set_image_offset_ratio_1_1(width, height, rand256=True)
             return width, height
         elif wsf == 2 and hsf == 1:
-            if rotation == 0 or rotation == 180:
-                self.offset_y = width - self.crop_img_size[0]
-                self.offset_x = height - self.crop_img_size[1]
-            elif rotation == 90 or rotation == 270:
-                self.offset_x = width - self.crop_img_size[0]
-                self.offset_y = height - self.crop_img_size[1]
-            _LOGGER.debug(
-                f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
-            )
+            self.imu.set_image_offset_ratio_2_1(width, height, rand256=True)
             return width, height
         elif wsf == 3 and hsf == 2:
-            if rotation == 0 or rotation == 180:
-                self.offset_x = (width - self.crop_img_size[0]) // 2
-                self.offset_y = height - self.crop_img_size[1]
-            elif rotation == 90 or rotation == 270:
-                self.offset_y = (self.crop_img_size[0] - width) // 2
-                self.offset_x = self.crop_img_size[1] - height
-            _LOGGER.debug(
-                f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
-            )
+            self.imu.set_image_offset_ratio_3_2(width, height, rand256=True)
             return width, height
         elif wsf == 5 and hsf == 4:
-            if rotation == 0 or rotation == 180:
-                self.offset_y = (width - self.crop_img_size[0]) // 2
-                self.offset_x = self.crop_img_size[1] - height
-            elif rotation == 90 or rotation == 270:
-                self.offset_y = (self.crop_img_size[0] - width) // 2
-                self.offset_x = self.crop_img_size[1] - height
-            _LOGGER.debug(
-                f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
-            )
+            self.imu.set_image_offset_ratio_5_4(width, height, rand256=True)
             return width, height
         elif wsf == 9 and hsf == 16:
-            if rotation == 0 or rotation == 180:
-                self.offset_y = width - self.crop_img_size[0]
-                self.offset_x = height - self.crop_img_size[1]
-            elif rotation == 90 or rotation == 270:
-                self.offset_x = width - self.crop_img_size[0]
-                self.offset_y = height - self.crop_img_size[1]
-            _LOGGER.debug(
-                f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
-            )
+            self.imu.set_image_offset_ratio_9_16(width, height, rand256=True)
             return width, height
         elif wsf == 16 and hsf == 9:
-            if rotation == 0 or rotation == 180:
-                self.offset_y = width - self.crop_img_size[0]
-                self.offset_x = height - self.crop_img_size[1]
-            elif rotation == 90 or rotation == 270:
-                self.offset_x = width - self.crop_img_size[0]
-                self.offset_y = height - self.crop_img_size[1]
-            _LOGGER.debug(
-                f"Coordinates: Offset X: {self.offset_x} Offset Y: {self.offset_y}"
-            )
+            self.imu.set_image_offset_ratio_16_9(width, height, rand256=True)
             return width, height
         else:
             return width, height
-
-    async def async_copy_array(self, original_array: NumpyArray) -> NumpyArray:
-        """Copy the numpy array."""
-        _LOGGER.debug(f"{self.file_name}: Copying the array.")
-        return np.copy(original_array)
