@@ -225,7 +225,7 @@ class ReImageHandler(object):
                 )
                 # zone clean
                 img_np_array = await self.imd.async_draw_zones(
-                    m_json, img_np_array, color_zone_clean, color_no_go
+                    m_json, img_np_array, color_zone_clean
                 )
                 # virtual walls
                 img_np_array = await self.imd.async_draw_virtual_restrictions(
