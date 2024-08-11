@@ -10,8 +10,6 @@ import hashlib
 import json
 import logging
 
-import numpy as np
-
 from custom_components.mqtt_vacuum_camera.types import (
     Color,
     JsonType,
@@ -87,11 +85,11 @@ class ImageDraw:
         walls_data = self.data.get_rrm_walls(m_json)
         floor_data = self.data.get_rrm_floor(m_json)
         room_id = 0
+        _LOGGER.info(self.file_name + ": Empty image with background color")
+        img_np_array = await self.draw.create_empty_image(
+            self.img_h.img_size["x"], self.img_h.img_size["y"], color_background
+        )
         if self.img_h.frame_number == 0:
-            _LOGGER.info(self.file_name + ": Empty image with background color")
-            img_np_array = await self.draw.create_empty_image(
-                5120, 5120, color_background
-            )
             # this below are floor data
             _LOGGER.info(self.file_name + ": Overlapping Layers")
             pixels = self.data.from_rrm_to_compressed_pixels(
@@ -188,7 +186,6 @@ class ImageDraw:
         m_json: JsonType,
         np_array: NumpyArray,
         color_zone_clean: Color,
-        color_no_go: Color,
     ) -> NumpyArray:
         """Get the zone clean from the JSON data."""
         try:
@@ -234,7 +231,6 @@ class ImageDraw:
     ) -> NumpyArray:
         """Get the paths from the JSON data."""
         # Initialize the variables
-        path_pixels = None
         path_pixel_formatted = None
         # Extract the paths data from the JSON data.
         try:
