@@ -356,26 +356,25 @@ class ReImageHandler(object):
                 return True
             return False
 
-        if self.robot_in_room:
-            # Check if the robot coordinates are inside the room's
-            if _check_robot_position(robot_x, robot_y):
-                temp = {
-                    "x": robot_x,
-                    "y": robot_y,
-                    "angle": angle,
-                    "in_room": self.robot_in_room["room"],
-                }
-                self.active_zones = self.shared.rand256_active_zone
-                _LOGGER.debug(
-                    f"{self.file_name} is in {self.robot_in_room['id']} and {self.active_zones}"
-                )
-                if self.active_zones and (
-                    self.robot_in_room["id"] in range(len(self.active_zones))
-                ):  # issue #100 Index out of range
-                    self.zooming = bool(self.active_zones[self.robot_in_room["id"]])
-                else:
-                    self.zooming = False
-                return temp
+        # Check if the robot coordinates are inside the room's
+        if self.robot_in_room and _check_robot_position(robot_x, robot_y):
+            temp = {
+                "x": robot_x,
+                "y": robot_y,
+                "angle": angle,
+                "in_room": self.robot_in_room["room"],
+            }
+            self.active_zones = self.shared.rand256_active_zone
+            _LOGGER.debug(
+                f"{self.file_name} is in {self.robot_in_room['id']} and {self.active_zones}"
+            )
+            if self.active_zones and (
+                self.robot_in_room["id"] in range(len(self.active_zones))
+            ):  # issue #100 Index out of range
+                self.zooming = bool(self.active_zones[self.robot_in_room["id"]])
+            else:
+                self.zooming = False
+            return temp
         # else we need to search and use the async method
         _LOGGER.debug(f"{self.file_name} changed room.. searching..")
         room_count = 0

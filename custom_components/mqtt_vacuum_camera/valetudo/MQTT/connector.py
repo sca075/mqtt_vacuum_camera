@@ -288,9 +288,6 @@ class ValetudoConnector:
 
             self._shared.rand256_active_zone = rrm_active_segments
             _LOGGER.debug(f"Updated Active Segments: {rrm_active_segments}")
-        else:
-            self._shared.rand256_active_zone = []
-            _LOGGER.debug("No valid command or room data; segments cleared.")
 
     @callback
     async def async_message_received(self, msg) -> None:

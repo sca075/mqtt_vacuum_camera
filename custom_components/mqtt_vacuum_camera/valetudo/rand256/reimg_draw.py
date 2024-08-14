@@ -74,14 +74,14 @@ class ImageDraw:
             _LOGGER.info(f"{self.file_name}: No segments data found. {e}")
 
     async def async_draw_base_layer(
-        self,
-        m_json,
-        size_x,
-        size_y,
-        color_wall,
-        color_zone_clean,
-        color_background,
-        pixel_size,
+            self,
+            m_json,
+            size_x,
+            size_y,
+            color_wall,
+            color_zone_clean,
+            color_background,
+            pixel_size,
     ):
         """Draw the base layer of the map."""
         pos_top, pos_left = self.data.get_rrm_image_position(m_json)
@@ -94,66 +94,90 @@ class ImageDraw:
         )
         room_id = 0
         if self.img_h.frame_number == 0:
-            # this below are floor data
             _LOGGER.info(self.file_name + ": Overlapping Layers")
-            pixels = self.data.from_rrm_to_compressed_pixels(
-                floor_data,
-                image_width=size_x,
-                image_height=size_y,
-                image_top=pos_top,
-                image_left=pos_left,
-            )
+
             # checking if there are segments too (sorted pixels in the raw data).
             await self.async_segment_data(m_json, size_x, size_y, pos_top, pos_left)
-            if (self.img_h.segment_data and pixels) or pixels:
-                # drawing floor
-                room_color = self.img_h.shared.rooms_colors[room_id]
-                if pixels:
-                    img_np_array = await self.draw.from_json_to_image(
-                        img_np_array, pixels, pixel_size, room_color
-                    )
-                # drawing segments floor
-                room_id = 0
-                rooms_list = [color_wall]
-                if self.img_h.segment_data:
-                    _LOGGER.info(f"{self.file_name}: Drawing segments.")
-                    for pixels in self.img_h.segment_data:
-                        room_color = self.img_h.shared.rooms_colors[room_id]
-                        rooms_list.append(room_color)
-                        _LOGGER.debug(
-                            f"Room {room_id} color: {room_color}",
-                            {tuple(self.img_h.active_zones)},
-                        )
-                        if (
-                            self.img_h.active_zones
-                            and len(self.img_h.active_zones) > room_id
-                            and self.img_h.active_zones[room_id] == 1
-                        ):
-                            room_color = (
-                                ((2 * room_color[0]) + color_zone_clean[0]) // 3,
-                                ((2 * room_color[1]) + color_zone_clean[1]) // 3,
-                                ((2 * room_color[2]) + color_zone_clean[2]) // 3,
-                                ((2 * room_color[3]) + color_zone_clean[3]) // 3,
-                            )
-                        img_np_array = await self.draw.from_json_to_image(
-                            img_np_array, pixels, pixel_size, room_color
-                        )
-                        room_id += 1
-                        if room_id > 15:
-                            room_id = 0
-                    # Drawing walls.
-                    walls = self.data.from_rrm_to_compressed_pixels(
-                        walls_data,
-                        image_width=size_x,
-                        image_height=size_y,
-                        image_left=pos_left,
-                        image_top=pos_top,
-                    )
-                    if walls:
-                        img_np_array = await self.draw.from_json_to_image(
-                            img_np_array, walls, pixel_size, color_wall
-                        )
+
+            img_np_array = await self._draw_floor(
+                img_np_array, floor_data, size_x, size_y, pos_top, pos_left, pixel_size
+            )
+            room_id, img_np_array = await self._draw_segments(
+                img_np_array, pixel_size, self.img_h.segment_data, color_wall, color_zone_clean
+            )
+            img_np_array = await self._draw_walls(
+                img_np_array, walls_data, size_x, size_y, pos_top, pos_left, pixel_size, color_wall
+            )
         return room_id, img_np_array
+
+    async def _draw_floor(self, img_np_array, floor_data, size_x, size_y, pos_top, pos_left, pixel_size):
+        """Draw the floor data onto the image."""
+        pixels = self.data.from_rrm_to_compressed_pixels(
+            floor_data,
+            image_width=size_x,
+            image_height=size_y,
+            image_top=pos_top,
+            image_left=pos_left,
+        )
+        if pixels:
+            room_color = self.img_h.shared.rooms_colors[0]  # Using initial room_id = 0
+            img_np_array = await self.draw.from_json_to_image(
+                img_np_array, pixels, pixel_size, room_color
+            )
+        return img_np_array
+
+    async def _draw_segments(self, img_np_array, pixel_size, segment_data, color_wall, color_zone_clean):
+        """Draw the segments onto the image and update room_id."""
+
+        room_id = 0
+        rooms_list = [color_wall]
+        _LOGGER.info(f"{self.file_name}: Drawing segments. {len(segment_data)}")
+        if not segment_data:
+            _LOGGER.info(f"{self.file_name}: No segments data found.")
+            return room_id, img_np_array
+
+        if segment_data:
+            _LOGGER.info(f"{self.file_name}: Drawing segments.")
+            for pixels in segment_data:
+                room_color = self.img_h.shared.rooms_colors[room_id]
+                rooms_list.append(room_color)
+                _LOGGER.debug(
+                    f"Room {room_id} color: {room_color}, "
+                    f"{tuple(self.img_h.active_zones)}"
+                )
+                if (
+                        self.img_h.active_zones
+                        and len(self.img_h.active_zones) > room_id
+                        and self.img_h.active_zones[room_id] == 1
+                ):
+                    room_color = (
+                        ((2 * room_color[0]) + color_zone_clean[0]) // 3,
+                        ((2 * room_color[1]) + color_zone_clean[1]) // 3,
+                        ((2 * room_color[2]) + color_zone_clean[2]) // 3,
+                        ((2 * room_color[3]) + color_zone_clean[3]) // 3,
+                    )
+                img_np_array = await self.draw.from_json_to_image(
+                    img_np_array, pixels, pixel_size, room_color
+                )
+                room_id += 1
+                if room_id > 15:
+                    room_id = 0
+        return room_id, img_np_array
+
+    async def _draw_walls(self, img_np_array, walls_data, size_x, size_y, pos_top, pos_left, pixel_size, color_wall):
+        """Draw the walls onto the image."""
+        walls = self.data.from_rrm_to_compressed_pixels(
+            walls_data,
+            image_width=size_x,
+            image_height=size_y,
+            image_left=pos_left,
+            image_top=pos_top,
+        )
+        if walls:
+            img_np_array = await self.draw.from_json_to_image(
+                img_np_array, walls, pixel_size, color_wall
+            )
+        return img_np_array
 
     async def async_draw_charger(
         self,
