@@ -14,7 +14,6 @@ from custom_components.mqtt_vacuum_camera.types import (
     Color,
     JsonType,
     NumpyArray,
-    RobotPosition,
 )
 from custom_components.mqtt_vacuum_camera.utils.colors_man import color_grey
 from custom_components.mqtt_vacuum_camera.utils.drawable import Drawable
@@ -38,21 +37,25 @@ class ImageDraw:
         self, np_array: NumpyArray, m_json: JsonType, color_go_to: Color
     ) -> NumpyArray:
         """Draw the goto target flag on the map."""
-        go_to = self.data.get_rrm_goto_target(m_json)
-        if go_to:
-            np_array = await self.draw.go_to_flag(
-                np_array,
-                (go_to[0], go_to[1]),
-                self.img_h.img_rotate,
-                color_go_to,
-            )
-            predicted_path = self.data.get_rrm_goto_predicted_path(m_json)
-            if predicted_path:
-                np_array = await self.draw.lines(
-                    np_array, predicted_path, 3, color_grey
+        try:
+            go_to = self.data.get_rrm_goto_target(m_json)
+            if go_to:
+                np_array = await self.draw.go_to_flag(
+                    np_array,
+                    (go_to[0], go_to[1]),
+                    self.img_h.img_rotate,
+                    color_go_to,
                 )
-            return np_array
-        else:
+                predicted_path = self.data.get_rrm_goto_predicted_path(m_json)
+                if predicted_path:
+                    np_array = await self.draw.lines(
+                        np_array, predicted_path, 3, color_grey
+                    )
+                return np_array
+            else:
+                return np_array
+        except Exception as e:
+            _LOGGER.warning(f"{self.file_name}: Error in extraction of go to. {e}", exc_info=True)
             return np_array
 
     async def async_segment_data(
@@ -84,11 +87,12 @@ class ImageDraw:
         pos_top, pos_left = self.data.get_rrm_image_position(m_json)
         walls_data = self.data.get_rrm_walls(m_json)
         floor_data = self.data.get_rrm_floor(m_json)
-        room_id = 0
+
         _LOGGER.info(self.file_name + ": Empty image with background color")
         img_np_array = await self.draw.create_empty_image(
             self.img_h.img_size["x"], self.img_h.img_size["y"], color_background
         )
+        room_id = 0
         if self.img_h.frame_number == 0:
             # this below are floor data
             _LOGGER.info(self.file_name + ": Overlapping Layers")
@@ -101,10 +105,9 @@ class ImageDraw:
             )
             # checking if there are segments too (sorted pixels in the raw data).
             await self.async_segment_data(m_json, size_x, size_y, pos_top, pos_left)
-
             if (self.img_h.segment_data and pixels) or pixels:
-                room_color = self.img_h.shared.rooms_colors[room_id]
                 # drawing floor
+                room_color = self.img_h.shared.rooms_colors[room_id]
                 if pixels:
                     img_np_array = await self.draw.from_json_to_image(
                         img_np_array, pixels, pixel_size, room_color
@@ -139,7 +142,6 @@ class ImageDraw:
                         if room_id > 15:
                             room_id = 0
                     # Drawing walls.
-
                     walls = self.data.from_rrm_to_compressed_pixels(
                         walls_data,
                         image_width=size_x,
@@ -275,86 +277,6 @@ class ImageDraw:
         else:
             hash_value = None
         return hash_value
-
-    async def async_get_robot_in_room(
-        self, robot_y: int = 0, robot_x: int = 0, angle: float = 0.0
-    ) -> RobotPosition:
-        """Get the robot position and return in what room is."""
-        if self.img_h.robot_in_room:
-            # Check if the robot coordinates are inside the room's corners
-            if (
-                (self.img_h.robot_in_room["right"] >= int(robot_x))
-                and (self.img_h.robot_in_room["left"] <= int(robot_x))
-            ) and (
-                (self.img_h.robot_in_room["down"] >= int(robot_y))
-                and (self.img_h.robot_in_room["up"] <= int(robot_y))
-            ):
-                temp = {
-                    "x": robot_x,
-                    "y": robot_y,
-                    "angle": angle,
-                    "in_room": self.img_h.robot_in_room["room"],
-                }
-                if self.img_h.active_zones and (
-                    self.img_h.robot_in_room["id"]
-                    in range(len(self.img_h.active_zones))
-                ):  # issue #100 Index out of range.
-                    self.img_h.zooming = bool(
-                        self.img_h.active_zones[self.img_h.robot_in_room["id"]]
-                    )
-                else:
-                    self.img_h.zooming = False
-                return temp
-        # else we need to search and use the async method.
-        if self.img_h.rooms_pos:
-            last_room = None
-            room_count = 0
-            if self.img_h.robot_in_room:
-                last_room = self.img_h.robot_in_room
-            for room in self.img_h.rooms_pos:
-                corners = room["corners"]
-                self.img_h.robot_in_room = {
-                    "id": room_count,
-                    "left": int(corners[0][0]),
-                    "right": int(corners[2][0]),
-                    "up": int(corners[0][1]),
-                    "down": int(corners[2][1]),
-                    "room": str(room["name"]),
-                }
-                room_count += 1
-                # Check if the robot coordinates are inside the room's corners
-                if (
-                    (self.img_h.robot_in_room["right"] >= int(robot_x))
-                    and (self.img_h.robot_in_room["left"] <= int(robot_x))
-                ) and (
-                    (self.img_h.robot_in_room["down"] >= int(robot_y))
-                    and (self.img_h.robot_in_room["up"] <= int(robot_y))
-                ):
-                    temp = {
-                        "x": robot_x,
-                        "y": robot_y,
-                        "angle": angle,
-                        "in_room": self.img_h.robot_in_room["room"],
-                    }
-                    _LOGGER.debug(
-                        f"{self.file_name} is in {self.img_h.robot_in_room['room']}"
-                    )
-                    del room, corners, robot_x, robot_y  # free memory.
-                    return temp
-            del room, corners  # free memory.
-            _LOGGER.debug(
-                f"{self.file_name} not located within Camera Rooms coordinates."
-            )
-            self.img_h.robot_in_room = last_room
-            self.img_h.zooming = False
-            temp = {
-                "x": robot_x,
-                "y": robot_y,
-                "angle": angle,
-                "in_room": last_room["room"] if last_room else None,
-            }
-            # If the robot is not inside any room, return a default value
-            return temp
 
     async def async_get_robot_position(self, m_json: JsonType) -> tuple | None:
         """Get the robot position from the entity data."""

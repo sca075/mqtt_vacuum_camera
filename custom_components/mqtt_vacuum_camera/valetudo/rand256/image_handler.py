@@ -251,9 +251,10 @@ class ReImageHandler(object):
                     int(self.shared.margins),
                     int(self.shared.image_rotate),
                     self.zooming,
+                    rand256=True,
                 )
                 pil_img = Image.fromarray(img_np_array, mode="RGBA")
-                del img_np_array  # unload memory
+                del img_np_array  # free memory
                 # reduce the image size if the zoomed image is bigger then the original.
                 if (
                     self.shared.image_auto_zoom
@@ -264,7 +265,6 @@ class ReImageHandler(object):
                 ):
                     width = self.shared.image_ref_width
                     height = self.shared.image_ref_height
-                    _LOGGER.debug(f"reference with:{width} height:{height}")
                     if self.shared.image_aspect_ratio != "None":
                         wsf, hsf = [
                             int(x) for x in self.shared.image_aspect_ratio.split(",")
@@ -280,6 +280,7 @@ class ReImageHandler(object):
                         else:
                             new_width = pil_img.width
                             new_height = int(pil_img.width / new_aspect_ratio)
+
                         resized = ImageOps.pad(pil_img, (new_width, new_height))
                         self.crop_img_size[0], self.crop_img_size[1] = (
                             await self.async_map_coordinates_offset(
@@ -297,7 +298,7 @@ class ReImageHandler(object):
                 else:
                     _LOGGER.debug(f"{self.file_name}: Frame Completed.")
                     return pil_img
-        except (RuntimeError or RuntimeWarning) as e:
+        except RuntimeError or RuntimeWarning as e:
             _LOGGER.warning(
                 f"{self.file_name}: Error {e} during image creation.",
                 exc_info=True,
@@ -343,27 +344,34 @@ class ReImageHandler(object):
         self, robot_x: int, robot_y: int, angle: float
     ) -> RobotPosition:
         """Get the robot position and return in what room is."""
+
+        def _check_robot_position(x: int, y: int) -> bool:
+            x_in_room = (self.robot_in_room["left"] >= x) and (
+                self.robot_in_room["right"] <= x
+            )
+            y_in_room = (self.robot_in_room["up"] >= y) and (
+                self.robot_in_room["down"] <= y
+            )
+            if x_in_room and y_in_room:
+                return True
+            return False
+
         if self.robot_in_room:
-            # Check if the robot coordinates are inside the room's corners
-            if (
-                (self.robot_in_room["left"] >= robot_x)
-                and (self.robot_in_room["right"] <= robot_x)
-            ) and (
-                (self.robot_in_room["up"] >= robot_y)
-                and (self.robot_in_room["down"] <= robot_y)
-            ):
+            # Check if the robot coordinates are inside the room's
+            if _check_robot_position(robot_x, robot_y):
                 temp = {
                     "x": robot_x,
                     "y": robot_y,
                     "angle": angle,
                     "in_room": self.robot_in_room["room"],
                 }
+                self.active_zones = self.shared.rand256_active_zone
+                _LOGGER.debug(
+                    f"{self.file_name} is in {self.robot_in_room['id']} and {self.active_zones}"
+                )
                 if self.active_zones and (
                     self.robot_in_room["id"] in range(len(self.active_zones))
-                ):  # issue #100 Index out of range.
-                    _LOGGER.debug(
-                        f"{self.file_name} is in {self.robot_in_room['id']} and {self.active_zones}"
-                    )
+                ):  # issue #100 Index out of range
                     self.zooming = bool(self.active_zones[self.robot_in_room["id"]])
                 else:
                     self.zooming = False
@@ -387,13 +395,7 @@ class ReImageHandler(object):
                 }
                 room_count += 1
                 # Check if the robot coordinates are inside the room's corners
-                if (
-                    (self.robot_in_room["left"] >= robot_x)
-                    and (self.robot_in_room["right"] <= robot_x)
-                ) and (
-                    (self.robot_in_room["up"] >= robot_y)
-                    and (self.robot_in_room["down"] <= robot_y)
-                ):
+                if _check_robot_position(robot_x, robot_y):
                     temp = {
                         "x": robot_x,
                         "y": robot_y,

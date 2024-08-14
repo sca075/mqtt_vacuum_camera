@@ -1,5 +1,5 @@
 """Auto Crop Class for trimming and zooming images.
-Version: 2024.08.1"""
+Version: 2024.08.2"""
 
 from __future__ import annotations
 
@@ -149,7 +149,11 @@ class AutoCrop:
         return min_y, min_x, max_x, max_y
 
     async def async_check_if_zoom_is_on(
-        self, image_array: NumpyArray, margin_size: int = 100, zoom: bool = False
+        self,
+        image_array: NumpyArray,
+        margin_size: int = 100,
+        zoom: bool = False,
+        rand256: bool = False,
     ) -> NumpyArray:
         """Check if the image need to be zoom."""
         """async_auto_trim_and_zoom_image"""
@@ -163,10 +167,16 @@ class AutoCrop:
             _LOGGER.debug(
                 f"{self.file_name}: Zooming the image on room {self.imh.robot_in_room['room']}."
             )
-            trim_left = self.imh.robot_in_room["left"] - margin_size
-            trim_right = self.imh.robot_in_room["right"] + margin_size
-            trim_up = self.imh.robot_in_room["up"] - margin_size
-            trim_down = self.imh.robot_in_room["down"] + margin_size
+            if rand256:
+                trim_left = (self.imh.robot_in_room["left"] // 10) - margin_size
+                trim_right = (self.imh.robot_in_room["right"] // 10) + margin_size
+                trim_up = (self.imh.robot_in_room["up"] // 10) - margin_size
+                trim_down = (self.imh.robot_in_room["down"] // 10) + margin_size
+            else:
+                trim_left = self.imh.robot_in_room["left"] - margin_size
+                trim_right = self.imh.robot_in_room["right"] + margin_size
+                trim_up = self.imh.robot_in_room["up"] - margin_size
+                trim_down = self.imh.robot_in_room["down"] + margin_size
             trimmed = image_array[trim_up:trim_down, trim_left:trim_right]
         else:
             # Apply the auto-calculated trims to the rotated image
@@ -212,6 +222,7 @@ class AutoCrop:
         margin_size: int = 0,
         rotate: int = 0,
         zoom: bool = False,
+        rand256: bool = False,
     ):
         """
         Automatically crops and trims a numpy array and returns the processed image.
@@ -258,7 +269,7 @@ class AutoCrop:
                 self.auto_crop_offset()
             # If it is needed to zoom the image.
             trimmed = await self.async_check_if_zoom_is_on(
-                image_array, margin_size, zoom
+                image_array, margin_size, zoom, rand256
             )
             del image_array  # Free memory.
             # Rotate the cropped image based on the given angle
