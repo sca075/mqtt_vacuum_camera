@@ -83,7 +83,11 @@ class AutoCrop:
 
     async def _async_auto_crop_data(self):
         """Load the auto crop data from the disk."""
-        if os.path.exists(self.path_to_data) and not self.imh.auto_crop:
+
+        if (
+            os.path.exists(self.path_to_data)
+            and not self.imh.auto_crop
+        ):
             try:
                 temp_data = await async_load_file(self.path_to_data, True)
                 if temp_data:
@@ -97,7 +101,7 @@ class AutoCrop:
                     self._calculate_trimmed_dimensions()
                     return trims_data
             except Exception as e:
-                _LOGGER.error(f"Failed to load trim data due to an error: {e}")
+                _LOGGER.debug(f"Failed to load trim data due to an error: {e}")
         return None
 
     def auto_crop_offset(self):
@@ -265,7 +269,8 @@ class AutoCrop:
                     self.imh.trim_right,
                     self.imh.trim_down,
                 ).to_list()
-                await self._async_save_auto_crop_data()  # Save the crop data to the disk
+                if self.imh.shared.vacuum_state == "docked":
+                    await self._async_save_auto_crop_data()  # Save the crop data to the disk
                 self.auto_crop_offset()
             # If it is needed to zoom the image.
             trimmed = await self.async_check_if_zoom_is_on(
