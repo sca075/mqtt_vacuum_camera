@@ -13,7 +13,13 @@ import math
 from PIL import ImageDraw, ImageFont
 import numpy as np
 
-from custom_components.mqtt_vacuum_camera.types import Color, NumpyArray, PilPNG, Point
+from custom_components.mqtt_vacuum_camera.types import (
+    Color,
+    NumpyArray,
+    PilPNG,
+    Point,
+    Union,
+)
 
 
 class Drawable:
@@ -34,7 +40,7 @@ class Drawable:
 
     @staticmethod
     async def from_json_to_image(
-        layer: NumpyArray, pixels: dict, pixel_size: int, color: Color
+        layer: NumpyArray, pixels: Union[dict, list], pixel_size: int, color: Color
     ) -> NumpyArray:
         """Drawing the layers (rooms) from the vacuum json data."""
         image_array = layer

@@ -35,6 +35,13 @@ CONF_TRIMS_SAVE = "save_trims"
 ICON = "mdi:camera"
 NAME = "MQTT Vacuum Camera"
 
+DEFAULT_IMAGE_SIZE = {
+    "x": 5120,
+    "y": 5120,
+    "centre": [(5120 // 2), (5120 // 2)],
+}
+
+DEFAULT_PIXEL_SIZE = 5
 
 DEFAULT_VALUES = {
     "rotate_image": "0",
