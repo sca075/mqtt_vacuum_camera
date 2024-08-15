@@ -272,6 +272,7 @@ class ValetudoConnector:
             segment_ids = command_status.get("segment_ids", [])
             # Retrieve room data from RoomStore
             rooms_data = await RoomStore().async_get_rooms_data(self._file_name)
+            # Sort the rooms data by room ID same as rooms data in attributes.
             rooms_data = dict(sorted(rooms_data.items(), key=lambda item: int(item[0])))
             rrm_active_segments = [0] * len(
                 rooms_data

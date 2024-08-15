@@ -300,7 +300,7 @@ class ReImageHandler(object):
                 else:
                     _LOGGER.debug(f"{self.file_name}: Frame Completed.")
                     return pil_img
-        except RuntimeError or RuntimeWarning as e:
+        except (RuntimeError, RuntimeWarning) as e:
             _LOGGER.warning(
                 f"{self.file_name}: Error {e} during image creation.",
                 exc_info=True,
