@@ -1,5 +1,5 @@
 """
-Version: v2024.08.0
+Version: v2024.08.1
 - Removed the PNG decode, the json is extracted from map-data instead of map-data-hass.
 - Tested no influence on the camera performance.
 - Added gzip library used in Valetudo RE data compression.
@@ -266,15 +266,13 @@ class ValetudoConnector:
         /active_segments is for Rand256.
         """
         command_status = await self.async_decode_mqtt_payload(msg)
-        _LOGGER.debug(f"Command Status: {command_status}")
         command = command_status.get("command", None)
 
         if command == "segmented_cleanup":
             segment_ids = command_status.get("segment_ids", [])
-            _LOGGER.debug(f"Segment IDs: {segment_ids}")
-
             # Retrieve room data from RoomStore
             rooms_data = await RoomStore().async_get_rooms_data(self._file_name)
+            rooms_data = dict(sorted(rooms_data.items(), key=lambda item: int(item[0])))
             rrm_active_segments = [0] * len(
                 rooms_data
             )  # Initialize based on the number of rooms

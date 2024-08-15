@@ -55,7 +55,9 @@ class ImageDraw:
             else:
                 return np_array
         except Exception as e:
-            _LOGGER.warning(f"{self.file_name}: Error in extraction of go to. {e}", exc_info=True)
+            _LOGGER.warning(
+                f"{self.file_name}: Error in extraction of go to. {e}", exc_info=True
+            )
             return np_array
 
     async def async_segment_data(
@@ -74,14 +76,14 @@ class ImageDraw:
             _LOGGER.info(f"{self.file_name}: No segments data found. {e}")
 
     async def async_draw_base_layer(
-            self,
-            m_json,
-            size_x,
-            size_y,
-            color_wall,
-            color_zone_clean,
-            color_background,
-            pixel_size,
+        self,
+        m_json,
+        size_x,
+        size_y,
+        color_wall,
+        color_zone_clean,
+        color_background,
+        pixel_size,
     ):
         """Draw the base layer of the map."""
         pos_top, pos_left = self.data.get_rrm_image_position(m_json)
@@ -103,14 +105,27 @@ class ImageDraw:
                 img_np_array, floor_data, size_x, size_y, pos_top, pos_left, pixel_size
             )
             room_id, img_np_array = await self._draw_segments(
-                img_np_array, pixel_size, self.img_h.segment_data, color_wall, color_zone_clean
+                img_np_array,
+                pixel_size,
+                self.img_h.segment_data,
+                color_wall,
+                color_zone_clean,
             )
             img_np_array = await self._draw_walls(
-                img_np_array, walls_data, size_x, size_y, pos_top, pos_left, pixel_size, color_wall
+                img_np_array,
+                walls_data,
+                size_x,
+                size_y,
+                pos_top,
+                pos_left,
+                pixel_size,
+                color_wall,
             )
         return room_id, img_np_array
 
-    async def _draw_floor(self, img_np_array, floor_data, size_x, size_y, pos_top, pos_left, pixel_size):
+    async def _draw_floor(
+        self, img_np_array, floor_data, size_x, size_y, pos_top, pos_left, pixel_size
+    ):
         """Draw the floor data onto the image."""
         pixels = self.data.from_rrm_to_compressed_pixels(
             floor_data,
@@ -126,7 +141,9 @@ class ImageDraw:
             )
         return img_np_array
 
-    async def _draw_segments(self, img_np_array, pixel_size, segment_data, color_wall, color_zone_clean):
+    async def _draw_segments(
+        self, img_np_array, pixel_size, segment_data, color_wall, color_zone_clean
+    ):
         """Draw the segments onto the image and update room_id."""
 
         room_id = 0
@@ -146,9 +163,9 @@ class ImageDraw:
                     f"{tuple(self.img_h.active_zones)}"
                 )
                 if (
-                        self.img_h.active_zones
-                        and len(self.img_h.active_zones) > room_id
-                        and self.img_h.active_zones[room_id] == 1
+                    self.img_h.active_zones
+                    and len(self.img_h.active_zones) > room_id
+                    and self.img_h.active_zones[room_id] == 1
                 ):
                     room_color = (
                         ((2 * room_color[0]) + color_zone_clean[0]) // 3,
@@ -164,7 +181,17 @@ class ImageDraw:
                     room_id = 0
         return room_id, img_np_array
 
-    async def _draw_walls(self, img_np_array, walls_data, size_x, size_y, pos_top, pos_left, pixel_size, color_wall):
+    async def _draw_walls(
+        self,
+        img_np_array,
+        walls_data,
+        size_x,
+        size_y,
+        pos_top,
+        pos_left,
+        pixel_size,
+        color_wall,
+    ):
         """Draw the walls onto the image."""
         walls = self.data.from_rrm_to_compressed_pixels(
             walls_data,
