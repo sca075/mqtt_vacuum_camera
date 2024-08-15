@@ -57,9 +57,21 @@ async def async_setup_entry(
     """Set up platform from a ConfigEntry."""
 
     async def _reload_config(call: ServiceCall) -> None:
-        """Reload the platforms."""
-        await async_unload_entry(hass, entry)
-        await async_setup_entry(hass, entry)
+        """Reload the camera platform for all entities in the integration."""
+        _LOGGER.debug("Reloading the config entry for all camera entities")
+
+        # Retrieve all config entries associated with the DOMAIN
+        camera_entries = hass.config_entries.async_entries(DOMAIN)
+
+        # Iterate over each config entry
+        for camera_entry in camera_entries:
+            _LOGGER.debug(f"Unloading entry: {camera_entry.entry_id}")
+            await async_unload_entry(hass, camera_entry)
+
+            _LOGGER.debug(f"Reloading entry: {camera_entry.entry_id}")
+            await async_setup_entry(hass, camera_entry)
+
+        # Optionally, trigger other reinitialization steps if needed
         hass.bus.async_fire(f"event_{DOMAIN}_reloaded", context=call.context)
 
     async def reset_trims(call: ServiceCall) -> None:
@@ -120,10 +132,12 @@ async def async_unload_entry(
     hass: core.HomeAssistant, entry: config_entries.ConfigEntry
 ) -> bool:
     """Unload a config entry."""
+    _LOGGER.debug(f"unloading {entry.entry_id}")
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         # Remove config entry from domain.
         entry_data = hass.data[DOMAIN].pop(entry.entry_id)
         entry_data["unsub_options_update_listener"]()
+        # Remove services
         hass.services.async_remove(DOMAIN, "reset_trims")
         hass.services.async_remove(DOMAIN, SERVICE_RELOAD)
 
