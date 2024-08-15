@@ -148,11 +148,13 @@ class ReImageHandler(object):
                     _LOGGER.debug("Zones, data extracted!")
                 else:
                     self.rooms_pos = None
-                    _LOGGER.debug("Rooms and Zones data not available!")
+                    _LOGGER.debug(
+                        f"{self.file_name}: Rooms and Zones data not available!"
+                    )
                 return room_properties, zone_properties, point_properties
         except Exception as e:
             _LOGGER.debug(
-                f"{self.file_name} : No rooms Data or Error in extract_room_properties: {e}",
+                f"No rooms Data or Error in extract_room_properties: {e}",
                 exc_info=True,
             )
             return None, None, None
@@ -175,7 +177,7 @@ class ReImageHandler(object):
 
         try:
             if (m_json is not None) and (not isinstance(m_json, tuple)):
-                _LOGGER.info(self.file_name + ":Composing the image for the camera.")
+                _LOGGER.info(f"{self.file_name}: Composing the image for the camera.")
                 # buffer json data
                 self.json_data = m_json
                 # get the image size
@@ -184,7 +186,7 @@ class ReImageHandler(object):
                 self.img_size = DEFAULT_IMAGE_SIZE
                 ###########################
                 self.json_id = str(uuid.uuid4())  # image id
-                _LOGGER.info("Vacuum Data ID: %s", self.json_id)
+                _LOGGER.info(f"Vacuum Data ID: {self.json_id}")
                 # get the robot position
                 robot_pos, robot_position, robot_position_angle = (
                     await self.imd.async_get_robot_position(m_json)
@@ -199,7 +201,7 @@ class ReImageHandler(object):
                         color_background,
                         DEFAULT_PIXEL_SIZE,
                     )
-                    _LOGGER.info(self.file_name + ": Completed base Layers")
+                    _LOGGER.info(f"{self.file_name}: Completed base Layers")
                     if (room_id > 0) and not self.room_propriety:
                         self.room_propriety = await self.get_rooms_attributes(
                             destinations
@@ -215,7 +217,7 @@ class ReImageHandler(object):
                 # If there is a zone clean we draw it now.
                 self.frame_number += 1
                 img_np_array = await self.imd.async_copy_array(self.img_base_layer)
-                _LOGGER.debug(self.file_name + ": Frame number %s", self.frame_number)
+                _LOGGER.debug(f"{self.file_name}: Frame number {self.frame_number}")
                 if self.frame_number > 5:
                     self.frame_number = 0
                 # All below will be drawn each time
@@ -364,16 +366,18 @@ class ReImageHandler(object):
                 "angle": angle,
                 "in_room": self.robot_in_room["room"],
             }
-            self.active_zones = self.shared.rand256_active_zone
-            _LOGGER.debug(
-                f"{self.file_name} is in {self.robot_in_room['id']} and {self.active_zones}"
-            )
-            if self.active_zones and (
-                self.robot_in_room["id"] in range(len(self.active_zones))
-            ):  # issue #100 Index out of range
-                self.zooming = bool(self.active_zones[self.robot_in_room["id"]])
-            else:
-                self.zooming = False
+            # ##Still working on this count to fix it on 2024.08.2
+            # ##The issue is now that somehow the trimming dimensions are not okay.
+            # ##This cause the camera to crash when resizing the image.
+            _LOGGER.info(f"{self.file_name}: Auto Zoom is currently disabled.")
+            # self.active_zones = self.shared.rand256_active_zone
+            # if self.active_zones and (
+            #     self.robot_in_room["id"] in range(len(self.active_zones))
+            # ):  # issue #100 Index out of range
+            #     self.zooming = bool(self.active_zones[self.robot_in_room["id"]])
+            # else:
+            #     self.zooming = False
+
             return temp
         # else we need to search and use the async method
         _LOGGER.debug(f"{self.file_name} changed room.. searching..")
@@ -408,7 +412,7 @@ class ReImageHandler(object):
                     return temp
             del room, corners  # free memory.
             _LOGGER.debug(
-                f"{self.file_name} not located within Camera Rooms coordinates."
+                f"{self.file_name}: Not located within Camera Rooms coordinates."
             )
             self.zooming = False
             self.robot_in_room = last_room
@@ -424,7 +428,9 @@ class ReImageHandler(object):
         """Return the map calibration data."""
         if not self.calibration_data:
             self.calibration_data = []
-            _LOGGER.info(f"Getting Calibrations points {self.crop_area}")
+            _LOGGER.info(
+                f"{self.file_name}: Getting Calibrations points {self.crop_area}"
+            )
 
             # Define the map points (fixed)
             map_points = [
