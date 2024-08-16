@@ -25,6 +25,3 @@ snapshot:
         text:
 
 reset_trims:
-  target:
-    entity:
-      domain: camera

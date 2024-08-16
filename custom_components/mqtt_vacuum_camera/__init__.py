@@ -1,5 +1,5 @@
 """MQTT Vacuum Camera.
-Version: 2024.08.0"""
+Version: 2024.08.1"""
 
 import logging
 import os
@@ -13,7 +13,7 @@ from homeassistant.const import (
     Platform,
 )
 from homeassistant.core import ServiceCall
-from homeassistant.exceptions import ConfigEntryNotReady, ServiceValidationError
+from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.reload import async_register_admin_service
 from homeassistant.helpers.storage import STORAGE_DIR
 
@@ -35,9 +35,9 @@ from .const import (
     DOMAIN,
 )
 from .utils.files_operations import (
+    async_clean_up_all_auto_crop_files,
     async_get_translations_vacuum_id,
     async_rename_room_description,
-    async_reset_map_trims,
 )
 
 PLATFORMS = [Platform.CAMERA]
@@ -57,22 +57,29 @@ async def async_setup_entry(
     """Set up platform from a ConfigEntry."""
 
     async def _reload_config(call: ServiceCall) -> None:
-        """Reload the platforms."""
-        await async_unload_entry(hass, entry)
-        await async_setup_entry(hass, entry)
+        """Reload the camera platform for all entities in the integration."""
+        _LOGGER.debug("Reloading the config entry for all camera entities")
+
+        # Retrieve all config entries associated with the DOMAIN
+        camera_entries = hass.config_entries.async_entries(DOMAIN)
+
+        # Iterate over each config entry
+        for camera_entry in camera_entries:
+            _LOGGER.debug(f"Unloading entry: {camera_entry.entry_id}")
+            await async_unload_entry(hass, camera_entry)
+
+            _LOGGER.debug(f"Reloading entry: {camera_entry.entry_id}")
+            await async_setup_entry(hass, camera_entry)
+
+        # Optionally, trigger other reinitialization steps if needed
         hass.bus.async_fire(f"event_{DOMAIN}_reloaded", context=call.context)
 
     async def reset_trims(call: ServiceCall) -> None:
-        """Search in the date range and return the matching items."""
-        try:
-            entity_ids = call.data.get("entity_id")
-        except (ValueError, KeyError):
-            raise ServiceValidationError("no_entity_id_provided") from None
-        else:
-            _LOGGER.debug(f"Resetting trims for {entity_ids}")
-            await async_reset_map_trims(hass, entity_ids)
-            await hass.services.async_call(DOMAIN, "reload")
-            hass.bus.async_fire(f"event_{DOMAIN}_reset_trims", context=call.context)
+        """Action Reset Map Trims."""
+        _LOGGER.debug(f"Resetting trims for {DOMAIN}")
+        await async_clean_up_all_auto_crop_files(hass)
+        await hass.services.async_call(DOMAIN, "reload")
+        hass.bus.async_fire(f"event_{DOMAIN}_reset_trims", context=call.context)
 
     hass.data.setdefault(DOMAIN, {})
     hass_data = dict(entry.data)
@@ -120,10 +127,12 @@ async def async_unload_entry(
     hass: core.HomeAssistant, entry: config_entries.ConfigEntry
 ) -> bool:
     """Unload a config entry."""
+    _LOGGER.debug(f"unloading {entry.entry_id}")
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         # Remove config entry from domain.
         entry_data = hass.data[DOMAIN].pop(entry.entry_id)
         entry_data["unsub_options_update_listener"]()
+        # Remove services
         hass.services.async_remove(DOMAIN, "reset_trims")
         hass.services.async_remove(DOMAIN, SERVICE_RELOAD)
 
