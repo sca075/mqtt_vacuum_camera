@@ -1,5 +1,5 @@
 """MQTT Vacuum Camera.
-Version: 2024.08.0"""
+Version: 2024.08.1"""
 
 import logging
 import os
@@ -13,7 +13,7 @@ from homeassistant.const import (
     Platform,
 )
 from homeassistant.core import ServiceCall
-from homeassistant.exceptions import ConfigEntryNotReady, ServiceValidationError
+from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.reload import async_register_admin_service
 from homeassistant.helpers.storage import STORAGE_DIR
 
@@ -35,9 +35,9 @@ from .const import (
     DOMAIN,
 )
 from .utils.files_operations import (
+    async_clean_up_all_auto_crop_files,
     async_get_translations_vacuum_id,
     async_rename_room_description,
-    async_reset_map_trims,
 )
 
 PLATFORMS = [Platform.CAMERA]
@@ -75,16 +75,11 @@ async def async_setup_entry(
         hass.bus.async_fire(f"event_{DOMAIN}_reloaded", context=call.context)
 
     async def reset_trims(call: ServiceCall) -> None:
-        """Search in the date range and return the matching items."""
-        try:
-            entity_ids = call.data.get("entity_id")
-        except (ValueError, KeyError):
-            raise ServiceValidationError("no_entity_id_provided") from None
-        else:
-            _LOGGER.debug(f"Resetting trims for {entity_ids}")
-            await async_reset_map_trims(hass, entity_ids)
-            await hass.services.async_call(DOMAIN, "reload")
-            hass.bus.async_fire(f"event_{DOMAIN}_reset_trims", context=call.context)
+        """Action Reset Map Trims."""
+        _LOGGER.debug(f"Resetting trims for {DOMAIN}")
+        await async_clean_up_all_auto_crop_files(hass)
+        await hass.services.async_call(DOMAIN, "reload")
+        hass.bus.async_fire(f"event_{DOMAIN}_reset_trims", context=call.context)
 
     hass.data.setdefault(DOMAIN, {})
     hass_data = dict(entry.data)

@@ -1,5 +1,5 @@
 """Auto Crop Class for trimming and zooming images.
-Version: 2024.08.2"""
+Version: 2024.08.1"""
 
 from __future__ import annotations
 
@@ -84,10 +84,7 @@ class AutoCrop:
     async def _async_auto_crop_data(self):
         """Load the auto crop data from the disk."""
 
-        if (
-            os.path.exists(self.path_to_data)
-            and not self.imh.auto_crop
-        ):
+        if os.path.exists(self.path_to_data) and not self.imh.auto_crop:
             try:
                 temp_data = await async_load_file(self.path_to_data, True)
                 if temp_data:
@@ -172,10 +169,10 @@ class AutoCrop:
                 f"{self.file_name}: Zooming the image on room {self.imh.robot_in_room['room']}."
             )
             if rand256:
-                trim_left = (self.imh.robot_in_room["left"] // 10) - margin_size
-                trim_right = (self.imh.robot_in_room["right"] // 10) + margin_size
-                trim_up = (self.imh.robot_in_room["up"] // 10) - margin_size
-                trim_down = (self.imh.robot_in_room["down"] // 10) + margin_size
+                trim_left = int(self.imh.robot_in_room["left"] / 10) - margin_size
+                trim_right = int(self.imh.robot_in_room["right"] / 10) + margin_size
+                trim_up = int(self.imh.robot_in_room["up"] / 10) - margin_size
+                trim_down = int(self.imh.robot_in_room["down"] / 10) + margin_size
             else:
                 trim_left = self.imh.robot_in_room["left"] - margin_size
                 trim_right = self.imh.robot_in_room["right"] + margin_size

@@ -4,12 +4,13 @@ Common functions for the MQTT Vacuum Camera integration.
 Those functions are used to store and retrieve user data from the Home Assistant storage.
 The data will be stored locally in the Home Assistant in .storage/valetudo_camera directory.
 Author: @sca075
-Version: 2024.08.0
+Version: 2024.08.1
 """
 
 from __future__ import annotations
 
 import asyncio
+from concurrent.futures import ThreadPoolExecutor
 import glob
 import json
 import logging
@@ -412,6 +413,13 @@ def extract_core_entity_ids(entity_ids: list[str]) -> list[str]:
     return core_entity_ids
 
 
+async def async_list_files(pattern: str) -> list:
+    """List files matching the pattern asynchronously."""
+    loop = asyncio.get_event_loop()
+    with ThreadPoolExecutor() as pool:
+        return await loop.run_in_executor(pool, glob.glob, pattern)
+
+
 async def get_trims_files_names(path: str, entity_ids: list[str]) -> list[str]:
     """
     Generates the list of file names to delete based on the core entity IDs.
@@ -419,6 +427,25 @@ async def get_trims_files_names(path: str, entity_ids: list[str]) -> list[str]:
     core_entity_ids = extract_core_entity_ids(entity_ids)
     file_names = [f"{path}/auto_crop_{core_id}.json" for core_id in core_entity_ids]
     return file_names
+
+
+async def async_clean_up_all_auto_crop_files(hass: HomeAssistant) -> None:
+    """
+    Deletes all auto_crop_*.json files in the specified directory.
+    """
+
+    directory = hass.config.path(STORAGE_DIR, CAMERA_STORAGE)
+    # Create the pattern to match all auto_crop_*.json files
+    pattern = os.path.join(directory, "auto_crop_*.json")
+    # List all matching files
+    files_to_delete = await async_list_files(pattern)
+    # Iterate over the files and delete each one
+    for file_path in files_to_delete:
+        try:
+            os.remove(file_path)
+            print(f"Deleted: {file_path}")
+        except Exception as e:
+            print(f"Error deleting {file_path}: {e}")
 
 
 async def async_reset_map_trims(hass: HomeAssistant, entity_list: list) -> bool:

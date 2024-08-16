@@ -10,11 +10,7 @@ import hashlib
 import json
 import logging
 
-from custom_components.mqtt_vacuum_camera.types import (
-    Color,
-    JsonType,
-    NumpyArray,
-)
+from custom_components.mqtt_vacuum_camera.types import Color, JsonType, NumpyArray
 from custom_components.mqtt_vacuum_camera.utils.colors_man import color_grey
 from custom_components.mqtt_vacuum_camera.utils.drawable import Drawable
 from custom_components.mqtt_vacuum_camera.utils.img_data import ImageData
