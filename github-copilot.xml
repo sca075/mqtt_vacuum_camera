@@ -6,6 +6,7 @@
         <entry key="*" value="true" />
       </map>
     </languageAllowList>
+    <option name="inlayTextColor" value="#9d1d1d" />
     <option name="showIdeCompletions" value="true" />
   </component>
 </application>
