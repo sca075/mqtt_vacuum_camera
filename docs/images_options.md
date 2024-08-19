@@ -2,7 +2,7 @@
 
 ***Category:*** Camera Configuration
 
-![Screenshot 2024-03-09 at 21 18 47](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/02787561-6c1b-4db7-9960-fd8f3e911161)
+<<<replace the image below with the one that shows the image options configuration page.>>>
 
 ***Description:*** The camera configuration is a set of options that can be used to customize the camera image. The
 options are:
