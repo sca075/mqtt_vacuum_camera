@@ -21,7 +21,7 @@ By selecting the option to be configured (submitting the operation to do) is pos
   
 ![Screenshot 2024-03-16 at 09 58 35](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/6d276689-cd8e-4948-ba82-5027a9be3902)
 
-It is also possible to customize the rooms description of the menu by the advanced options. This customization will is apply to all Cameras therefore it is not possible to have different rooms description for each camera.
+It is also possible to customize the rooms description of the menu by the advanced options. This customization will apply to all cameras; therefore, it is not possible to have different room descriptions for each camera.
 
 ![Screenshot 2024-08-19 at 12 11 22](https://github.com/user-attachments/assets/f406b4b8-3766-47a9-9d5d-b65a1e52cb25)
 
