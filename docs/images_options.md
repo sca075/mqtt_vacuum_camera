@@ -2,7 +2,7 @@
 
 ***Category:*** Camera Configuration
 
-<<<replace the image below with the one that shows the image options configuration page.>>>
+![Screenshot 2024-08-19 at 12 27 07](https://github.com/user-attachments/assets/1ecffd2c-2c03-4631-82ca-e65690e82f18)
 
 ***Description:*** The camera configuration is a set of options that can be used to customize the camera image. The
 options are:
