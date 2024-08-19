@@ -2,8 +2,7 @@
 
 ***Category:*** Camera Configuration - Colours - From General to Rooms colours.
 
-<<<Replace the image below with the one that shows the colours configuration page.>>>
-
+![Screenshot 2024-08-19 at 12 05 14](https://github.com/user-attachments/assets/e0751fb5-51c8-40cf-bfea-2c730d9ef92e)
 
 ***Description:***
 By selecting the option to be configured (submitting the operation to do) is possible to:
@@ -24,6 +23,9 @@ By selecting the option to be configured (submitting the operation to do) is pos
 
 It is also possible to customize the rooms description of the menu by the advanced options. This customization will is apply to all Cameras therefore it is not possible to have different rooms description for each camera.
 
-<<<Screenshot of the advanced options>>>
+![Screenshot 2024-08-19 at 12 11 22](https://github.com/user-attachments/assets/f406b4b8-3766-47a9-9d5d-b65a1e52cb25)
 
-The V1 vacuums support only the floor colour. 
+The V1 vacuums support only the floor colour.
+
+![Screenshot 2024-08-19 at 12 22 52](https://github.com/user-attachments/assets/74ae1aeb-b470-4338-bb9c-e92ee60236d7)
+
