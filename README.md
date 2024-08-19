@@ -72,9 +72,10 @@ Our setup guide also includes **important** informations on how to setup the [lo
 <details><summary> We here List what this camera offers as futures.</summary>
 
 1) All Valetudo vacuums are supported.
-2) **Automatically Generate the calibration points for the lovelace-xiaomi-vacuum-map-card** to ensure full compatibility to this user-friendly card.
-3) **Automatically Generate rooms based configuration when vacuum support this functionality**, this will allow you to configure the rooms quickly on the [lovelace-xiaomi-vacuum-map-card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
-4) **The camera take automatically [snapshots](./docs/snapshots.md) (when the vacuum idle/ error / docked)**. It is also possible to save a snapshot using a service call from Home Assistant with the file name and location you want to use. By the default the snapshot is saved in the www folder of Home Assistant. If the snapshot is disabled from Image Options the png will be deleted automatically.
+2) Supported languages (English, Arabic, Chinese, Czech, Dutch, French, German, Italian, Japanese, Polish, Norwegian, Russian, Spanish, Swedish).
+3) **Automatically Generate the calibration points for the lovelace-xiaomi-vacuum-map-card** to ensure full compatibility to this user-friendly card.
+4) **Automatically Generate rooms based configuration when vacuum support this functionality**, this will allow you to configure the rooms quickly on the [lovelace-xiaomi-vacuum-map-card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
+5) **The camera take automatically [snapshots](./docs/snapshots.md) (when the vacuum idle/ error / docked)**. It is also possible to save a snapshot using the Action from Home Assistant with the file name and location you want to use. By the default the snapshot is saved in the www folder of Home Assistant. If the snapshot is disabled from Image Options the png will be deleted automatically.
    ```
    service: camera.snapshot
    target:
@@ -82,18 +83,19 @@ Our setup guide also includes **important** informations on how to setup the [lo
    data:
      filename: /config/www/REPLACE_ME.png
    ```
-5) **Change the image options** directly form the Home Assistant integration UI with a simple click on the integration configuration.
+6) **Change the image options** directly form the Home Assistant integration UI with a simple click on the integration configuration.
    - **Image Rotation**: 0, 90, 180, 270 (default is 0).
    - [**Trim automatically the images**](./docs/croping_trimming.md). The standard Valetudo images size 5210x5210 or more, are resized automatically (At boot the camera trims and reduces the images sizes). Default margins are 150 pixels, you can customize this value from the image options.
    - Base colors are the **colors for robot, charger, walls, background, zones etc**.
    - **Rooms colors**, Room 1 is actually also the Floor color (for vacuum that do not support rooms).
    - **[Transparency level](./docs/transparency.md) for all elements and rooms** colours can be also customize.
    - It is possible to **display on the image the vacuum status**, this option add a vacuum status text at the top left of the image. Status and room where the vacuum is will be display on the text filed.
-6) This integration make possible to **render multiple vacuums** as per each camera will be named with the vacuum name (example: vacuum.robot1 = camera.robot1_camera.. vacuum.robotx = camera.robotx_camera)
-7) The camera as all cameras in HA **supports the ON/OFF service**, it is possible to *suspend and resume the camera streem as desired*.
-8) In the attributes is possible to get on what room the vacuum is.
-9) No Go, Virtual Walls, Zone Clean, Active Segments and Obstacles are draw on the map when available.
-10) [Auto Zooming the room (segment)](./docs/auto_zoom.md) when the vacuum is cleaning it.
+7) This integration make possible to **render multiple vacuums** as per each camera will be named with the vacuum name (example: vacuum.robot1 = camera.robot1_camera.. vacuum.robotx = camera.robotx_camera)
+8) The camera as all cameras in HA **supports the ON/OFF service**, it is possible to *suspend and resume the camera streem as desired*.
+9) In the attributes is possible to get on what room the vacuum is.
+10) No Go, Virtual Walls, Zone Clean, Active Segments and Obstacles are draw on the map when available.
+11) [Auto Zooming the room (segment)](./docs/auto_zoom.md) when the vacuum is cleaning it.
+12) Support Actions "reload" and "reset_trims" implemented for changing the camera settings without restarting Home Assistant.
 </details>
 
 
