@@ -26,7 +26,7 @@ If this isn't giving the expected result, there is the possibility to add a Trim
 It is considered that the image is at 0 degrees rotation, the trims are calculated from the top left corner of the image.
 Camera Options -> Advanced -> Configure Offset Image
 
-<<<upload here the image of the trimming with the offset>>>
+![Screenshot 2024-08-19 at 11 26 04](https://github.com/user-attachments/assets/7a91da26-1dff-446c-bd79-0a6ab952630d)
 
 As per the trims are saved and reloaded at each startup, when you need to change the map of the vacuums (using [maploader](https://github.com/pkoehlers/maploader) or as [per reported for Rand256](https://github.com/sca075/mqtt_vacuum_camera/discussions/236))
 you can reset the trims with the Action "reset_trims" available in the Camera.
