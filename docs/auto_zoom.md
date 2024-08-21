@@ -2,8 +2,6 @@
 
 ***Category:*** Camera Configuration - Image Options - Auto Zoom
 
-![Screenshot 2024-03-13 at 17 17 13](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/e228fc96-8e95-4be9-af9e-b21a259e8289)
-
 ![Screenshot 2024-03-13 at 17 14 10](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/390a5a85-3091-40b0-9846-c0bc9c6db93d)
 
 ***Default:***  Disable
