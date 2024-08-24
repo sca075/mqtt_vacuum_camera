@@ -2,7 +2,7 @@
 
 ***Category:*** Camera Configuration - Image Options - Auto Zoom.
 
-![Screenshot 2024-03-09 at 21 18 47](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/02787561-6c1b-4db7-9960-fd8f3e911161)
+![Screenshot 2024-08-19 at 12 27 07](https://github.com/user-attachments/assets/1ecffd2c-2c03-4631-82ca-e65690e82f18)
 
 ![Screenshot 2024-03-13 at 17 14 10](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/390a5a85-3091-40b0-9846-c0bc9c6db93d)
 
