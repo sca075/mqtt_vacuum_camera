@@ -1,8 +1,11 @@
 ### Auto Zooming the room (segment) when the vacuum is cleaning it.
 
+
 ***Category:*** Camera Configuration - Image Options - Auto Zoom.
 
 ![Screenshot 2024-08-19 at 12 27 07](https://github.com/user-attachments/assets/1ecffd2c-2c03-4631-82ca-e65690e82f18)
+
+***Category:*** Camera Configuration - Image Options - Auto Zoom
 
 ![Screenshot 2024-03-13 at 17 14 10](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/390a5a85-3091-40b0-9846-c0bc9c6db93d)
 

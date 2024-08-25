@@ -15,8 +15,7 @@ please copy the repository link below in ***Custom repositories*** section.
 ```link
 https://github.com/sca075/mqtt_vacuum_camera.git
 ```
-
-<<<New Image download the repository>>>
+![Screenshot 2024-08-24 at 10 41 16](https://github.com/user-attachments/assets/e53de9b2-a9a5-4ce9-a9e3-8809faff0c48)
 
 Select **Integration** as _Category_ and click the **Add** button.
 
