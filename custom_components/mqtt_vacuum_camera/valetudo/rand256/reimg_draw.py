@@ -1,7 +1,7 @@
 """
 Image Draw Class for Valetudo Rand256 Image Handling.
 This class is used to simplify the ImageHandler class.
-Version: 2024.08.1
+Version: 2024.08.2
 """
 
 from __future__ import annotations
@@ -144,7 +144,6 @@ class ImageDraw:
 
         room_id = 0
         rooms_list = [color_wall]
-        _LOGGER.info(f"{self.file_name}: Drawing segments. {len(segment_data)}")
         if not segment_data:
             _LOGGER.info(f"{self.file_name}: No segments data found.")
             return room_id, img_np_array
@@ -154,10 +153,6 @@ class ImageDraw:
             for pixels in segment_data:
                 room_color = self.img_h.shared.rooms_colors[room_id]
                 rooms_list.append(room_color)
-                _LOGGER.debug(
-                    f"Room {room_id} color: {room_color}, "
-                    f"{tuple(self.img_h.active_zones)}"
-                )
                 if (
                     self.img_h.active_zones
                     and len(self.img_h.active_zones) > room_id

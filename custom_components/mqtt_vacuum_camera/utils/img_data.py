@@ -3,7 +3,7 @@ Collections of Json and List routines
 ImageData is part of the Image_Handler
 used functions to search data in the json
 provided for the creation of the new camera frame
-Version: v2024.08.0
+Version: v2024.08.2
 """
 
 from __future__ import annotations
@@ -86,9 +86,6 @@ class ImageData:
                     if layer_type not in layer_dict:
                         layer_dict[layer_type] = []
                     layer_dict[layer_type].append(json_obj.get("compressedPixels", []))
-                # Hopefully will not brake anything.
-                # if layer_type == "floor":
-                #    active_list.append("floor")
                 if layer_type == "segment":
                     active_list.append(int(active_type["active"]))
 
@@ -190,7 +187,7 @@ class ImageData:
             if rand:
                 x, y, _ = entry  # Extract x and y coordinates
                 max_x = max(max_x, x)  # Update max x coordinate
-                max_y = max(max_y, y)  # Update max y coordinate
+                max_y = max(max_y, y + pixel_size)  # Update max y coordinate
                 min_x = min(min_x, x)  # Update min x coordinate
                 min_y = min(min_y, y)  # Update min y coordinate
             else:

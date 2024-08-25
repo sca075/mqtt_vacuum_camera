@@ -271,22 +271,34 @@ class ValetudoConnector:
         if command == "segmented_cleanup":
             segment_ids = command_status.get("segment_ids", [])
             # Retrieve room data from RoomStore
-            rooms_data = await RoomStore().async_get_rooms_data(self._file_name)
-            # Sort the rooms data by room ID same as rooms data in attributes.
-            rooms_data = dict(sorted(rooms_data.items(), key=lambda item: int(item[0])))
-            rrm_active_segments = [0] * len(
-                rooms_data
-            )  # Initialize based on the number of rooms
+            # rooms_data = await RoomStore().async_get_rooms_data(self._file_name)
 
+            # Get the room data from destinations
+            dest_json = self._rrm_destinations
+            room_data = dict(dest_json).get("rooms", [])
+            _LOGGER.debug(f"Room Data: {room_data}")
+
+            # Sort the room_data by room ID
+            room_ids = [room["id"] for room in room_data]
+            _LOGGER.debug(f"Sorted Room IDs: {room_ids}")
+
+            # Create rrm_active_segments initialized to zero based on the number of rooms
+            rrm_active_segments = [0] * len(room_ids)
+
+            # Create a mapping of room ID to its index in the sorted list
+            room_id_to_index = {room_id: idx for idx, room_id in enumerate(room_ids)}
+            _LOGGER.debug(f"Room ID to Index: {room_id_to_index}")
+
+            # Update the rrm_active_segments based on segment_ids
             for segment_id in segment_ids:
-                room_name = rooms_data.get(str(segment_id))
-                if room_name:
-                    # Convert room ID to index; since dict doesn't preserve order, find index manually
-                    room_idx = list(rooms_data.keys()).index(str(segment_id))
-                    rrm_active_segments[room_idx] = 1
+                room_index = room_id_to_index.get(segment_id)
+                _LOGGER.debug(f"Room Index: {room_index}")
+                if room_index is not None:
+                    rrm_active_segments[room_index] = 1
 
             self._shared.rand256_active_zone = rrm_active_segments
             _LOGGER.debug(f"Updated Active Segments: {rrm_active_segments}")
+
 
     @callback
     async def async_message_received(self, msg) -> None:
