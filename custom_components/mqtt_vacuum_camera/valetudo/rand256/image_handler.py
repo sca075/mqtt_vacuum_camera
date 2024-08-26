@@ -367,11 +367,9 @@ class ReImageHandler(object):
                 "in_room": self.robot_in_room["room"],
             }
             self.active_zones = self.shared.rand256_active_zone
-            _LOGGER.debug(f"{self.file_name}: in room {self.robot_in_room["room"]}, ID {self.robot_in_room["id"]}: "
-                          f"Active {tuple(self.active_zones)}")
             if self.active_zones and (
                 (self.robot_in_room["id"]) in range(len(self.active_zones))
-             ):  # issue #100 Index out of range
+            ):  # issue #100 Index out of range
                 self.zooming = bool(self.active_zones[(self.robot_in_room["id"])])
             else:
                 self.zooming = False
