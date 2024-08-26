@@ -154,7 +154,6 @@ class AutoCrop:
         rand256: bool = False,
     ) -> NumpyArray:
         """Check if the image need to be zoom."""
-        """async_auto_trim_and_zoom_image"""
 
         if (
             zoom
@@ -184,14 +183,12 @@ class AutoCrop:
                 self.imh.auto_crop[1] : self.imh.auto_crop[3],
                 self.imh.auto_crop[0] : self.imh.auto_crop[2],
             ]
-        _LOGGER.debug(f"size of the trimmed image: from {image_array.shape} to {trimmed.shape}")
         return trimmed
 
     async def async_rotate_the_image(
         self, trimmed: NumpyArray, rotate: int
     ) -> NumpyArray:
         """Rotate the image and return the new array."""
-        """async_auto_trim_and_zoom_image"""
         if rotate == 90:
             rotated = rot90(trimmed)
             self.imh.crop_area = [
