@@ -1,5 +1,5 @@
 """
-Version: v2024.08.1
+Version: v2024.08.2
 - Removed the PNG decode, the json is extracted from map-data instead of map-data-hass.
 - Tested no influence on the camera performance.
 - Added gzip library used in Valetudo RE data compression.
