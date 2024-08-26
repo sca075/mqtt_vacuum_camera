@@ -2,7 +2,7 @@
 Image Handler Module for Valetudo Re Vacuums.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Version: v2024.08.1
+Version: v2024.08.2
 """
 
 from __future__ import annotations
@@ -366,28 +366,25 @@ class ReImageHandler(object):
                 "angle": angle,
                 "in_room": self.robot_in_room["room"],
             }
-            # ##Still working on this count to fix it on 2024.08.2
-            # ##The issue is now that somehow the trimming dimensions are not okay.
-            # ##This cause the camera to crash when resizing the image.
-            _LOGGER.info(f"{self.file_name}: Auto Zoom is currently disabled.")
-            # self.active_zones = self.shared.rand256_active_zone
-            # if self.active_zones and (
-            #     self.robot_in_room["id"] in range(len(self.active_zones))
-            # ):  # issue #100 Index out of range
-            #     self.zooming = bool(self.active_zones[self.robot_in_room["id"]])
-            # else:
-            #     self.zooming = False
+            self.active_zones = self.shared.rand256_active_zone
+            if self.active_zones and (
+                (self.robot_in_room["id"]) in range(len(self.active_zones))
+            ):  # issue #100 Index out of range
+                self.zooming = bool(self.active_zones[(self.robot_in_room["id"])])
+            else:
+                self.zooming = False
 
             return temp
         # else we need to search and use the async method
         _LOGGER.debug(f"{self.file_name} changed room.. searching..")
-        room_count = 0
+        room_count = -1
         last_room = None
         if self.rooms_pos:
             if self.robot_in_room:
                 last_room = self.robot_in_room
             for room in self.rooms_pos:
                 corners = room["corners"]
+                room_count += 1
                 self.robot_in_room = {
                     "id": room_count,
                     "left": corners[0][0],
@@ -396,7 +393,6 @@ class ReImageHandler(object):
                     "down": corners[2][1],
                     "room": room["name"],
                 }
-                room_count += 1
                 # Check if the robot coordinates are inside the room's corners
                 if _check_robot_position(robot_x, robot_y):
                     temp = {

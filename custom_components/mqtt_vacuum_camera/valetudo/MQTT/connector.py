@@ -1,5 +1,5 @@
 """
-Version: v2024.08.1
+Version: v2024.08.2
 - Removed the PNG decode, the json is extracted from map-data instead of map-data-hass.
 - Tested no influence on the camera performance.
 - Added gzip library used in Valetudo RE data compression.
@@ -270,20 +270,23 @@ class ValetudoConnector:
 
         if command == "segmented_cleanup":
             segment_ids = command_status.get("segment_ids", [])
-            # Retrieve room data from RoomStore
-            rooms_data = await RoomStore().async_get_rooms_data(self._file_name)
-            # Sort the rooms data by room ID same as rooms data in attributes.
-            rooms_data = dict(sorted(rooms_data.items(), key=lambda item: int(item[0])))
-            rrm_active_segments = [0] * len(
-                rooms_data
-            )  # Initialize based on the number of rooms
 
+            # Retrieve the shared room data instead of RoomStore or destinations
+            shared_rooms_data = self._shared.map_rooms
+
+            # Create a mapping of room ID to its index based on the shared rooms data
+            room_id_to_index = {
+                room_id: idx for idx, room_id in enumerate(shared_rooms_data)
+            }
+
+            # Initialize rrm_active_segments with zeros based on the number of rooms in shared_rooms_data
+            rrm_active_segments = [0] * len(shared_rooms_data)
+
+            # Update the rrm_active_segments based on segment_ids
             for segment_id in segment_ids:
-                room_name = rooms_data.get(str(segment_id))
-                if room_name:
-                    # Convert room ID to index; since dict doesn't preserve order, find index manually
-                    room_idx = list(rooms_data.keys()).index(str(segment_id))
-                    rrm_active_segments[room_idx] = 1
+                room_index = room_id_to_index.get(segment_id)
+                if room_index is not None:
+                    rrm_active_segments[room_index] = 1
 
             self._shared.rand256_active_zone = rrm_active_segments
             _LOGGER.debug(f"Updated Active Segments: {rrm_active_segments}")

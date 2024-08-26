@@ -1,5 +1,5 @@
 """Auto Crop Class for trimming and zooming images.
-Version: 2024.08.1"""
+Version: 2024.08.2"""
 
 from __future__ import annotations
 
@@ -68,7 +68,6 @@ class AutoCrop:
                 - (self.imh.trim_up + self.imh.offset_top)
             ),
         )
-
         # Ensure shared reference dimensions are updated
         if hasattr(self.imh.shared, "image_ref_height") and hasattr(
             self.imh.shared, "image_ref_width"
@@ -135,8 +134,6 @@ class AutoCrop:
         self, image_array: NumpyArray, detect_colour: Color
     ) -> tuple[int, int, int, int]:
         """Crop the image based on the auto crop area."""
-        """async_auto_trim_and_zoom_image"""
-
         nonzero_coords = np.column_stack(np.where(image_array != list(detect_colour)))
         # Calculate the trim box based on the first and last occurrences
         min_y, min_x, _ = NumpyArray.min(nonzero_coords, axis=0)
@@ -157,7 +154,6 @@ class AutoCrop:
         rand256: bool = False,
     ) -> NumpyArray:
         """Check if the image need to be zoom."""
-        """async_auto_trim_and_zoom_image"""
 
         if (
             zoom
@@ -169,15 +165,17 @@ class AutoCrop:
                 f"{self.file_name}: Zooming the image on room {self.imh.robot_in_room['room']}."
             )
             if rand256:
-                trim_left = int(self.imh.robot_in_room["left"] / 10) - margin_size
-                trim_right = int(self.imh.robot_in_room["right"] / 10) + margin_size
-                trim_up = int(self.imh.robot_in_room["up"] / 10) - margin_size
-                trim_down = int(self.imh.robot_in_room["down"] / 10) + margin_size
+                trim_left = round(self.imh.robot_in_room["right"] / 10) - margin_size
+                trim_right = round(self.imh.robot_in_room["left"] / 10) + margin_size
+                trim_up = round(self.imh.robot_in_room["down"] / 10) - margin_size
+                trim_down = round(self.imh.robot_in_room["up"] / 10) + margin_size
             else:
                 trim_left = self.imh.robot_in_room["left"] - margin_size
                 trim_right = self.imh.robot_in_room["right"] + margin_size
                 trim_up = self.imh.robot_in_room["up"] - margin_size
                 trim_down = self.imh.robot_in_room["down"] + margin_size
+            trim_left, trim_right = sorted([trim_left, trim_right])
+            trim_up, trim_down = sorted([trim_up, trim_down])
             trimmed = image_array[trim_up:trim_down, trim_left:trim_right]
         else:
             # Apply the auto-calculated trims to the rotated image
@@ -191,7 +189,6 @@ class AutoCrop:
         self, trimmed: NumpyArray, rotate: int
     ) -> NumpyArray:
         """Rotate the image and return the new array."""
-        """async_auto_trim_and_zoom_image"""
         if rotate == 90:
             rotated = rot90(trimmed)
             self.imh.crop_area = [
