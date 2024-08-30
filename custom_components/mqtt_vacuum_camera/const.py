@@ -1,6 +1,6 @@
 """Constants for the mqtt_vacuum_camera integration."""
 
-"""Version v2024.08.1"""
+"""Version v2024.09.0"""
 
 """Required in Config_Flow"""
 PLATFORMS = ["camera"]
@@ -240,6 +240,13 @@ FONTS_AVAILABLE = [
     },
 ]
 
+NOT_STREAMING_STATES = {
+    "idle",
+    "paused",
+    "charging",
+    "error",
+    "docked",
+}
 
 """App Constants. Not in use, and dummy values"""
 IDLE_SCAN_INTERVAL = 120
@@ -316,3 +323,18 @@ ALPHA_ROOM_12 = "alpha_room_12"
 ALPHA_ROOM_13 = "alpha_room_13"
 ALPHA_ROOM_14 = "alpha_room_14"
 ALPHA_ROOM_15 = "alpha_room_15"
+
+""" Constants for the attribute keys """
+ATTR_FRIENDLY_NAME = "friendly_name"
+ATTR_VACUUM_BATTERY = "vacuum_battery"
+ATTR_VACUUM_POSITION = "vacuum_position"
+ATTR_VACUUM_TOPIC = "vacuum_topic"
+ATTR_VACUUM_STATUS = "vacuum_status"
+ATTR_JSON_DATA = "json_data"
+ATTR_VACUUM_JSON_ID = "vacuum_json_id"
+ATTR_CALIBRATION_POINTS = "calibration_points"
+ATTR_SNAPSHOT = "snapshot"
+ATTR_SNAPSHOT_PATH = "snapshot_path"
+ATTR_ROOMS = "rooms"
+ATTR_ZONES = "zones"
+ATTR_POINTS = "points"

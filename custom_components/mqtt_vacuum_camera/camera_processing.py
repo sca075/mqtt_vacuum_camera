@@ -1,6 +1,6 @@
 """
 Multiprocessing module
-Version: v2024.07.2
+Version: v2024.09.0
 This module provide the image multiprocessing in order to
 avoid the overload of the main_thread of Home Assistant.
 """
@@ -12,6 +12,7 @@ from asyncio import gather, get_event_loop
 import concurrent.futures
 import logging
 
+from .const import NOT_STREAMING_STATES
 from .types import Color, JsonType, PilPNG
 from .utils.drawable import Drawable as Draw
 from .utils.files_operations import async_get_active_user_language
@@ -82,10 +83,9 @@ class CameraProcessor:
                 if not self._shared.image_size:
                     self._shared.image_size = self._map_handler.get_img_size()
 
+                update_vac_state = self._shared.vacuum_state
                 if not self._shared.snapshot_take and (
-                    self._shared.vacuum_state == "idle"
-                    or self._shared.vacuum_state == "docked"
-                    or self._shared.vacuum_state == "error"
+                    update_vac_state in NOT_STREAMING_STATES
                 ):
                     # suspend image processing if we are at the next frame.
                     if (
@@ -143,10 +143,9 @@ class CameraProcessor:
                 if not self._shared.image_size:
                     self._shared.image_size = self._re_handler.get_img_size()
 
+                update_vac_state = self._shared.vacuum_state
                 if not self._shared.snapshot_take and (
-                    self._shared.vacuum_state == "idle"
-                    or self._shared.vacuum_state == "docked"
-                    or self._shared.vacuum_state == "error"
+                    update_vac_state in NOT_STREAMING_STATES
                 ):
                     # suspend image processing if we are at the next frame.
                     _LOGGER.info(
