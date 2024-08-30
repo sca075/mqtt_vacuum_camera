@@ -118,56 +118,104 @@ class ValetudoCamera(Camera):
 
     def __init__(self, hass, device_info):
         super().__init__()
-        self.startup = True
         self.hass = hass
+        self.startup = True
+
+        # Initialize basic camera attributes
         self._attr_model = "MQTT Vacuums"
         self._attr_brand = "MQTT Vacuum Camera"
         self._attr_name = "Camera"
         self._attr_is_on = True
         self._attr_is_streaming = False
-        self._directory_path = self.hass.config.path()  # get Home Assistant path
-        self._mqtt_listen_topic = device_info.get(CONF_VACUUM_CONNECTION_STRING)
-        if self._mqtt_listen_topic:
-            self._mqtt_listen_topic = str(self._mqtt_listen_topic)
-            self.manager = CameraSharedManager(
-                self._mqtt_listen_topic.split("/")[1].lower()
-            )
-            self._shared = self.manager.get_instance()
-            self._file_name = self._shared.file_name
-            _LOGGER.debug(f"Camera {self._file_name} Starting up..")
-            _LOGGER.info(f"System Release: {platform.node()}, {platform.release()}")
-            _LOGGER.info(f"System Version: {platform.version()}")
-            _LOGGER.info(f"System Machine: {platform.machine()}")
-            _LOGGER.info(f"Python Version: {platform.python_version()}")
-            _LOGGER.info(
-                f"Memory Available: "
-                f"{round((ProcInsp().psutil.virtual_memory().available / (1024 * 1024)), 1)}"
-                f" and In Use: {round((ProcInsp().psutil.virtual_memory().used / (1024 * 1024)), 1)}"
-            )
-            self._storage_path = (
-                f"{self.hass.config.path(STORAGE_DIR)}/{CAMERA_STORAGE}"
-            )
-            if not os.path.exists(self._storage_path):
-                self._storage_path = f"{self._directory_path}/{STORAGE_DIR}"
-            self.snapshot_img = f"{self._storage_path}/{self._file_name}.png"
-            self.log_file = f"{self._storage_path}/{self._file_name}.zip"
-            self._attr_unique_id = device_info.get(
-                CONF_UNIQUE_ID,
-                get_vacuum_unique_id_from_mqtt_topic(self._mqtt_listen_topic),
-            )
-        self._mqtt = ValetudoConnector(self._mqtt_listen_topic, self.hass, self._shared)
-        self._identifiers = device_info.get(CONF_VACUUM_IDENTIFIERS)
-        self._snapshots = Snapshots(self.hass, self._shared)
+
+        # Initialize paths and storage-related attributes
+        self._directory_path = None
+        self._mqtt_listen_topic = None
+        self._storage_path = None
+        self.snapshot_img = None
+        self.log_file = None
+
+        # Initialize MQTT and shared manager-related attributes
+        self.manager = None
+        self._shared = None
+        self._file_name = None
+        self._attr_unique_id = None
+        self._mqtt = None
+        self._identifiers = None
+
+        # Initialize image and processing-related attributes
         self.Image = None
-        self._image_bk = None  # Backup image for testing.
+        self._image_bk = None
         self._processing = False
         self._image_w = None
         self._image_h = None
         self._should_poll = False
         self._attr_frame_interval = 6
         self._vac_json_available = None
-        self._shared.attr_calibration_points = None
         self._cpu_percent = None
+        self._last_image = None
+        self._update_time = None
+        self._rrm_data = False
+
+        # Initialize shared settings attributes
+        self._shared = None
+        self._shared.attr_calibration_points = None
+        self._shared.offset_top = 0
+        self._shared.offset_down = 0
+        self._shared.offset_left = 0
+        self._shared.offset_right = 0
+        self._shared.image_auto_zoom = None
+        self._shared.image_zoom_lock_ratio = None
+        self._shared.image_aspect_ratio = None
+        self._shared.image_rotate = 0
+        self._shared.margins = 100
+        self._shared.show_vacuum_state = False
+        self._shared.enable_snapshots = True
+        self._shared.vacuum_status_font = None
+        self._shared.vacuum_status_size = None
+        self._shared.vacuum_status_position = None
+
+        # Initialize additional components
+        self._colours = None
+        self.processor = None
+        self._snapshots = None
+
+        # Call the helper methods to initialize further
+        self._initialize_paths_and_storage(device_info)
+        self._initialize_mqtt_and_shared_manager(device_info)
+        self._initialize_camera_settings(device_info)
+        self._initialize_additional_components(device_info)
+
+        _LOGGER.debug(f"Camera {self._file_name} Starting up..")
+        self._log_system_info()
+
+    def _initialize_paths_and_storage(self, device_info):
+        """Initialize paths and storage related attributes."""
+        self._directory_path = self.hass.config.path()  # get Home Assistant path
+        self._mqtt_listen_topic = device_info.get(CONF_VACUUM_CONNECTION_STRING)
+        if self._mqtt_listen_topic:
+            self._mqtt_listen_topic = str(self._mqtt_listen_topic)
+            self._storage_path = f"{self.hass.config.path(STORAGE_DIR)}/{CAMERA_STORAGE}"
+            if not os.path.exists(self._storage_path):
+                self._storage_path = f"{self._directory_path}/{STORAGE_DIR}"
+            self.snapshot_img = f"{self._storage_path}/{self._file_name}.png"
+            self.log_file = f"{self._storage_path}/{self._file_name}.zip"
+
+    def _initialize_mqtt_and_shared_manager(self, device_info):
+        """Initialize MQTT and Shared Manager."""
+        if self._mqtt_listen_topic:
+            self.manager = CameraSharedManager(self._mqtt_listen_topic.split("/")[1].lower())
+            self._shared = self.manager.get_instance()
+            self._file_name = self._shared.file_name
+            self._attr_unique_id = device_info.get(
+                CONF_UNIQUE_ID,
+                get_vacuum_unique_id_from_mqtt_topic(self._mqtt_listen_topic),
+            )
+        self._mqtt = ValetudoConnector(self._mqtt_listen_topic, self.hass, self._shared)
+        self._identifiers = device_info.get(CONF_VACUUM_IDENTIFIERS)
+
+    def _initialize_camera_settings(self, device_info):
+        """Initialize camera-specific settings from device_info."""
         self._shared.offset_top = device_info.get(CONF_OFFSET_TOP, 0)
         self._shared.offset_down = device_info.get(CONF_OFFSET_BOTTOM, 0)
         self._shared.offset_left = device_info.get(CONF_OFFSET_LEFT, 0)
@@ -181,29 +229,35 @@ class ValetudoCamera(Camera):
         self._shared.vacuum_status_font = device_info.get(CONF_VAC_STAT_FONT)
         self._shared.vacuum_status_size = device_info.get(CONF_VAC_STAT_SIZE)
         self._shared.vacuum_status_position = device_info.get(CONF_VAC_STAT_POS)
-        if not self._shared.show_vacuum_state:
-            self._shared.show_vacuum_state = False
+        self._shared.show_vacuum_state = device_info.get(CONF_VAC_STAT, False)
+
         # If not configured, default to True for compatibility
-        self._shared.enable_snapshots = device_info.get(CONF_SNAPSHOTS_ENABLE)
-        if self._shared.enable_snapshots is None:
-            self._shared.enable_snapshots = True
-        # If snapshots are disabled, delete www data
-        if not self._shared.enable_snapshots and os.path.isfile(
-            f"{self._directory_path}/www/snapshot_{self._file_name}.png"
-        ):
-            os.remove(f"{self._directory_path}/www/snapshot_{self._file_name}.png")
-        # If there is a log zip in www remove it
+        self._shared.enable_snapshots = device_info.get(CONF_SNAPSHOTS_ENABLE, True)
+        if not self._shared.enable_snapshots and os.path.isfile(self.snapshot_img):
+            os.remove(self.snapshot_img)
         if os.path.isfile(self.log_file):
             os.remove(self.log_file)
-        self._last_image = None
-        self._update_time = None
-        self._rrm_data = False  # Check for rrm data
-        # get the colours used in the maps.
+
+    def _initialize_additional_components(self, device_info):
+        """Initialize additional components like colors and snapshots."""
         self._colours = ColorsManagment(self._shared)
         self._colours.set_initial_colours(device_info)
-        # Create the processor for the camera.
         self.processor = CameraProcessor(self.hass, self._shared)
-        self._attr_brand = "MQTT Vacuum Camera"
+        self._snapshots = Snapshots(self.hass, self._shared)
+
+    @staticmethod
+    def _log_system_info():
+        """Log system information for debugging purposes."""
+        _LOGGER.info(f"System Release: {platform.node()}, {platform.release()}")
+        _LOGGER.info(f"System Version: {platform.version()}")
+        _LOGGER.info(f"System Machine: {platform.machine()}")
+        _LOGGER.info(f"Python Version: {platform.python_version()}")
+        _LOGGER.info(
+            f"Memory Available: "
+            f"{round((ProcInsp().psutil.virtual_memory().available / (1024 * 1024)), 1)}"
+            f" and In Use: {round((ProcInsp().psutil.virtual_memory().used / (1024 * 1024)), 1)}"
+        )
+
 
     async def async_added_to_hass(self) -> None:
         """Handle entity added to Home Assistant."""
@@ -246,14 +300,11 @@ class ValetudoCamera(Camera):
     def is_streaming(self) -> bool:
         """Return true if the device is streaming."""
         updated_status = self._shared.vacuum_state
-        if (
+        self._attr_is_streaming = (
             updated_status not in NOT_STREAMING_STATES
-            or not self._shared.vacuum_bat_charged  # text update use negative logic
-        ):
-            self._attr_is_streaming = True
-            return True
-        self._attr_is_streaming = False
-        return False
+            or not self._shared.vacuum_bat_charged
+        )
+        return self._attr_is_streaming
 
     def camera_image(
         self, width: Optional[int] = None, height: Optional[int] = None
@@ -475,12 +526,11 @@ class ValetudoCamera(Camera):
 
     async def _take_snapshot(self, parsed_json, pil_img):
         """Take a snapshot if conditions are met."""
-        if self._shared.snapshot_take:
-            if pil_img:
-                if self._shared.is_rand:
-                    await self.take_snapshot(self._rrm_data, pil_img)
-                else:
-                    await self.take_snapshot(parsed_json, pil_img)
+        if self._shared.snapshot_take and pil_img:
+            if self._shared.is_rand:
+                await self.take_snapshot(self._rrm_data, pil_img)
+            else:
+                await self.take_snapshot(parsed_json, pil_img)
 
     def _log_cpu_usage(self, proc):
         """Log the CPU usage."""
