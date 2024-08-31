@@ -125,35 +125,23 @@ class ValetudoCamera(Camera):
         self._attr_name = "Camera"
         self._attr_is_on = True
         self._directory_path = self.hass.config.path()  # get Home Assistant path
-        self._mqtt_listen_topic = device_info.get(CONF_VACUUM_CONNECTION_STRING)
-        if self._mqtt_listen_topic:
-            self._mqtt_listen_topic = str(self._mqtt_listen_topic)
-            self.manager = CameraSharedManager(
-                self._mqtt_listen_topic.split("/")[1].lower()
-            )
-            self._shared = self.manager.get_instance()
-            self._file_name = self._shared.file_name
-            _LOGGER.debug(f"Camera {self._file_name} Starting up..")
-            _LOGGER.info(f"System Release: {platform.node()}, {platform.release()}")
-            _LOGGER.info(f"System Version: {platform.version()}")
-            _LOGGER.info(f"System Machine: {platform.machine()}")
-            _LOGGER.info(f"Python Version: {platform.python_version()}")
-            _LOGGER.info(
-                f"Memory Available: "
-                f"{round((ProcInsp().psutil.virtual_memory().available / (1024 * 1024)), 1)}"
-                f" and In Use: {round((ProcInsp().psutil.virtual_memory().used / (1024 * 1024)), 1)}"
-            )
-            self._storage_path = (
-                f"{self.hass.config.path(STORAGE_DIR)}/{CAMERA_STORAGE}"
-            )
-            if not os.path.exists(self._storage_path):
-                self._storage_path = f"{self._directory_path}/{STORAGE_DIR}"
-            self.snapshot_img = f"{self._storage_path}/{self._file_name}.png"
-            self.log_file = f"{self._storage_path}/{self._file_name}.zip"
-            self._attr_unique_id = device_info.get(
-                CONF_UNIQUE_ID,
-                get_vacuum_unique_id_from_mqtt_topic(self._mqtt_listen_topic),
-            )
+        self._mqtt_listen_topic = str(device_info.get(CONF_VACUUM_CONNECTION_STRING))
+        self.manger, self._shared, self._file_name = self._handle_init_shared_data(
+            self._mqtt_listen_topic
+        )
+        self._start_up_logs()
+        self._init_shared_data(device_info)
+        self._storage_path = (
+            f"{self.hass.config.path(STORAGE_DIR)}/{CAMERA_STORAGE}"
+        )
+        if not os.path.exists(self._storage_path):
+            self._storage_path = f"{self._directory_path}/{STORAGE_DIR}"
+        self.snapshot_img = f"{self._storage_path}/{self._file_name}.png"
+        self.log_file = f"{self._storage_path}/{self._file_name}.zip"
+        self._attr_unique_id = device_info.get(
+            CONF_UNIQUE_ID,
+            get_vacuum_unique_id_from_mqtt_topic(self._mqtt_listen_topic),
+        )
         self._mqtt = ValetudoConnector(self._mqtt_listen_topic, self.hass, self._shared)
         self._identifiers = device_info.get(CONF_VACUUM_IDENTIFIERS)
         self._snapshots = Snapshots(self.hass, self._shared)
@@ -167,19 +155,6 @@ class ValetudoCamera(Camera):
         self._vac_json_available = None
         self._shared.attr_calibration_points = None
         self._cpu_percent = None
-        self._shared.offset_top = device_info.get(CONF_OFFSET_TOP, 0)
-        self._shared.offset_down = device_info.get(CONF_OFFSET_BOTTOM, 0)
-        self._shared.offset_left = device_info.get(CONF_OFFSET_LEFT, 0)
-        self._shared.offset_right = device_info.get(CONF_OFFSET_RIGHT, 0)
-        self._shared.image_auto_zoom = device_info.get(CONF_AUTO_ZOOM)
-        self._shared.image_zoom_lock_ratio = device_info.get(CONF_ZOOM_LOCK_RATIO)
-        self._shared.image_aspect_ratio = device_info.get(CONF_ASPECT_RATIO)
-        self._shared.image_rotate = int(device_info.get(ATTR_ROTATE, 0))
-        self._shared.margins = int(device_info.get(ATTR_MARGINS, 150))
-        self._shared.show_vacuum_state = device_info.get(CONF_VAC_STAT)
-        self._shared.vacuum_status_font = device_info.get(CONF_VAC_STAT_FONT)
-        self._shared.vacuum_status_size = device_info.get(CONF_VAC_STAT_SIZE)
-        self._shared.vacuum_status_position = device_info.get(CONF_VAC_STAT_POS)
         if not self._shared.show_vacuum_state:
             self._shared.show_vacuum_state = False
         # If not configured, default to True for compatibility
@@ -203,6 +178,48 @@ class ValetudoCamera(Camera):
         # Create the processor for the camera.
         self.processor = CameraProcessor(self.hass, self._shared)
         self._attr_brand = "MQTT Vacuum Camera"
+
+    @staticmethod
+    def _handle_init_shared_data(mqtt_listen_topic: str):
+        """Handle the shared data initialization."""
+        manager, shared, file_name = None, None, None
+        if mqtt_listen_topic:
+            manager = CameraSharedManager(mqtt_listen_topic.split("/")[1].lower())
+            shared = manager.get_instance()
+            file_name = shared.file_name
+            _LOGGER.debug(f"Camera {file_name} Starting up..")
+        return manager, shared, file_name
+
+    @staticmethod
+    def _start_up_logs():
+      _LOGGER.info(f"System Release: {platform.node()}, {platform.release()}")
+      _LOGGER.info(f"System Version: {platform.version()}")
+      _LOGGER.info(f"System Machine: {platform.machine()}")
+      _LOGGER.info(f"Python Version: {platform.python_version()}")
+      _LOGGER.info(
+          f"Memory Available: "
+          f"{round((ProcInsp().psutil.virtual_memory().available / (1024 * 1024)), 1)}"
+          f" and In Use: {round((ProcInsp().psutil.virtual_memory().used / (1024 * 1024)), 1)}"
+      )
+
+    def _init_shared_data(self, device_info):
+        if self._shared:
+            self._shared.offset_top = device_info.get(CONF_OFFSET_TOP, 0)
+            self._shared.offset_down = device_info.get(CONF_OFFSET_BOTTOM, 0)
+            self._shared.offset_left = device_info.get(CONF_OFFSET_LEFT, 0)
+            self._shared.offset_right = device_info.get(CONF_OFFSET_RIGHT, 0)
+            self._shared.image_auto_zoom = device_info.get(CONF_AUTO_ZOOM)
+            self._shared.image_zoom_lock_ratio = device_info.get(CONF_ZOOM_LOCK_RATIO)
+            self._shared.image_aspect_ratio = device_info.get(CONF_ASPECT_RATIO)
+            self._shared.image_rotate = int(device_info.get(ATTR_ROTATE, 0))
+            self._shared.margins = int(device_info.get(ATTR_MARGINS, 150))
+            self._shared.show_vacuum_state = device_info.get(CONF_VAC_STAT)
+            self._shared.vacuum_status_font = device_info.get(CONF_VAC_STAT_FONT)
+            self._shared.vacuum_status_size = device_info.get(CONF_VAC_STAT_SIZE)
+            self._shared.vacuum_status_position = device_info.get(CONF_VAC_STAT_POS)
+        else:
+            _LOGGER.error("Shared data can't be initialized!")
+
 
     async def async_added_to_hass(self) -> None:
         """Handle entity added to Home Assistant."""
