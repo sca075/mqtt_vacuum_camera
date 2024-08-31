@@ -1,12 +1,23 @@
 """
 Class Camera Shared.
 Keep the data between the modules.
-Version: v2024.08.0b0
+Version: v2024.09.0
 """
 
 import asyncio
 
 from custom_components.mqtt_vacuum_camera.types import Colors
+from .const import (
+    ATTR_CALIBRATION_POINTS,
+    ATTR_ROOMS,
+    ATTR_ZONES,
+    ATTR_POINTS,
+    ATTR_SNAPSHOT,
+    ATTR_VACUUM_BATTERY,
+    ATTR_VACUUM_JSON_ID,
+    ATTR_VACUUM_POSITION,
+    ATTR_VACUUM_STATUS,
+)
 
 
 class CameraShared(object):
@@ -91,20 +102,52 @@ class CameraShared(object):
         """Batch get multiple attributes."""
         return {key: getattr(self, key) for key in args}
 
+    def generate_attributes(self) -> dict:
+        """Generate and return the shared attributes dictionary."""
+        attrs = {
+            ATTR_VACUUM_BATTERY: f"{self.vacuum_battery}%",
+            ATTR_VACUUM_POSITION: self.current_room,
+            ATTR_VACUUM_STATUS: self.vacuum_state,
+            ATTR_VACUUM_JSON_ID: self.vac_json_id,
+            ATTR_CALIBRATION_POINTS: self.attr_calibration_points,
+        }
+
+        if self.enable_snapshots:
+            attrs[ATTR_SNAPSHOT] = self.snapshot_take
+        else:
+            attrs[ATTR_SNAPSHOT] = False
+
+        # Add dynamic shared attributes if they are available
+        shared_attrs = {
+            ATTR_ROOMS: self.map_rooms,
+            ATTR_ZONES: self.map_pred_zones,
+            ATTR_POINTS: self.map_pred_points,
+        }
+
+        for key, value in shared_attrs.items():
+            if value is not None and value != {}:
+                attrs[key] = value
+
+        return attrs
+
 
 class CameraSharedManager:
+    """Camera Shared Manager class."""
+
     def __init__(self, file_name):
         self._instances = {}
         self._lock = asyncio.Lock()
         self.file_name = file_name
 
     def get_instance(self):
+        """Get the shared instance."""
         if self.file_name not in self._instances:
             self._instances[self.file_name] = CameraShared(self.file_name)
             self._instances[self.file_name].file_name = self.file_name
         return self._instances[self.file_name]
 
     async def update_instance(self, **kwargs):
+        """Update the shared instance."""
         async with self._lock:
             instance = self.get_instance()
             await instance.batch_update(**kwargs)
