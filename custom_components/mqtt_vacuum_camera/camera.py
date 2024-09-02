@@ -502,7 +502,7 @@ class ValetudoCamera(Camera):
         self.Image = await self.hass.async_create_task(
             self.run_async_pil_to_bytes(pil_img)
         )
-        return self.Image
+        return self.camera_image(pil_img.width, pil_img.height)
 
     async def _process_parsed_json(self, test_mode: bool = False):
         """Process the parsed JSON data and return the generated image."""
