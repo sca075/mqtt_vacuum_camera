@@ -127,7 +127,7 @@ class ValetudoCamera(Camera):
         self._attr_is_on = True
         self._directory_path = self.hass.config.path()  # get Home Assistant path
         self._mqtt_listen_topic = str(device_info.get(CONF_VACUUM_CONNECTION_STRING))
-        self.manger, self._shared, self._file_name = self._handle_init_shared_data(
+        self._shared, self._file_name = self._handle_init_shared_data(
             self._mqtt_listen_topic
         )
         self._start_up_logs()
@@ -175,7 +175,7 @@ class ValetudoCamera(Camera):
             shared = manager.get_instance()
             file_name = shared.file_name
             _LOGGER.debug(f"Camera {file_name} Starting up..")
-        return manager, shared, file_name
+        return shared, file_name
 
     @staticmethod
     def _start_up_logs():
