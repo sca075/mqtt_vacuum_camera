@@ -55,6 +55,7 @@ from .const import (
     CONF_VACUUM_ENTITY_ID,
     CONF_VACUUM_IDENTIFIERS,
     CONF_ZOOM_LOCK_RATIO,
+    DEFAULT_VALUES,
     DEFAULT_NAME,
     DOMAIN,
     NOT_STREAMING_STATES,
@@ -118,8 +119,8 @@ class ValetudoCamera(Camera):
 
     def __init__(self, hass, device_info):
         super().__init__()
-        self.startup = True
         self.hass = hass
+        self._state = "init"
         self._attr_model = "MQTT Vacuums"
         self._attr_brand = "MQTT Vacuum Camera"
         self._attr_name = "Camera"
@@ -131,9 +132,7 @@ class ValetudoCamera(Camera):
         )
         self._start_up_logs()
         self._init_shared_data(device_info)
-        self._storage_path = (
-            f"{self.hass.config.path(STORAGE_DIR)}/{CAMERA_STORAGE}"
-        )
+        self._storage_path = f"{self.hass.config.path(STORAGE_DIR)}/{CAMERA_STORAGE}"
         if not os.path.exists(self._storage_path):
             self._storage_path = f"{self._directory_path}/{STORAGE_DIR}"
         self.snapshot_img = f"{self._storage_path}/{self._file_name}.png"
@@ -153,19 +152,7 @@ class ValetudoCamera(Camera):
         self._should_poll = False
         self._attr_frame_interval = 6
         self._vac_json_available = None
-        self._shared.attr_calibration_points = None
         self._cpu_percent = None
-        if not self._shared.show_vacuum_state:
-            self._shared.show_vacuum_state = False
-        # If not configured, default to True for compatibility
-        self._shared.enable_snapshots = device_info.get(CONF_SNAPSHOTS_ENABLE)
-        if self._shared.enable_snapshots is None:
-            self._shared.enable_snapshots = True
-        # If snapshots are disabled, delete www data
-        if not self._shared.enable_snapshots and os.path.isfile(
-                f"{self._directory_path}/www/snapshot_{self._file_name}.png"
-        ):
-            os.remove(f"{self._directory_path}/www/snapshot_{self._file_name}.png")
         # If there is a log zip in www remove it
         if os.path.isfile(self.log_file):
             os.remove(self.log_file)
@@ -192,34 +179,90 @@ class ValetudoCamera(Camera):
 
     @staticmethod
     def _start_up_logs():
-      _LOGGER.info(f"System Release: {platform.node()}, {platform.release()}")
-      _LOGGER.info(f"System Version: {platform.version()}")
-      _LOGGER.info(f"System Machine: {platform.machine()}")
-      _LOGGER.info(f"Python Version: {platform.python_version()}")
-      _LOGGER.info(
-          f"Memory Available: "
-          f"{round((ProcInsp().psutil.virtual_memory().available / (1024 * 1024)), 1)}"
-          f" and In Use: {round((ProcInsp().psutil.virtual_memory().used / (1024 * 1024)), 1)}"
-      )
+        _LOGGER.info(f"System Release: {platform.node()}, {platform.release()}")
+        _LOGGER.info(f"System Version: {platform.version()}")
+        _LOGGER.info(f"System Machine: {platform.machine()}")
+        _LOGGER.info(f"Python Version: {platform.python_version()}")
+        _LOGGER.info(
+            f"Memory Available: "
+            f"{round((ProcInsp().psutil.virtual_memory().available / (1024 * 1024)), 1)}"
+            f" and In Use: {round((ProcInsp().psutil.virtual_memory().used / (1024 * 1024)), 1)}"
+        )
 
     def _init_shared_data(self, device_info):
         if self._shared:
-            self._shared.offset_top = device_info.get(CONF_OFFSET_TOP, 0)
-            self._shared.offset_down = device_info.get(CONF_OFFSET_BOTTOM, 0)
-            self._shared.offset_left = device_info.get(CONF_OFFSET_LEFT, 0)
-            self._shared.offset_right = device_info.get(CONF_OFFSET_RIGHT, 0)
-            self._shared.image_auto_zoom = device_info.get(CONF_AUTO_ZOOM)
-            self._shared.image_zoom_lock_ratio = device_info.get(CONF_ZOOM_LOCK_RATIO)
-            self._shared.image_aspect_ratio = device_info.get(CONF_ASPECT_RATIO)
-            self._shared.image_rotate = int(device_info.get(ATTR_ROTATE, 0))
-            self._shared.margins = int(device_info.get(ATTR_MARGINS, 150))
-            self._shared.show_vacuum_state = device_info.get(CONF_VAC_STAT)
-            self._shared.vacuum_status_font = device_info.get(CONF_VAC_STAT_FONT)
-            self._shared.vacuum_status_size = device_info.get(CONF_VAC_STAT_SIZE)
-            self._shared.vacuum_status_position = device_info.get(CONF_VAC_STAT_POS)
-        else:
-            _LOGGER.error("Shared data can't be initialized!")
+            try:
+                self._shared.attr_calibration_points = None
 
+                # Initialize shared data with defaults from DEFAULT_VALUES
+                self._shared.offset_top = device_info.get(
+                    CONF_OFFSET_TOP, DEFAULT_VALUES["offset_top"]
+                )
+                self._shared.offset_down = device_info.get(
+                    CONF_OFFSET_BOTTOM, DEFAULT_VALUES["offset_bottom"]
+                )
+                self._shared.offset_left = device_info.get(
+                    CONF_OFFSET_LEFT, DEFAULT_VALUES["offset_left"]
+                )
+                self._shared.offset_right = device_info.get(
+                    CONF_OFFSET_RIGHT, DEFAULT_VALUES["offset_right"]
+                )
+                self._shared.image_auto_zoom = device_info.get(
+                    CONF_AUTO_ZOOM, DEFAULT_VALUES["auto_zoom"]
+                )
+                self._shared.image_zoom_lock_ratio = device_info.get(
+                    CONF_ZOOM_LOCK_RATIO, DEFAULT_VALUES["zoom_lock_ratio"]
+                )
+                self._shared.image_aspect_ratio = device_info.get(
+                    CONF_ASPECT_RATIO, DEFAULT_VALUES["aspect_ratio"]
+                )
+                self._shared.image_rotate = int(
+                    device_info.get(ATTR_ROTATE, DEFAULT_VALUES["rotate_image"])
+                )
+                self._shared.margins = int(
+                    device_info.get(ATTR_MARGINS, DEFAULT_VALUES["margins"])
+                )
+                self._shared.show_vacuum_state = device_info.get(
+                    CONF_VAC_STAT, DEFAULT_VALUES["show_vac_status"]
+                )
+                self._shared.vacuum_status_font = device_info.get(
+                    CONF_VAC_STAT_FONT, DEFAULT_VALUES["vac_status_font"]
+                )
+                self._shared.vacuum_status_size = device_info.get(
+                    CONF_VAC_STAT_SIZE, DEFAULT_VALUES["vac_status_size"]
+                )
+                self._shared.vacuum_status_position = device_info.get(
+                    CONF_VAC_STAT_POS, DEFAULT_VALUES["vac_status_position"]
+                )
+
+                # If enable_snapshots check if for png in www.
+                self._shared.enable_snapshots = device_info.get(
+                    CONF_SNAPSHOTS_ENABLE, DEFAULT_VALUES["enable_www_snapshots"]
+                )
+
+                if not self._shared.enable_snapshots and os.path.isfile(
+                    f"{self._directory_path}/www/snapshot_{self._file_name}.png"
+                ):
+                    os.remove(
+                        f"{self._directory_path}/www/snapshot_{self._file_name}.png"
+                    )
+
+            except TypeError as ex:
+                _LOGGER.error(
+                    f"Shared data can't be initialized due to a TypeError! {ex}"
+                )
+            except AttributeError as ex:
+                _LOGGER.error(
+                    f"Shared data can't be initialized due to an AttributeError! Possibly _shared is not properly initialized: {ex}"
+                )
+            except Exception as ex:
+                _LOGGER.error(
+                    f"An unexpected error occurred while initializing shared data: {ex}"
+                )
+        else:
+            _LOGGER.error(
+                "Shared data initialization failed because _shared is not defined."
+            )
 
     async def async_added_to_hass(self) -> None:
         """Handle entity added to Home Assistant."""
@@ -281,8 +324,8 @@ class ValetudoCamera(Camera):
 
     @property
     def extra_state_attributes(self) -> dict:
-        """Camera Attributes"""
-        attrs = {
+        """Return Camera Attributes"""
+        attributes = {
             ATTR_FRIENDLY_NAME: self._attr_name,
             ATTR_VACUUM_TOPIC: self._mqtt_listen_topic,
             ATTR_JSON_DATA: self._vac_json_available,
@@ -290,9 +333,9 @@ class ValetudoCamera(Camera):
         }
 
         # Update with the shared attributes generated by SharedData
-        attrs.update(self._shared.generate_attributes())
+        attributes.update(self._shared.generate_attributes())
 
-        return attrs
+        return attributes
 
     @property
     def should_poll(self) -> bool:
