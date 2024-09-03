@@ -1,5 +1,5 @@
 {
-    "name": "valetudo_vacuum_camera",
+    "name": "mqtt_vacuum_camera",
     "image": "mcr.microsoft.com/devcontainers/python:3.12",
     "postCreateCommand": "scripts/setup",
     "forwardPorts": [
