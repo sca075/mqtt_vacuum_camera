@@ -5,19 +5,38 @@ Version: v2024.09.0
 """
 
 import asyncio
+import logging
 
 from custom_components.mqtt_vacuum_camera.types import Colors
+
 from .const import (
     ATTR_CALIBRATION_POINTS,
-    ATTR_ROOMS,
-    ATTR_ZONES,
+    ATTR_MARGINS,
     ATTR_POINTS,
+    ATTR_ROOMS,
+    ATTR_ROTATE,
     ATTR_SNAPSHOT,
     ATTR_VACUUM_BATTERY,
     ATTR_VACUUM_JSON_ID,
     ATTR_VACUUM_POSITION,
     ATTR_VACUUM_STATUS,
+    ATTR_ZONES,
+    CONF_ASPECT_RATIO,
+    CONF_AUTO_ZOOM,
+    CONF_OFFSET_BOTTOM,
+    CONF_OFFSET_LEFT,
+    CONF_OFFSET_RIGHT,
+    CONF_OFFSET_TOP,
+    CONF_SNAPSHOTS_ENABLE,
+    CONF_VAC_STAT,
+    CONF_VAC_STAT_FONT,
+    CONF_VAC_STAT_POS,
+    CONF_VAC_STAT_SIZE,
+    CONF_ZOOM_LOCK_RATIO,
+    DEFAULT_VALUES,
 )
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class CameraShared(object):
@@ -134,10 +153,78 @@ class CameraShared(object):
 class CameraSharedManager:
     """Camera Shared Manager class."""
 
-    def __init__(self, file_name):
+    def __init__(self, file_name, device_info):
         self._instances = {}
         self._lock = asyncio.Lock()
         self.file_name = file_name
+        self.device_info = device_info
+
+        # Automatically initialize shared data for the instance
+        self._init_shared_data(device_info)
+
+    def _init_shared_data(self, device_info):
+        """Initialize the shared data with device_info."""
+        instance = self.get_instance()  # Retrieve the correct instance
+
+        try:
+            instance.attr_calibration_points = None
+
+            # Initialize shared data with defaults from DEFAULT_VALUES
+            instance.offset_top = device_info.get(
+                CONF_OFFSET_TOP, DEFAULT_VALUES["offset_top"]
+            )
+            instance.offset_down = device_info.get(
+                CONF_OFFSET_BOTTOM, DEFAULT_VALUES["offset_bottom"]
+            )
+            instance.offset_left = device_info.get(
+                CONF_OFFSET_LEFT, DEFAULT_VALUES["offset_left"]
+            )
+            instance.offset_right = device_info.get(
+                CONF_OFFSET_RIGHT, DEFAULT_VALUES["offset_right"]
+            )
+            instance.image_auto_zoom = device_info.get(
+                CONF_AUTO_ZOOM, DEFAULT_VALUES["auto_zoom"]
+            )
+            instance.image_zoom_lock_ratio = device_info.get(
+                CONF_ZOOM_LOCK_RATIO, DEFAULT_VALUES["zoom_lock_ratio"]
+            )
+            instance.image_aspect_ratio = device_info.get(
+                CONF_ASPECT_RATIO, DEFAULT_VALUES["aspect_ratio"]
+            )
+            instance.image_rotate = int(
+                device_info.get(ATTR_ROTATE, DEFAULT_VALUES["rotate_image"])
+            )
+            instance.margins = int(
+                device_info.get(ATTR_MARGINS, DEFAULT_VALUES["margins"])
+            )
+            instance.show_vacuum_state = device_info.get(
+                CONF_VAC_STAT, DEFAULT_VALUES["show_vac_status"]
+            )
+            instance.vacuum_status_font = device_info.get(
+                CONF_VAC_STAT_FONT, DEFAULT_VALUES["vac_status_font"]
+            )
+            instance.vacuum_status_size = device_info.get(
+                CONF_VAC_STAT_SIZE, DEFAULT_VALUES["vac_status_size"]
+            )
+            instance.vacuum_status_position = device_info.get(
+                CONF_VAC_STAT_POS, DEFAULT_VALUES["vac_status_position"]
+            )
+
+            # If enable_snapshots, check for png in www.
+            instance.enable_snapshots = device_info.get(
+                CONF_SNAPSHOTS_ENABLE, DEFAULT_VALUES["enable_www_snapshots"]
+            )
+
+        except TypeError as ex:
+            _LOGGER.error(f"Shared data can't be initialized due to a TypeError! {ex}")
+        except AttributeError as ex:
+            _LOGGER.error(
+                f"Shared data can't be initialized due to an AttributeError! Possibly _shared is not properly initialized: {ex}"
+            )
+        except Exception as ex:
+            _LOGGER.error(
+                f"An unexpected error occurred while initializing shared data: {ex}"
+            )
 
     def get_instance(self):
         """Get the shared instance."""
