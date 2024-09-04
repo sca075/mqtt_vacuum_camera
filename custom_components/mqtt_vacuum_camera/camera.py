@@ -118,12 +118,7 @@ class ValetudoCamera(Camera):
             device_info,
         )
         self._start_up_logs()
-        self._init_clear_www_folder()
-        self._storage_path = f"{self.hass.config.path(STORAGE_DIR)}/{CAMERA_STORAGE}"
-        if not os.path.exists(self._storage_path):
-            self._storage_path = f"{self._directory_path}/{STORAGE_DIR}"
-        self.snapshot_img = f"{self._storage_path}/{self._file_name}.png"
-        self.log_file = f"{self._storage_path}/{self._file_name}.zip"
+        self._storage_path, self.snapshot_img, self.log_file = self._init_paths()
         self._attr_unique_id = device_info.get(
             CONF_UNIQUE_ID,
             get_vacuum_unique_id_from_mqtt_topic(self._mqtt_listen_topic),
@@ -140,9 +135,7 @@ class ValetudoCamera(Camera):
         self._attr_frame_interval = 6
         self._vac_json_available = None
         self._cpu_percent = None
-        # If there is a log zip in www remove it
-        if os.path.isfile(self.log_file):
-            os.remove(self.log_file)
+        self._init_clear_www_folder()
         self._last_image = None
         self._update_time = None
         self._rrm_data = False  # Check for rrm data
@@ -184,6 +177,18 @@ class ValetudoCamera(Camera):
             f"{self._directory_path}/www/snapshot_{self._file_name}.png"
         ):
             os.remove(f"{self._directory_path}/www/snapshot_{self._file_name}.png")
+        # If there is a log zip in www remove it
+        if os.path.isfile(self.log_file):
+            os.remove(self.log_file)
+
+    def _init_paths(self):
+        """Initialize Camera Paths"""
+        storage_path = f"{self.hass.config.path(STORAGE_DIR)}/{CAMERA_STORAGE}"
+        if not os.path.exists(storage_path):
+            storage_path = f"{self._directory_path}/{STORAGE_DIR}"
+        snapshot_img = f"{storage_path}/{self._file_name}.png"
+        log_file = f"{storage_path}/{self._file_name}.zip"
+        return storage_path, snapshot_img, log_file
 
     async def async_added_to_hass(self) -> None:
         """Handle entity added to Home Assistant."""
