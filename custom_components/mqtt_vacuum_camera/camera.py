@@ -33,29 +33,15 @@ from .camera_processing import CameraProcessor
 from .camera_shared import CameraSharedManager
 from .common import get_vacuum_unique_id_from_mqtt_topic
 from .const import (
-    ATTR_MARGINS,
-    ATTR_ROTATE,
-    ATTR_VACUUM_TOPIC,
-    ATTR_JSON_DATA,
-    ATTR_SNAPSHOT_PATH,
     ATTR_FRIENDLY_NAME,
+    ATTR_JSON_DATA,
+    ATTR_ROTATE,
+    ATTR_SNAPSHOT_PATH,
+    ATTR_VACUUM_TOPIC,
     CAMERA_STORAGE,
-    CONF_ASPECT_RATIO,
-    CONF_AUTO_ZOOM,
-    CONF_OFFSET_BOTTOM,
-    CONF_OFFSET_LEFT,
-    CONF_OFFSET_RIGHT,
-    CONF_OFFSET_TOP,
-    CONF_SNAPSHOTS_ENABLE,
-    CONF_VAC_STAT,
-    CONF_VAC_STAT_FONT,
-    CONF_VAC_STAT_POS,
-    CONF_VAC_STAT_SIZE,
     CONF_VACUUM_CONNECTION_STRING,
     CONF_VACUUM_ENTITY_ID,
     CONF_VACUUM_IDENTIFIERS,
-    CONF_ZOOM_LOCK_RATIO,
-    DEFAULT_VALUES,
     DEFAULT_NAME,
     DOMAIN,
     NOT_STREAMING_STATES,
@@ -128,10 +114,11 @@ class ValetudoCamera(Camera):
         self._directory_path = self.hass.config.path()  # get Home Assistant path
         self._mqtt_listen_topic = str(device_info.get(CONF_VACUUM_CONNECTION_STRING))
         self._shared, self._file_name = self._handle_init_shared_data(
-            self._mqtt_listen_topic
+            self._mqtt_listen_topic,
+            device_info,
         )
         self._start_up_logs()
-        self._init_shared_data(device_info)
+        self._init_clear_www_folder()
         self._storage_path = f"{self.hass.config.path(STORAGE_DIR)}/{CAMERA_STORAGE}"
         if not os.path.exists(self._storage_path):
             self._storage_path = f"{self._directory_path}/{STORAGE_DIR}"
@@ -167,11 +154,13 @@ class ValetudoCamera(Camera):
         self._attr_brand = "MQTT Vacuum Camera"
 
     @staticmethod
-    def _handle_init_shared_data(mqtt_listen_topic: str):
+    def _handle_init_shared_data(mqtt_listen_topic: str, device_info):
         """Handle the shared data initialization."""
         manager, shared, file_name = None, None, None
         if mqtt_listen_topic:
-            manager = CameraSharedManager(mqtt_listen_topic.split("/")[1].lower())
+            manager = CameraSharedManager(
+                mqtt_listen_topic.split("/")[1].lower(), device_info
+            )
             shared = manager.get_instance()
             file_name = shared.file_name
             _LOGGER.debug(f"Camera {file_name} Starting up..")
@@ -189,80 +178,12 @@ class ValetudoCamera(Camera):
             f" and In Use: {round((ProcInsp().psutil.virtual_memory().used / (1024 * 1024)), 1)}"
         )
 
-    def _init_shared_data(self, device_info):
-        if self._shared:
-            try:
-                self._shared.attr_calibration_points = None
-
-                # Initialize shared data with defaults from DEFAULT_VALUES
-                self._shared.offset_top = device_info.get(
-                    CONF_OFFSET_TOP, DEFAULT_VALUES["offset_top"]
-                )
-                self._shared.offset_down = device_info.get(
-                    CONF_OFFSET_BOTTOM, DEFAULT_VALUES["offset_bottom"]
-                )
-                self._shared.offset_left = device_info.get(
-                    CONF_OFFSET_LEFT, DEFAULT_VALUES["offset_left"]
-                )
-                self._shared.offset_right = device_info.get(
-                    CONF_OFFSET_RIGHT, DEFAULT_VALUES["offset_right"]
-                )
-                self._shared.image_auto_zoom = device_info.get(
-                    CONF_AUTO_ZOOM, DEFAULT_VALUES["auto_zoom"]
-                )
-                self._shared.image_zoom_lock_ratio = device_info.get(
-                    CONF_ZOOM_LOCK_RATIO, DEFAULT_VALUES["zoom_lock_ratio"]
-                )
-                self._shared.image_aspect_ratio = device_info.get(
-                    CONF_ASPECT_RATIO, DEFAULT_VALUES["aspect_ratio"]
-                )
-                self._shared.image_rotate = int(
-                    device_info.get(ATTR_ROTATE, DEFAULT_VALUES["rotate_image"])
-                )
-                self._shared.margins = int(
-                    device_info.get(ATTR_MARGINS, DEFAULT_VALUES["margins"])
-                )
-                self._shared.show_vacuum_state = device_info.get(
-                    CONF_VAC_STAT, DEFAULT_VALUES["show_vac_status"]
-                )
-                self._shared.vacuum_status_font = device_info.get(
-                    CONF_VAC_STAT_FONT, DEFAULT_VALUES["vac_status_font"]
-                )
-                self._shared.vacuum_status_size = device_info.get(
-                    CONF_VAC_STAT_SIZE, DEFAULT_VALUES["vac_status_size"]
-                )
-                self._shared.vacuum_status_position = device_info.get(
-                    CONF_VAC_STAT_POS, DEFAULT_VALUES["vac_status_position"]
-                )
-
-                # If enable_snapshots check if for png in www.
-                self._shared.enable_snapshots = device_info.get(
-                    CONF_SNAPSHOTS_ENABLE, DEFAULT_VALUES["enable_www_snapshots"]
-                )
-
-                if not self._shared.enable_snapshots and os.path.isfile(
-                    f"{self._directory_path}/www/snapshot_{self._file_name}.png"
-                ):
-                    os.remove(
-                        f"{self._directory_path}/www/snapshot_{self._file_name}.png"
-                    )
-
-            except TypeError as ex:
-                _LOGGER.error(
-                    f"Shared data can't be initialized due to a TypeError! {ex}"
-                )
-            except AttributeError as ex:
-                _LOGGER.error(
-                    f"Shared data can't be initialized due to an AttributeError! Possibly _shared is not properly initialized: {ex}"
-                )
-            except Exception as ex:
-                _LOGGER.error(
-                    f"An unexpected error occurred while initializing shared data: {ex}"
-                )
-        else:
-            _LOGGER.error(
-                "Shared data initialization failed because _shared is not defined."
-            )
+    def _init_clear_www_folder(self):
+        # If enable_snapshots check if for png in www
+        if not self._shared.enable_snapshots and os.path.isfile(
+            f"{self._directory_path}/www/snapshot_{self._file_name}.png"
+        ):
+            os.remove(f"{self._directory_path}/www/snapshot_{self._file_name}.png")
 
     async def async_added_to_hass(self) -> None:
         """Handle entity added to Home Assistant."""
