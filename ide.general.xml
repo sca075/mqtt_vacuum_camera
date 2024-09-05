@@ -9,5 +9,6 @@
     <entry key="ide.images.show.chessboard" value="true" />
     <entry key="moved.to.new.ui" value="true" />
     <entry key="ide.experimental.ui" value="true" />
+    <entry key="i18n.locale" value="" />
   </component>
 </application>
