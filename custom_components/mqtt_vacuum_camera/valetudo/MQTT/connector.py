@@ -14,8 +14,8 @@ from homeassistant.components import mqtt
 from homeassistant.core import callback
 from isal import igzip, isal_zlib
 
-from custom_components.mqtt_vacuum_camera.types import RoomStore
-from custom_components.mqtt_vacuum_camera.valetudo.rand256.rrparser import RRMapParser
+from ...types import RoomStore
+from ...valetudo.rand256.rrparser import RRMapParser
 
 _LOGGER = logging.getLogger(__name__)
 

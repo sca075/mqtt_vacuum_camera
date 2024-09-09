@@ -14,12 +14,9 @@ import zipfile
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import STORAGE_DIR
 
-from custom_components.mqtt_vacuum_camera.const import CAMERA_STORAGE, DOMAIN
-from custom_components.mqtt_vacuum_camera.types import SnapshotStore
-from custom_components.mqtt_vacuum_camera.utils.files_operations import (
-    async_write_file_to_disk,
-    async_write_json_to_disk,
-)
+from ..const import CAMERA_STORAGE, DOMAIN
+from ..types import SnapshotStore
+from ..utils.files_operations import async_write_file_to_disk, async_write_json_to_disk
 
 _LOGGER = logging.getLogger(__name__)
 

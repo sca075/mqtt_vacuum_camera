@@ -10,12 +10,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from custom_components.mqtt_vacuum_camera.types import (
-    Colors,
-    ImageSize,
-    JsonType,
-    NumpyArray,
-)
+from ..types import Colors, ImageSize, JsonType, NumpyArray
 
 
 class ImageData:

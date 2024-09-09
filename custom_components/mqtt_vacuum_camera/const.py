@@ -41,6 +41,17 @@ DEFAULT_IMAGE_SIZE = {
     "centre": [(5120 // 2), (5120 // 2)],
 }
 
+COLORS = [
+    "wall",
+    "zone_clean",
+    "robot",
+    "background",
+    "move",
+    "charger",
+    "no_go",
+    "go_to",
+]
+
 DEFAULT_PIXEL_SIZE = 5
 
 DEFAULT_VALUES = {

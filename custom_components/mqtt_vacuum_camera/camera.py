@@ -161,6 +161,7 @@ class ValetudoCamera(Camera):
 
     @staticmethod
     def _start_up_logs():
+        """Logs the machine running the component data"""
         _LOGGER.info(f"System Release: {platform.node()}, {platform.release()}")
         _LOGGER.info(f"System Version: {platform.version()}")
         _LOGGER.info(f"System Machine: {platform.machine()}")
@@ -172,6 +173,7 @@ class ValetudoCamera(Camera):
         )
 
     def _init_clear_www_folder(self):
+        """Remove PNG and ZIP's stored in HA config WWW"""
         # If enable_snapshots check if for png in www
         if not self._shared.enable_snapshots and os.path.isfile(
             f"{self._directory_path}/www/snapshot_{self._file_name}.png"
