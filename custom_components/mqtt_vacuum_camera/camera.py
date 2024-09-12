@@ -1,6 +1,6 @@
 """
 Camera
-Version: v2024.09.0
+Version: v2024.10.0
 """
 
 from __future__ import annotations
@@ -30,7 +30,6 @@ from psutil_home_assistant import PsutilWrapper as ProcInsp
 import voluptuous as vol
 
 from .camera_processing import CameraProcessor
-from .camera_shared import CameraSharedManager
 from .common import get_vacuum_unique_id_from_mqtt_topic
 from .const import (
     ATTR_FRIENDLY_NAME,
@@ -47,11 +46,11 @@ from .const import (
     NOT_STREAMING_STATES,
     PLATFORMS,
 )
+from .coordinator import MQTTVacuumCoordinator
 from .snapshots.snapshot import Snapshots
 from .types import SnapshotStore
 from .utils.colors_man import ColorsManagment
 from .utils.files_operations import async_get_active_user_language, is_auth_updated
-from .valetudo.MQTT.connector import ValetudoConnector
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
@@ -77,7 +76,7 @@ async def async_setup_entry(
     if config_entry.options:
         config.update(config_entry.options)
 
-    camera = [ValetudoCamera(hass, config)]
+    camera = [MQTTCamera(hass, config)]
     async_add_entities(camera, update_before_add=True)
 
 
@@ -88,12 +87,11 @@ async def async_setup_platform(
     discovery_info: DiscoveryInfoType | None = None,
 ):
     """Set up the camera platform."""
-    async_add_entities([ValetudoCamera(hass, config)])
-
+    async_add_entities([MQTTCamera(hass, config)])
     await async_setup_reload_service(hass, DOMAIN, PLATFORMS)
 
 
-class ValetudoCamera(Camera):
+class MQTTCamera(Camera):
     """
     Rend the vacuum map and the vacuum state for:
     Valetudo Hypfer and rand256 Firmwares Vacuums maps.
@@ -111,11 +109,16 @@ class ValetudoCamera(Camera):
         self._attr_brand = "MQTT Vacuum Camera"
         self._attr_name = "Camera"
         self._attr_is_on = True
+
         self._directory_path = self.hass.config.path()  # get Home Assistant path
         self._mqtt_listen_topic = str(device_info.get(CONF_VACUUM_CONNECTION_STRING))
-        self._shared, self._file_name = self._handle_init_shared_data(
-            self._mqtt_listen_topic,
-            device_info,
+        _LOGGER.debug(self._mqtt_listen_topic)
+        self.coordinator = MQTTVacuumCoordinator(
+            hass, device_info, self._mqtt_listen_topic
+        )
+        self._shared, self._file_name = (
+            self.coordinator.shared,
+            self.coordinator.file_name,
         )
         self._start_up_logs()
         self._storage_path, self.snapshot_img, self.log_file = self._init_paths()
@@ -123,7 +126,7 @@ class ValetudoCamera(Camera):
             CONF_UNIQUE_ID,
             get_vacuum_unique_id_from_mqtt_topic(self._mqtt_listen_topic),
         )
-        self._mqtt = ValetudoConnector(self._mqtt_listen_topic, self.hass, self._shared)
+        self._mqtt = self.coordinator.connector
         self._identifiers = device_info.get(CONF_VACUUM_IDENTIFIERS)
         self._snapshots = Snapshots(self.hass, self._shared)
         self.Image = None
@@ -145,19 +148,6 @@ class ValetudoCamera(Camera):
         # Create the processor for the camera.
         self.processor = CameraProcessor(self.hass, self._shared)
         self._attr_brand = "MQTT Vacuum Camera"
-
-    @staticmethod
-    def _handle_init_shared_data(mqtt_listen_topic: str, device_info):
-        """Handle the shared data initialization."""
-        manager, shared, file_name = None, None, None
-        if mqtt_listen_topic:
-            manager = CameraSharedManager(
-                mqtt_listen_topic.split("/")[1].lower(), device_info
-            )
-            shared = manager.get_instance()
-            file_name = shared.file_name
-            _LOGGER.debug(f"Camera {file_name} Starting up..")
-        return shared, file_name
 
     @staticmethod
     def _start_up_logs():

@@ -1,13 +1,11 @@
 """
 Class Camera Shared.
 Keep the data between the modules.
-Version: v2024.09.0
+Version: v2024.10.0
 """
 
 import asyncio
 import logging
-
-from custom_components.mqtt_vacuum_camera.types import Colors
 
 from .const import (
     ATTR_CALIBRATION_POINTS,
@@ -35,6 +33,7 @@ from .const import (
     CONF_ZOOM_LOCK_RATIO,
     DEFAULT_VALUES,
 )
+from .types import Colors
 
 _LOGGER = logging.getLogger(__name__)
 

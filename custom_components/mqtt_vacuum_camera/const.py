@@ -1,6 +1,6 @@
 """Constants for the mqtt_vacuum_camera integration."""
 
-"""Version v2024.09.0"""
+"""Version v2024.10.0"""
 
 """Required in Config_Flow"""
 PLATFORMS = ["camera"]
@@ -20,9 +20,6 @@ CONF_VAC_STAT = "show_vac_status"
 CONF_VAC_STAT_SIZE = "vac_status_size"
 CONF_VAC_STAT_POS = "vac_status_position"
 CONF_VAC_STAT_FONT = "vac_status_font"
-CONF_MQTT_HOST = "broker_host"
-CONF_MQTT_PASS = "broker_password"
-CONF_MQTT_USER = "broker_user"
 CONF_VACUUM_CONNECTION_STRING = "vacuum_map"
 CONF_VACUUM_ENTITY_ID = "vacuum_entity"
 CONF_VACUUM_CONFIG_ENTRY_ID = "vacuum_config_entry"

@@ -1,5 +1,5 @@
 """MQTT Vacuum Camera.
-Version: 2024.08.1"""
+Version: 2024.10.0"""
 
 import logging
 import os
@@ -26,9 +26,6 @@ from .common import (
 )
 from .const import (
     CAMERA_STORAGE,
-    CONF_MQTT_HOST,
-    CONF_MQTT_PASS,
-    CONF_MQTT_USER,
     CONF_VACUUM_CONFIG_ENTRY_ID,
     CONF_VACUUM_CONNECTION_STRING,
     CONF_VACUUM_IDENTIFIERS,
@@ -58,7 +55,7 @@ async def async_setup_entry(
 
     async def _reload_config(call: ServiceCall) -> None:
         """Reload the camera platform for all entities in the integration."""
-        _LOGGER.debug("Reloading the config entry for all camera entities")
+        _LOGGER.debug(f"Reloading the config entry for all {DOMAIN} entities")
 
         # Retrieve all config entries associated with the DOMAIN
         camera_entries = hass.config_entries.async_entries(DOMAIN)
@@ -83,6 +80,9 @@ async def async_setup_entry(
 
     hass.data.setdefault(DOMAIN, {})
     hass_data = dict(entry.data)
+    # testing coordinator startup
+    # my_api = str(f"Entry ID:{entry.entry_id}")
+    # _LOGGER.debug(my_api)
 
     vacuum_entity_id, vacuum_device = get_device_info(
         hass_data[CONF_VACUUM_CONFIG_ENTRY_ID], hass
@@ -110,7 +110,6 @@ async def async_setup_entry(
     # Store a reference to the unsubscribe function to clean up if an entry is unloaded.
     hass_data["unsub_options_update_listener"] = unsub_options_update_listener
     hass.data[DOMAIN][entry.entry_id] = hass_data
-
     # Register Services
     hass.services.async_register(DOMAIN, "reset_trims", reset_trims)
     if not hass.services.has_service(DOMAIN, SERVICE_RELOAD):
@@ -120,6 +119,7 @@ async def async_setup_entry(
     await hass.async_create_task(
         hass.config_entries.async_forward_entry_setups(entry, ["camera"])
     )
+
     return True
 
 
@@ -141,7 +141,7 @@ async def async_unload_entry(
 
 # noinspection PyCallingNonCallable
 async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
-    """Set up the Valetudo Camera Custom component from yaml configuration."""
+    """Set up the MQTT Camera Custom component from yaml configuration."""
 
     async def handle_homeassistant_stop(event):
         """Handle Home Assistant stop event."""

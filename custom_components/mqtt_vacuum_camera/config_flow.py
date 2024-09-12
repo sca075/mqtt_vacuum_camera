@@ -1,4 +1,4 @@
-"""config_flow 2024.08.0
+"""config_flow 2024.10.0
 IMPORTANT: Maintain code when adding new options to the camera
 it will be mandatory to update const.py and common.py update_options.
 Format of the new constants must be CONST_NAME = "const_name" update also
@@ -101,7 +101,7 @@ VACUUM_SCHEMA = vol.Schema(
 )
 
 
-class ValetudoCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
+class MQTTCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 3.1
 
     def __init__(self):
