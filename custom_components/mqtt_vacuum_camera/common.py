@@ -20,7 +20,7 @@ from .hass_types import GET_MQTT_DATA
 _LOGGER = logging.getLogger(__name__)
 
 
-def get_device_info(
+def get_vacuum_device_info(
     config_entry_id: str, hass: HomeAssistant
 ) -> tuple[str, DeviceEntry] | None:
     """

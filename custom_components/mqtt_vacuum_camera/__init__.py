@@ -18,7 +18,7 @@ from homeassistant.helpers.reload import async_register_admin_service
 from homeassistant.helpers.storage import STORAGE_DIR
 
 from .common import (
-    get_device_info,
+    get_vacuum_device_info,
     get_entity_identifier_from_mqtt,
     get_vacuum_mqtt_topic,
     get_vacuum_unique_id_from_mqtt_topic,
@@ -31,6 +31,7 @@ from .const import (
     CONF_VACUUM_IDENTIFIERS,
     DOMAIN,
 )
+from .coordinator import MQTTVacuumCoordinator
 from .utils.files_operations import (
     async_clean_up_all_auto_crop_files,
     async_get_translations_vacuum_id,
@@ -84,7 +85,7 @@ async def async_setup_entry(
     # my_api = str(f"Entry ID:{entry.entry_id}")
     # _LOGGER.debug(my_api)
 
-    vacuum_entity_id, vacuum_device = get_device_info(
+    vacuum_entity_id, vacuum_device = get_vacuum_device_info(
         hass_data[CONF_VACUUM_CONFIG_ENTRY_ID], hass
     )
 
@@ -97,11 +98,18 @@ async def async_setup_entry(
     if not mqtt_topic_vacuum:
         raise ConfigEntryNotReady("MQTT was not ready yet, automatically retrying")
 
+    vacuum_topic = "/".join(mqtt_topic_vacuum.split("/")[:-1])
+
+    data_coordinator = MQTTVacuumCoordinator(
+        hass, hass_data, vacuum_topic
+    )
+
     hass_data.update(
         {
-            CONF_VACUUM_CONNECTION_STRING: "/".join(mqtt_topic_vacuum.split("/")[:-1]),
+            CONF_VACUUM_CONNECTION_STRING: vacuum_topic,
             CONF_VACUUM_IDENTIFIERS: vacuum_device.identifiers,
             CONF_UNIQUE_ID: entry.unique_id,
+            "coordinator": data_coordinator
         }
     )
 

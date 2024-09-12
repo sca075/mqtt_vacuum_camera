@@ -31,7 +31,7 @@ import voluptuous as vol
 
 from .common import (
     extract_file_name,
-    get_device_info,
+    get_vacuum_device_info,
     get_vacuum_mqtt_topic,
     get_vacuum_unique_id_from_mqtt_topic,
     update_options,
@@ -151,7 +151,7 @@ class MQTTCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             else:
                 _LOGGER.debug(f"Storage {storage_path} path found.")
             # Finally set up the entry.
-            _, vacuum_device = get_device_info(
+            _, vacuum_device = get_vacuum_device_info(
                 self.data[CONF_VACUUM_CONFIG_ENTRY_ID], self.hass
             )
 
@@ -861,7 +861,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         Save the options in a sorted way. It stores all the options.
         """
         _LOGGER.info(f"Storing Updated Camera ({self.config_entry.unique_id}) Options.")
-        _, vacuum_device = get_device_info(
+        _, vacuum_device = get_vacuum_device_info(
             self.config_entry.data.get(CONF_VACUUM_CONFIG_ENTRY_ID), self.hass
         )
         opt_update = await update_options(self.bk_options, self.options)

@@ -20,12 +20,10 @@ from typing import Any, Optional
 from PIL import Image
 from homeassistant import config_entries, core
 from homeassistant.components.camera import PLATFORM_SCHEMA, Camera, CameraEntityFeature
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.const import CONF_NAME, CONF_UNIQUE_ID, MATCH_ALL
 from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.reload import async_setup_reload_service
 from homeassistant.helpers.storage import STORAGE_DIR
-from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from psutil_home_assistant import PsutilWrapper as ProcInsp
 import voluptuous as vol
 
@@ -44,9 +42,7 @@ from .const import (
     DEFAULT_NAME,
     DOMAIN,
     NOT_STREAMING_STATES,
-    PLATFORMS,
 )
-from .coordinator import MQTTVacuumCoordinator
 from .snapshots.snapshot import Snapshots
 from .types import SnapshotStore
 from .utils.colors_man import ColorsManagment
@@ -72,26 +68,16 @@ async def async_setup_entry(
 ) -> None:
     """Setup camera from a config entry created in the integrations UI."""
     config = hass.data[DOMAIN][config_entry.entry_id]
+    coordinator = hass.data[DOMAIN][config_entry.entry_id]["coordinator"]
     # Update our config to and eventually add or remove option.
     if config_entry.options:
         config.update(config_entry.options)
 
-    camera = [MQTTCamera(hass, config)]
+    camera = [MQTTCamera(coordinator, config)]
     async_add_entities(camera, update_before_add=True)
 
 
-async def async_setup_platform(
-    hass: core.HomeAssistant,
-    config: ConfigType,
-    async_add_entities: AddEntitiesCallback,
-    discovery_info: DiscoveryInfoType | None = None,
-):
-    """Set up the camera platform."""
-    async_add_entities([MQTTCamera(hass, config)])
-    await async_setup_reload_service(hass, DOMAIN, PLATFORMS)
-
-
-class MQTTCamera(Camera):
+class MQTTCamera(CoordinatorEntity, Camera):
     """
     Rend the vacuum map and the vacuum state for:
     Valetudo Hypfer and rand256 Firmwares Vacuums maps.
@@ -101,9 +87,10 @@ class MQTTCamera(Camera):
     _attr_has_entity_name = True
     _unrecorded_attributes = frozenset({MATCH_ALL})
 
-    def __init__(self, hass, device_info):
-        super().__init__()
-        self.hass = hass
+    def __init__(self, coordinator, device_info):
+        super().__init__(coordinator)
+        Camera.__init__(self)
+        self.hass = coordinator.hass
         self._state = "init"
         self._attr_model = "MQTT Vacuums"
         self._attr_brand = "MQTT Vacuum Camera"
@@ -111,14 +98,10 @@ class MQTTCamera(Camera):
         self._attr_is_on = True
 
         self._directory_path = self.hass.config.path()  # get Home Assistant path
-        self._mqtt_listen_topic = str(device_info.get(CONF_VACUUM_CONNECTION_STRING))
-        _LOGGER.debug(self._mqtt_listen_topic)
-        self.coordinator = MQTTVacuumCoordinator(
-            hass, device_info, self._mqtt_listen_topic
-        )
+        self._mqtt_listen_topic = coordinator.vacuum_topic
+
         self._shared, self._file_name = (
-            self.coordinator.shared,
-            self.coordinator.file_name,
+            coordinator.update_shared_data(device_info)
         )
         self._start_up_logs()
         self._storage_path, self.snapshot_img, self.log_file = self._init_paths()
@@ -126,7 +109,7 @@ class MQTTCamera(Camera):
             CONF_UNIQUE_ID,
             get_vacuum_unique_id_from_mqtt_topic(self._mqtt_listen_topic),
         )
-        self._mqtt = self.coordinator.connector
+        self._mqtt = coordinator.connector
         self._identifiers = device_info.get(CONF_VACUUM_IDENTIFIERS)
         self._snapshots = Snapshots(self.hass, self._shared)
         self.Image = None

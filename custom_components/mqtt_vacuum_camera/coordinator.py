@@ -38,9 +38,12 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
             name=DEFAULT_NAME,
             update_interval=polling_interval,
         )
+        self.hass = hass
+        self.vacuum_topic = vacuum_topic
         self.device_info = device_info
         self.shared, self.file_name = self._init_shared_data(vacuum_topic, device_info)
         self.connector = ValetudoConnector(vacuum_topic, hass, self.shared)
+        _LOGGER.debug(f"test init {self.file_name}")
 
     @staticmethod
     def _init_shared_data(mqtt_listen_topic: str, device_info):
@@ -62,9 +65,14 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         # Ensure subscription to MQTT topics
         await self.connector.async_subscribe_to_topics()
 
+    def update_shared_data(self, dinfo):
+        self.shared, self.file_name = self._init_shared_data(self.vacuum_topic, dinfo)
+        return self.shared, self.file_name
+
     async def _async_update_data(self, process: bool = True):
         """Fetch data from the MQTT topics."""
         try:
+            self.shared, self.file_name = self._init_shared_data(self.vacuum_topic, self.device_info)
             async with async_timeout.timeout(10):
                 # Fetch and process data from the MQTT connector
                 return await self.connector.update_data(process)
