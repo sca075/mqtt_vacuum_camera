@@ -10,10 +10,10 @@ import hashlib
 import json
 import logging
 
-from custom_components.mqtt_vacuum_camera.types import Color, JsonType, NumpyArray
-from custom_components.mqtt_vacuum_camera.utils.colors_man import color_grey
-from custom_components.mqtt_vacuum_camera.utils.drawable import Drawable
-from custom_components.mqtt_vacuum_camera.utils.img_data import ImageData
+from ...types import Color, JsonType, NumpyArray
+from ...utils.colors_man import color_grey
+from ...utils.drawable import Drawable
+from ...utils.img_data import ImageData
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -239,9 +239,7 @@ class ImageDraw:
         else:
             _LOGGER.info(f"{self.file_name}: Got zones.")
         if zone_clean:
-            if zone_clean:
-                np_array = await self.draw.zones(np_array, zone_clean, color_zone_clean)
-            return np_array
+            return await self.draw.zones(np_array, zone_clean, color_zone_clean)
         else:
             return np_array
 

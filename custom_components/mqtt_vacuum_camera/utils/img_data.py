@@ -3,19 +3,14 @@ Collections of Json and List routines
 ImageData is part of the Image_Handler
 used functions to search data in the json
 provided for the creation of the new camera frame
-Version: v2024.08.2
+Version: v2024.10.0
 """
 
 from __future__ import annotations
 
 import numpy as np
 
-from custom_components.mqtt_vacuum_camera.types import (
-    Colors,
-    ImageSize,
-    JsonType,
-    NumpyArray,
-)
+from ..types import Colors, ImageSize, JsonType, NumpyArray
 
 
 class ImageData:

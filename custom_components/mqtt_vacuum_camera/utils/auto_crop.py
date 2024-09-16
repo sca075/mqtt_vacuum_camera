@@ -1,5 +1,5 @@
 """Auto Crop Class for trimming and zooming images.
-Version: 2024.08.2"""
+Version: 2024.10.0"""
 
 from __future__ import annotations
 
@@ -11,10 +11,10 @@ from homeassistant.helpers.storage import STORAGE_DIR
 import numpy as np
 from numpy import rot90
 
-from custom_components.mqtt_vacuum_camera.const import CAMERA_STORAGE
-from custom_components.mqtt_vacuum_camera.types import Color, NumpyArray, TrimCropData
-from custom_components.mqtt_vacuum_camera.utils.colors_man import color_grey
-from custom_components.mqtt_vacuum_camera.utils.files_operations import (
+from ..const import CAMERA_STORAGE
+from ..types import Color, NumpyArray, TrimCropData
+from ..utils.colors_man import color_grey
+from ..utils.files_operations import (
     async_load_file,
     async_write_json_to_disk,
 )
@@ -110,10 +110,12 @@ class AutoCrop:
 
     async def _init_auto_crop(self):
         """Initialize the auto crop data."""
-        if not self.imh.auto_crop:
+        if not self.imh.auto_crop and self.imh.shared.vacuum_state == "docked":
             self.imh.auto_crop = await self._async_auto_crop_data()
             if self.imh.auto_crop:
                 self.auto_crop_offset()
+        else:
+            self.imh.max_frames = 5
         return self.imh.auto_crop
 
     async def _async_save_auto_crop_data(self):

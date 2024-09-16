@@ -1,7 +1,7 @@
 """
 Image Draw Class for Valetudo Hypfer Image Handling.
 This class is used to simplify the ImageHandler class.
-Version: 2024.07.2
+Version: 2024.10.0
 """
 
 from __future__ import annotations
@@ -10,12 +10,7 @@ import hashlib
 import json
 import logging
 
-from custom_components.mqtt_vacuum_camera.types import (
-    Color,
-    JsonType,
-    NumpyArray,
-    RobotPosition,
-)
+from ...types import Color, JsonType, NumpyArray, RobotPosition
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -294,6 +289,7 @@ class ImageDraw:
             hash_value = hashlib.sha256(data_json.encode()).hexdigest()
         else:
             hash_value = None
+        _LOGGER.debug(f"Hash value of the Image: {hash_value}")
         return hash_value
 
     async def async_get_robot_in_room(

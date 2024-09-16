@@ -1,5 +1,5 @@
 """MQTT Vacuum Camera.
-Version: 2024.08.1"""
+Version: 2024.10.0"""
 
 import logging
 import os
@@ -26,9 +26,6 @@ from .common import (
 )
 from .const import (
     CAMERA_STORAGE,
-    CONF_MQTT_HOST,
-    CONF_MQTT_PASS,
-    CONF_MQTT_USER,
     CONF_VACUUM_CONFIG_ENTRY_ID,
     CONF_VACUUM_CONNECTION_STRING,
     CONF_VACUUM_IDENTIFIERS,
