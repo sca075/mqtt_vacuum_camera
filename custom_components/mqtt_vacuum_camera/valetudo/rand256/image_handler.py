@@ -40,6 +40,7 @@ class ReImageHandler(object):
         self.crop_img_size = None  # Crop image size
         self.data = ImageData  # Image Data
         self.frame_number = 0  # Image Frame number
+        self.max_frames = 1024
         self.go_to = None  # Go to position data
         self.img_base_layer = None  # Base image layer
         self.img_rotate = camera_shared.image_rotate  # Image rotation

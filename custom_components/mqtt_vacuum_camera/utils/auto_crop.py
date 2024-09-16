@@ -114,6 +114,8 @@ class AutoCrop:
             self.imh.auto_crop = await self._async_auto_crop_data()
             if self.imh.auto_crop:
                 self.auto_crop_offset()
+        else:
+            self.imh.max_frames = 5
         return self.imh.auto_crop
 
     async def _async_save_auto_crop_data(self):
