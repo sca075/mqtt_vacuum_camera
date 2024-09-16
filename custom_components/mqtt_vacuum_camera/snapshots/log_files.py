@@ -1,6 +1,6 @@
 """ Logs and files colloection
 MQTT Vacuum Camera component for Home Assistant
-Version: v2024.08.0"""
+Version: v2024.10.0"""
 
 import asyncio
 from asyncio import gather, get_event_loop
@@ -14,9 +14,9 @@ import zipfile
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import STORAGE_DIR
 
-from custom_components.mqtt_vacuum_camera.const import CAMERA_STORAGE, DOMAIN
-from custom_components.mqtt_vacuum_camera.types import SnapshotStore
-from custom_components.mqtt_vacuum_camera.utils.files_operations import (
+from ..const import CAMERA_STORAGE, DOMAIN
+from ..types import SnapshotStore
+from ..utils.files_operations import (
     async_write_file_to_disk,
     async_write_json_to_disk,
 )

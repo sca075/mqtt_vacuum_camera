@@ -1,6 +1,6 @@
 """Constants for the mqtt_vacuum_camera integration."""
 
-"""Version v2024.09.0"""
+"""Version v2024.10.0"""
 
 """Required in Config_Flow"""
 PLATFORMS = ["camera"]

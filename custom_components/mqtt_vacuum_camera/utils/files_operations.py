@@ -22,8 +22,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.storage import STORAGE_DIR
 
-from custom_components.mqtt_vacuum_camera.const import CAMERA_STORAGE
-from custom_components.mqtt_vacuum_camera.types import RoomStore, UserLanguageStore
+from ..const import CAMERA_STORAGE
+from ..types import RoomStore, UserLanguageStore
 
 _LOGGER = logging.getLogger(__name__)
 

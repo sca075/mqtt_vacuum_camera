@@ -1,4 +1,4 @@
-"""Snapshot Version 2024.08.0"""
+"""Snapshot Version 2024.10.0"""
 
 import asyncio
 from asyncio import gather, get_event_loop
@@ -9,9 +9,9 @@ import shutil
 
 from homeassistant.helpers.storage import STORAGE_DIR
 
-from custom_components.mqtt_vacuum_camera.const import CAMERA_STORAGE
-from custom_components.mqtt_vacuum_camera.types import Any, PilPNG, SnapshotStore
-from custom_components.mqtt_vacuum_camera.utils.files_operations import (
+from ..const import CAMERA_STORAGE
+from ..types import Any, PilPNG, SnapshotStore
+from ..utils.files_operations import (
     async_populate_user_languages,
 )
 

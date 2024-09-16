@@ -11,10 +11,10 @@ from homeassistant.helpers.storage import STORAGE_DIR
 import numpy as np
 from numpy import rot90
 
-from custom_components.mqtt_vacuum_camera.const import CAMERA_STORAGE
-from custom_components.mqtt_vacuum_camera.types import Color, NumpyArray, TrimCropData
-from custom_components.mqtt_vacuum_camera.utils.colors_man import color_grey
-from custom_components.mqtt_vacuum_camera.utils.files_operations import (
+from ..const import CAMERA_STORAGE
+from ..types import Color, NumpyArray, TrimCropData
+from ..utils.colors_man import color_grey
+from ..utils.files_operations import (
     async_load_file,
     async_write_json_to_disk,
 )
