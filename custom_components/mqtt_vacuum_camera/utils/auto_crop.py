@@ -1,5 +1,5 @@
 """Auto Crop Class for trimming and zooming images.
-Version: 2024.08.2"""
+Version: 2024.10.0"""
 
 from __future__ import annotations
 

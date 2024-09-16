@@ -2,7 +2,7 @@
 Image Handler Module for Valetudo Re Vacuums.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Version: v2024.08.2
+Version: v2024.10.0
 """
 
 from __future__ import annotations
