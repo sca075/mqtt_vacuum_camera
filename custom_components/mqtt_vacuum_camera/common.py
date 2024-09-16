@@ -43,6 +43,27 @@ def get_vacuum_device_info(
 
     return vacuum_entity_id, vacuum_device
 
+def get_device_info(hass, entry_id=None, identifier=None):
+    """Fetch the device info from the device registry based on entry_id or identifier."""
+    device_registry = dr.async_get(hass)
+    _LOGGER.debug(f"entry_id: {entry_id}")
+    # entity_registry = er.async_get(hass)
+    if entry_id:
+        camera_device = device_registry.async_get(entry_id)
+        _LOGGER.debug(camera_device)
+
+    #return camera_device
+    # Search for the device by entry_id or identifier in the registry
+    for device in device_registry.devices.values():
+        if entry_id in device.config_entries:
+            _LOGGER.debug(f"device: {device}")
+            return device_registry.devices.get_devices_for_config_entry_id("9abe4e81972b00d1682c2363d3584041")
+        if identifier and any(identifier in ident for ident in device.identifiers):
+            _LOGGER.debug(f"device by identifier: {device}")
+            return device
+    # If no device found, log an error
+    _LOGGER.error(f"Device with entry_id: {entry_id} or identifier: {identifier} not found.")
+    return None
 
 def get_entity_identifier_from_mqtt(
     mqtt_identifier: str, hass: HomeAssistant

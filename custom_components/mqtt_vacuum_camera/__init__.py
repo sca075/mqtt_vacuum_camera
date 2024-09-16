@@ -13,11 +13,13 @@ from homeassistant.const import (
     Platform,
 )
 from homeassistant.core import ServiceCall
+from homeassistant.config_entries import ConfigEntryState, ConfigEntry
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.reload import async_register_admin_service
 from homeassistant.helpers.storage import STORAGE_DIR
 
 from .common import (
+    get_device_info,
     get_vacuum_device_info,
     get_entity_identifier_from_mqtt,
     get_vacuum_mqtt_topic,
@@ -29,6 +31,7 @@ from .const import (
     CONF_VACUUM_CONFIG_ENTRY_ID,
     CONF_VACUUM_CONNECTION_STRING,
     CONF_VACUUM_IDENTIFIERS,
+    DEFAULT_VALUES,
     DOMAIN,
 )
 from .coordinator import MQTTVacuumCoordinator
@@ -43,31 +46,33 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def options_update_listener(
-    hass: core.HomeAssistant, config_entry: config_entries.ConfigEntry
+    hass: core.HomeAssistant, config_entry: ConfigEntry
 ):
     """Handle options update."""
     await hass.config_entries.async_reload(config_entry.entry_id)
 
 
 async def async_setup_entry(
-    hass: core.HomeAssistant, entry: config_entries.ConfigEntry
+    hass: core.HomeAssistant, entry: ConfigEntry
 ) -> bool:
     """Set up platform from a ConfigEntry."""
 
     async def _reload_config(call: ServiceCall) -> None:
         """Reload the camera platform for all entities in the integration."""
         _LOGGER.debug(f"Reloading the config entry for all {DOMAIN} entities")
-
         # Retrieve all config entries associated with the DOMAIN
         camera_entries = hass.config_entries.async_entries(DOMAIN)
 
-        # Iterate over each config entry
+        # Iterate over each config entry and check if it's LOADED
         for camera_entry in camera_entries:
-            _LOGGER.debug(f"Unloading entry: {camera_entry.entry_id}")
-            await async_unload_entry(hass, camera_entry)
+            if camera_entry.state == ConfigEntryState.LOADED:
+                _LOGGER.debug(f"Unloading entry: {camera_entry.entry_id}")
+                await async_unload_entry(hass, camera_entry)
 
-            _LOGGER.debug(f"Reloading entry: {camera_entry.entry_id}")
-            await async_setup_entry(hass, camera_entry)
+                _LOGGER.debug(f"Reloading entry: {camera_entry.entry_id}")
+                await async_setup_entry(hass, camera_entry)
+            else:
+                _LOGGER.debug(f"Skipping entry {camera_entry.entry_id} as it is NOT_LOADED")
 
         # Optionally, trigger other reinitialization steps if needed
         hass.bus.async_fire(f"event_{DOMAIN}_reloaded", context=call.context)
@@ -79,11 +84,13 @@ async def async_setup_entry(
         await hass.services.async_call(DOMAIN, "reload")
         hass.bus.async_fire(f"event_{DOMAIN}_reset_trims", context=call.context)
 
+    # Register Services
+    hass.services.async_register(DOMAIN, "reset_trims", reset_trims)
+    if not hass.services.has_service(DOMAIN, SERVICE_RELOAD):
+        async_register_admin_service(hass, DOMAIN, SERVICE_RELOAD, _reload_config)
+
     hass.data.setdefault(DOMAIN, {})
     hass_data = dict(entry.data)
-    # testing coordinator startup
-    # my_api = str(f"Entry ID:{entry.entry_id}")
-    # _LOGGER.debug(my_api)
 
     vacuum_entity_id, vacuum_device = get_vacuum_device_info(
         hass_data[CONF_VACUUM_CONFIG_ENTRY_ID], hass
@@ -99,9 +106,10 @@ async def async_setup_entry(
         raise ConfigEntryNotReady("MQTT was not ready yet, automatically retrying")
 
     vacuum_topic = "/".join(mqtt_topic_vacuum.split("/")[:-1])
+    # camera_device = get_device_info(hass, entry.entry_id, vacuum_device.identifiers)
 
     data_coordinator = MQTTVacuumCoordinator(
-        hass, hass_data, vacuum_topic
+        hass, DEFAULT_VALUES, vacuum_topic
     )
 
     hass_data.update(
@@ -118,10 +126,6 @@ async def async_setup_entry(
     # Store a reference to the unsubscribe function to clean up if an entry is unloaded.
     hass_data["unsub_options_update_listener"] = unsub_options_update_listener
     hass.data[DOMAIN][entry.entry_id] = hass_data
-    # Register Services
-    hass.services.async_register(DOMAIN, "reset_trims", reset_trims)
-    if not hass.services.has_service(DOMAIN, SERVICE_RELOAD):
-        async_register_admin_service(hass, DOMAIN, SERVICE_RELOAD, _reload_config)
 
     # Forward the setup to the camera platform.
     await hass.async_create_task(
@@ -135,7 +139,6 @@ async def async_unload_entry(
     hass: core.HomeAssistant, entry: config_entries.ConfigEntry
 ) -> bool:
     """Unload a config entry."""
-    _LOGGER.debug(f"unloading {entry.entry_id}")
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         # Remove config entry from domain.
         entry_data = hass.data[DOMAIN].pop(entry.entry_id)

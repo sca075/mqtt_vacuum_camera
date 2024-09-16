@@ -136,7 +136,7 @@ class ValetudoConnector:
         @param msg: MQTT message
         """
         if not self._data_in:
-            _LOGGER.info(f"Received {self._file_name} image data from MQTT")
+            _LOGGER.info(f"Received Hypfer {self._file_name} image data from MQTT")
             self._img_payload = msg.payload
             self._data_in = True
 
@@ -208,7 +208,7 @@ class ValetudoConnector:
         Handle new MQTT messages.
         map-data is for Rand256.
         """
-        _LOGGER.info(f"Received {self._file_name} image data from MQTT")
+        _LOGGER.info(f"Received Rand256 {self._file_name} image data from MQTT")
         # RRM Image data update the received payload
         self._rrm_payload = msg.payload
         if self._mqtt_vac_connect_state == "disconnected":
@@ -217,7 +217,8 @@ class ValetudoConnector:
         self._ignore_data = False
         if self._do_it_once:
             _LOGGER.debug(f"Do it once.. request destinations to: {self._mqtt_topic}")
-            await self.rrm_publish_destinations()
+            #  Request the destinations from ValetudoRe.
+            await self.publish_to_broker("/custom_command", {"command": "get_destinations"})
             self._do_it_once = False
 
     async def rand256_handle_statuses(self, msg) -> None:
@@ -273,7 +274,7 @@ class ValetudoConnector:
 
             # Retrieve the shared room data instead of RoomStore or destinations
             shared_rooms_data = self._shared.map_rooms
-
+            _LOGGER.debug(f"{self._file_name} rooms  {shared_rooms_data}")
             # Create a mapping of room ID to its index based on the shared rooms data
             room_id_to_index = {
                 room_id: idx for idx, room_id in enumerate(shared_rooms_data)
@@ -404,18 +405,15 @@ class ValetudoConnector:
             _LOGGER.error(f"Failed to decode payload: {e}")
             return None
 
-    async def rrm_publish_destinations(self) -> None:
+    async def publish_to_broker(self, cust_topic: str, cust_payload: dict) -> None:
         """
-        Request the destinations from ValetudoRe.
-        Destination is used to gater the room names.
-        It also provides zones and points predefined in the ValetudoRe.
+        Publish data to MQTT using the internal mqtt_topic prefix for custom topics
         """
-        cust_payload = {"command": "get_destinations"}
-        cust_payload = json.dumps(cust_payload)
+        payload = json.dumps(cust_payload)
         await mqtt.async_publish(
             self._hass,
-            self._mqtt_topic + "/custom_command",
-            cust_payload,
+            self._mqtt_topic + cust_topic,
+            payload,
             _QOS,
             encoding="utf-8",
         )

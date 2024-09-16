@@ -4,12 +4,9 @@ from datetime import timedelta
 import logging
 
 import async_timeout
-from homeassistant.core import callback
 from homeassistant.exceptions import ConfigEntryAuthFailed
 
-# from homeassistant.helpers.entity import DeviceInfo, Entity
 from homeassistant.helpers.update_coordinator import (
-    CoordinatorEntity,
     DataUpdateCoordinator,
     UpdateFailed,
 )
@@ -41,20 +38,19 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         self.hass = hass
         self.vacuum_topic = vacuum_topic
         self.device_info = device_info
-        self.shared, self.file_name = self._init_shared_data(vacuum_topic, device_info)
-        self.connector = ValetudoConnector(vacuum_topic, hass, self.shared)
-        _LOGGER.debug(f"test init {self.file_name}")
+        self.shared, self.file_name = None, None
+        self.connector = None
 
     @staticmethod
     def _init_shared_data(mqtt_listen_topic: str, device_info):
         """Initialize the shared data."""
         manager, shared, file_name = None, None, None
         if mqtt_listen_topic:
+            file_name = mqtt_listen_topic.split("/")[1].lower()
             manager = CameraSharedManager(
-                mqtt_listen_topic.split("/")[1].lower(), device_info
+                file_name , device_info
             )
             shared = manager.get_instance()
-            file_name = shared.file_name
             _LOGGER.debug(f"Camera {file_name} Starting up..")
         return shared, file_name
 
@@ -62,17 +58,22 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         """Set up the coordinator."""
         self._device = self.device_info
         _LOGGER.info(f"Setting up coordinator for {self.file_name}.")
-        # Ensure subscription to MQTT topics
-        await self.connector.async_subscribe_to_topics()
 
-    def update_shared_data(self, dinfo):
-        self.shared, self.file_name = self._init_shared_data(self.vacuum_topic, dinfo)
+    def stat_up_mqtt(self):
+        """Init the MQTT Connector"""
+        self.connector = ValetudoConnector(self.vacuum_topic, self.hass, self.shared)
+        return self.connector
+
+
+    def update_shared_data(self, dev_info):
+        """Create / update instance of the shared data"""
+        self.shared, self.file_name = self._init_shared_data(self.vacuum_topic, dev_info)
         return self.shared, self.file_name
 
     async def _async_update_data(self, process: bool = True):
         """Fetch data from the MQTT topics."""
         try:
-            self.shared, self.file_name = self._init_shared_data(self.vacuum_topic, self.device_info)
+            #conside adding shared updates here ***
             async with async_timeout.timeout(10):
                 # Fetch and process data from the MQTT connector
                 return await self.connector.update_data(process)
@@ -80,32 +81,9 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
             raise ConfigEntryAuthFailed from err
         except Exception as err:
             _LOGGER.error(f"Error communicating with MQTT or processing data: {err}")
-            raise UpdateFailed(f"Error communicating with MQTT: {err}")
+            raise UpdateFailed(f"Error communicating with MQTT: {err}") from err
 
     async def async_will_remove_from_hass(self):
         """Handle cleanup when the coordinator is removed."""
         _LOGGER.info(f"Cleaning up {self.file_name} coordinator.")
         await self.connector.async_unsubscribe_from_topics()
-
-
-class MQTTCameraSubEntity(CoordinatorEntity):
-    """An entity using CoordinatorEntity.
-
-    The CoordinatorEntity class provides:
-      should_poll
-      async_update
-      async_added_to_hass
-      available
-
-    """
-
-    def __init__(self, coordinator, idx):
-        """Pass coordinator to CoordinatorEntity."""
-        super().__init__(coordinator, context=idx)
-        self.idx = idx
-
-    @callback
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        self._attr_is_on = self.coordinator.data[self.idx]["state"]
-        self.async_write_ha_state()
