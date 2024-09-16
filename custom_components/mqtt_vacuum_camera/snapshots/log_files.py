@@ -1,6 +1,6 @@
 """ Logs and files colloection
 MQTT Vacuum Camera component for Home Assistant
-Version: v2024.08.0"""
+Version: v2024.10.0"""
 
 import asyncio
 from asyncio import gather, get_event_loop

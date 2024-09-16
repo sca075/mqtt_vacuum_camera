@@ -40,6 +40,7 @@ class ReImageHandler(object):
         self.crop_img_size = None  # Crop image size
         self.data = ImageData  # Image Data
         self.frame_number = 0  # Image Frame number
+        self.max_frames = 1024
         self.go_to = None  # Go to position data
         self.img_base_layer = None  # Base image layer
         self.img_rotate = camera_shared.image_rotate  # Image rotation
@@ -354,7 +355,7 @@ class ReImageHandler(object):
             if self.active_zones and (
                 (self.robot_in_room["id"]) in range(len(self.active_zones))
             ):  # issue #100 Index out of range
-                self.zooming = bool(self.active_zones[(self.robot_in_room["id"])])
+                self.zooming = bool(self.active_zones[self.robot_in_room["id"]])
             return temp
         # else we need to search and use the async method
         _LOGGER.debug(f"{self.file_name} changed room.. searching..")

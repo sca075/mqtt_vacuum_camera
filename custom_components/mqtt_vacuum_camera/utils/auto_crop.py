@@ -107,10 +107,12 @@ class AutoCrop:
 
     async def _init_auto_crop(self):
         """Initialize the auto crop data."""
-        if not self.imh.auto_crop:
+        if not self.imh.auto_crop and self.imh.shared.vacuum_state == "docked":
             self.imh.auto_crop = await self._async_auto_crop_data()
             if self.imh.auto_crop:
                 self.auto_crop_offset()
+        else:
+            self.imh.max_frames = 5
         return self.imh.auto_crop
 
     async def _async_save_auto_crop_data(self):

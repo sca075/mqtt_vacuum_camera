@@ -61,6 +61,7 @@ class MapImageHandler(object):
         self.rooms_pos = None  # vacuum room coordinates / name list.
         self.active_zones = None  # vacuum active zones.
         self.frame_number = 0  # frame number of the image.
+        self.max_frames = 1024
         self.zooming = False  # zooming the image.
         self.svg_wait = False  # SVG image creation wait.
         self.trim_down = None  # memory stored trims calculated once.
@@ -207,7 +208,7 @@ class MapImageHandler(object):
                     self.img_base_layer = await self.imd.async_copy_array(img_np_array)
                 self.shared.frame_number = self.frame_number
                 self.frame_number += 1
-                if (self.frame_number > 1024) or (new_frame_hash != self.img_hash):
+                if (self.frame_number >= self.max_frames) or (new_frame_hash != self.img_hash):
                     self.frame_number = 0
                 _LOGGER.debug(
                     f"{self.file_name}: {self.json_id} at Frame Number: {self.frame_number}"

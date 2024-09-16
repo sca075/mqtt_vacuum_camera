@@ -289,6 +289,7 @@ class ImageDraw:
             hash_value = hashlib.sha256(data_json.encode()).hexdigest()
         else:
             hash_value = None
+        _LOGGER.debug(f"Hash value of the Image: {hash_value}")
         return hash_value
 
     async def async_get_robot_in_room(
