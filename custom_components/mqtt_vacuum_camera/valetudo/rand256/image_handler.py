@@ -13,23 +13,11 @@ import uuid
 from PIL import Image, ImageOps
 from homeassistant.core import HomeAssistant
 
-from custom_components.mqtt_vacuum_camera.const import (
-    DEFAULT_IMAGE_SIZE,
-    DEFAULT_PIXEL_SIZE,
-)
-from custom_components.mqtt_vacuum_camera.types import (
-    Color,
-    JsonType,
-    PilPNG,
-    RobotPosition,
-    RoomsProperties,
-)
-from custom_components.mqtt_vacuum_camera.utils.auto_crop import AutoCrop
-from custom_components.mqtt_vacuum_camera.utils.handler_utils import (
-    ImageUtils as ImUtils,
-)
-from custom_components.mqtt_vacuum_camera.utils.img_data import ImageData
-
+from ...const import COLORS, DEFAULT_IMAGE_SIZE, DEFAULT_PIXEL_SIZE
+from ...types import Colors, JsonType, PilPNG, RobotPosition, RoomsProperties
+from ...utils.auto_crop import AutoCrop
+from ...utils.handler_utils import ImageUtils as ImUtils
+from ...utils.img_data import ImageData
 from .reimg_draw import ImageDraw
 
 _LOGGER = logging.getLogger(__name__)
@@ -165,14 +153,9 @@ class ReImageHandler(object):
         destinations: None = None,  # MQTT destinations for labels
     ) -> PilPNG or None:
         """Generate Images from the json data."""
-        color_wall: Color = self.shared.user_colors[0]
-        color_no_go: Color = self.shared.user_colors[6]
-        color_go_to: Color = self.shared.user_colors[7]
-        color_robot: Color = self.shared.user_colors[2]
-        color_charger: Color = self.shared.user_colors[5]
-        color_move: Color = self.shared.user_colors[4]
-        color_background: Color = self.shared.user_colors[3]
-        color_zone_clean: Color = self.shared.user_colors[1]
+        colors: Colors = {
+            name: self.shared.user_colors[idx] for idx, name in enumerate(COLORS)
+        }
         self.active_zones = self.shared.rand256_active_zone
 
         try:
@@ -196,9 +179,9 @@ class ReImageHandler(object):
                         m_json,
                         size_x,
                         size_y,
-                        color_wall,
-                        color_zone_clean,
-                        color_background,
+                        colors["wall"],
+                        colors["zone_clean"],
+                        colors["background"],
                         DEFAULT_PIXEL_SIZE,
                     )
                     _LOGGER.info(f"{self.file_name}: Completed base Layers")
@@ -223,25 +206,27 @@ class ReImageHandler(object):
                 # All below will be drawn each time
                 # charger
                 img_np_array, self.charger_pos = await self.imd.async_draw_charger(
-                    img_np_array, m_json, color_charger
+                    img_np_array, m_json, colors["charger"]
                 )
                 # zone clean
                 img_np_array = await self.imd.async_draw_zones(
-                    m_json, img_np_array, color_zone_clean
+                    m_json, img_np_array, colors["zone_clean"]
                 )
                 # virtual walls
                 img_np_array = await self.imd.async_draw_virtual_restrictions(
-                    m_json, img_np_array, color_no_go
+                    m_json, img_np_array, colors["no_go"]
                 )
                 # draw path
                 img_np_array = await self.imd.async_draw_path(
-                    img_np_array, m_json, color_move
+                    img_np_array, m_json, colors["move"]
                 )
                 # go to flag and predicted path
-                await self.imd.async_draw_go_to_flag(img_np_array, m_json, color_go_to)
+                await self.imd.async_draw_go_to_flag(
+                    img_np_array, m_json, colors["go_to"]
+                )
                 # draw the robot
                 img_np_array = await self.imd.async_draw_robot_on_map(
-                    img_np_array, robot_position, robot_position_angle, color_robot
+                    img_np_array, robot_position, robot_position_angle, colors["robot"]
                 )
                 _LOGGER.debug(
                     f"{self.file_name}:"
@@ -249,7 +234,7 @@ class ReImageHandler(object):
                 )
                 img_np_array = await self.ac.async_auto_trim_and_zoom_image(
                     img_np_array,
-                    color_background,
+                    colors["background"],
                     int(self.shared.margins),
                     int(self.shared.image_rotate),
                     self.zooming,
@@ -354,9 +339,7 @@ class ReImageHandler(object):
             y_in_room = (self.robot_in_room["up"] >= y) and (
                 self.robot_in_room["down"] <= y
             )
-            if x_in_room and y_in_room:
-                return True
-            return False
+            return x_in_room and y_in_room
 
         # Check if the robot coordinates are inside the room's
         if self.robot_in_room and _check_robot_position(robot_x, robot_y):
@@ -367,13 +350,11 @@ class ReImageHandler(object):
                 "in_room": self.robot_in_room["room"],
             }
             self.active_zones = self.shared.rand256_active_zone
+            self.zooming = False
             if self.active_zones and (
                 (self.robot_in_room["id"]) in range(len(self.active_zones))
             ):  # issue #100 Index out of range
-                self.zooming = bool(self.active_zones[(self.robot_in_room["id"])])
-            else:
-                self.zooming = False
-
+                self.zooming = bool(self.active_zones[self.robot_in_room["id"]])
             return temp
         # else we need to search and use the async method
         _LOGGER.debug(f"{self.file_name} changed room.. searching..")
@@ -447,9 +428,7 @@ class ReImageHandler(object):
                 calibration_point = {"vacuum": vacuum_point, "map": map_point}
                 self.calibration_data.append(calibration_point)
 
-            return self.calibration_data
-        else:
-            return self.calibration_data
+        return self.calibration_data
 
     async def async_map_coordinates_offset(
         self, wsf: int, hsf: int, width: int, height: int
@@ -460,21 +439,14 @@ class ReImageHandler(object):
 
         if wsf == 1 and hsf == 1:
             self.imu.set_image_offset_ratio_1_1(width, height, rand256=True)
-            return width, height
         elif wsf == 2 and hsf == 1:
             self.imu.set_image_offset_ratio_2_1(width, height, rand256=True)
-            return width, height
         elif wsf == 3 and hsf == 2:
             self.imu.set_image_offset_ratio_3_2(width, height, rand256=True)
-            return width, height
         elif wsf == 5 and hsf == 4:
             self.imu.set_image_offset_ratio_5_4(width, height, rand256=True)
-            return width, height
         elif wsf == 9 and hsf == 16:
             self.imu.set_image_offset_ratio_9_16(width, height, rand256=True)
-            return width, height
         elif wsf == 16 and hsf == 9:
             self.imu.set_image_offset_ratio_16_9(width, height, rand256=True)
-            return width, height
-        else:
-            return width, height
+        return width, height

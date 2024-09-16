@@ -13,24 +13,21 @@ import logging
 from PIL import Image, ImageOps
 from homeassistant.core import HomeAssistant
 
-from custom_components.mqtt_vacuum_camera.types import (
+from ...const import COLORS
+from ...types import (
     CalibrationPoints,
     ChargerPosition,
-    Color,
+    Colors,
     ImageSize,
     RobotPosition,
     RoomsProperties,
 )
-from custom_components.mqtt_vacuum_camera.utils.auto_crop import AutoCrop
-from custom_components.mqtt_vacuum_camera.utils.colors_man import color_grey
-from custom_components.mqtt_vacuum_camera.utils.drawable import Drawable
-from custom_components.mqtt_vacuum_camera.utils.handler_utils import (
-    ImageUtils as ImUtils,
-)
-from custom_components.mqtt_vacuum_camera.utils.img_data import ImageData
-from custom_components.mqtt_vacuum_camera.valetudo.hypfer.image_draw import (
-    ImageDraw as ImDraw,
-)
+from ...utils.auto_crop import AutoCrop
+from ...utils.colors_man import color_grey
+from ...utils.drawable import Drawable
+from ...utils.handler_utils import ImageUtils as ImUtils
+from ...utils.img_data import ImageData
+from ...valetudo.hypfer.image_draw import ImageDraw as ImDraw
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -138,14 +135,9 @@ class MapImageHandler(object):
         @return Image.Image: The image to display.
         """
         # Initialize the colors.
-        color_wall: Color = self.shared.user_colors[0]
-        color_no_go: Color = self.shared.user_colors[6]
-        color_go_to: Color = self.shared.user_colors[7]
-        color_robot: Color = self.shared.user_colors[2]
-        color_charger: Color = self.shared.user_colors[5]
-        color_move: Color = self.shared.user_colors[4]
-        color_background: Color = self.shared.user_colors[3]
-        color_zone_clean: Color = self.shared.user_colors[1]
+        colors: Colors = {
+            name: self.shared.user_colors[idx] for idx, name in enumerate(COLORS)
+        }
         try:
             if m_json is not None:
                 # buffer json data
@@ -175,7 +167,7 @@ class MapImageHandler(object):
                     self.img_hash = new_frame_hash
                     # empty image
                     img_np_array = await self.draw.create_empty_image(
-                        size_x, size_y, color_background
+                        size_x, size_y, colors["background"]
                     )
                     # overlapping layers
                     for layer_type, compressed_pixels_list in layers.items():
@@ -183,21 +175,21 @@ class MapImageHandler(object):
                             img_np_array,
                             compressed_pixels_list,
                             layer_type,
-                            color_wall,
-                            color_zone_clean,
+                            colors["wall"],
+                            colors["zone_clean"],
                             pixel_size,
                         )
                     # Draw the virtual walls if any.
                     img_np_array = await self.imd.async_draw_virtual_walls(
-                        m_json, img_np_array, color_no_go
+                        m_json, img_np_array, colors["no_go"]
                     )
                     # Draw charger.
                     img_np_array = await self.imd.async_draw_charger(
-                        img_np_array, entity_dict, color_charger
+                        img_np_array, entity_dict, colors["charger"]
                     )
                     # Draw obstacles if any.
                     img_np_array = await self.imd.async_draw_obstacle(
-                        img_np_array, entity_dict, color_no_go
+                        img_np_array, entity_dict, colors["no_go"]
                     )
                     # Robot and rooms position
                     if (room_id > 0) and not self.room_propriety:
@@ -225,15 +217,15 @@ class MapImageHandler(object):
                 # All below will be drawn at each frame.
                 # Draw zones if any.
                 img_np_array = await self.imd.async_draw_zones(
-                    m_json, img_np_array, color_zone_clean, color_no_go
+                    m_json, img_np_array, colors["zone_clean"], colors["no_go"]
                 )
                 # Draw the go_to target flag.
                 img_np_array = await self.imd.draw_go_to_flag(
-                    img_np_array, entity_dict, color_go_to
+                    img_np_array, entity_dict, colors["go_to"]
                 )
                 # Draw path prediction and paths.
                 img_np_array = await self.imd.async_draw_paths(
-                    img_np_array, m_json, color_move, color_grey
+                    img_np_array, m_json, colors["move"], color_grey
                 )
                 # Check if the robot is docked.
                 if self.shared.vacuum_state == "docked":
@@ -246,13 +238,13 @@ class MapImageHandler(object):
                         x=robot_position[0],
                         y=robot_position[1],
                         angle=robot_position_angle,
-                        fill=color_robot,
+                        fill=colors["robot"],
                         log=self.file_name,
                     )
                 # Resize the image
                 img_np_array = await self.ac.async_auto_trim_and_zoom_image(
                     img_np_array,
-                    color_background,
+                    colors["background"],
                     int(self.shared.margins),
                     int(self.shared.image_rotate),
                     self.zooming,

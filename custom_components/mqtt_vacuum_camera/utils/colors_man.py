@@ -5,7 +5,7 @@ Version: v2024.07.2
 
 import logging
 
-from custom_components.mqtt_vacuum_camera.const import (
+from ..const import (
     ALPHA_BACKGROUND,
     ALPHA_CHARGER,
     ALPHA_GO_TO,
@@ -119,7 +119,7 @@ base_colors_array = [
 ]
 
 color_array = [
-    base_colors_array[0],
+    base_colors_array[0],  # color_wall
     base_colors_array[6],  # color_no_go
     base_colors_array[7],  # color_go_to
     color_black,

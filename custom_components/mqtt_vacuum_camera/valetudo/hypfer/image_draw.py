@@ -10,12 +10,7 @@ import hashlib
 import json
 import logging
 
-from custom_components.mqtt_vacuum_camera.types import (
-    Color,
-    JsonType,
-    NumpyArray,
-    RobotPosition,
-)
+from ...types import Color, JsonType, NumpyArray, RobotPosition
 
 _LOGGER = logging.getLogger(__name__)
 
