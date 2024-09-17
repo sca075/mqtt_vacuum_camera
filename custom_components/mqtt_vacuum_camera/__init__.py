@@ -19,7 +19,6 @@ from homeassistant.helpers.reload import async_register_admin_service
 from homeassistant.helpers.storage import STORAGE_DIR
 
 from .common import (
-    get_camera_device_info,
     get_vacuum_device_info,
     get_entity_identifier_from_mqtt,
     get_vacuum_mqtt_topic,
@@ -31,7 +30,6 @@ from .const import (
     CONF_VACUUM_CONFIG_ENTRY_ID,
     CONF_VACUUM_CONNECTION_STRING,
     CONF_VACUUM_IDENTIFIERS,
-    DEFAULT_VALUES,
     DOMAIN,
 )
 from .coordinator import MQTTVacuumCoordinator

@@ -1,6 +1,6 @@
 """
 Camera
-Version: v2024.10.0
+Version: v2024.10.0b2
 """
 
 from __future__ import annotations
