@@ -13,7 +13,10 @@ from homeassistant.helpers.update_coordinator import (
 
 from .camera_shared import CameraSharedManager
 from .const import DEFAULT_NAME
+from .common import get_camera_device_info
 from .valetudo.MQTT.connector import ValetudoConnector
+# from .snapshots.snapshot import Snapshots
+# from .camera_processing import CameraProcessor
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -24,7 +27,7 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
     def __init__(
         self,
         hass,
-        device_info,
+        entry,
         vacuum_topic: str,
         polling_interval=timedelta(seconds=3),
     ):
@@ -37,20 +40,24 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         )
         self.hass = hass
         self.vacuum_topic = vacuum_topic
-        self.device_info = device_info
-        self.shared, self.file_name = None, None
+        self.device_entity = entry
+        self.device_info = get_camera_device_info(hass, self.device_entity)
+        self.shared_manager = None
+        self.shared, self.file_name = self._init_shared_data(self.vacuum_topic)
         self.connector = None
+        # self.snapshot = Snapshots(hass, self.shared)
+        # self.camera_processor = CameraProcessor(hass, self.shared)
+        self.stat_up_mqtt()
 
-    @staticmethod
-    def _init_shared_data(mqtt_listen_topic: str, device_info):
+
+
+    def _init_shared_data(self, mqtt_listen_topic: str):
         """Initialize the shared data."""
-        manager, shared, file_name = None, None, None
-        if mqtt_listen_topic:
+        shared, file_name = None, None
+        if mqtt_listen_topic and not self.shared_manager:
             file_name = mqtt_listen_topic.split("/")[1].lower()
-            manager = CameraSharedManager(
-                file_name , device_info
-            )
-            shared = manager.get_instance()
+            self.shared_manager = CameraSharedManager(file_name, self.device_info)
+            shared = self.shared_manager.get_instance()
             _LOGGER.debug(f"Camera {file_name} Starting up..")
         return shared, file_name
 
@@ -64,16 +71,16 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         self.connector = ValetudoConnector(self.vacuum_topic, self.hass, self.shared)
         return self.connector
 
-
     def update_shared_data(self, dev_info):
         """Create / update instance of the shared data"""
-        self.shared, self.file_name = self._init_shared_data(self.vacuum_topic, dev_info)
+        self.shared_manager.update_shared_data(dev_info)
+        self.shared = self.shared_manager.get_instance()
         return self.shared, self.file_name
 
     async def _async_update_data(self, process: bool = True):
         """Fetch data from the MQTT topics."""
         try:
-            #conside adding shared updates here ***
+            # conside adding shared updates here ***
             async with async_timeout.timeout(10):
                 # Fetch and process data from the MQTT connector
                 return await self.connector.update_data(process)

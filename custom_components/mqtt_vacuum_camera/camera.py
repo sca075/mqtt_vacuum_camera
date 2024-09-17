@@ -27,7 +27,6 @@ from homeassistant.helpers.storage import STORAGE_DIR
 from psutil_home_assistant import PsutilWrapper as ProcInsp
 import voluptuous as vol
 
-from .camera_processing import CameraProcessor
 from .common import get_vacuum_unique_id_from_mqtt_topic
 from .const import (
     ATTR_FRIENDLY_NAME,
@@ -43,10 +42,11 @@ from .const import (
     DOMAIN,
     NOT_STREAMING_STATES,
 )
-from .snapshots.snapshot import Snapshots
 from .types import SnapshotStore
 from .utils.colors_man import ColorsManagment
 from .utils.files_operations import async_get_active_user_language, is_auth_updated
+from .snapshots.snapshot import Snapshots
+from .camera_processing import CameraProcessor
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
@@ -62,9 +62,9 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
-        hass: core.HomeAssistant,
-        config_entry: config_entries.ConfigEntry,
-        async_add_entities,
+    hass: core.HomeAssistant,
+    config_entry: config_entries.ConfigEntry,
+    async_add_entities,
 ) -> None:
     """Setup camera from a config entry created in the integrations UI."""
     config = hass.data[DOMAIN][config_entry.entry_id]
@@ -97,9 +97,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         self._attr_name = "Camera"
         self._attr_is_on = True
         self._directory_path = self.hass.config.path()  # get Home Assistant path
-        self._shared, self._file_name = (
-            coordinator.update_shared_data(device_info)
-        )
+        self._shared, self._file_name = coordinator.update_shared_data(device_info)
         self._start_up_logs()
         self._storage_path, self.snapshot_img, self.log_file = self._init_paths()
         self._mqtt_listen_topic = coordinator.vacuum_topic
@@ -107,7 +105,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
             CONF_UNIQUE_ID,
             get_vacuum_unique_id_from_mqtt_topic(self._mqtt_listen_topic),
         )
-        self._mqtt = coordinator.stat_up_mqtt()
+        self._mqtt = coordinator.connector
         self._identifiers = device_info.get(CONF_VACUUM_IDENTIFIERS)
         self._snapshots = Snapshots(self.hass, self._shared)
         self.Image = None
@@ -128,7 +126,9 @@ class MQTTCamera(CoordinatorEntity, Camera):
         self._colours.set_initial_colours(device_info)
         # Create the processor for the camera.
         self.processor = CameraProcessor(self.hass, self._shared)
-        self._attr_brand = "MQTT Vacuum Camera"
+
+        # Listen to the vacuum.start event
+        self.hass.bus.async_listen("vacuum.start", self.handle_vacuum_start)
 
     @staticmethod
     def _start_up_logs():
@@ -147,7 +147,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         """Remove PNG and ZIP's stored in HA config WWW"""
         # If enable_snapshots check if for png in www
         if not self._shared.enable_snapshots and os.path.isfile(
-                f"{self._directory_path}/www/snapshot_{self._file_name}.png"
+            f"{self._directory_path}/www/snapshot_{self._file_name}.png"
         ):
             os.remove(f"{self._directory_path}/www/snapshot_{self._file_name}.png")
         # If there is a log zip in www remove it
@@ -205,13 +205,13 @@ class MQTTCamera(CoordinatorEntity, Camera):
         """Return true if the device is streaming."""
         updated_status = self._shared.vacuum_state
         self._attr_is_streaming = (
-                updated_status not in NOT_STREAMING_STATES
-                or not self._shared.vacuum_bat_charged
+            updated_status not in NOT_STREAMING_STATES
+            or not self._shared.vacuum_bat_charged
         )
         return self._attr_is_streaming
 
     def camera_image(
-            self, width: Optional[int] = None, height: Optional[int] = None
+        self, width: Optional[int] = None, height: Optional[int] = None
     ) -> Optional[bytes]:
         """Camera Image"""
         return self.Image
@@ -235,6 +235,13 @@ class MQTTCamera(CoordinatorEntity, Camera):
         attributes.update(self._shared.generate_attributes())
 
         return attributes
+
+    async def handle_vacuum_start(self, event):
+        """Handle the vacuum.start event."""
+        _LOGGER.debug(f"Received event: {event.event_type}, Data: {event.data}")
+
+        # Call the reset_trims service when vacuum.start event occurs
+        await self.hass.services.async_call("mqtt_vacuum_camera", "reset_trims")
 
     @property
     def should_poll(self) -> bool:
@@ -446,12 +453,12 @@ class MQTTCamera(CoordinatorEntity, Camera):
         """Log the memory usage."""
         memory_percent = round(
             (
-                    (proc.memory_info()[0] / 2.0**30)
-                    / (ProcInsp().psutil.virtual_memory().total / 2.0**30)
+                (proc.memory_info()[0] / 2.0**30)
+                / (ProcInsp().psutil.virtual_memory().total / 2.0**30)
             )
             * 100,
             2,
-            )
+        )
         _LOGGER.debug(
             f"{self._file_name} Camera Memory usage in GB: "
             f"{round(proc.memory_info()[0] / 2. ** 30, 2)}, {memory_percent}% of Total."
@@ -505,7 +512,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         loop = get_event_loop()
 
         with concurrent.futures.ThreadPoolExecutor(
-                max_workers=1, thread_name_prefix=f"{self._file_name}_camera"
+            max_workers=1, thread_name_prefix=f"{self._file_name}_camera"
         ) as executor:
             tasks = [
                 loop.run_in_executor(

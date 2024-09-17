@@ -19,7 +19,7 @@ from homeassistant.helpers.reload import async_register_admin_service
 from homeassistant.helpers.storage import STORAGE_DIR
 
 from .common import (
-    get_device_info,
+    get_camera_device_info,
     get_vacuum_device_info,
     get_entity_identifier_from_mqtt,
     get_vacuum_mqtt_topic,
@@ -45,16 +45,12 @@ PLATFORMS = [Platform.CAMERA]
 _LOGGER = logging.getLogger(__name__)
 
 
-async def options_update_listener(
-    hass: core.HomeAssistant, config_entry: ConfigEntry
-):
+async def options_update_listener(hass: core.HomeAssistant, config_entry: ConfigEntry):
     """Handle options update."""
     await hass.config_entries.async_reload(config_entry.entry_id)
 
 
-async def async_setup_entry(
-    hass: core.HomeAssistant, entry: ConfigEntry
-) -> bool:
+async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up platform from a ConfigEntry."""
 
     async def _reload_config(call: ServiceCall) -> None:
@@ -72,7 +68,9 @@ async def async_setup_entry(
                 _LOGGER.debug(f"Reloading entry: {camera_entry.entry_id}")
                 await async_setup_entry(hass, camera_entry)
             else:
-                _LOGGER.debug(f"Skipping entry {camera_entry.entry_id} as it is NOT_LOADED")
+                _LOGGER.debug(
+                    f"Skipping entry {camera_entry.entry_id} as it is NOT_LOADED"
+                )
 
         # Optionally, trigger other reinitialization steps if needed
         hass.bus.async_fire(f"event_{DOMAIN}_reloaded", context=call.context)
@@ -101,23 +99,21 @@ async def async_setup_entry(
             "Unable to lookup vacuum's entity ID. Was it removed?"
         )
 
+    _LOGGER.debug(vacuum_entity_id)
     mqtt_topic_vacuum = get_vacuum_mqtt_topic(vacuum_entity_id, hass)
     if not mqtt_topic_vacuum:
         raise ConfigEntryNotReady("MQTT was not ready yet, automatically retrying")
 
     vacuum_topic = "/".join(mqtt_topic_vacuum.split("/")[:-1])
-    # camera_device = get_device_info(hass, entry.entry_id, vacuum_device.identifiers)
 
-    data_coordinator = MQTTVacuumCoordinator(
-        hass, DEFAULT_VALUES, vacuum_topic
-    )
+    data_coordinator = MQTTVacuumCoordinator(hass, entry, vacuum_topic)
 
     hass_data.update(
         {
             CONF_VACUUM_CONNECTION_STRING: vacuum_topic,
             CONF_VACUUM_IDENTIFIERS: vacuum_device.identifiers,
             CONF_UNIQUE_ID: entry.unique_id,
-            "coordinator": data_coordinator
+            "coordinator": data_coordinator,
         }
     )
 

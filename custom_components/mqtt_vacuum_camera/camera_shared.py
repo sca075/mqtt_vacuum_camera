@@ -159,9 +159,9 @@ class CameraSharedManager:
         self.device_info = device_info
 
         # Automatically initialize shared data for the instance
-        self._init_shared_data(device_info)
+        # self._init_shared_data(device_info)
 
-    def _init_shared_data(self, device_info):
+    def update_shared_data(self, device_info):
         """Initialize the shared data with device_info."""
         instance = self.get_instance()  # Retrieve the correct instance
 

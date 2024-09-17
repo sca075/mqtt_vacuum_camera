@@ -49,6 +49,9 @@ class ValetudoConnector:
         self._rrm_active_segments = []  # Rand256
         self._file_name = camera_shared.file_name
         self._shared = camera_shared
+        self.command_topic = (
+            f"{self._mqtt_topic}/hass/{self._mqtt_topic.split('/')[-1]}_vacuum/command"
+        )
 
     async def update_data(self, process: bool = True):
         """
@@ -218,7 +221,9 @@ class ValetudoConnector:
         if self._do_it_once:
             _LOGGER.debug(f"Do it once.. request destinations to: {self._mqtt_topic}")
             #  Request the destinations from ValetudoRe.
-            await self.publish_to_broker("/custom_command", {"command": "get_destinations"})
+            await self.publish_to_broker(
+                "/custom_command", {"command": "get_destinations"}
+            )
             self._do_it_once = False
 
     async def rand256_handle_statuses(self, msg) -> None:
@@ -331,11 +336,18 @@ class ValetudoConnector:
             self._mqtt_segments = await self.async_decode_mqtt_payload(msg)
             await RoomStore().async_set_rooms_data(self._file_name, self._mqtt_segments)
             _LOGGER.debug(f"Segments: {self._mqtt_segments}")
+        elif self._rcv_topic == self.command_topic:
+            mqtt_command = msg.payload
+            if str(mqtt_command) == "START":
+                # Fire the vacuum.start event when START command is detected
+                self._hass.bus.async_fire("vacuum.start", context=self.command_topic)
+            _LOGGER.debug(f"{self._file_name}: Received Command {mqtt_command}!")
 
     async def async_subscribe_to_topics(self) -> None:
         """Subscribe to the MQTT topics for Hypfer and ValetudoRe."""
         if self._mqtt_topic:
             topics_with_none_encoding = {
+                self.command_topic,
                 f"{self._mqtt_topic}/MapData/map-data",
                 f"{self._mqtt_topic}/map_data",  # added for ValetudoRe
             }
