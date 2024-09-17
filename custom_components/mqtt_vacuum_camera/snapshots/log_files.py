@@ -16,10 +16,7 @@ from homeassistant.helpers.storage import STORAGE_DIR
 
 from ..const import CAMERA_STORAGE, DOMAIN
 from ..types import SnapshotStore
-from ..utils.files_operations import (
-    async_write_file_to_disk,
-    async_write_json_to_disk,
-)
+from ..utils.files_operations import async_write_file_to_disk, async_write_json_to_disk
 
 _LOGGER = logging.getLogger(__name__)
 

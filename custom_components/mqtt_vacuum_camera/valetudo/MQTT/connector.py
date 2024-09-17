@@ -1,5 +1,5 @@
 """
-Version: v2024.08.2
+Version: v2024.10.0
 - Removed the PNG decode, the json is extracted from map-data instead of map-data-hass.
 - Tested no influence on the camera performance.
 - Added gzip library used in Valetudo RE data compression.
@@ -14,8 +14,8 @@ from homeassistant.components import mqtt
 from homeassistant.core import callback
 from isal import igzip, isal_zlib
 
-from custom_components.mqtt_vacuum_camera.types import RoomStore
-from custom_components.mqtt_vacuum_camera.valetudo.rand256.rrparser import RRMapParser
+from ...types import RoomStore
+from ...valetudo.rand256.rrparser import RRMapParser
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -49,6 +49,9 @@ class ValetudoConnector:
         self._rrm_active_segments = []  # Rand256
         self._file_name = camera_shared.file_name
         self._shared = camera_shared
+        self.command_topic = (
+            f"{self._mqtt_topic}/hass/{self._mqtt_topic.split('/')[-1]}_vacuum/command"
+        )
 
     async def update_data(self, process: bool = True):
         """
@@ -136,7 +139,7 @@ class ValetudoConnector:
         @param msg: MQTT message
         """
         if not self._data_in:
-            _LOGGER.info(f"Received {self._file_name} image data from MQTT")
+            _LOGGER.info(f"Received Hypfer {self._file_name} image data from MQTT")
             self._img_payload = msg.payload
             self._data_in = True
 
@@ -208,7 +211,7 @@ class ValetudoConnector:
         Handle new MQTT messages.
         map-data is for Rand256.
         """
-        _LOGGER.info(f"Received {self._file_name} image data from MQTT")
+        _LOGGER.info(f"Received Rand256 {self._file_name} image data from MQTT")
         # RRM Image data update the received payload
         self._rrm_payload = msg.payload
         if self._mqtt_vac_connect_state == "disconnected":
@@ -217,7 +220,10 @@ class ValetudoConnector:
         self._ignore_data = False
         if self._do_it_once:
             _LOGGER.debug(f"Do it once.. request destinations to: {self._mqtt_topic}")
-            await self.rrm_publish_destinations()
+            #  Request the destinations from ValetudoRe.
+            await self.publish_to_broker(
+                "/custom_command", {"command": "get_destinations"}
+            )
             self._do_it_once = False
 
     async def rand256_handle_statuses(self, msg) -> None:
@@ -273,7 +279,7 @@ class ValetudoConnector:
 
             # Retrieve the shared room data instead of RoomStore or destinations
             shared_rooms_data = self._shared.map_rooms
-
+            _LOGGER.debug(f"{self._file_name} rooms  {shared_rooms_data}")
             # Create a mapping of room ID to its index based on the shared rooms data
             room_id_to_index = {
                 room_id: idx for idx, room_id in enumerate(shared_rooms_data)
@@ -330,11 +336,18 @@ class ValetudoConnector:
             self._mqtt_segments = await self.async_decode_mqtt_payload(msg)
             await RoomStore().async_set_rooms_data(self._file_name, self._mqtt_segments)
             _LOGGER.debug(f"Segments: {self._mqtt_segments}")
+        elif self._rcv_topic == self.command_topic:
+            mqtt_command = msg.payload
+            if str(mqtt_command) == "START":
+                # Fire the vacuum.start event when START command is detected
+                self._hass.bus.async_fire("vacuum.start", context=self.command_topic)
+            _LOGGER.debug(f"{self._file_name}: Received Command {mqtt_command}!")
 
     async def async_subscribe_to_topics(self) -> None:
         """Subscribe to the MQTT topics for Hypfer and ValetudoRe."""
         if self._mqtt_topic:
             topics_with_none_encoding = {
+                self.command_topic,
                 f"{self._mqtt_topic}/MapData/map-data",
                 f"{self._mqtt_topic}/map_data",  # added for ValetudoRe
             }
@@ -404,18 +417,15 @@ class ValetudoConnector:
             _LOGGER.error(f"Failed to decode payload: {e}")
             return None
 
-    async def rrm_publish_destinations(self) -> None:
+    async def publish_to_broker(self, cust_topic: str, cust_payload: dict) -> None:
         """
-        Request the destinations from ValetudoRe.
-        Destination is used to gater the room names.
-        It also provides zones and points predefined in the ValetudoRe.
+        Publish data to MQTT using the internal mqtt_topic prefix for custom topics
         """
-        cust_payload = {"command": "get_destinations"}
-        cust_payload = json.dumps(cust_payload)
+        payload = json.dumps(cust_payload)
         await mqtt.async_publish(
             self._hass,
-            self._mqtt_topic + "/custom_command",
-            cust_payload,
+            self._mqtt_topic + cust_topic,
+            payload,
             _QOS,
             encoding="utf-8",
         )

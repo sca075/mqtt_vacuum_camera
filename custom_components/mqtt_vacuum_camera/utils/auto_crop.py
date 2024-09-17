@@ -14,10 +14,7 @@ from numpy import rot90
 from ..const import CAMERA_STORAGE
 from ..types import Color, NumpyArray, TrimCropData
 from ..utils.colors_man import color_grey
-from ..utils.files_operations import (
-    async_load_file,
-    async_write_json_to_disk,
-)
+from ..utils.files_operations import async_load_file, async_write_json_to_disk
 
 _LOGGER = logging.getLogger(__name__)
 

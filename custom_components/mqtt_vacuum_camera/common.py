@@ -1,6 +1,6 @@
 """
 Common functions for the MQTT Vacuum Camera integration.
-Version: 2024.07.4
+Version: 2024.10.0
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ from .hass_types import GET_MQTT_DATA
 _LOGGER = logging.getLogger(__name__)
 
 
-def get_device_info(
+def get_vacuum_device_info(
     config_entry_id: str, hass: HomeAssistant
 ) -> tuple[str, DeviceEntry] | None:
     """
@@ -42,6 +42,16 @@ def get_device_info(
         return None
 
     return vacuum_entity_id, vacuum_device
+
+
+def get_camera_device_info(hass, entry):
+    """Fetch the device info from the device registry based on entry_id or identifier."""
+    camera_entry = dict(hass.config_entries.async_get_entry(str(entry.entry_id)).data)
+    camera_entry_options = dict(
+        hass.config_entries.async_get_entry(str(entry.entry_id)).options
+    )
+    camera_entry.update(camera_entry_options)
+    return camera_entry
 
 
 def get_entity_identifier_from_mqtt(

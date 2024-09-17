@@ -11,9 +11,7 @@ from homeassistant.helpers.storage import STORAGE_DIR
 
 from ..const import CAMERA_STORAGE
 from ..types import Any, PilPNG, SnapshotStore
-from ..utils.files_operations import (
-    async_populate_user_languages,
-)
+from ..utils.files_operations import async_populate_user_languages
 
 _LOGGER = logging.getLogger(__name__)
 

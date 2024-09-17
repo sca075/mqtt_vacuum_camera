@@ -378,21 +378,14 @@ class MapImageHandler(object):
 
         if wsf == 1 and hsf == 1:
             self.imu.set_image_offset_ratio_1_1(width, height)
-            return width, height
         elif wsf == 2 and hsf == 1:
             self.imu.set_image_offset_ratio_2_1(width, height)
-            return width, height
         elif wsf == 3 and hsf == 2:
             self.imu.set_image_offset_ratio_3_2(width, height)
-            return width, height
         elif wsf == 5 and hsf == 4:
             self.imu.set_image_offset_ratio_5_4(width, height)
-            return width, height
         elif wsf == 9 and hsf == 16:
             self.imu.set_image_offset_ratio_9_16(width, height)
-            return width, height
         elif wsf == 16 and hsf == 9:
             self.imu.set_image_offset_ratio_16_9(width, height)
-            return width, height
-        else:
-            return width, height
+        return width, height

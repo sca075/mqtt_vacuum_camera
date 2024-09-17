@@ -1,6 +1,6 @@
 """
 Camera
-Version: v2024.09.0
+Version: v2024.10.0b2
 """
 
 from __future__ import annotations
@@ -20,17 +20,13 @@ from typing import Any, Optional
 from PIL import Image
 from homeassistant import config_entries, core
 from homeassistant.components.camera import PLATFORM_SCHEMA, Camera, CameraEntityFeature
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.const import CONF_NAME, CONF_UNIQUE_ID, MATCH_ALL
 from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.reload import async_setup_reload_service
 from homeassistant.helpers.storage import STORAGE_DIR
-from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from psutil_home_assistant import PsutilWrapper as ProcInsp
 import voluptuous as vol
 
-from .camera_processing import CameraProcessor
-from .camera_shared import CameraSharedManager
 from .common import get_vacuum_unique_id_from_mqtt_topic
 from .const import (
     ATTR_FRIENDLY_NAME,
@@ -45,13 +41,12 @@ from .const import (
     DEFAULT_NAME,
     DOMAIN,
     NOT_STREAMING_STATES,
-    PLATFORMS,
 )
-from .snapshots.snapshot import Snapshots
 from .types import SnapshotStore
 from .utils.colors_man import ColorsManagment
 from .utils.files_operations import async_get_active_user_language, is_auth_updated
-from .valetudo.MQTT.connector import ValetudoConnector
+from .snapshots.snapshot import Snapshots
+from .camera_processing import CameraProcessor
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
@@ -73,27 +68,16 @@ async def async_setup_entry(
 ) -> None:
     """Setup camera from a config entry created in the integrations UI."""
     config = hass.data[DOMAIN][config_entry.entry_id]
+    coordinator = hass.data[DOMAIN][config_entry.entry_id]["coordinator"]
     # Update our config to and eventually add or remove option.
     if config_entry.options:
         config.update(config_entry.options)
 
-    camera = [ValetudoCamera(hass, config)]
+    camera = [MQTTCamera(coordinator, config)]
     async_add_entities(camera, update_before_add=True)
 
 
-async def async_setup_platform(
-    hass: core.HomeAssistant,
-    config: ConfigType,
-    async_add_entities: AddEntitiesCallback,
-    discovery_info: DiscoveryInfoType | None = None,
-):
-    """Set up the camera platform."""
-    async_add_entities([ValetudoCamera(hass, config)])
-
-    await async_setup_reload_service(hass, DOMAIN, PLATFORMS)
-
-
-class ValetudoCamera(Camera):
+class MQTTCamera(CoordinatorEntity, Camera):
     """
     Rend the vacuum map and the vacuum state for:
     Valetudo Hypfer and rand256 Firmwares Vacuums maps.
@@ -103,27 +87,25 @@ class ValetudoCamera(Camera):
     _attr_has_entity_name = True
     _unrecorded_attributes = frozenset({MATCH_ALL})
 
-    def __init__(self, hass, device_info):
-        super().__init__()
-        self.hass = hass
+    def __init__(self, coordinator, device_info):
+        super().__init__(coordinator)
+        Camera.__init__(self)
+        self.hass = coordinator.hass
         self._state = "init"
         self._attr_model = "MQTT Vacuums"
         self._attr_brand = "MQTT Vacuum Camera"
         self._attr_name = "Camera"
         self._attr_is_on = True
         self._directory_path = self.hass.config.path()  # get Home Assistant path
-        self._mqtt_listen_topic = str(device_info.get(CONF_VACUUM_CONNECTION_STRING))
-        self._shared, self._file_name = self._handle_init_shared_data(
-            self._mqtt_listen_topic,
-            device_info,
-        )
+        self._shared, self._file_name = coordinator.update_shared_data(device_info)
         self._start_up_logs()
         self._storage_path, self.snapshot_img, self.log_file = self._init_paths()
+        self._mqtt_listen_topic = coordinator.vacuum_topic
         self._attr_unique_id = device_info.get(
             CONF_UNIQUE_ID,
             get_vacuum_unique_id_from_mqtt_topic(self._mqtt_listen_topic),
         )
-        self._mqtt = ValetudoConnector(self._mqtt_listen_topic, self.hass, self._shared)
+        self._mqtt = coordinator.connector
         self._identifiers = device_info.get(CONF_VACUUM_IDENTIFIERS)
         self._snapshots = Snapshots(self.hass, self._shared)
         self.Image = None
@@ -144,23 +126,13 @@ class ValetudoCamera(Camera):
         self._colours.set_initial_colours(device_info)
         # Create the processor for the camera.
         self.processor = CameraProcessor(self.hass, self._shared)
-        self._attr_brand = "MQTT Vacuum Camera"
 
-    @staticmethod
-    def _handle_init_shared_data(mqtt_listen_topic: str, device_info):
-        """Handle the shared data initialization."""
-        manager, shared, file_name = None, None, None
-        if mqtt_listen_topic:
-            manager = CameraSharedManager(
-                mqtt_listen_topic.split("/")[1].lower(), device_info
-            )
-            shared = manager.get_instance()
-            file_name = shared.file_name
-            _LOGGER.debug(f"Camera {file_name} Starting up..")
-        return shared, file_name
+        # Listen to the vacuum.start event
+        self.hass.bus.async_listen("vacuum.start", self.handle_vacuum_start)
 
     @staticmethod
     def _start_up_logs():
+        """Logs the machine running the component data"""
         _LOGGER.info(f"System Release: {platform.node()}, {platform.release()}")
         _LOGGER.info(f"System Version: {platform.version()}")
         _LOGGER.info(f"System Machine: {platform.machine()}")
@@ -172,6 +144,7 @@ class ValetudoCamera(Camera):
         )
 
     def _init_clear_www_folder(self):
+        """Remove PNG and ZIP's stored in HA config WWW"""
         # If enable_snapshots check if for png in www
         if not self._shared.enable_snapshots and os.path.isfile(
             f"{self._directory_path}/www/snapshot_{self._file_name}.png"
@@ -262,6 +235,13 @@ class ValetudoCamera(Camera):
         attributes.update(self._shared.generate_attributes())
 
         return attributes
+
+    async def handle_vacuum_start(self, event):
+        """Handle the vacuum.start event."""
+        _LOGGER.debug(f"Received event: {event.event_type}, Data: {event.data}")
+
+        # Call the reset_trims service when vacuum.start event occurs
+        await self.hass.services.async_call("mqtt_vacuum_camera", "reset_trims")
 
     @property
     def should_poll(self) -> bool:

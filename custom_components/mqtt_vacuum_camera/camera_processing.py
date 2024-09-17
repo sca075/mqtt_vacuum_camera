@@ -1,6 +1,6 @@
 """
 Multiprocessing module
-Version: v2024.09.0
+Version: v2024.10.0
 This module provide the image multiprocessing in order to
 avoid the overload of the main_thread of Home Assistant.
 """

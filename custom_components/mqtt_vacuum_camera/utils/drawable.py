@@ -13,13 +13,7 @@ import math
 from PIL import ImageDraw, ImageFont
 import numpy as np
 
-from ..types import (
-    Color,
-    NumpyArray,
-    PilPNG,
-    Point,
-    Union,
-)
+from ..types import Color, NumpyArray, PilPNG, Point, Union
 
 
 class Drawable:

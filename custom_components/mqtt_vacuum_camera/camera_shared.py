@@ -1,13 +1,11 @@
 """
 Class Camera Shared.
 Keep the data between the modules.
-Version: v2024.09.0
+Version: v2024.10.0
 """
 
 import asyncio
 import logging
-
-from custom_components.mqtt_vacuum_camera.types import Colors
 
 from .const import (
     ATTR_CALIBRATION_POINTS,
@@ -35,6 +33,7 @@ from .const import (
     CONF_ZOOM_LOCK_RATIO,
     DEFAULT_VALUES,
 )
+from .types import Colors
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -160,9 +159,9 @@ class CameraSharedManager:
         self.device_info = device_info
 
         # Automatically initialize shared data for the instance
-        self._init_shared_data(device_info)
+        # self._init_shared_data(device_info)
 
-    def _init_shared_data(self, device_info):
+    def update_shared_data(self, device_info):
         """Initialize the shared data with device_info."""
         instance = self.get_instance()  # Retrieve the correct instance
 
