@@ -19,43 +19,31 @@ from typing import Any, Optional
 
 from PIL import Image
 from homeassistant import config_entries, core
-from homeassistant.components.camera import PLATFORM_SCHEMA, Camera, CameraEntityFeature
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from homeassistant.const import CONF_NAME, CONF_UNIQUE_ID, MATCH_ALL
+from homeassistant.components.camera import Camera, CameraEntityFeature
+from homeassistant.const import CONF_UNIQUE_ID, MATCH_ALL
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.storage import STORAGE_DIR
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from psutil_home_assistant import PsutilWrapper as ProcInsp
-import voluptuous as vol
 
+from .camera_processing import CameraProcessor
 from .common import get_vacuum_unique_id_from_mqtt_topic
 from .const import (
     ATTR_FRIENDLY_NAME,
     ATTR_JSON_DATA,
-    ATTR_ROTATE,
     ATTR_SNAPSHOT_PATH,
     ATTR_VACUUM_TOPIC,
     CAMERA_STORAGE,
-    CONF_VACUUM_CONNECTION_STRING,
-    CONF_VACUUM_ENTITY_ID,
     CONF_VACUUM_IDENTIFIERS,
-    DEFAULT_NAME,
     DOMAIN,
     NOT_STREAMING_STATES,
 )
+from .snapshots.snapshot import Snapshots
 from .types import SnapshotStore
 from .utils.colors_man import ColorsManagment
 from .utils.files_operations import async_get_active_user_language, is_auth_updated
-from .snapshots.snapshot import Snapshots
-from .camera_processing import CameraProcessor
 
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
-    {
-        vol.Required(CONF_VACUUM_CONNECTION_STRING): cv.string,
-        vol.Required(CONF_VACUUM_ENTITY_ID): cv.string,
-        vol.Required(ATTR_ROTATE, default="0"): cv.string,
-        vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.entity_id,
-    }
-)
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 SCAN_INTERVAL = timedelta(seconds=3)
 _LOGGER = logging.getLogger(__name__)

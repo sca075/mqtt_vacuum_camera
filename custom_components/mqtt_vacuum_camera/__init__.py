@@ -6,6 +6,7 @@ import os
 
 from homeassistant import config_entries, core
 from homeassistant.components import mqtt
+from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.const import (
     CONF_UNIQUE_ID,
     EVENT_HOMEASSISTANT_FINAL_WRITE,
@@ -13,14 +14,14 @@ from homeassistant.const import (
     Platform,
 )
 from homeassistant.core import ServiceCall
-from homeassistant.config_entries import ConfigEntryState, ConfigEntry
 from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.reload import async_register_admin_service
 from homeassistant.helpers.storage import STORAGE_DIR
 
 from .common import (
-    get_vacuum_device_info,
     get_entity_identifier_from_mqtt,
+    get_vacuum_device_info,
     get_vacuum_mqtt_topic,
     get_vacuum_unique_id_from_mqtt_topic,
     update_options,
@@ -40,6 +41,7 @@ from .utils.files_operations import (
 )
 
 PLATFORMS = [Platform.CAMERA]
+CONFIG_SCHEMA = cv.config_entry_only_config_schema
 _LOGGER = logging.getLogger(__name__)
 
 

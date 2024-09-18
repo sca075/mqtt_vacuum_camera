@@ -427,5 +427,4 @@ class ValetudoConnector:
             self._mqtt_topic + cust_topic,
             payload,
             _QOS,
-            encoding="utf-8",
         )
