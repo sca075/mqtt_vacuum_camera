@@ -11,4 +11,11 @@
     <entry key="ide.experimental.ui" value="true" />
     <entry key="i18n.locale" value="" />
   </component>
+  <component name="StatusBar">
+    <option name="widgets">
+      <map>
+        <entry key="Memory" value="true" />
+      </map>
+    </option>
+  </component>
 </application>
