@@ -134,6 +134,12 @@ class ValetudoConnector:
         """Check and Return the data availability."""
         return bool(self._data_in)
 
+    async def get_rand256_attributes(self):
+        """If available return the vacuum attributes"""
+        if bool(self.rrm_attributes):
+            return self.rrm_attributes
+        return {}
+
     async def hypfer_handle_image_data(self, msg) -> None:
         """
         Handle new MQTT messages.

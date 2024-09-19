@@ -15,7 +15,6 @@ from homeassistant.const import (
 )
 from homeassistant.core import ServiceCall
 from homeassistant.exceptions import ConfigEntryNotReady
-from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.reload import async_register_admin_service
 from homeassistant.helpers.storage import STORAGE_DIR
 
@@ -40,8 +39,7 @@ from .utils.files_operations import (
     async_rename_room_description,
 )
 
-PLATFORMS = [Platform.CAMERA]
-CONFIG_SCHEMA = cv.config_entry_only_config_schema
+PLATFORMS = [Platform.CAMERA, Platform.SENSOR]
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -99,6 +97,7 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
             "Unable to lookup vacuum's entity ID. Was it removed?"
         )
 
+    _LOGGER.debug(vacuum_entity_id)
     mqtt_topic_vacuum = get_vacuum_mqtt_topic(vacuum_entity_id, hass)
     if not mqtt_topic_vacuum:
         raise ConfigEntryNotReady("MQTT was not ready yet, automatically retrying")
@@ -124,14 +123,14 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
 
     # Forward the setup to the camera platform.
     await hass.async_create_task(
-        hass.config_entries.async_forward_entry_setups(entry, ["camera"])
+        hass.config_entries.async_forward_entry_setups(entry, ["camera", "sensor"])
     )
 
     return True
 
 
 async def async_unload_entry(
-    hass: core.HomeAssistant, entry: config_entries.ConfigEntry
+        hass: core.HomeAssistant, entry: config_entries.ConfigEntry
 ) -> bool:
     """Unload a config entry."""
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
