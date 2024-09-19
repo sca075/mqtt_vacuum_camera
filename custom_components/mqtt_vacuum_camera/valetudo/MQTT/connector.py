@@ -47,11 +47,13 @@ class ValetudoConnector:
         self._mqtt_vac_re_stat = None  # Rand256
         self._rrm_data = RRMapParser()  # Rand256
         self._rrm_active_segments = []  # Rand256
+        self.rrm_attributes = None  # Rand256
         self._file_name = camera_shared.file_name
         self._shared = camera_shared
         self.command_topic = (
             f"{self._mqtt_topic}/hass/{self._mqtt_topic.split('/')[-1]}_vacuum/command"
         )
+        self.rrm_command = f"{self._mqtt_topic}/command"  # added for ValetudoRe
 
     async def update_data(self, process: bool = True):
         """
@@ -336,12 +338,15 @@ class ValetudoConnector:
             self._mqtt_segments = await self.async_decode_mqtt_payload(msg)
             await RoomStore().async_set_rooms_data(self._file_name, self._mqtt_segments)
             _LOGGER.debug(f"Segments: {self._mqtt_segments}")
-        elif self._rcv_topic == self.command_topic:
+        elif self._rcv_topic in [self.command_topic, self.rrm_command]:
             mqtt_command = msg.payload
-            if str(mqtt_command) == "START":
+            if str(mqtt_command).lower() == "start":
                 # Fire the vacuum.start event when START command is detected
                 self._hass.bus.async_fire("vacuum.start", context=self.command_topic)
             _LOGGER.debug(f"{self._file_name}: Received Command {mqtt_command}!")
+        elif self._rcv_topic == f"{self._mqtt_topic}/attributes":
+            self.rrm_attributes = await self.async_decode_mqtt_payload(msg)
+            _LOGGER.debug(f"{self._file_name} Attributes: {self.rrm_attributes}")
 
     async def async_subscribe_to_topics(self) -> None:
         """Subscribe to the MQTT topics for Hypfer and ValetudoRe."""
@@ -360,7 +365,9 @@ class ValetudoConnector:
                 f"{self._mqtt_topic}/BatteryStateAttribute/level",
                 f"{self._mqtt_topic}/state",  # added for ValetudoRe
                 f"{self._mqtt_topic}/destinations",  # added for ValetudoRe
+                self.rrm_command,
                 f"{self._mqtt_topic}/custom_command",  # added for ValetudoRe
+                f"{self._mqtt_topic}/attributes",  # added for ValetudoRe
             }
 
             for x in topics_with_none_encoding:
@@ -394,7 +401,7 @@ class ValetudoConnector:
                     try:
                         return json.loads(my_payload)
                     except json.JSONDecodeError:
-                        pass
+                        return str(my_payload)
                 # Check if the string is a number (integer or float)
                 if my_payload.isdigit() or my_payload.replace(".", "", 1).isdigit():
                     try:

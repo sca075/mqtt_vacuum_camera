@@ -99,7 +99,6 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
             "Unable to lookup vacuum's entity ID. Was it removed?"
         )
 
-    _LOGGER.debug(vacuum_entity_id)
     mqtt_topic_vacuum = get_vacuum_mqtt_topic(vacuum_entity_id, hass)
     if not mqtt_topic_vacuum:
         raise ConfigEntryNotReady("MQTT was not ready yet, automatically retrying")
