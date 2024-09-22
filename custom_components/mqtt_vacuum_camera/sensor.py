@@ -146,8 +146,8 @@ SENSOR_TYPES = {
         key="last_bin_full",
         icon="mdi:delete-alert",
         name="Last bin full time",
+        device_class=SensorDeviceClass.TIMESTAMP,
         entity_category=EntityCategory.DIAGNOSTIC,
-        value=lambda v, _: True if v != -1 else False,
     ),
     "last_loaded_map": VacuumSensorDescription(
         key="last_loaded_map",
@@ -165,11 +165,11 @@ class VacuumSensor(CoordinatorEntity, SensorEntity):
     entity_description: VacuumSensorDescription
 
     def __init__(
-        self,
-        coordinator: MQTTVacuumCoordinator,
-        description: VacuumSensorDescription,
-        sensor_type: str,
-        vacuum_identifier,
+            self,
+            coordinator: MQTTVacuumCoordinator,
+            description: VacuumSensorDescription,
+            sensor_type: str,
+            vacuum_identifier,
     ):
         """Initialize the vacuum sensor."""
         super().__init__(coordinator)
@@ -237,8 +237,8 @@ class VacuumSensor(CoordinatorEntity, SensorEntity):
 
 def process_timestamp(native_value):
     """Convert vacuum times in local time"""
-    if native_value is None or native_value == 0:
-        return None  # Return None if no valid timestamp is provided
+    if native_value is None or native_value <= 0:
+        return datetime.fromtimestamp(0, timezone.utc)
     try:
         # Convert milliseconds to seconds
         utc_time = datetime.fromisoformat(

@@ -21,7 +21,6 @@ from homeassistant.helpers.storage import STORAGE_DIR
 from .common import (
     get_vacuum_device_info,
     get_vacuum_mqtt_topic,
-    get_vacuum_unique_id_from_mqtt_topic,
     is_rand256_vacuum,
     update_options,
 )
@@ -121,19 +120,21 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
     hass_data["unsub_options_update_listener"] = unsub_options_update_listener
     hass.data[DOMAIN][entry.entry_id] = hass_data
     if bool(hass_data.get("is_rand256")):
-        await hass.config_entries.async_forward_entry_setups(
-            entry, ["camera", "sensor"]
+        await hass.async_create_task(
+            hass.config_entries.async_forward_entry_setups(
+                entry, ["camera", "sensor"])
         )
     else:
         await hass.async_create_task(
-            hass.config_entries.async_forward_entry_setups(entry, ["camera"])
+            hass.config_entries.async_forward_entry_setups(
+                entry, ["camera"])
         )
 
     return True
 
 
 async def async_unload_entry(
-    hass: core.HomeAssistant, entry: config_entries.ConfigEntry
+        hass: core.HomeAssistant, entry: config_entries.ConfigEntry
 ) -> bool:
     """Unload a config entry."""
     if bool(hass.data[DOMAIN][entry.entry_id]["is_rand256"]):
@@ -142,7 +143,7 @@ async def async_unload_entry(
         unload_platform = [Platform.CAMERA]
     _LOGGER.debug(f"Platforms to unload: {unload_platform}")
     if unload_ok := await hass.config_entries.async_unload_platforms(
-        entry, unload_platform
+            entry, unload_platform
     ):
         # Remove config entry from domain.
         entry_data = hass.data[DOMAIN].pop(entry.entry_id)
