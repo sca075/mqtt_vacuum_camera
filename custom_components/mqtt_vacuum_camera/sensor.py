@@ -165,11 +165,11 @@ class VacuumSensor(CoordinatorEntity, SensorEntity):
     entity_description: VacuumSensorDescription
 
     def __init__(
-            self,
-            coordinator: MQTTVacuumCoordinator,
-            description: VacuumSensorDescription,
-            sensor_type: str,
-            vacuum_identifier,
+        self,
+        coordinator: MQTTVacuumCoordinator,
+        description: VacuumSensorDescription,
+        sensor_type: str,
+        vacuum_identifier,
     ):
         """Initialize the vacuum sensor."""
         super().__init__(coordinator)
