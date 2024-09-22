@@ -116,7 +116,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         self.processor = CameraProcessor(self.hass, self._shared)
 
         # Listen to the vacuum.start event
-        self.hass.bus.async_listen("vacuum.start", self.handle_vacuum_start)
+        self.hass.bus.async_listen("event_vacuum_start", self.handle_vacuum_start)
 
     @staticmethod
     def _start_up_logs():

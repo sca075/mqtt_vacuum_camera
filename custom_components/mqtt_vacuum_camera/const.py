@@ -49,6 +49,18 @@ COLORS = [
     "go_to",
 ]
 
+SENSOR_NO_DATA = {
+    "mainBrush": 0,
+    "sideBrush": 0,
+    "filter": 0,
+    "sensor": 0,
+    "currentCleanTime": 0,
+    "currentCleanArea": 0,
+    "cleanTime": 0,
+    "cleanArea": 0,
+    "cleanCount": 0,
+}
+
 DEFAULT_PIXEL_SIZE = 5
 
 DEFAULT_VALUES = {

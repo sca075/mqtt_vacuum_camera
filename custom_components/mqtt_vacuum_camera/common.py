@@ -121,3 +121,15 @@ def extract_file_name(unique_id: str) -> str:
     """Extract from the Camera unique_id the file name."""
     file_name = re.sub(r"_camera$", "", unique_id)
     return file_name.lower()
+
+
+def is_rand256_vacuum(vacuum_device: DeviceEntry) -> bool:
+    """
+    Check if the vacuum is running Rand256 firmware.
+    """
+    # Check if the software version contains "valetudo" (for Hypfer) or something else for Rand256
+    sof_version = str(vacuum_device.sw_version)
+    if (sof_version.lower()).startswith("valetudo"):
+        _LOGGER.debug("No Sensors to startup!")
+        return False  # This is a Hypfer vacuum (Valetudo)
+    return True

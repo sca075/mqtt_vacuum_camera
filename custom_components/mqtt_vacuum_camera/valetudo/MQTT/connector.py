@@ -11,9 +11,10 @@ import logging
 from typing import Any
 
 from homeassistant.components import mqtt
-from homeassistant.core import callback
+from homeassistant.core import EventOrigin, HomeAssistant, callback
 from isal import igzip, isal_zlib
 
+from ...const import DOMAIN
 from ...types import RoomStore
 from ...valetudo.rand256.rrparser import RRMapParser
 
@@ -25,7 +26,7 @@ _QOS = 0
 class ValetudoConnector:
     """Valetudo Camera MQTT Connector."""
 
-    def __init__(self, mqtt_topic, hass, camera_shared):
+    def __init__(self, mqtt_topic: str, hass: HomeAssistant, camera_shared):
         self._hass = hass
         self._mqtt_topic = mqtt_topic
         self._unsubscribe_handlers = []
@@ -158,9 +159,6 @@ class ValetudoConnector:
         """
         if state:
             self._mqtt_vac_stat = state
-            _LOGGER.info(
-                f"{self._file_name}: Received vacuum {self._mqtt_vac_stat} status."
-            )
             if self._mqtt_vac_stat != "docked":
                 self._ignore_data = False
 
@@ -227,7 +225,6 @@ class ValetudoConnector:
         self._data_in = True
         self._ignore_data = False
         if self._do_it_once:
-            _LOGGER.debug(f"Do it once.. request destinations to: {self._mqtt_topic}")
             #  Request the destinations from ValetudoRe.
             await self.publish_to_broker(
                 "/custom_command", {"command": "get_destinations"}
@@ -245,10 +242,6 @@ class ValetudoConnector:
             tmp_data = json.loads(self._payload)
             self._mqtt_vac_re_stat = tmp_data.get("state", None)
             self._mqtt_vac_battery_level = tmp_data.get("battery_level", None)
-            _LOGGER.info(
-                f"{self._file_name}: Received vacuum {self._mqtt_vac_re_stat} status "
-                f"and battery level: {self._mqtt_vac_battery_level}%."
-            )
             if (
                 self._mqtt_vac_stat != "docked"
                 or int(self._mqtt_vac_battery_level) <= 100
@@ -270,9 +263,6 @@ class ValetudoConnector:
                 str(room["id"]): room["name"].strip("#") for room in tmp_data["rooms"]
             }
             await RoomStore().async_set_rooms_data(self._file_name, rooms_data)
-        _LOGGER.info(
-            f"{self._file_name}: Received vacuum destinations: {self._rrm_destinations}"
-        )
 
     async def rrm_handle_active_segments(self, msg) -> None:
         """
@@ -287,7 +277,6 @@ class ValetudoConnector:
 
             # Retrieve the shared room data instead of RoomStore or destinations
             shared_rooms_data = self._shared.map_rooms
-            _LOGGER.debug(f"{self._file_name} rooms  {shared_rooms_data}")
             # Create a mapping of room ID to its index based on the shared rooms data
             room_id_to_index = {
                 room_id: idx for idx, room_id in enumerate(shared_rooms_data)
@@ -303,7 +292,6 @@ class ValetudoConnector:
                     rrm_active_segments[room_index] = 1
 
             self._shared.rand256_active_zone = rrm_active_segments
-            _LOGGER.debug(f"Updated Active Segments: {rrm_active_segments}")
 
     @callback
     async def async_message_received(self, msg) -> None:
@@ -343,16 +331,17 @@ class ValetudoConnector:
         elif self._rcv_topic == f"{self._mqtt_topic}/MapData/segments":
             self._mqtt_segments = await self.async_decode_mqtt_payload(msg)
             await RoomStore().async_set_rooms_data(self._file_name, self._mqtt_segments)
-            _LOGGER.debug(f"Segments: {self._mqtt_segments}")
         elif self._rcv_topic in [self.command_topic, self.rrm_command]:
             mqtt_command = msg.payload
             if str(mqtt_command).lower() == "start":
                 # Fire the vacuum.start event when START command is detected
-                self._hass.bus.async_fire("vacuum.start", context=self.command_topic)
-            _LOGGER.debug(f"{self._file_name}: Received Command {mqtt_command}!")
+                self._hass.bus.async_fire(
+                    "event_vacuum_start",
+                    event_data=self.command_topic,
+                    origin=EventOrigin(DOMAIN),
+                )
         elif self._rcv_topic == f"{self._mqtt_topic}/attributes":
             self.rrm_attributes = await self.async_decode_mqtt_payload(msg)
-            _LOGGER.debug(f"{self._file_name} Attributes: {self.rrm_attributes}")
 
     async def async_subscribe_to_topics(self) -> None:
         """Subscribe to the MQTT topics for Hypfer and ValetudoRe."""
@@ -421,7 +410,6 @@ class ValetudoConnector:
             elif isinstance(my_payload, (int, float)):
                 return my_payload
             elif isinstance(my_payload, bytes):
-                _LOGGER.debug("Payload is bytes, no decoding necessary")
                 return my_payload
             else:
                 return my_payload

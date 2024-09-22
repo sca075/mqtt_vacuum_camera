@@ -1,10 +1,11 @@
 """Sensors for Rand256."""
+
 from __future__ import annotations
 
-import logging
 from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
+import logging
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -14,55 +15,51 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.const import AREA_SQUARE_METERS, PERCENTAGE, UnitOfTime
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from .const import CONF_VACUUM_IDENTIFIERS, DOMAIN, SENSOR_NO_DATA
 from .coordinator import MQTTVacuumCoordinator
+
 SCAN_INTERVAL = timedelta(seconds=3)
-SENSOR_NO_DATA = {
-    "mainBrush": 0,
-    "sideBrush": 0,
-    "filter": 0,
-    "sensor": 0,
-    "currentCleanTime": 0,
-    "currentCleanArea": 0,
-    "cleanTime": 0,
-    "cleanArea": 0,
-    "cleanCount": 0,
-}
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 _LOGGER = logging.getLogger(__name__)
+
 
 @dataclass
 class VacuumSensorDescription(SensorEntityDescription):
     """A class that describes vacuum sensor entities."""
+
     attributes: tuple = ()
     parent_key: str = None
     keys: list[str] = None
     value: Callable = None
 
+
 SENSOR_TYPES = {
     "consumable_main_brush": VacuumSensorDescription(
-        native_unit_of_measurement=UnitOfTime.SECONDS,
+        native_unit_of_measurement=UnitOfTime.HOURS,
         key="mainBrush",
         icon="mdi:brush",
-        device_class=SensorDeviceClass.DURATION,
         name="Main brush",
+        device_class=SensorDeviceClass.DURATION,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "consumable_side_brush": VacuumSensorDescription(
-        native_unit_of_measurement=UnitOfTime.SECONDS,
+        native_unit_of_measurement=UnitOfTime.HOURS,
         key="sideBrush",
         icon="mdi:brush",
-        device_class=SensorDeviceClass.DURATION,
         name="Side brush",
+        device_class=SensorDeviceClass.DURATION,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "consumable_filter": VacuumSensorDescription(
-        native_unit_of_measurement=UnitOfTime.SECONDS,
+        native_unit_of_measurement=UnitOfTime.HOURS,
         key="filter",
         icon="mdi:air-filter",
-        device_class=SensorDeviceClass.DURATION,
         name="Filter",
+        device_class=SensorDeviceClass.DURATION,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "battery": VacuumSensorDescription(
@@ -77,9 +74,8 @@ SENSOR_TYPES = {
         native_unit_of_measurement=UnitOfTime.SECONDS,
         key="currentCleanTime",
         icon="mdi:timer-sand",
-        state_class=SensorStateClass.TOTAL_INCREASING,
-        device_class=SensorDeviceClass.DURATION,
         name="Current clean time",
+        state_class=SensorStateClass.TOTAL_INCREASING,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "current_clean_area": VacuumSensorDescription(
@@ -90,18 +86,18 @@ SENSOR_TYPES = {
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "clean_count": VacuumSensorDescription(
-        native_unit_of_measurement="",
         key="cleanCount",
         icon="mdi:counter",
         name="Total clean count",
+        device_class=SensorDeviceClass.ENUM,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "clean_time": VacuumSensorDescription(
-        native_unit_of_measurement=UnitOfTime.MINUTES.SECONDS,
+        native_unit_of_measurement=UnitOfTime.HOURS,
         key="cleanTime",
         icon="mdi:timer-sand",
-        state_class=SensorStateClass.TOTAL_INCREASING,
         name="Total clean time",
+        state_class=SensorStateClass.TOTAL_INCREASING,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "state": VacuumSensorDescription(
@@ -111,54 +107,54 @@ SENSOR_TYPES = {
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "last_run_start": VacuumSensorDescription(
-        native_unit_of_measurement=UnitOfTime.HOURS.MINUTES.SECONDS,
-        key="last_run_stats.startTime",
+        key="last_run_start",
         icon="mdi:clock-start",
         name="Last run start time",
+        device_class=SensorDeviceClass.TIMESTAMP,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "last_run_end": VacuumSensorDescription(
-        native_unit_of_measurement=UnitOfTime.HOURS,
-        key="last_run_stats.endTime",
+        key="last_run_end",
         icon="mdi:clock-end",
         name="Last run end time",
+        device_class=SensorDeviceClass.TIMESTAMP,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "last_run_duration": VacuumSensorDescription(
-        native_unit_of_measurement=UnitOfTime.MINUTES,
-        key="last_run_stats.duration",
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        key="last_run_duration",
         icon="mdi:timer",
         name="Last run duration",
+        device_class=SensorDeviceClass.DURATION,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "last_run_area": VacuumSensorDescription(
         native_unit_of_measurement=AREA_SQUARE_METERS,
-        key="last_run_stats.area",
+        key="last_run_area",
         icon="mdi:texture-box",
         name="Last run area",
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
-    # Sensors for bin and map-related data
     "last_bin_out": VacuumSensorDescription(
-        native_unit_of_measurement=UnitOfTime.DAYS,
+        device_class=SensorDeviceClass.TIMESTAMP,
         key="last_bin_out",
         icon="mdi:delete",
         name="Last bin out time",
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "last_bin_full": VacuumSensorDescription(
-        native_unit_of_measurement=UnitOfTime.DAYS,
         key="last_bin_full",
         icon="mdi:delete-alert",
         name="Last bin full time",
         entity_category=EntityCategory.DIAGNOSTIC,
+        value=lambda v, _: True if v != -1 else False,
     ),
     "last_loaded_map": VacuumSensorDescription(
-        native_unit_of_measurement="",
         key="last_loaded_map",
         icon="mdi:map",
         name="Last loaded map",
         entity_category=EntityCategory.DIAGNOSTIC,
+        value=lambda v, _: v if isinstance(v, str) else "Unknown",
     ),
 }
 
@@ -168,7 +164,13 @@ class VacuumSensor(CoordinatorEntity, SensorEntity):
 
     entity_description: VacuumSensorDescription
 
-    def __init__(self, coordinator: MQTTVacuumCoordinator, description: VacuumSensorDescription, sensor_type: str):
+    def __init__(
+        self,
+        coordinator: MQTTVacuumCoordinator,
+        description: VacuumSensorDescription,
+        sensor_type: str,
+        vacuum_identifier,
+    ):
         """Initialize the vacuum sensor."""
         super().__init__(coordinator)
         self.entity_description = description
@@ -176,6 +178,11 @@ class VacuumSensor(CoordinatorEntity, SensorEntity):
         self._attr_native_value = None
         self._attr_unique_id = f"{coordinator.file_name}_{sensor_type}"
         self.entity_id = f"sensor.{coordinator.file_name}_{sensor_type}"
+        self._identifiers = vacuum_identifier
+
+    async def async_will_remove_from_hass(self) -> None:
+        """Handle entity removal from Home Assistant."""
+        await super().async_will_remove_from_hass()
 
     @callback
     async def async_update(self):
@@ -186,7 +193,7 @@ class VacuumSensor(CoordinatorEntity, SensorEntity):
     @property
     def should_poll(self) -> bool:
         """Indicate if the sensor should poll for updates."""
-        return True  # This will tell Home Assistant to poll for data
+        return True
 
     @callback
     async def _extract_attributes(self):
@@ -206,29 +213,56 @@ class VacuumSensor(CoordinatorEntity, SensorEntity):
     async def _handle_coordinator_update(self):
         """Fetch the latest state from the coordinator and update the sensor."""
         data = self.coordinator.sensor_data
-        _LOGGER.debug(f"{self.coordinator.file_name} getting sensors update: {data}")
         if data is None:
             data = SENSOR_NO_DATA
 
         # Fetch the value based on the key in the description
         native_value = data.get(self.entity_description.key, 0)
-        _LOGGER.debug(f"{self.entity_description.key}, return {native_value}")
+        if self.entity_description.device_class == SensorDeviceClass.TIMESTAMP:
+            # Convert the Unix timestamp to datetime
+            try:
+                native_value = process_timestamp(native_value)
+            except (ValueError, TypeError):
+                native_value = None
 
         if native_value is not None:
             self._attr_native_value = native_value
         else:
-            self._attr_native_value = 0  # Set to None if the value is missing or invalid
+            self._attr_native_value = (
+                0  # Set to None if the value is missing or invalid
+            )
 
         self.async_write_ha_state()
 
 
+def process_timestamp(native_value):
+    """Convert vacuum times in local time"""
+    if native_value is None or native_value == 0:
+        return None  # Return None if no valid timestamp is provided
+    try:
+        # Convert milliseconds to seconds
+        utc_time = datetime.fromisoformat(
+            datetime.fromtimestamp(float(native_value) / 1000, timezone.utc)
+            .astimezone()
+            .isoformat()
+        )
+
+        return utc_time
+    except ValueError:
+        _LOGGER.debug(f"Invalid timestamp: {native_value}")
+        return None
+
+
 async def async_setup_entry(hass: HomeAssistant, config_entry, async_add_entities):
     """Set up vacuum sensors based on a config entry."""
-    coordinator = hass.data["mqtt_vacuum_camera"][config_entry.entry_id]["coordinator"]
-
+    coordinator = hass.data[DOMAIN][config_entry.entry_id]["coordinator"]
+    vacuum_identifier = hass.data[DOMAIN][config_entry.entry_id][
+        CONF_VACUUM_IDENTIFIERS
+    ]
     # Create and add sensor entities
     sensors = []
     for sensor_type, description in SENSOR_TYPES.items():
-        sensors.append(VacuumSensor(coordinator, description, sensor_type))
-
+        sensors.append(
+            VacuumSensor(coordinator, description, sensor_type, vacuum_identifier)
+        )
     async_add_entities(sensors, update_before_add=False)
