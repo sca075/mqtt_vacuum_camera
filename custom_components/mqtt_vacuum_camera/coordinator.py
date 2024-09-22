@@ -55,7 +55,7 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         Fetch data from the MQTT topics for sensors.
         """
         if (self.sensor_data == SENSOR_NO_DATA) or (
-                self.shared is not None and self.shared.vacuum_state != "docked"
+            self.shared is not None and self.shared.vacuum_state != "docked"
         ):
             try:
                 async with async_timeout.timeout(10):
@@ -74,7 +74,9 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         else:
             return self.sensor_data
 
-    def _init_shared_data(self, mqtt_listen_topic: str) -> tuple[Optional[CameraShared], Optional[str]]:
+    def _init_shared_data(
+        self, mqtt_listen_topic: str
+    ) -> tuple[Optional[CameraShared], Optional[str]]:
         """
         Initialize the shared data.
         """
