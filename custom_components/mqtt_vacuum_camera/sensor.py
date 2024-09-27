@@ -39,27 +39,27 @@ class VacuumSensorDescription(SensorEntityDescription):
 
 SENSOR_TYPES = {
     "consumable_main_brush": VacuumSensorDescription(
-        native_unit_of_measurement=UnitOfTime.HOURS,
+        native_unit_of_measurement=UnitOfTime.SECONDS,
         key="mainBrush",
         icon="mdi:brush",
         name="Main brush",
-        device_class=SensorDeviceClass.DURATION,
+        state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "consumable_side_brush": VacuumSensorDescription(
-        native_unit_of_measurement=UnitOfTime.HOURS,
+        native_unit_of_measurement=UnitOfTime.SECONDS,
         key="sideBrush",
         icon="mdi:brush",
         name="Side brush",
-        device_class=SensorDeviceClass.DURATION,
+        state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "consumable_filter": VacuumSensorDescription(
-        native_unit_of_measurement=UnitOfTime.HOURS,
+        native_unit_of_measurement=UnitOfTime.SECONDS,
         key="filter",
         icon="mdi:air-filter",
         name="Filter",
-        device_class=SensorDeviceClass.DURATION,
+        state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "battery": VacuumSensorDescription(
@@ -75,7 +75,7 @@ SENSOR_TYPES = {
         key="currentCleanTime",
         icon="mdi:timer-sand",
         name="Current clean time",
-        state_class=SensorStateClass.TOTAL_INCREASING,
+        device_class=SensorDeviceClass.DURATION,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "current_clean_area": VacuumSensorDescription(
@@ -83,6 +83,7 @@ SENSOR_TYPES = {
         key="currentCleanArea",
         icon="mdi:texture-box",
         name="Current clean area",
+        state_class=SensorStateClass.TOTAL,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "clean_count": VacuumSensorDescription(
@@ -93,11 +94,12 @@ SENSOR_TYPES = {
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "clean_time": VacuumSensorDescription(
-        native_unit_of_measurement=UnitOfTime.HOURS,
+        native_unit_of_measurement=UnitOfTime.SECONDS,
         key="cleanTime",
         icon="mdi:timer-sand",
         name="Total clean time",
-        state_class=SensorStateClass.TOTAL_INCREASING,
+        state_class=SensorStateClass.TOTAL,
+        device_class=SensorDeviceClass.DURATION,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "state": VacuumSensorDescription(
@@ -136,10 +138,10 @@ SENSOR_TYPES = {
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "last_bin_out": VacuumSensorDescription(
-        device_class=SensorDeviceClass.TIMESTAMP,
         key="last_bin_out",
         icon="mdi:delete",
         name="Last bin out time",
+        device_class=SensorDeviceClass.TIMESTAMP,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "last_bin_full": VacuumSensorDescription(
@@ -224,6 +226,12 @@ class VacuumSensor(CoordinatorEntity, SensorEntity):
                 native_value = process_timestamp(native_value)
             except (ValueError, TypeError):
                 native_value = None
+        elif self.entity_description.device_class == SensorDeviceClass.DURATION:
+            # Convert the Unix timestamp to datetime
+            try:
+                native_value = convert_duration(native_value)
+            except (ValueError, TypeError):
+                native_value = None
 
         if native_value is not None:
             self._attr_native_value = native_value
@@ -233,6 +241,15 @@ class VacuumSensor(CoordinatorEntity, SensorEntity):
             )
 
         self.async_write_ha_state()
+
+def convert_duration(seconds):
+    """Convert seconds in days"""
+    # Create a timedelta object from seconds
+    time_delta = timedelta(seconds=float(seconds))
+    _LOGGER.debug(f"duration in second {seconds} converted to {time_delta}")
+    if not time_delta:
+        return seconds
+    return time_delta.total_seconds()
 
 
 def process_timestamp(native_value):

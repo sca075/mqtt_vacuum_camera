@@ -268,6 +268,26 @@ NOT_STREAMING_STATES = {
     "docked",
 }
 
+DECODED_TOPICS = {
+    "/MapData/segments",
+    "/StatusStateAttribute/status",
+    "/StatusStateAttribute/error_description",
+    "/$state",
+    "/BatteryStateAttribute/level",
+    "/state",  # Rand256
+    "/destinations",  # Rand256
+    "/command",  # Rand256
+    "/custom_command",  # Rand256
+    "/attributes",  # Rand256
+}
+
+
+# self.command_topic need to be added to this dictionary after init.
+NON_DECODED_TOPICS = {
+    "/MapData/map-data",
+    "/map_data",
+}
+
 """App Constants. Not in use, and dummy values"""
 IDLE_SCAN_INTERVAL = 120
 CLEANING_SCAN_INTERVAL = 5

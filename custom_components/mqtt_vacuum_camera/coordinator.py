@@ -1,4 +1,7 @@
-"""MQTT Vacuum Camera Coordinator."""
+"""
+MQTT Vacuum Camera Coordinator.
+Version: v2024.10.0
+"""
 
 from datetime import timedelta
 import logging
@@ -7,7 +10,6 @@ from typing import Optional
 import async_timeout
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
@@ -27,7 +29,8 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         hass: HomeAssistant,
         entry: ConfigEntry,
         vacuum_topic: str,
-        polling_interval=timedelta(seconds=3),
+        rand256_vacuum: bool = False,
+        polling_interval: timedelta = timedelta(seconds=3),
     ):
         """Initialize the coordinator."""
         super().__init__(
@@ -38,6 +41,7 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         )
         self.hass: HomeAssistant = hass
         self.vacuum_topic: str = vacuum_topic
+        self.is_rand256: bool = rand256_vacuum
         self.device_entity: ConfigEntry = entry
         self.device_info: DeviceInfo = get_camera_device_info(hass, self.device_entity)
         self.shared_manager: Optional[CameraSharedManager] = None
@@ -95,7 +99,9 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         """
         Initialize the MQTT Connector.
         """
-        self.connector = ValetudoConnector(self.vacuum_topic, self.hass, self.shared)
+        self.connector = ValetudoConnector(
+            self.vacuum_topic, self.hass, self.shared
+        )
         return self.connector
 
     def update_shared_data(self, dev_info: DeviceInfo) -> tuple[CameraShared, str]:
@@ -115,8 +121,6 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
             async with async_timeout.timeout(10):
                 # Fetch and process maps data from the MQTT connector
                 return await self.connector.update_data(process)
-        except ConfigEntryAuthFailed as err:
-            raise ConfigEntryAuthFailed from err
         except Exception as err:
             _LOGGER.error(f"Error communicating with MQTT or processing data: {err}")
             raise UpdateFailed(f"Error communicating with MQTT: {err}") from err
@@ -125,6 +129,7 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         """
         Update the sensor data format before sending to the sensors.
         """
+
         if sensor_data:
             # Assume sensor_data is a dictionary or transform it into the expected format
             battery_level = await self.connector.get_battery_level()

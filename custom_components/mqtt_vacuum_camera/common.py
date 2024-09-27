@@ -133,3 +133,21 @@ def is_rand256_vacuum(vacuum_device: DeviceEntry) -> bool:
         _LOGGER.debug("No Sensors to startup!")
         return False  # This is a Hypfer vacuum (Valetudo)
     return True
+
+
+def build_full_topic_set(
+    base_topic: str, topic_suffixes: set, add_topic: str = None
+) -> set:
+    """
+    Append the base topic (self._mqtt_topic) to a set of topic suffixes.
+    Optionally, add a single additional topic string.
+    Returns a set of full MQTT topics.
+    """
+    # Build the set of full topics from the topic_suffixes
+    full_topics = {f"{base_topic}{suffix}" for suffix in topic_suffixes}
+
+    # If add_topic is provided, add it to the set
+    if add_topic:
+        full_topics.add(add_topic)
+
+    return full_topics
