@@ -9,5 +9,6 @@
     </languageAllowList>
     <option name="inlayTextColor" value="#9d1d1d" />
     <option name="showIdeCompletions" value="true" />
+    <option name="checkForUpdate" value="false" />
   </component>
 </application>
