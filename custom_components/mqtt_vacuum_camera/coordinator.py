@@ -1,4 +1,7 @@
-"""MQTT Vacuum Camera Coordinator."""
+"""
+MQTT Vacuum Camera Coordinator.
+Version: v2024.10.0
+"""
 
 from datetime import timedelta
 import logging
@@ -14,8 +17,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from .camera_shared import CameraShared, CameraSharedManager
 from .common import get_camera_device_info
 from .const import DEFAULT_NAME, SENSOR_NO_DATA
-from .valetudo.MQTT.rand256connector import Rand256Connector
-from .valetudo.MQTT.hyperconnector import HypferConnector
+from .valetudo.MQTT.connector import ValetudoConnector
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -28,8 +30,8 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         hass: HomeAssistant,
         entry: ConfigEntry,
         vacuum_topic: str,
-        rand256_vacuum: bool=False,
-        polling_interval=timedelta(seconds=3),
+        rand256_vacuum: bool = False,
+        polling_interval: timedelta = timedelta(seconds=3),
     ):
         """Initialize the coordinator."""
         super().__init__(
@@ -46,7 +48,7 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         self.shared_manager: Optional[CameraSharedManager] = None
         self.shared: Optional[CameraShared] = None
         self.file_name: str = ""
-        self.connector: Optional[Union[HypferConnector, Rand256Connector]] = None
+        self.connector: Optional[Union[ValetudoConnector]] = None
         self.in_sync_with_camera: bool = False
         self.sensor_data = SENSOR_NO_DATA
         # Initialize shared data and MQTT connector
@@ -94,14 +96,18 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
 
         return shared, file_name
 
-    def start_up_mqtt(self) -> Union[HypferConnector, Rand256Connector]:
+    def start_up_mqtt(self) -> Union[ValetudoConnector, ValetudoConnector]:
         """
         Initialize the MQTT Connector.
         """
         if self.is_rand256:
-            self.connector = Rand256Connector(self.vacuum_topic, self.hass, self.shared)
+            self.connector = ValetudoConnector(
+                self.vacuum_topic, self.hass, self.shared
+            )
         else:
-            self.connector = HypferConnector(self.vacuum_topic, self.hass, self.shared)
+            self.connector = ValetudoConnector(
+                self.vacuum_topic, self.hass, self.shared
+            )
         return self.connector
 
     def update_shared_data(self, dev_info: DeviceInfo) -> tuple[CameraShared, str]:

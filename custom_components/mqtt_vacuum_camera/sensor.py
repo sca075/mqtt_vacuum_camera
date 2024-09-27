@@ -39,7 +39,7 @@ class VacuumSensorDescription(SensorEntityDescription):
 
 SENSOR_TYPES = {
     "consumable_main_brush": VacuumSensorDescription(
-        native_unit_of_measurement=UnitOfTime.HOURS,
+        native_unit_of_measurement=UnitOfTime.DAYS,
         key="mainBrush",
         icon="mdi:brush",
         name="Main brush",
@@ -47,7 +47,7 @@ SENSOR_TYPES = {
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "consumable_side_brush": VacuumSensorDescription(
-        native_unit_of_measurement=UnitOfTime.HOURS,
+        native_unit_of_measurement=UnitOfTime.DAYS,
         key="sideBrush",
         icon="mdi:brush",
         name="Side brush",
@@ -55,7 +55,7 @@ SENSOR_TYPES = {
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "consumable_filter": VacuumSensorDescription(
-        native_unit_of_measurement=UnitOfTime.HOURS,
+        native_unit_of_measurement=UnitOfTime.DAYS,
         key="filter",
         icon="mdi:air-filter",
         name="Filter",
@@ -71,11 +71,11 @@ SENSOR_TYPES = {
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "current_clean_time": VacuumSensorDescription(
-        native_unit_of_measurement=UnitOfTime.SECONDS,
+        native_unit_of_measurement=UnitOfTime.MINUTES,
         key="currentCleanTime",
         icon="mdi:timer-sand",
         name="Current clean time",
-        state_class=SensorStateClass.TOTAL_INCREASING,
+        device_class=SensorDeviceClass.DURATION,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "current_clean_area": VacuumSensorDescription(
@@ -83,6 +83,7 @@ SENSOR_TYPES = {
         key="currentCleanArea",
         icon="mdi:texture-box",
         name="Current clean area",
+        state_class=SensorStateClass.TOTAL,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "clean_count": VacuumSensorDescription(
@@ -97,7 +98,8 @@ SENSOR_TYPES = {
         key="cleanTime",
         icon="mdi:timer-sand",
         name="Total clean time",
-        state_class=SensorStateClass.TOTAL_INCREASING,
+        state_class=SensorStateClass.TOTAL,
+        device_class=SensorDeviceClass.DURATION,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "state": VacuumSensorDescription(

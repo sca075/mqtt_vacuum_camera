@@ -1,8 +1,7 @@
 """
 Version: v2024.10.0
 - Removed the PNG decode, the json is extracted from map-data instead of map-data-hass.
-- Tested no influence on the camera performance.
-- Added gzip library used in Valetudo RE data compression.
+- Refactoring the subscribe method and decode payload method.
 """
 
 import asyncio
@@ -14,7 +13,8 @@ from homeassistant.components import mqtt
 from homeassistant.core import EventOrigin, HomeAssistant, callback
 from isal import igzip, isal_zlib
 
-from ...const import DOMAIN
+from ...common import build_full_topic_set
+from ...const import DECODED_TOPICS, NON_DECODED_TOPICS
 from ...types import RoomStore
 from ...valetudo.rand256.rrparser import RRMapParser
 
@@ -212,6 +212,16 @@ class ValetudoConnector:
                 f"{self._file_name}: Received vacuum battery level: {self._mqtt_vac_battery_level}%."
             )
 
+    async def hypfer_handle_map_segments(self, msg_data):
+        """
+        Handle incoming MQTT messages for the /MapData/segments topic.
+        Decode the MQTT payload and store the segments in RoomStore.
+        """
+
+        self._mqtt_segments = msg_data
+        # Store the decoded segments in RoomStore
+        await RoomStore().async_set_rooms_data(self._file_name, self._mqtt_segments)
+
     async def rand256_handle_image_payload(self, msg):
         """
         Handle new MQTT messages.
@@ -293,6 +303,17 @@ class ValetudoConnector:
 
             self._shared.rand256_active_zone = rrm_active_segments
 
+    async def async_handle_start_command(self, msg):
+        """fire event vacuum start"""
+        mqtt_command = msg.payload
+        if str(mqtt_command).lower() == "start":
+            # Fire the vacuum.start event when START command is detected
+            self._hass.bus.async_fire(
+                "event_vacuum_start",
+                event_data=mqtt_command,
+                origin=EventOrigin.local,
+            )
+
     @callback
     async def async_message_received(self, msg) -> None:
         """
@@ -330,40 +351,26 @@ class ValetudoConnector:
             await self._hass.async_create_task(self.rand256_handle_destinations(msg))
         elif self._rcv_topic == f"{self._mqtt_topic}/MapData/segments":
             self._mqtt_segments = await self.async_decode_mqtt_payload(msg)
-            await RoomStore().async_set_rooms_data(self._file_name, self._mqtt_segments)
+            await self.hypfer_handle_map_segments(self._mqtt_segments)
         elif self._rcv_topic in [self.command_topic, self.rrm_command]:
-            mqtt_command = msg.payload
-            if str(mqtt_command).lower() == "start":
-                # Fire the vacuum.start event when START command is detected
-                self._hass.bus.async_fire(
-                    "event_vacuum_start",
-                    event_data=self.command_topic,
-                    origin=EventOrigin(DOMAIN),
-                )
+            await self.async_handle_start_command(msg)
         elif self._rcv_topic == f"{self._mqtt_topic}/attributes":
             self.rrm_attributes = await self.async_decode_mqtt_payload(msg)
 
     async def async_subscribe_to_topics(self) -> None:
         """Subscribe to the MQTT topics for Hypfer and ValetudoRe."""
         if self._mqtt_topic:
-            topics_with_none_encoding = {
-                self.command_topic,
-                f"{self._mqtt_topic}/MapData/map-data",
-                f"{self._mqtt_topic}/map_data",  # added for ValetudoRe
-            }
+            topics_with_none_encoding = build_full_topic_set(
+                base_topic=self._mqtt_topic,
+                topic_suffixes=NON_DECODED_TOPICS,
+                add_topic=self.command_topic,
+            )
 
-            topics_with_default_encoding = {
-                f"{self._mqtt_topic}/MapData/segments",
-                f"{self._mqtt_topic}/StatusStateAttribute/status",
-                f"{self._mqtt_topic}/StatusStateAttribute/error_description",
-                f"{self._mqtt_topic}/$state",
-                f"{self._mqtt_topic}/BatteryStateAttribute/level",
-                f"{self._mqtt_topic}/state",  # added for ValetudoRe
-                f"{self._mqtt_topic}/destinations",  # added for ValetudoRe
-                self.rrm_command,
-                f"{self._mqtt_topic}/custom_command",  # added for ValetudoRe
-                f"{self._mqtt_topic}/attributes",  # added for ValetudoRe
-            }
+            topics_with_default_encoding = build_full_topic_set(
+                base_topic=self._mqtt_topic,
+                topic_suffixes=DECODED_TOPICS,
+                add_topic=self.rrm_command,
+            )
 
             for x in topics_with_none_encoding:
                 self._unsubscribe_handlers.append(
@@ -386,37 +393,38 @@ class ValetudoConnector:
 
     @staticmethod
     async def async_decode_mqtt_payload(msg) -> Any:
-        """Decode the MQTT payload appropriately without altering the original payload."""
+        """Decode the Vacuum payload."""
 
-        my_payload = msg.payload
+        def parse_string_payload(string_payload: str) -> Any:
+            """Decode jsons or numbers float or int"""
+            if string_payload.startswith("{") and string_payload.endswith("}"):
+                try:
+                    return json.loads(string_payload)
+                except json.JSONDecodeError:
+                    return string_payload
+
+            if string_payload.isdigit() or string_payload.replace(".", "", 1).isdigit():
+                try:
+                    return (
+                        float(string_payload)
+                        if "." in string_payload
+                        else int(string_payload)
+                    )
+                except ValueError:
+                    pass
+
+            return string_payload
 
         try:
-            if isinstance(my_payload, str):
-                if my_payload.startswith("{") and my_payload.endswith("}"):
-                    try:
-                        return json.loads(my_payload)
-                    except json.JSONDecodeError:
-                        return str(my_payload)
-                # Check if the string is a number (integer or float)
-                if my_payload.isdigit() or my_payload.replace(".", "", 1).isdigit():
-                    try:
-                        if "." in my_payload:
-                            return float(my_payload)
-                        else:
-                            return int(my_payload)
-                    except ValueError:
-                        pass
-                return my_payload
-            elif isinstance(my_payload, (int, float)):
-                return my_payload
-            elif isinstance(my_payload, bytes):
-                return my_payload
+            if isinstance(msg.payload, str):
+                return parse_string_payload(msg.payload)
+            elif isinstance(msg.payload, (int, float, bytes)):
+                return msg.payload
             else:
-                return my_payload
-
+                return msg.payload
         except Exception as e:
-            _LOGGER.error(f"Failed to decode payload: {e}")
-            return None
+            _LOGGER.warning(f"Failed to decode payload: {e}")
+            raise ValueError(f"Failed to decode payload: {e}") from e
 
     async def publish_to_broker(self, cust_topic: str, cust_payload: dict) -> None:
         """

@@ -1,6 +1,6 @@
 """
 Camera
-Version: v2024.10.0b2
+Version: v2024.10.0
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ from typing import Any, Optional
 from PIL import Image
 from homeassistant import config_entries, core
 from homeassistant.components.camera import Camera, CameraEntityFeature
-from homeassistant.const import CONF_UNIQUE_ID, MATCH_ALL
+from homeassistant.const import CONF_LANGUAGE, CONF_UNIQUE_ID, MATCH_ALL
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.storage import STORAGE_DIR
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -305,6 +305,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         if is_auth_updated(self):
             # Get the active user language
             self._shared.user_language = await async_get_active_user_language(self.hass)
+            _LOGGER.debug(CONF_LANGUAGE)
         if not self._mqtt:
             _LOGGER.debug(f"{self._file_name}: No MQTT data available.")
             # return last/empty image if no MQTT or CPU usage too high.
