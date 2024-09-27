@@ -5,8 +5,10 @@ Version: 2024.10.0
 
 from __future__ import annotations
 
+import json
 import logging
 import re
+from typing import Any
 
 from homeassistant.components.mqtt import DOMAIN as MQTT_DOMAIN
 from homeassistant.components.vacuum import DOMAIN as VACUUM_DOMAIN
@@ -133,3 +135,36 @@ def is_rand256_vacuum(vacuum_device: DeviceEntry) -> bool:
         _LOGGER.debug("No Sensors to startup!")
         return False  # This is a Hypfer vacuum (Valetudo)
     return True
+
+async def async_decode_mqtt_payload(msg) -> Any:
+    """Decode the MQTT payload appropriately without altering the original payload."""
+
+    my_payload = msg.payload
+
+    try:
+        if isinstance(my_payload, str):
+            if my_payload.startswith("{") and my_payload.endswith("}"):
+                try:
+                    return json.loads(my_payload)
+                except json.JSONDecodeError:
+                    return str(my_payload)
+            # Check if the string is a number (integer or float)
+            if my_payload.isdigit() or my_payload.replace(".", "", 1).isdigit():
+                try:
+                    if "." in my_payload:
+                        return float(my_payload)
+                    else:
+                        return int(my_payload)
+                except ValueError:
+                    pass
+            return my_payload
+        elif isinstance(my_payload, (int, float)):
+            return my_payload
+        elif isinstance(my_payload, bytes):
+            return my_payload
+        else:
+            return my_payload
+
+    except Exception as e:
+        _LOGGER.error(f"Failed to decode payload: {e}")
+        return None

@@ -2,19 +2,20 @@
 
 from datetime import timedelta
 import logging
-from typing import Optional
+from typing import Optional, Union
 
 import async_timeout
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.exceptions import ConfigEntryError
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .camera_shared import CameraShared, CameraSharedManager
 from .common import get_camera_device_info
 from .const import DEFAULT_NAME, SENSOR_NO_DATA
-from .valetudo.MQTT.connector import ValetudoConnector
+from .valetudo.MQTT.rand256connector import Rand256Connector
+from .valetudo.MQTT.hyperconnector import HypferConnector
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -27,6 +28,7 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         hass: HomeAssistant,
         entry: ConfigEntry,
         vacuum_topic: str,
+        rand256_vacuum: bool=False,
         polling_interval=timedelta(seconds=3),
     ):
         """Initialize the coordinator."""
@@ -38,12 +40,13 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         )
         self.hass: HomeAssistant = hass
         self.vacuum_topic: str = vacuum_topic
+        self.is_rand256: bool = rand256_vacuum
         self.device_entity: ConfigEntry = entry
         self.device_info: DeviceInfo = get_camera_device_info(hass, self.device_entity)
         self.shared_manager: Optional[CameraSharedManager] = None
         self.shared: Optional[CameraShared] = None
         self.file_name: str = ""
-        self.connector: Optional[ValetudoConnector] = None
+        self.connector: Optional[Union[HypferConnector, Rand256Connector]] = None
         self.in_sync_with_camera: bool = False
         self.sensor_data = SENSOR_NO_DATA
         # Initialize shared data and MQTT connector
@@ -91,11 +94,14 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
 
         return shared, file_name
 
-    def start_up_mqtt(self) -> ValetudoConnector:
+    def start_up_mqtt(self) -> Union[HypferConnector, Rand256Connector]:
         """
         Initialize the MQTT Connector.
         """
-        self.connector = ValetudoConnector(self.vacuum_topic, self.hass, self.shared)
+        if self.is_rand256:
+            self.connector = Rand256Connector(self.vacuum_topic, self.hass, self.shared)
+        else:
+            self.connector = HypferConnector(self.vacuum_topic, self.hass, self.shared)
         return self.connector
 
     def update_shared_data(self, dev_info: DeviceInfo) -> tuple[CameraShared, str]:
@@ -115,8 +121,8 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
             async with async_timeout.timeout(10):
                 # Fetch and process maps data from the MQTT connector
                 return await self.connector.update_data(process)
-        except ConfigEntryAuthFailed as err:
-            raise ConfigEntryAuthFailed from err
+        except ConfigEntryError as err:
+            raise ConfigEntryError from err
         except Exception as err:
             _LOGGER.error(f"Error communicating with MQTT or processing data: {err}")
             raise UpdateFailed(f"Error communicating with MQTT: {err}") from err

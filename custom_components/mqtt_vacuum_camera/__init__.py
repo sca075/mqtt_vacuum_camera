@@ -101,8 +101,9 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
         raise ConfigEntryNotReady("MQTT was not ready yet, automatically retrying")
 
     vacuum_topic = "/".join(mqtt_topic_vacuum.split("/")[:-1])
+    is_rand256 = is_rand256_vacuum(vacuum_device)
 
-    data_coordinator = MQTTVacuumCoordinator(hass, entry, vacuum_topic)
+    data_coordinator = MQTTVacuumCoordinator(hass, entry, vacuum_topic, is_rand256)
 
     hass_data.update(
         {
@@ -110,7 +111,7 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
             CONF_VACUUM_IDENTIFIERS: vacuum_device.identifiers,
             CONF_UNIQUE_ID: entry.unique_id,
             "coordinator": data_coordinator,
-            "is_rand256": is_rand256_vacuum(vacuum_device),
+            "is_rand256": is_rand256,
         }
     )
 

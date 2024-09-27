@@ -116,15 +116,15 @@
       },
       "alpha_1": {
         "data": {
-          "alpha_charger": "Charger Alpha   ",
-          "alpha_move": "Moves Alpha     ",
-          "alpha_wall": "Walls Alpha     ",
-          "alpha_robot": "Robot Alpha     ",
+          "alpha_charger": "Charger Alpha",
+          "alpha_move": "Moves Alpha",
+          "alpha_wall": "Walls Alpha",
+          "alpha_robot": "Robot Alpha",
           "alpha_go_to": "Go To Area Alpha",
           "alpha_no_go": "No Go Area Alpha",
           "alpha_zone_clean": "Zone Clean Alpha",
           "alpha_background": "Background Alpha",
-          "alpha_text": "Text Alpha      "
+          "alpha_text": "Text Alpha"
         },
         "description": "Camera Options. Alpha 1",
         "title": "Alpha Chanel Base Colours"
