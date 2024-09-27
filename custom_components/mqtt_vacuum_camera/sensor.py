@@ -43,7 +43,7 @@ SENSOR_TYPES = {
         key="mainBrush",
         icon="mdi:brush",
         name="Main brush",
-        device_class=SensorDeviceClass.DURATION,
+        state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "consumable_side_brush": VacuumSensorDescription(
@@ -51,7 +51,7 @@ SENSOR_TYPES = {
         key="sideBrush",
         icon="mdi:brush",
         name="Side brush",
-        device_class=SensorDeviceClass.DURATION,
+        state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "consumable_filter": VacuumSensorDescription(
@@ -59,7 +59,7 @@ SENSOR_TYPES = {
         key="filter",
         icon="mdi:air-filter",
         name="Filter",
-        device_class=SensorDeviceClass.DURATION,
+        state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "battery": VacuumSensorDescription(
