@@ -51,6 +51,7 @@ class ValetudoConnector:
         self.rrm_attributes = None  # Rand256
         self._file_name = camera_shared.file_name
         self._shared = camera_shared
+        self._room_store = RoomStore()
         self.command_topic = (
             f"{self._mqtt_topic}/hass/{self._mqtt_topic.split('/')[-1]}_vacuum/command"
         )
@@ -212,15 +213,14 @@ class ValetudoConnector:
                 f"{self._file_name}: Received vacuum battery level: {self._mqtt_vac_battery_level}%."
             )
 
-    async def hypfer_handle_map_segments(self, msg_data):
+    async def hypfer_handle_map_segments(self, msg):
         """
         Handle incoming MQTT messages for the /MapData/segments topic.
         Decode the MQTT payload and store the segments in RoomStore.
         """
-
-        self._mqtt_segments = msg_data
+        self._mqtt_segments = await self.async_decode_mqtt_payload(msg)
         # Store the decoded segments in RoomStore
-        await RoomStore().async_set_rooms_data(self._file_name, self._mqtt_segments)
+        await self._room_store.async_set_rooms_data(self._file_name, self._mqtt_segments)
 
     async def rand256_handle_image_payload(self, msg):
         """
@@ -305,12 +305,11 @@ class ValetudoConnector:
 
     async def async_handle_start_command(self, msg):
         """fire event vacuum start"""
-        mqtt_command = msg.payload
-        if str(mqtt_command).lower() == "start":
+        if str(msg.payload).lower() == "start":
             # Fire the vacuum.start event when START command is detected
             self._hass.bus.async_fire(
                 "event_vacuum_start",
-                event_data=mqtt_command,
+                event_data=str(msg.payload),
                 origin=EventOrigin.local,
             )
 
@@ -350,8 +349,7 @@ class ValetudoConnector:
         elif self._rcv_topic == f"{self._mqtt_topic}/destinations":
             await self._hass.async_create_task(self.rand256_handle_destinations(msg))
         elif self._rcv_topic == f"{self._mqtt_topic}/MapData/segments":
-            self._mqtt_segments = await self.async_decode_mqtt_payload(msg)
-            await self.hypfer_handle_map_segments(self._mqtt_segments)
+            await self.hypfer_handle_map_segments(msg)
         elif self._rcv_topic in [self.command_topic, self.rrm_command]:
             await self.async_handle_start_command(msg)
         elif self._rcv_topic == f"{self._mqtt_topic}/attributes":
@@ -422,9 +420,12 @@ class ValetudoConnector:
                 return msg.payload
             else:
                 return msg.payload
-        except Exception as e:
-            _LOGGER.warning(f"Failed to decode payload: {e}")
-            raise ValueError(f"Failed to decode payload: {e}") from e
+        except ValueError as e:
+             _LOGGER.warning(f"Value error during payload decoding: {e}")
+             raise
+        except TypeError as e:
+            _LOGGER.warning(f"Type error during payload decoding: {e}")
+            raise
 
     async def publish_to_broker(self, cust_topic: str, cust_payload: dict) -> None:
         """
