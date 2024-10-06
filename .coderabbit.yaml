@@ -12,12 +12,13 @@ reviews:
   poem: false
   collapse_walkthrough: false
   sequence_diagrams: true
+  changed_files_summary: true
+  labeling_instructions: []
   path_filters: []
   path_instructions: []
   abort_on_close: true
   auto_review:
     enabled: true
-    paused: true
     auto_incremental_review: true
     ignore_title_keywords: []
     labels: []
@@ -60,6 +61,20 @@ reviews:
       enabled: true
     rubocop:
       enabled: true
+    buf:
+      enabled: true
+    regal:
+      enabled: true
+    actionlint:
+      enabled: true
+    pmd:
+      enabled: true
+    cppcheck:
+      enabled: true
+    semgrep:
+      enabled: true
+    circleci:
+      enabled: true
 chat:
   auto_reply: true
 knowledge_base:
@@ -72,3 +87,5 @@ knowledge_base:
     project_keys: []
   linear:
     team_keys: []
+  pull_requests:
+    scope: auto
