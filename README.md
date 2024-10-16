@@ -1,5 +1,5 @@
-[releases_shield]: https://img.shields.io/github/release/sca075/valetudo_vacuum_camera.svg?style=popout
-[latest_release]: https://github.com/sca075/valetudo_vacuum_camera/releases/latest
+[releases_shield]: https://img.shields.io/github/release/sca075/mqtt_vacuum_camera.svg?style=popout
+[latest_release]: https://github.com/sca075/mqtt_vacuum_camera/releases/latest
 
 # MQTT Vacuum's Camera
 <p align="center">
@@ -23,6 +23,32 @@ Extract the maps of Vacuum Cleaners connected via MQTT to Home Assistant such as
 This custom component is simple to install and setup, decode and render the vacuum maps to Home Assistant in few clicks.
 When you want also to control your vacuum you will need to also install the:
 [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card) from HACS as well.
+
+### Goal of this project.
+The goal of this project is to deliver an out-of-the-box solution for integrating MQTT-based vacuums into the Home Assistant ecosystem. 
+This includes real-time map extraction, sensor data (when not provided), and control services (not available by default)
+for a seamless user experience.
+
+Our current focus is evolving beyond map rendering to provide full vacuum control, ensuring a reliable, complete integration for all Valetudo-based vacuums, while continuously improving the user experience through regular updates.  
+<details>
+   <summary>Planned in the next Release</summary>
+
+#### 2024.11.0 - **Rand256 Vacuum Interface Improved**
+- **Features:**
+  - Camera adding support for [MapLoader](https://github.com/pkoehlers/maploader) -> maps change = reset_trims.
+  - Adding sensors for the current room and the number of recognized segments (rooms) to Rand256 sensors.
+  - Services for Rand256 vacuum control already implemented in HA:
+     - Start
+     - Stop
+     - Pause
+     - Return to dock
+  - New services added for Rand256:
+     - Go to specific coordinates
+     - Clean spot
+     - Clean area(s)
+     - Clean room(s)
+
+</details>
 
 ### Limitations and Compatibility:
 <details>
@@ -71,7 +97,7 @@ Our setup guide also includes **important** informations on how to setup the [lo
 ### Features:
 <details><summary> We here List what this camera offers as futures.</summary>
 
-1) All Valetudo vacuums are supported.
+1) All Valetudo equipped vacuums are supported.
 2) Supported languages (English, Arabic, Chinese, Czech, Dutch, French, German, Italian, Japanese, Polish, Norwegian, Russian, Spanish, Swedish).
 3) **Automatically Generate the calibration points for the lovelace-xiaomi-vacuum-map-card** to ensure full compatibility to this user-friendly card.
 4) **Automatically Generate rooms based configuration when vacuum support this functionality**, this will allow you to configure the rooms quickly on the [lovelace-xiaomi-vacuum-map-card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
