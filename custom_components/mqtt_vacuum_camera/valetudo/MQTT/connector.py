@@ -1,7 +1,5 @@
 """
 Version: v2024.11.0
-- Removed the PNG decode, the json is extracted from map-data instead of map-data-hass.
-- Refactoring the subscribe method and decode payload method.
 """
 
 import asyncio
@@ -327,7 +325,7 @@ class ValetudoConnector:
             self._shared.rand256_active_zone = rrm_active_segments
 
     async def async_fire_event_restart_camera(
-        self, event_text:str="event_vacuum_start", data:str =""
+        self, event_text: str = "event_vacuum_start", data: str = ""
     ):
         """Fire Event to reset the camera trims"""
         self._hass.bus.async_fire(

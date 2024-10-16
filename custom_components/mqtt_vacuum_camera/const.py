@@ -67,7 +67,7 @@ SENSOR_NO_DATA = {
     "last_bin_out": 0,
     "last_bin_full": 0,
     "last_loaded_map": "NoMap",
-    "robot_in_room": "Unsupported"
+    "robot_in_room": "Unsupported",
 }
 
 DEFAULT_PIXEL_SIZE = 5

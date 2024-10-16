@@ -11,6 +11,7 @@ from typing import Optional
 import async_timeout
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
@@ -60,16 +61,17 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         """Schedule coordinator refresh after 1 second."""
         if self.scheduled_refresh:
             self.scheduled_refresh.cancel()
-        self.scheduled_refresh = self.hass.loop.call_later(
-            1, lambda: asyncio.create_task(self.async_refresh())
+        self.scheduled_refresh = async_call_later(
+            self.hass, 1, lambda: asyncio.create_task(self.async_refresh())
         )
 
     async def _async_update_data(self):
         """
         Fetch data from the MQTT topics for sensors.
         """
-        if (self.sensor_data == SENSOR_NO_DATA) or (
-            self.shared is not None and self.shared.vacuum_state != "docked"
+        if (
+            (self.sensor_data == SENSOR_NO_DATA)
+            or (self.shared is not None and self.shared.vacuum_state != "docked")
         ) and self.connector:
             try:
                 async with async_timeout.timeout(10):
