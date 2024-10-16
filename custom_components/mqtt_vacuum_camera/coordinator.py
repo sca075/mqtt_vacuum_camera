@@ -70,7 +70,7 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         """
         if (self.sensor_data == SENSOR_NO_DATA) or (
             self.shared is not None and self.shared.vacuum_state != "docked"
-        ):
+        ) and self.connector:
             try:
                 async with async_timeout.timeout(10):
                     # Fetch and process sensor data from the MQTT connector
@@ -83,7 +83,7 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
                         return self.sensor_data
                     return self.sensor_data
             except Exception as err:
-                _LOGGER.error(f"Error fetching sensor data: {err}")
+                _LOGGER.error(f"Exception raised fetching sensor data: {err}")
                 raise UpdateFailed(f"Error fetching sensor data: {err}") from err
         else:
             return self.sensor_data
@@ -143,6 +143,8 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
             battery_level = await self.connector.get_battery_level()
             vacuum_state = await self.connector.get_vacuum_status()
             vacuum_room = self.shared.current_room
+            if not vacuum_room:
+                vacuum_room = {"in_room": "Unsupported"}
             last_run_stats = sensor_data.get("last_run_stats", {})
             last_loaded_map = sensor_data.get("last_loaded_map", {})
             formatted_data = {

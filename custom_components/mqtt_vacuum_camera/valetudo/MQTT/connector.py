@@ -155,13 +155,13 @@ class ValetudoConnector:
         self._pkohelrs_maploader_map = await self.async_decode_mqtt_payload(msg)
         _LOGGER.debug(f"{self._file_name}: Loaded Map {self._pkohelrs_maploader_map}.")
 
-    async def handle_pkohelrs_maploader_state(self, msg) -> str:
+    async def handle_pkohelrs_maploader_state(self, msg) -> None:
         """Get the pkohelrs state and handle camera restart"""
         new_state = await self.async_decode_mqtt_payload(msg)
         _LOGGER.debug(f"{self._file_name}: {self.pkohelrs_state} -> {new_state}")
         if (self.pkohelrs_state == "loading_map") and (new_state == "idle"):
             await self.async_fire_event_restart_camera(data=str(msg.payload))
-        return new_state
+        self.pkohelrs_state = new_state
 
     async def hypfer_handle_image_data(self, msg) -> None:
         """
@@ -390,7 +390,7 @@ class ValetudoConnector:
         elif self._rcv_topic == f"{self._mqtt_topic}/maploader/map":
             await self.handle_pkohelrs_maploader_map(msg)
         elif self._rcv_topic == f"{self._mqtt_topic}/maploader/status":
-            self.pkohelrs_state = await self.handle_pkohelrs_maploader_state(msg)
+            await self.handle_pkohelrs_maploader_state(msg)
 
     async def async_subscribe_to_topics(self) -> None:
         """Subscribe to the MQTT topics for Hypfer and ValetudoRe."""

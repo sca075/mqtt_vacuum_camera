@@ -53,12 +53,21 @@ SENSOR_NO_DATA = {
     "mainBrush": 0,
     "sideBrush": 0,
     "filter": 0,
-    "sensor": 0,
     "currentCleanTime": 0,
     "currentCleanArea": 0,
     "cleanTime": 0,
     "cleanArea": 0,
     "cleanCount": 0,
+    "battery": 0,
+    "state": 0,
+    "last_run_start": 0,
+    "last_run_end": 0,
+    "last_run_duration": 0,
+    "last_run_area": 0,
+    "last_bin_out": 0,
+    "last_bin_full": 0,
+    "last_loaded_map": "NoMap",
+    "robot_in_room": "Unsupported"
 }
 
 DEFAULT_PIXEL_SIZE = 5
