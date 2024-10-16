@@ -1,6 +1,6 @@
 """Constants for the mqtt_vacuum_camera integration."""
 
-"""Version v2024.10.0"""
+"""Version v2024.11.0"""
 
 """Required in Config_Flow"""
 PLATFORMS = ["camera"]
@@ -270,6 +270,8 @@ NOT_STREAMING_STATES = {
 
 DECODED_TOPICS = {
     "/MapData/segments",
+    "/maploader/map",
+    "/maploader/status",
     "/StatusStateAttribute/status",
     "/StatusStateAttribute/error_description",
     "/$state",

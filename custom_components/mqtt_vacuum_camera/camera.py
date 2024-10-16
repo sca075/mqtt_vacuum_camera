@@ -1,6 +1,6 @@
 """
 Camera
-Version: v2024.10.0
+Version: v2024.11.0
 """
 
 from __future__ import annotations
@@ -84,7 +84,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         self._attr_brand = "MQTT Vacuum Camera"
         self._attr_name = "Camera"
         self._attr_is_on = True
-        self._directory_path = self.hass.config.path()  # get Home Assistant path
+        self._homeassistant_path = self.hass.config.path()  # get Home Assistant path
         self._shared, self._file_name = coordinator.update_shared_data(device_info)
         self._start_up_logs()
         self._storage_path, self.snapshot_img, self.log_file = self._init_paths()
@@ -135,9 +135,9 @@ class MQTTCamera(CoordinatorEntity, Camera):
         """Remove PNG and ZIP's stored in HA config WWW"""
         # If enable_snapshots check if for png in www
         if not self._shared.enable_snapshots and os.path.isfile(
-            f"{self._directory_path}/www/snapshot_{self._file_name}.png"
+            f"{self._homeassistant_path}/www/snapshot_{self._file_name}.png"
         ):
-            os.remove(f"{self._directory_path}/www/snapshot_{self._file_name}.png")
+            os.remove(f"{self._homeassistant_path}/www/snapshot_{self._file_name}.png")
         # If there is a log zip in www remove it
         if os.path.isfile(self.log_file):
             os.remove(self.log_file)
@@ -146,7 +146,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         """Initialize Camera Paths"""
         storage_path = f"{self.hass.config.path(STORAGE_DIR)}/{CAMERA_STORAGE}"
         if not os.path.exists(storage_path):
-            storage_path = f"{self._directory_path}/{STORAGE_DIR}"
+            storage_path = f"{self._homeassistant_path}/{STORAGE_DIR}"
         snapshot_img = f"{storage_path}/{self._file_name}.png"
         log_file = f"{storage_path}/{self._file_name}.zip"
         return storage_path, snapshot_img, log_file
@@ -225,7 +225,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         return attributes
 
     async def handle_vacuum_start(self, event):
-        """Handle the vacuum.start event."""
+        """Handle the event_vacuum_start event."""
         _LOGGER.debug(f"Received event: {event.event_type}, Data: {event.data}")
 
         # Call the reset_trims service when vacuum.start event occurs
