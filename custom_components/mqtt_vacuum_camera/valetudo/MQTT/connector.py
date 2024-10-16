@@ -1,7 +1,5 @@
 """
-Version: v2024.10.0
-- Removed the PNG decode, the json is extracted from map-data instead of map-data-hass.
-- Refactoring the subscribe method and decode payload method.
+Version: v2024.11.0
 """
 
 import asyncio
@@ -56,6 +54,8 @@ class ValetudoConnector:
             f"{self._mqtt_topic}/hass/{self._mqtt_topic.split('/')[-1]}_vacuum/command"
         )
         self.rrm_command = f"{self._mqtt_topic}/command"  # added for ValetudoRe
+        self._pkohelrs_maploader_map = None
+        self.pkohelrs_state = None
 
     async def update_data(self, process: bool = True):
         """
@@ -103,6 +103,12 @@ class ValetudoConnector:
                 self._is_rrm = False
                 return None, data_type
 
+    async def async_get_pkohelrs_maploader_map(self) -> str:
+        """Return the Loaded Map of Dreame vacuums"""
+        if self._pkohelrs_maploader_map:
+            return self._pkohelrs_maploader_map
+        return "No Maps Loaded"
+
     async def get_vacuum_status(self) -> str:
         """Return the vacuum status."""
         if self._mqtt_vac_stat:
@@ -142,6 +148,19 @@ class ValetudoConnector:
             return self.rrm_attributes
         return {}
 
+    async def handle_pkohelrs_maploader_map(self, msg) -> None:
+        """Handle Pkohelrs Maploader current map loaded payload"""
+        self._pkohelrs_maploader_map = await self.async_decode_mqtt_payload(msg)
+        _LOGGER.debug(f"{self._file_name}: Loaded Map {self._pkohelrs_maploader_map}.")
+
+    async def handle_pkohelrs_maploader_state(self, msg) -> None:
+        """Get the pkohelrs state and handle camera restart"""
+        new_state = await self.async_decode_mqtt_payload(msg)
+        _LOGGER.debug(f"{self._file_name}: {self.pkohelrs_state} -> {new_state}")
+        if (self.pkohelrs_state == "loading_map") and (new_state == "idle"):
+            await self.async_fire_event_restart_camera(data=str(msg.payload))
+        self.pkohelrs_state = new_state
+
     async def hypfer_handle_image_data(self, msg) -> None:
         """
         Handle new MQTT messages.
@@ -156,7 +175,7 @@ class ValetudoConnector:
     async def hypfer_handle_status_payload(self, state) -> None:
         """
         Handle new MQTT messages.
-        /StatusStateAttribute/status" is for Hypfer.
+        /StatusStateAttribute/status is for Hypfer.
         """
         if state:
             self._mqtt_vac_stat = state
@@ -220,7 +239,9 @@ class ValetudoConnector:
         """
         self._mqtt_segments = await self.async_decode_mqtt_payload(msg)
         # Store the decoded segments in RoomStore
-        await self._room_store.async_set_rooms_data(self._file_name, self._mqtt_segments)
+        await self._room_store.async_set_rooms_data(
+            self._file_name, self._mqtt_segments
+        )
 
     async def rand256_handle_image_payload(self, msg):
         """
@@ -303,15 +324,25 @@ class ValetudoConnector:
 
             self._shared.rand256_active_zone = rrm_active_segments
 
+    async def async_fire_event_restart_camera(
+        self, event_text: str = "event_vacuum_start", data: str = ""
+    ):
+        """Fire Event to reset the camera trims"""
+        self._hass.bus.async_fire(
+            event_text,
+            event_data={
+                "device_id": f"mqtt_vacuum_{self._file_name}",
+                "type": "mqtt_payload",
+                "data": data,
+            },
+            origin=EventOrigin.local,
+        )
+
     async def async_handle_start_command(self, msg):
         """fire event vacuum start"""
         if str(msg.payload).lower() == "start":
             # Fire the vacuum.start event when START command is detected
-            self._hass.bus.async_fire(
-                "event_vacuum_start",
-                event_data=str(msg.payload),
-                origin=EventOrigin.local,
-            )
+            await self.async_fire_event_restart_camera(data=str(msg.payload))
 
     @callback
     async def async_message_received(self, msg) -> None:
@@ -354,6 +385,10 @@ class ValetudoConnector:
             await self.async_handle_start_command(msg)
         elif self._rcv_topic == f"{self._mqtt_topic}/attributes":
             self.rrm_attributes = await self.async_decode_mqtt_payload(msg)
+        elif self._rcv_topic == f"{self._mqtt_topic}/maploader/map":
+            await self.handle_pkohelrs_maploader_map(msg)
+        elif self._rcv_topic == f"{self._mqtt_topic}/maploader/status":
+            await self.handle_pkohelrs_maploader_state(msg)
 
     async def async_subscribe_to_topics(self) -> None:
         """Subscribe to the MQTT topics for Hypfer and ValetudoRe."""
@@ -421,8 +456,8 @@ class ValetudoConnector:
             else:
                 return msg.payload
         except ValueError as e:
-             _LOGGER.warning(f"Value error during payload decoding: {e}")
-             raise
+            _LOGGER.warning(f"Value error during payload decoding: {e}")
+            raise
         except TypeError as e:
             _LOGGER.warning(f"Type error during payload decoding: {e}")
             raise

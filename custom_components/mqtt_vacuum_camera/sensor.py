@@ -155,8 +155,16 @@ SENSOR_TYPES = {
         key="last_loaded_map",
         icon="mdi:map",
         name="Last loaded map",
+        device_class=SensorDeviceClass.ENUM,
         entity_category=EntityCategory.DIAGNOSTIC,
         value=lambda v, _: v if isinstance(v, str) else "Unknown",
+    ),
+    "robot_in_room": VacuumSensorDescription(
+        key="robot_in_room",
+        icon="mdi:location-enter",
+        name="Current Room",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value=lambda v, _: v if isinstance(v, str) else "Unsupported",
     ),
 }
 
@@ -241,6 +249,7 @@ class VacuumSensor(CoordinatorEntity, SensorEntity):
             )
 
         self.async_write_ha_state()
+
 
 def convert_duration(seconds):
     """Convert seconds in days"""
