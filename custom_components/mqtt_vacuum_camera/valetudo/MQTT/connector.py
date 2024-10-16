@@ -330,10 +330,13 @@ class ValetudoConnector:
         self, event_text:str="event_vacuum_start", data:str =""
     ):
         """Fire Event to reset the camera trims"""
-        _LOGGER.debug(f"{event_text} <<<<<<<<<<<<<<<")
         self._hass.bus.async_fire(
             event_text,
-            event_data=data,
+            event_data={
+                "device_id": f"mqtt_vacuum_{self._file_name}",
+                "type": "mqtt_payload",
+                "data": data,
+            },
             origin=EventOrigin.local,
         )
 
