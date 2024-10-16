@@ -1,8 +1,9 @@
 """
 MQTT Vacuum Camera Coordinator.
-Version: v2024.10.0
+Version: v2024.11.0
 """
 
+import asyncio
 from datetime import timedelta
 import logging
 from typing import Optional
@@ -53,6 +54,15 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         # Initialize shared data and MQTT connector
         self.shared, self.file_name = self._init_shared_data(self.vacuum_topic)
         self.start_up_mqtt()
+        self.scheduled_refresh: asyncio.TimerHandle | None = None
+
+    def schedule_refresh(self) -> None:
+        """Schedule coordinator refresh after 1 second."""
+        if self.scheduled_refresh:
+            self.scheduled_refresh.cancel()
+        self.scheduled_refresh = self.hass.loop.call_later(
+            1, lambda: asyncio.create_task(self.async_refresh())
+        )
 
     async def _async_update_data(self):
         """
@@ -99,9 +109,7 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         """
         Initialize the MQTT Connector.
         """
-        self.connector = ValetudoConnector(
-            self.vacuum_topic, self.hass, self.shared
-        )
+        self.connector = ValetudoConnector(self.vacuum_topic, self.hass, self.shared)
         return self.connector
 
     def update_shared_data(self, dev_info: DeviceInfo) -> tuple[CameraShared, str]:
@@ -134,7 +142,9 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
             # Assume sensor_data is a dictionary or transform it into the expected format
             battery_level = await self.connector.get_battery_level()
             vacuum_state = await self.connector.get_vacuum_status()
+            vacuum_room = self.shared.current_room
             last_run_stats = sensor_data.get("last_run_stats", {})
+            last_loaded_map = sensor_data.get("last_loaded_map", {})
             formatted_data = {
                 "mainBrush": sensor_data.get("mainBrush", 0),
                 "sideBrush": sensor_data.get("sideBrush", 0),
@@ -152,7 +162,8 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
                 "last_run_area": last_run_stats.get("area", 0),
                 "last_bin_out": sensor_data.get("last_bin_out", 0),
                 "last_bin_full": sensor_data.get("last_bin_full", 0),
-                "last_loaded_map": sensor_data.get("last_loaded_map", "None"),
+                "last_loaded_map": last_loaded_map.get("name", "NoMap"),
+                "robot_in_room": vacuum_room.get("in_room", "Unsupported"),
             }
             return formatted_data
         return SENSOR_NO_DATA
