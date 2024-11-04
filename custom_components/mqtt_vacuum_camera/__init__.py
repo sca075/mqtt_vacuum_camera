@@ -30,6 +30,7 @@ from .const import (
     CONF_VACUUM_CONNECTION_STRING,
     CONF_VACUUM_IDENTIFIERS,
     DOMAIN,
+    VACUUM,
 )
 from .coordinator import MQTTVacuumCoordinator
 from .utils.files_operations import (
@@ -72,6 +73,18 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
         # Optionally, trigger other reinitialization steps if needed
         hass.bus.async_fire(f"event_{DOMAIN}_reloaded", context=call.context)
 
+
+
+    async def vacuum_goto(call: ServiceCall) -> None:
+        """Vacuum Go To Action"""
+        entity_id = call.data["entity_id"]
+        x = call.data["x"]
+        y = call.data["y"]
+        vacuum = hass.data[VACUUM].get(entity_id)
+        _LOGGER.debug(f"Test {vacuum} Service on Vacuum Domain")
+        hass.bus.async_fire(f"event_{vacuum}_go_to", context=call.context)
+
+
     async def reset_trims(call: ServiceCall) -> None:
         """Action Reset Map Trims."""
         _LOGGER.debug(f"Resetting trims for {DOMAIN}")
@@ -81,6 +94,7 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
 
     # Register Services
     hass.services.async_register(DOMAIN, "reset_trims", reset_trims)
+    hass.services.async_register(VACUUM, "go_to", vacuum_goto)
     if not hass.services.has_service(DOMAIN, SERVICE_RELOAD):
         async_register_admin_service(hass, DOMAIN, SERVICE_RELOAD, _reload_config)
 
@@ -150,7 +164,7 @@ async def async_unload_entry(
         # Remove services
         hass.services.async_remove(DOMAIN, "reset_trims")
         hass.services.async_remove(DOMAIN, SERVICE_RELOAD)
-
+        hass.services.async_remove(VACUUM, "go_to")
     return unload_ok
 
 

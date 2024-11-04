@@ -1,11 +1,18 @@
 """Constants for the mqtt_vacuum_camera integration."""
 
 """Version v2024.11.0"""
-
+from homeassistant.components.vacuum import DOMAIN as VACUUM_DOMAIN
+from homeassistant.components.camera import DOMAIN as CAMERA_DOMAIN
+from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
 """Required in Config_Flow"""
 PLATFORMS = ["camera"]
 DOMAIN = "mqtt_vacuum_camera"
 DEFAULT_NAME = "mqtt vacuum camera"
+
+CAMERA = CAMERA_DOMAIN
+VACUUM = VACUUM_DOMAIN
+SENSOR = SENSOR_DOMAIN
+
 CAMERA_STORAGE = "valetudo_camera"
 DEFAULT_ROOMS = 1  # 15 is the maximum number of rooms.
 ATTR_ROTATE = "rotate_image"

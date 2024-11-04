@@ -175,11 +175,11 @@ class VacuumSensor(CoordinatorEntity, SensorEntity):
     entity_description: VacuumSensorDescription
 
     def __init__(
-        self,
-        coordinator: MQTTVacuumCoordinator,
-        description: VacuumSensorDescription,
-        sensor_type: str,
-        vacuum_identifier,
+            self,
+            coordinator: MQTTVacuumCoordinator,
+            description: VacuumSensorDescription,
+            sensor_type: str,
+            vacuum_identifier,
     ):
         """Initialize the vacuum sensor."""
         super().__init__(coordinator)
@@ -198,7 +198,7 @@ class VacuumSensor(CoordinatorEntity, SensorEntity):
     async def async_update(self):
         """Update the sensor's state."""
         if self.coordinator.last_update_success:
-            await self._handle_coordinator_update()
+            await self.async_handle_coordinator_update()
 
     @property
     def should_poll(self) -> bool:
@@ -220,7 +220,7 @@ class VacuumSensor(CoordinatorEntity, SensorEntity):
         }
 
     @callback
-    async def _handle_coordinator_update(self):
+    async def async_handle_coordinator_update(self):
         """Fetch the latest state from the coordinator and update the sensor."""
         data = self.coordinator.sensor_data
         if data is None:
