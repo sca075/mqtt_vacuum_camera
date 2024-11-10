@@ -171,8 +171,6 @@ def from_device_ids_to_entity_ids(device_ids: str, hass: HomeAssistant) -> str:
     for device_id in device_ids:
         # Look up device by device_id
         device = dev_reg.async_get(device_id)
-        test_firmware = is_rand256_vacuum(device)
-        _LOGGER.warning(f"Device Rand256 Firmware??? {test_firmware}")
         if device:
             # Find all entities linked to this device_id in the vacuum domain
             for entry in entity_reg.entities.values():
@@ -194,6 +192,19 @@ def get_device_info_from_entity_id(entity_id: str, hass) -> DeviceEntry:
             return device
 
 
+def get_entity_id(
+    entity_id: str | None, device_id: str | None, hass: HomeAssistant
+) -> str | None:
+    vacuum_entity_id = entity_id  # Default to entity_id
+    if device_id:
+        resolved_entities = from_device_ids_to_entity_ids(device_id, hass)
+        vacuum_entity_id = resolved_entities
+    elif not vacuum_entity_id:
+        _LOGGER.error(f"No vacuum entities found for device_id: {device_id}")
+        return None
+    return vacuum_entity_id
+
+
 def generate_service_data_go_to(
     entity_id: str | None,
     device_id: str | None,
@@ -206,13 +217,7 @@ def generate_service_data_go_to(
     Generates the data necessary for sending a service command to the vacuum.
     """
     # Resolve entity ID if only device ID is given
-    vacuum_entity_id = entity_id  # Default to entity_id
-    if device_id:
-        resolved_entities = from_device_ids_to_entity_ids(device_id, hass)
-        vacuum_entity_id = resolved_entities
-    elif not vacuum_entity_id:
-        _LOGGER.error(f"No vacuum entities found for device_id: {device_id}")
-        return None
+    vacuum_entity_id = get_entity_id(entity_id, device_id, hass)
 
     # Get the vacuum topic and check firmware
     base_topic = get_vacuum_mqtt_topic(vacuum_entity_id[0], hass)
@@ -241,3 +246,128 @@ def generate_service_data_go_to(
         "payload": payload,
         "firmware": "Rand256" if is_rand256 else "Valetudo",
     }
+
+
+def generate_service_data_clean_zone(
+    entity_id: str | None,
+    device_id: str | None,
+    zones: list = None,
+    repeat: int = 1,
+    after_cleaning: str = "Base",
+    hass: HomeAssistant = None,
+) -> dict | None:
+    """
+    Generates the data necessary for sending a service command to the vacuum.
+    """
+    # Resolve entity ID if only device ID is given
+    vacuum_entity_id = get_entity_id(entity_id, device_id, hass)
+
+    # Get the vacuum topic and check firmware
+    base_topic = get_vacuum_mqtt_topic(vacuum_entity_id[0], hass)
+    device_info = get_device_info_from_entity_id(vacuum_entity_id[0], hass)
+    is_rand256 = is_rand256_vacuum(device_info)
+
+    # Check if zones contain strings, indicating zone IDs
+    if not is_rand256:
+        topic = f"{base_topic}/ZoneCleaningCapability/start/set"
+    else:
+        topic = f"{base_topic}/custom_command"
+
+    payload = generate_zone_payload(zones, repeat, is_rand256, after_cleaning)
+
+    return {
+        "entity_id": entity_id,
+        "topic": topic,
+        "payload": payload,
+        "firmware": "Rand256" if is_rand256 else "Valetudo",
+    }
+
+
+def generate_zone_payload(zones, repeat, is_rand256, after_cleaning="Base"):
+    """
+    Generates a payload based on the input format for zones and firmware type.
+    Args:
+        zones (list): The list of coordinates.
+        repeat (int): The number of repetitions.
+        is_rand256 (bool): Firmware type flag.
+        after_cleaning (str): The action to take after cleaning.
+    Returns:
+        dict: Payload formatted for the specific firmware.
+    """
+    # Check if zones contain strings, indicating zone IDs
+    if is_rand256 and all(isinstance(zone, (str, dict)) for zone in zones):
+        # Format payload using zone_ids
+        rand256_payload = {
+            "command": "zoned_cleanup",
+            "zone_ids": [
+                {"id": zone, "repeats": repeat} if isinstance(zone, str) else zone
+                for zone in zones
+            ],
+            "afterCleaning": after_cleaning
+        }
+        return rand256_payload
+    else:
+        # Initialize the payload_zones
+
+        payload_zones = []
+
+        # Loop through each zone to determine its format
+        for zone in zones:
+            _LOGGER.debug(f"Zone: {zone}")
+            if len(zone) == 4:
+                # Rectangle format with x1, y1, x2, y2
+                x1, y1, x2, y2 = zone
+                if is_rand256:
+                    payload_zones.append(
+                        {"x1": x1, "y1": y1, "x2": x2, "y2": y2, "repeats": repeat}
+                    )
+                else:
+                    payload_zones.append(
+                        {
+                            "points": {
+                                "pA": {"x": x1, "y": y1},
+                                "pB": {"x": x2, "y": y1},
+                                "pC": {"x": x2, "y": y2},
+                                "pD": {"x": x1, "y": y2},
+                            }
+                        }
+                    )
+
+            elif len(zone) == 8:
+                # Polygon format with x1, y1, x2, y2, x3, y3, x4, y4
+                x1, y1, x2, y2, x3, y3, x4, y4 = zone
+                if is_rand256:
+                    payload_zones.append(
+                        {
+                            "x1": x1,
+                            "y1": y1,
+                            "x2": x2,
+                            "y2": y2,
+                            "x3": x3,
+                            "y3": y3,
+                            "x4": x4,
+                            "y4": y4,
+                            "repeats": repeat,
+                        }
+                    )
+                else:
+                    payload_zones.append(
+                        {
+                            "points": {
+                                "pA": {"x": x1, "y": y1},
+                                "pB": {"x": x2, "y": y2},
+                                "pC": {"x": x3, "y": y3},
+                                "pD": {"x": x4, "y": y4},
+                            }
+                        }
+                    )
+            else:
+                raise ValueError(
+                    "Invalid zone format. Each zone should contain 4 or 8 coordinates."
+                )
+
+        # Return the full payload for the specified firmware
+        if is_rand256:
+            return {"command": "zoned_cleanup", "zone_coordinates": payload_zones}
+        else:
+            return {"zones": payload_zones, "iterations": repeat}
