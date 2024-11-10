@@ -1,4 +1,6 @@
-"""Sensors for Rand256."""
+"""Sensors for Rand256.
+Version 2024.11.0
+"""
 
 from __future__ import annotations
 
@@ -175,11 +177,11 @@ class VacuumSensor(CoordinatorEntity, SensorEntity):
     entity_description: VacuumSensorDescription
 
     def __init__(
-            self,
-            coordinator: MQTTVacuumCoordinator,
-            description: VacuumSensorDescription,
-            sensor_type: str,
-            vacuum_identifier,
+        self,
+        coordinator: MQTTVacuumCoordinator,
+        description: VacuumSensorDescription,
+        sensor_type: str,
+        vacuum_identifier,
     ):
         """Initialize the vacuum sensor."""
         super().__init__(coordinator)
@@ -255,7 +257,6 @@ def convert_duration(seconds):
     """Convert seconds in days"""
     # Create a timedelta object from seconds
     time_delta = timedelta(seconds=float(seconds))
-    _LOGGER.debug(f"duration in second {seconds} converted to {time_delta}")
     if not time_delta:
         return seconds
     return time_delta.total_seconds()

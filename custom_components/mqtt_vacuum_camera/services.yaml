@@ -26,12 +26,12 @@ snapshot:
 
 reset_trims:
 
-go_to:
+vacuum_go_to:
   name: Vacuum go to
   description: Go to the specified coordinates
   target:
     entity:
-      integration: mqtt_vacuum_camera
+      integration: mqtt
       domain: vacuum
   fields:
     x_coord:
@@ -46,5 +46,12 @@ go_to:
       description: y-coordinate
       required: true
       example: 22500
+      selector:
+        text:
+    spot_id:
+      name: Spot Id
+      description: Rand256 pre-defined point
+      required: false
+      example: "Somewhere"
       selector:
         text:

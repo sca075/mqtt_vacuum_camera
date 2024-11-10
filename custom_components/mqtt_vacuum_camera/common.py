@@ -1,6 +1,6 @@
 """
 Common functions for the MQTT Vacuum Camera integration.
-Version: 2024.10.0
+Version: 2024.11.0
 """
 
 from __future__ import annotations
@@ -79,12 +79,18 @@ def get_vacuum_mqtt_topic(vacuum_entity_id: str, hass: HomeAssistant) -> str | N
     Fetches the mqtt topic identifier from the MQTT integration. Returns None if it cannot be found.
     """
     try:
-        return list(
+        # Get the first subscription topic
+        full_topic = list(
             hass.data[GET_MQTT_DATA]
             .debug_info_entities.get(vacuum_entity_id)
             .get("subscriptions")
             .keys()
         )[0]
+
+        # Split and remove the last part after the last "/"
+        topic_parts = full_topic.split("/")
+        base_topic = "/".join(topic_parts[:-1])
+        return str(base_topic)
     except AttributeError:
         return None
 
@@ -151,3 +157,87 @@ def build_full_topic_set(
         full_topics.add(add_topic)
 
     return full_topics
+
+
+def from_device_ids_to_entity_ids(device_ids: str, hass: HomeAssistant) -> str:
+    """
+    Convert a device_id to an entity_id.
+    """
+    # Resolve device_id to entity_id using Home Assistant’s device and entity registries
+    dev_reg = dr.async_get(hass)
+    entity_reg = er.async_get(hass)
+    resolved_entity_ids = []
+
+    for device_id in device_ids:
+        # Look up device by device_id
+        device = dev_reg.async_get(device_id)
+        test_firmware = is_rand256_vacuum(device)
+        _LOGGER.warning(f"Device Rand256 Firmware??? {test_firmware}")
+        if device:
+            # Find all entities linked to this device_id in the vacuum domain
+            for entry in entity_reg.entities.values():
+                if entry.device_id == device_id and entry.domain == "vacuum":
+                    resolved_entity_ids.append(entry.entity_id)
+            return resolved_entity_ids
+
+
+def get_device_info_from_entity_id(entity_id: str, hass) -> DeviceEntry:
+    """
+    Fetch the device info from the device registry based on entity_id.
+    """
+    entity_reg = er.async_get(hass)
+    device_reg = dr.async_get(hass)
+    for entry in entity_reg.entities.values():
+        if entry.entity_id == entity_id and entry.domain == "vacuum":
+            device_id = entry.device_id
+            device = device_reg.async_get(device_id)
+            return device
+
+
+def generate_service_data_go_to(
+    entity_id: str | None,
+    device_id: str | None,
+    x: int = None,
+    y: int = None,
+    spot_id: str = None,
+    hass: HomeAssistant = None,
+) -> dict | None:
+    """
+    Generates the data necessary for sending a service command to the vacuum.
+    """
+    # Resolve entity ID if only device ID is given
+    vacuum_entity_id = entity_id  # Default to entity_id
+    if device_id:
+        resolved_entities = from_device_ids_to_entity_ids(device_id, hass)
+        vacuum_entity_id = resolved_entities
+    elif not vacuum_entity_id:
+        _LOGGER.error(f"No vacuum entities found for device_id: {device_id}")
+        return None
+
+    # Get the vacuum topic and check firmware
+    base_topic = get_vacuum_mqtt_topic(vacuum_entity_id[0], hass)
+    device_info = get_device_info_from_entity_id(vacuum_entity_id[0], hass)
+    is_rand256 = is_rand256_vacuum(device_info)
+    if not is_rand256:
+        topic = f"{base_topic}/GoToLocationCapability/go/set"
+    else:
+        topic = f"{base_topic}/custom_command"
+
+    # Construct payload based on coordinates and firmware
+    rand256_payload = (
+        {"command": "go_to", "spot_coordinates": {"x": int(x), "y": int(y)}}
+        if not spot_id
+        else {"command": "go_to", "spot_id": spot_id}
+    )
+    payload = (
+        {"coordinates": {"x": int(x), "y": int(y)}}
+        if not is_rand256
+        else rand256_payload
+    )
+
+    return {
+        "entity_id": entity_id,
+        "topic": topic,
+        "payload": payload,
+        "firmware": "Rand256" if is_rand256 else "Valetudo",
+    }

@@ -3,7 +3,7 @@ Collections of Drawing Utility
 Drawable is part of the Image_Handler
 used functions to draw the elements on the Numpy Array
 that is actually our camera frame.
-Version: v2024.07.1
+Version: v2024.11.0
 """
 
 from __future__ import annotations
@@ -394,7 +394,11 @@ class Drawable:
 
     @staticmethod
     async def robot(
-        layers: NumpyArray, x: int, y: int, angle: float, fill: Color, log: str = ""
+        layers: NumpyArray,
+        x: int,
+        y: int,
+        angle: float,
+        fill: Color,
     ) -> NumpyArray:
         """
         We Draw the robot with in a smaller array

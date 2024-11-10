@@ -258,7 +258,7 @@ class ValetudoConnector:
         if self._do_it_once:
             #  Request the destinations from ValetudoRe.
             await self.publish_to_broker(
-                "/custom_command", {"command": "get_destinations"}
+                f"{self._mqtt_topic}/custom_command", {"command": "get_destinations"}
             )
             self._do_it_once = False
 
@@ -469,7 +469,7 @@ class ValetudoConnector:
         payload = json.dumps(cust_payload)
         await mqtt.async_publish(
             self._hass,
-            self._mqtt_topic + cust_topic,
+            cust_topic,
             payload,
             _QOS,
         )
