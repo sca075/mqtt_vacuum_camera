@@ -13,11 +13,6 @@ reviews:
   collapse_walkthrough: false
   sequence_diagrams: true
   changed_files_summary: true
-  labeling_instructions:
-    - label: "documentation"
-      if: "files_changed.any? { |file| file.ends_with?('.md') }"
-    - label: "bug"
-      if: "title.downcase.includes?('fix') || title.downcase.includes?('bug')"
   path_filters: []
   path_instructions: []
   abort_on_close: true

@@ -241,8 +241,7 @@ class MapImageHandler(object):
                         x=robot_position[0],
                         y=robot_position[1],
                         angle=robot_position_angle,
-                        fill=colors["robot"],
-                        log=self.file_name,
+                        fill=colors["robot"]
                     )
                 # Resize the image
                 img_np_array = await self.ac.async_auto_trim_and_zoom_image(

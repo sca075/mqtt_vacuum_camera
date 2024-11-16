@@ -1,4 +1,6 @@
-"""Sensors for Rand256."""
+"""Sensors for Rand256.
+Version 2024.11.0
+"""
 
 from __future__ import annotations
 
@@ -198,7 +200,7 @@ class VacuumSensor(CoordinatorEntity, SensorEntity):
     async def async_update(self):
         """Update the sensor's state."""
         if self.coordinator.last_update_success:
-            await self._handle_coordinator_update()
+            await self.async_handle_coordinator_update()
 
     @property
     def should_poll(self) -> bool:
@@ -220,7 +222,7 @@ class VacuumSensor(CoordinatorEntity, SensorEntity):
         }
 
     @callback
-    async def _handle_coordinator_update(self):
+    async def async_handle_coordinator_update(self):
         """Fetch the latest state from the coordinator and update the sensor."""
         data = self.coordinator.sensor_data
         if data is None:
@@ -255,7 +257,6 @@ def convert_duration(seconds):
     """Convert seconds in days"""
     # Create a timedelta object from seconds
     time_delta = timedelta(seconds=float(seconds))
-    _LOGGER.debug(f"duration in second {seconds} converted to {time_delta}")
     if not time_delta:
         return seconds
     return time_delta.total_seconds()
