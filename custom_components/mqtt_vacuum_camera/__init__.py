@@ -227,10 +227,12 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
                     "payload": {
                         "command": "store_map",
                         "name": map_name,
-                    }
+                    },
                 }
             else:
-                raise ServiceValidationError("This feature is only available for rand256 vacuums.")
+                raise ServiceValidationError(
+                    "This feature is only available for rand256 vacuums."
+                )
             try:
                 await data_coordinator.connector.publish_to_broker(
                     service_data["topic"],
@@ -268,10 +270,12 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
                     "payload": {
                         "command": "load_map",
                         "name": map_name,
-                    }
+                    },
                 }
             else:
-                raise ServiceValidationError("This feature is only available for rand256 vacuums.")
+                raise ServiceValidationError(
+                    "This feature is only available for rand256 vacuums."
+                )
             try:
                 await data_coordinator.connector.publish_to_broker(
                     service_data["topic"],
@@ -288,7 +292,6 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
             await hass.services.async_call(DOMAIN, "reset_trims")
         except KeyError as e:
             _LOGGER.error(f"Missing required parameter: {e}")
-
 
     async def reset_trims(call: ServiceCall) -> None:
         """Action Reset Map Trims."""
