@@ -1,0 +1,297 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "vacuum_entity": "Støvsuger Entity ID",
+          "vacuum_config_entry": "Støvsuger konfigurationsdata",
+          "vacuum_map": "Robot Emne",
+          "vacuum_identifiers": "Robot MQTT ID",
+          "unique_id": ""
+        },
+        "data_description": {
+          "vacuum_entity": "Støvsuger Entity ID"
+        },
+        "description": "Kameraopsætning.",
+        "title": "MQTT Kameraopsætning"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "MQTT Kameraindstillinger",
+        "description": "### _Standardindstillinger_:",
+        "data": {
+          "camera_config_action": "Handling"
+        }
+      },
+      "advanced": {
+        "title": "MQTT Kameraindstillinger",
+        "description": "### _Avancerede indstillinger_:",
+        "data": {
+          "camera_config_action": "Handling"
+        }
+      },
+      "download_logs": {
+        "title": "MQTT Kamera Log Fil",
+        "description": "### _Kopier logfiler_:",
+        "data": {
+          "camera_logs_progres": "Hvad skal gøres?"
+        }
+      },
+      "image_opt": {
+        "data": {
+          "rotate_image": "Roter",
+          "margins": "Billedemargener.",
+          "auto_zoom": "Aktivér automatisk zoom",
+          "zoom_lock_ratio": "Bevar proportioner.",
+          "aspect_ratio": "Billedeproportioner.",
+          "enable_www_snapshots": "Eksporter PNG snapshots."
+        },
+        "data_description": {
+          "rotate_image": "Grader 0, 90, 180, 270",
+          "margins": "Automatisk margenbeskæring i pixels.",
+          "aspect_ratio": "Billedeproportioner."
+        },
+        "description": "Kamera billede indstillinger",
+        "title": "Billedeindstillinger"
+      },
+      "image_offset": {
+        "data": {
+          "offset_top": "Offset Top",
+          "offset_bottom": "Offset Bund",
+          "offset_left": "Offset Venstre",
+          "offset_right": "Offset Højre"
+        },
+        "data_description": {
+          "offset_top": "Offset Top rotation 0 i pixels.",
+          "offset_bottom": "Offset Bund rotation 0 i pixels.",
+          "offset_left": "Offset Venste rotation 0 i pixels.",
+          "offset_right": "Offset Højre rotation 0 i pixels."
+        },
+        "description": "Kamerabillede Offset",
+        "title": "Billedeoffset"
+      },
+      "status_text": {
+        "data": {
+          "show_vac_status": "Vis støvsuger status.",
+          "vac_status_font": "Fira Sans",
+          "vac_status_size": "Tekststørrelse",
+          "vac_status_position": "Tekst position: Bund(FRA)",
+          "color_text": "[255, 255, 255]"
+        },
+        "data_description": {
+          "vac_status_font": "Standard skrifttype Fira Serif.",
+          "vac_status_size": "Tekststørrelse standard 50.",
+          "color_text": "Støvsuger statustekst farve."
+        },
+        "description": "Billedeindstillinger",
+        "title": "Statustekst indstillinger"
+      },
+      "base_colours": {
+        "data": {
+          "color_charger": "[255, 128, 0]",
+          "color_move": "[238, 247, 255]",
+          "color_wall": "[255, 255, 0]",
+          "color_robot": "[255, 255, 204]",
+          "color_go_to": "[0, 255, 0]",
+          "color_no_go": "[255, 0, 0]",
+          "color_zone_clean": "[255, 255, 255]",
+          "color_background": "[0, 125, 255]",
+          "add_base_alpha": "Indstil gennemsigtighed:"
+        },
+        "data_description": {
+          "color_charger": "Oplader farve.",
+          "color_move": "Flyttefarve.",
+          "color_wall": "Vægfarve.",
+          "color_robot": "Robotfarve.",
+          "color_go_to": "Gå til farve.",
+          "color_no_go": "No go farve.",
+          "color_zone_clean": "Zone rengøring farve.",
+          "color_background": "Baggrundsfarve."
+        },
+        "description": "Kamera farveindstillinger.",
+        "title": "Farve standardindstillinger"
+      },
+      "alpha_1": {
+        "data": {
+          "alpha_charger": "Oplader Alpha",
+          "alpha_move": "Bevægelse Alpha",
+          "alpha_wall": "Vægge Alpha",
+          "alpha_robot": "Robot Alpha",
+          "alpha_go_to": "Gå til område Alpha",
+          "alpha_no_go": "No Go område Alpha",
+          "alpha_zone_clean": "Zonerengøring Alpha",
+          "alpha_background": "Baggrund Alpha",
+          "alpha_text": "Tekst Alpha"
+        },
+        "description": "Kameraindstillinger. Alpha 1",
+        "title": "Alphakanal standardfarver"
+      },
+      "floor_only": {
+        "data": {
+          "color_room_0": "[135, 206, 250]",
+          "add_room_1_alpha": "Indstil gennemsigtighed:"
+        },
+        "data_description": {
+          "color_room_0": "### **Gulvfarve**"
+        }
+      },
+      "rooms_colours_1": {
+        "data": {
+          "color_room_0": "[135, 206, 250]",
+          "color_room_1": "[176, 226, 255]",
+          "color_room_2": "[165, 105, 18]",
+          "color_room_3": "[164, 211, 238]",
+          "color_room_4": "[141, 182, 205]",
+          "color_room_5": "[96, 123, 139]",
+          "color_room_6": "[224, 255, 255]",
+          "color_room_7": "[209, 238, 238]",
+          "add_room_1_alpha": "Indstil gennemsigtighed:"
+        },
+        "data_description": {
+          "color_room_0": "Rum 1",
+          "color_room_1": "Rum 2",
+          "color_room_2": "Rum 3",
+          "color_room_3": "Rum 4",
+          "color_room_4": "Rum 5",
+          "color_room_5": "Rum 6",
+          "color_room_6": "Rum 7",
+          "color_room_7": "Rum 8"
+        },
+        "description": "Kamerafarve indstillinger.",
+        "title": "Rum 1 til 8 farver"
+      },
+      "rooms_colours_2": {
+        "data": {
+          "color_room_8": "[180, 205, 205]",
+          "color_room_9": "[122, 139, 139]",
+          "color_room_10": "[175, 238, 238]",
+          "color_room_11": "[84, 153, 199]",
+          "color_room_12": "[133, 193, 233]",
+          "color_room_13": "[245, 176, 65]",
+          "color_room_14": "[82, 190, 128]",
+          "color_room_15": "[72, 201, 176]",
+          "add_room_2_alpha": "Indstil gennemsigtighed:"
+        },
+        "data_description": {
+          "color_room_8": "Rum 9",
+          "color_room_9": "Rum 10",
+          "color_room_10": "Rum 11",
+          "color_room_11": "Rum 12",
+          "color_room_12": "Rum 13",
+          "color_room_13": "Rum 14",
+          "color_room_14": "Rum 15",
+          "color_room_15": "Rum 16"
+        },
+        "description": "Kamerafarve indstillinger.",
+        "title": "Rum 9 til 15 farver"
+      },
+      "alpha_floor": {
+        "data": {
+          "alpha_room_0": "Gulv farver"
+        }
+      },
+      "alpha_2": {
+        "data": {
+          "alpha_room_0": "Rum 1",
+          "alpha_room_1": "Rum 2",
+          "alpha_room_2": "Rum 3",
+          "alpha_room_3": "Rum 4",
+          "alpha_room_4": "Rum 5",
+          "alpha_room_5": "Rum 6",
+          "alpha_room_6": "Rum 7",
+          "alpha_room_7": "Rum 8"
+        },
+        "description": "Kameraindstillinger. Alpha 2",
+        "title": "Alphakanal Rumfarver"
+      },
+      "alpha_3": {
+        "data": {
+          "alpha_room_8": "Rum 9",
+          "alpha_room_9": "Rum 10",
+          "alpha_room_10": "Rum 11",
+          "alpha_room_11": "Rum 12",
+          "alpha_room_12": "Rum 13",
+          "alpha_room_13": "Rum 14",
+          "alpha_room_14": "Rum 15",
+          "alpha_room_15": "Rum 16"
+        },
+        "description": "Kameraindstillinger. Alpha 3",
+        "title": "Alphakanal rumfarver"
+      }
+    }
+  },
+  "selector": {
+    "camera_config_action": {
+      "options": {
+        "opt_1": "Konfigurer billede",
+        "opt_2": "Konfigurer generelle farver",
+        "opt_3": "Farver Rum 1 til 8",
+        "opt_4": "Farver Rum 9 til 16",
+        "opt_5": "Avancerede indstillinger"
+      }
+    },
+    "camera_config_advanced": {
+      "options": {
+        "opt_1": "Konfigurer billedeoffset",
+        "opt_2": "Konfigurer statustekst",
+        "opt_3": "Kopier kameralogs til www",
+        "opt_4": "Omdøb farvevalg",
+        "opt_5": "Nulstil kortjusteringer"
+      }
+    },
+    "camera_logs_progres": {
+      "options": {
+        "opt_1": "Kopier logfiler til www",
+        "opt_2": "Fjern logfiler fra www"
+      }
+    },
+    "vacuum_status": {
+      "options": {
+        "connected": "Tilsluttet",
+        "disconnected": "Afbrudt",
+        "charging": "Oplader",
+        "cleaning": "Gør rent",
+        "docked": "Docked",
+        "idle": "Inaktiv",
+        "paused": "Pause",
+        "returning": "Returnerer"
+      }
+    }
+  },
+  "services": {
+    "reload": {
+      "name": "Genindlæs",
+      "description": "Genindlæs MQTT Støvsugerkameraplatformen."
+    },
+    "turn_off": {
+      "name": "[%key:common::action::turn_off%]",
+      "description": "Slukker kameraet."
+    },
+    "turn_on": {
+      "name": "[%key:common::action::turn_on%]",
+      "description": "Tænder kameraet"
+    },
+    "reset_trims": {
+      "name": "Nulstil billedejusteringer",
+      "description": "Nulstil justeringer af kortene."
+    },
+    "snapshot": {
+      "name": "Tag et øjebliksbillede (snapshot)",
+      "description": "Tag et øjebliksbillede (snapshot) fra et kamera.",
+      "fields": {
+        "filename": {
+          "name": "Filnavne",
+          "description": "Skabelon for et filnavn. Tilgængelig variabel er `entity_id`."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "no_entity_id_provided": {
+      "message": "Mangler entity_id i konfigurationen."
+    }
+  }
+}
