@@ -281,7 +281,7 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
                 _LOGGER.warning(f"Error sending command to vacuum: {e}")
                 return
             hass.bus.async_fire(
-                f"event_{DOMAIN}.vacuum_map_save",
+                f"event_{DOMAIN}.vacuum_map_load",
                 {"topic": service_data["topic"]},
                 context=call.context,
             )
