@@ -189,9 +189,6 @@ class ValetudoConnector:
         """
         if connect_state:
             self._mqtt_vac_connect_state = connect_state
-            _LOGGER.info(
-                f"{self._mqtt_topic}: Received vacuum connection status: {self._mqtt_vac_connect_state}."
-            )
         await self.is_disconnect_vacuum()
 
     async def is_disconnect_vacuum(self) -> None:
@@ -228,9 +225,6 @@ class ValetudoConnector:
         """
         if battery_state:
             self._mqtt_vac_battery_level = int(battery_state)
-            _LOGGER.info(
-                f"{self._file_name}: Received vacuum battery level: {self._mqtt_vac_battery_level}%."
-            )
 
     async def hypfer_handle_map_segments(self, msg):
         """
@@ -462,14 +456,17 @@ class ValetudoConnector:
             _LOGGER.warning(f"Type error during payload decoding: {e}")
             raise
 
-    async def publish_to_broker(self, cust_topic: str, cust_payload: dict) -> None:
+    async def publish_to_broker(
+        self, cust_topic: str, cust_payload: dict, retain: bool = False
+    ) -> None:
         """
         Publish data to MQTT using the internal mqtt_topic prefix for custom topics
         """
         payload = json.dumps(cust_payload)
         await mqtt.async_publish(
-            self._hass,
-            cust_topic,
-            payload,
-            _QOS,
+            hass=self._hass,
+            topic=cust_topic,
+            payload=payload,
+            qos=_QOS,
+            retain=retain,
         )

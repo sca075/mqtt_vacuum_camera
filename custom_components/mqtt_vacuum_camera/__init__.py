@@ -14,11 +14,12 @@ from homeassistant.const import (
     Platform,
 )
 from homeassistant.core import ServiceCall
-from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.exceptions import ConfigEntryNotReady, ServiceValidationError
 from homeassistant.helpers.reload import async_register_admin_service
 from homeassistant.helpers.storage import STORAGE_DIR
 
 from .common import (
+    generate_service_data_clean_segments,
     generate_service_data_clean_zone,
     generate_service_data_go_to,
     get_vacuum_device_info,
@@ -74,8 +75,53 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
         # Optionally, trigger other reinitialization steps if needed
         hass.bus.async_fire(f"event_{DOMAIN}_reloaded", context=call.context)
 
+    async def vacuum_clean_segments(call: ServiceCall) -> None:
+        """Vacuum Clean Segments (rooms) Action"""
+        try:
+            # Retrieve coordinates
+            segments_lists = call.data.get("segments")
+            repeats = call.data.get("repeats")
+
+            # Attempt to get entity_id or device_id
+            entity_ids = call.data.get("entity_id")
+            device_ids = call.data.get("device_id")
+
+            service_data = generate_service_data_clean_segments(
+                coordinator=data_coordinator,
+                entity_id=entity_ids,
+                device_id=device_ids,
+                segments=segments_lists,
+                repeat=repeats,
+                hass=hass,
+            )
+            _LOGGER.debug(f">>>>>> Service data: {service_data}")
+            if not service_data:
+                raise ServiceValidationError("No Service data generated. Aborting!")
+            # elif not service_data["have_rooms"]:
+            #     raise ServiceValidationError("No rooms found in the vacuum map.")
+            else:
+                try:
+                    await data_coordinator.connector.publish_to_broker(
+                        service_data["topic"],
+                        service_data["payload"],
+                    )
+                except Exception as e:
+                    _LOGGER.warning(f"Error sending command to vacuum: {e}")
+                    return
+                hass.bus.async_fire(
+                    f"event_{DOMAIN}.vacuum_clean_zone",
+                    {
+                        "topic": service_data["topic"],
+                        "zones": segments_lists,
+                        "repeats": repeats,
+                    },
+                    context=call.context,
+                )
+        except KeyError as e:
+            _LOGGER.error(f"Missing required parameter: {e}")
+
     async def vacuum_clean_zone(call: ServiceCall) -> None:
-        """Vacuum Go To Action"""
+        """Vacuum Zone Clean Action"""
         try:
             # Retrieve coordinates
             zone_lists = call.data.get("zone")
@@ -90,7 +136,11 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
             device_ids = call.data.get("device_id")
 
             service_data = generate_service_data_clean_zone(
-                entity_id=entity_ids, device_id=device_ids, zones=zone_lists, repeat=repeats, hass=hass
+                entity_id=entity_ids,
+                device_id=device_ids,
+                zones=zone_lists,
+                repeat=repeats,
+                hass=hass,
             )
             if not service_data:
                 _LOGGER.warning("No Service data generated. Aborting!")
@@ -167,6 +217,7 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
         async_register_admin_service(hass, DOMAIN, SERVICE_RELOAD, _reload_config)
     hass.services.async_register(DOMAIN, "vacuum_go_to", vacuum_goto)
     hass.services.async_register(DOMAIN, "vacuum_clean_zone", vacuum_clean_zone)
+    hass.services.async_register(DOMAIN, "vacuum_clean_segments", vacuum_clean_segments)
 
     hass.data.setdefault(DOMAIN, {})
     hass_data = dict(entry.data)
@@ -235,6 +286,7 @@ async def async_unload_entry(
         hass.services.async_remove(DOMAIN, SERVICE_RELOAD)
         hass.services.async_remove(DOMAIN, "vacuum_go_to")
         hass.services.async_remove(DOMAIN, "vacuum_clean_zone")
+        hass.services.async_remove(DOMAIN, "vacuum_clean_segments")
     return unload_ok
 
 
