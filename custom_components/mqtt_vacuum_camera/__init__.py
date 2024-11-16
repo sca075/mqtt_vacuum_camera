@@ -24,6 +24,8 @@ from .common import (
     generate_service_data_go_to,
     get_vacuum_device_info,
     get_vacuum_mqtt_topic,
+    get_entity_id,
+    get_device_info_from_entity_id,
     is_rand256_vacuum,
     update_options,
 )
@@ -204,6 +206,90 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
         except KeyError as e:
             _LOGGER.error(f"Missing required parameter: {e}")
 
+    async def vacuum_map_save(call: ServiceCall) -> None:
+        """Vacuum Map Save Action"""
+        try:
+            # Attempt to get entity_id or device_id
+            entity_ids = call.data.get("entity_id")
+            device_ids = call.data.get("device_id")
+
+            vacuum_entity_ids = get_entity_id(entity_ids, device_ids, hass)[0]
+            base_topic = get_vacuum_mqtt_topic(vacuum_entity_ids, hass)
+            device_info = get_device_info_from_entity_id(vacuum_entity_ids, hass)
+            is_a_rand256 = is_rand256_vacuum(device_info)
+
+            map_name = call.data.get("map_name")
+            if not map_name:
+                raise ServiceValidationError("A map name is required to save the map.")
+            if is_a_rand256:
+                service_data = {
+                    "topic": f"{base_topic}/custom_command",
+                    "payload": {
+                        "command": "store_map",
+                        "name": map_name,
+                    }
+                }
+            else:
+                raise ServiceValidationError("This feature is only available for rand256 vacuums.")
+            try:
+                await data_coordinator.connector.publish_to_broker(
+                    service_data["topic"],
+                    service_data["payload"],
+                )
+            except Exception as e:
+                _LOGGER.warning(f"Error sending command to vacuum: {e}")
+                return
+            hass.bus.async_fire(
+                f"event_{DOMAIN}.vacuum_map_save",
+                {"topic": service_data["topic"]},
+                context=call.context,
+            )
+        except KeyError as e:
+            _LOGGER.error(f"Missing required parameter: {e}")
+
+    async def vacuum_map_load(call: ServiceCall) -> None:
+        """Vacuum Map Load Action"""
+        try:
+            # Attempt to get entity_id or device_id
+            entity_ids = call.data.get("entity_id")
+            device_ids = call.data.get("device_id")
+
+            vacuum_entity_ids = get_entity_id(entity_ids, device_ids, hass)[0]
+            base_topic = get_vacuum_mqtt_topic(vacuum_entity_ids, hass)
+            device_info = get_device_info_from_entity_id(vacuum_entity_ids, hass)
+            is_a_rand256 = is_rand256_vacuum(device_info)
+
+            map_name = call.data.get("map_name")
+            if not map_name:
+                raise ServiceValidationError("A map name is required to load the map.")
+            if is_a_rand256:
+                service_data = {
+                    "topic": f"{base_topic}/custom_command",
+                    "payload": {
+                        "command": "load_map",
+                        "name": map_name,
+                    }
+                }
+            else:
+                raise ServiceValidationError("This feature is only available for rand256 vacuums.")
+            try:
+                await data_coordinator.connector.publish_to_broker(
+                    service_data["topic"],
+                    service_data["payload"],
+                )
+            except Exception as e:
+                _LOGGER.warning(f"Error sending command to vacuum: {e}")
+                return
+            hass.bus.async_fire(
+                f"event_{DOMAIN}.vacuum_map_save",
+                {"topic": service_data["topic"]},
+                context=call.context,
+            )
+            await hass.services.async_call(DOMAIN, "reset_trims")
+        except KeyError as e:
+            _LOGGER.error(f"Missing required parameter: {e}")
+
+
     async def reset_trims(call: ServiceCall) -> None:
         """Action Reset Map Trims."""
         _LOGGER.debug(f"Resetting trims for {DOMAIN}")
@@ -218,6 +304,8 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
     hass.services.async_register(DOMAIN, "vacuum_go_to", vacuum_goto)
     hass.services.async_register(DOMAIN, "vacuum_clean_zone", vacuum_clean_zone)
     hass.services.async_register(DOMAIN, "vacuum_clean_segments", vacuum_clean_segments)
+    hass.services.async_register(DOMAIN, "vacuum_map_save", vacuum_map_save)
+    hass.services.async_register(DOMAIN, "vacuum_map_load", vacuum_map_load)
 
     hass.data.setdefault(DOMAIN, {})
     hass_data = dict(entry.data)
@@ -287,6 +375,8 @@ async def async_unload_entry(
         hass.services.async_remove(DOMAIN, "vacuum_go_to")
         hass.services.async_remove(DOMAIN, "vacuum_clean_zone")
         hass.services.async_remove(DOMAIN, "vacuum_clean_segments")
+        hass.services.async_remove(DOMAIN, "vacuum_map_save")
+        hass.services.async_remove(DOMAIN, "vacuum_map_load")
     return unload_ok
 
 

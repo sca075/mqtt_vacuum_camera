@@ -6,6 +6,9 @@
         "turn_off": "mdi:video-off",
         "turn_on": "mdi:video",
         "vacuum_go_to" : "mdi:map-marker",
-        "vacuum_clean_zone" : "mdi:map-clock"
+        "vacuum_clean_zone" : "mdi:map-clock",
+        "vacuum_clean_segment" : "mdi:map-marker-multiple",
+        "vacuum_map_save" : "mdi:file-document-edit",
+        "vacuum_map_load" : "mdi:file-document-check"
     }
 }
