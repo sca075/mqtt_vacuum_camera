@@ -1,7 +1,7 @@
 """
 Image Draw Class for Valetudo Rand256 Image Handling.
 This class is used to simplify the ImageHandler class.
-Version: 2024.10.0
+Version: 2024.11.1
 """
 
 from __future__ import annotations
@@ -366,6 +366,5 @@ class ImageDraw:
                 robot_pos[1],
                 robot_angle,
                 color_robot,
-                self.img_h.file_name,
             )
         return np_array
