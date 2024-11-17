@@ -27,6 +27,7 @@ from .const import (
     DOMAIN,
 )
 from .coordinator import MQTTVacuumCoordinator
+from .utils.camera.camera_services import reset_trims, reload_config
 from .utils.files_operations import (
     async_clean_up_all_auto_crop_files,
     async_get_translations_vacuum_id,
@@ -49,35 +50,6 @@ async def options_update_listener(hass: core.HomeAssistant, config_entry: Config
 
 async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up platform from a ConfigEntry."""
-
-    async def _reload_config(call: ServiceCall) -> None:
-        """Reload the camera platform for all entities in the integration."""
-        _LOGGER.debug(f"Reloading the config entry for all {DOMAIN} entities")
-        # Retrieve all config entries associated with the DOMAIN
-        camera_entries = hass.config_entries.async_entries(DOMAIN)
-
-        # Iterate over each config entry and check if it's LOADED
-        for camera_entry in camera_entries:
-            if camera_entry.state == ConfigEntryState.LOADED:
-                _LOGGER.debug(f"Unloading entry: {camera_entry.entry_id}")
-                await async_unload_entry(hass, camera_entry)
-
-                _LOGGER.debug(f"Reloading entry: {camera_entry.entry_id}")
-                await async_setup_entry(hass, camera_entry)
-            else:
-                _LOGGER.debug(
-                    f"Skipping entry {camera_entry.entry_id} as it is NOT_LOADED"
-                )
-
-        # Optionally, trigger other reinitialization steps if needed
-        hass.bus.async_fire(f"event_{DOMAIN}_reloaded", context=call.context)
-
-    async def reset_trims(call: ServiceCall) -> None:
-        """Action Reset Map Trims."""
-        _LOGGER.debug(f"Resetting trims for {DOMAIN}")
-        await async_clean_up_all_auto_crop_files(hass)
-        await hass.services.async_call(DOMAIN, "reload")
-        hass.bus.async_fire(f"event_{DOMAIN}_reset_trims", context=call.context)
 
     hass.data.setdefault(DOMAIN, {})
     hass_data = dict(entry.data)
@@ -109,10 +81,14 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
         }
     )
     # Register Services
-    hass.services.async_register(DOMAIN, "reset_trims", reset_trims)
     if not hass.services.has_service(DOMAIN, SERVICE_RELOAD):
-        async_register_admin_service(hass, DOMAIN, SERVICE_RELOAD, _reload_config)
-    await async_register_vacuums_services(hass, data_coordinator)
+        async_register_admin_service(
+            hass, DOMAIN, SERVICE_RELOAD, lambda call: reload_config(hass, DOMAIN)
+        )
+        hass.services.async_register(
+            DOMAIN, "reset_trims", lambda call: reset_trims(hass, call, DOMAIN)
+        )
+        await async_register_vacuums_services(hass, data_coordinator)
     # Registers update listener to update config entry when options are updated.
     unsub_options_update_listener = entry.add_update_listener(options_update_listener)
     # Store a reference to the unsubscribe function to clean up if an entry is unloaded.
@@ -146,9 +122,10 @@ async def async_unload_entry(
         entry_data = hass.data[DOMAIN].pop(entry.entry_id)
         entry_data["unsub_options_update_listener"]()
         # Remove services
-        hass.services.async_remove(DOMAIN, "reset_trims")
-        hass.services.async_remove(DOMAIN, SERVICE_RELOAD)
-        await async_remove_vacuums_services(hass)
+        if not hass.data[DOMAIN]:
+            hass.services.async_remove(DOMAIN, "reset_trims")
+            hass.services.async_remove(DOMAIN, SERVICE_RELOAD)
+            await async_remove_vacuums_services(hass)
     return unload_ok
 
 

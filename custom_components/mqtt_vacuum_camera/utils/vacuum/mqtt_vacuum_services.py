@@ -8,13 +8,13 @@ import logging
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import ServiceValidationError
 
-from custom_components.mqtt_vacuum_camera.common import (
+from ...common import (
     get_device_info_from_entity_id,
     get_entity_id,
     get_vacuum_mqtt_topic,
     is_rand256_vacuum,
 )
-from custom_components.mqtt_vacuum_camera.const import DOMAIN
+from ...const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ async def vacuum_clean_segments(call: ServiceCall, coordinator) -> None:
                     service_data["payload"],
                 )
             except Exception as e:
-                raise ServiceValidationError(f"Error sending command to vacuum: {e}")
+                raise ServiceValidationError(f"Error sending command to vacuum: {e}") from e
 
             coordinator.hass.bus.async_fire(
                 f"event_{DOMAIN}.vacuum_clean_zone",
@@ -62,7 +62,7 @@ async def vacuum_clean_segments(call: ServiceCall, coordinator) -> None:
                 context=call.context,
             )
     except KeyError as e:
-        raise ServiceValidationError(f"Missing required parameter: {e}")
+        raise ServiceValidationError(f"Missing required parameter: {e}") from e
 
 
 async def vacuum_clean_zone(call: ServiceCall, coordinator) -> None:
@@ -95,7 +95,7 @@ async def vacuum_clean_zone(call: ServiceCall, coordinator) -> None:
                 service_data["payload"],
             )
         except Exception as e:
-            raise ServiceValidationError(f"Error sending command to vacuum: {e}")
+            raise ServiceValidationError(f"Error sending command to vacuum: {e}") from e
         coordinator.hass.bus.async_fire(
             f"event_{DOMAIN}.vacuum_clean_zone",
             {
@@ -106,7 +106,7 @@ async def vacuum_clean_zone(call: ServiceCall, coordinator) -> None:
             context=call.context,
         )
     except KeyError as e:
-        raise ServiceValidationError(f"Missing required parameter: {e}")
+        raise ServiceValidationError(f"Missing required parameter: {e}") from e
 
 
 async def vacuum_goto(call: ServiceCall, coordinator) -> None:
@@ -138,7 +138,7 @@ async def vacuum_goto(call: ServiceCall, coordinator) -> None:
                 service_data["payload"],
             )
         except Exception as e:
-            raise ServiceValidationError(f"Error sending command to vacuum: {e}")
+            raise ServiceValidationError(f"Error sending command to vacuum: {e}") from e
 
         coordinator.hass.bus.async_fire(
             f"event_{DOMAIN}.vacuum_go_to",
@@ -146,7 +146,7 @@ async def vacuum_goto(call: ServiceCall, coordinator) -> None:
             context=call.context,
         )
     except KeyError as e:
-        raise ServiceValidationError(f"Missing required parameter: {e}")
+        raise ServiceValidationError(f"Missing required parameter: {e}") from e
 
 
 async def vacuum_map_save(call: ServiceCall, coordinator) -> None:
@@ -181,7 +181,7 @@ async def vacuum_map_save(call: ServiceCall, coordinator) -> None:
                 service_data["payload"],
             )
         except Exception as e:
-            raise ServiceValidationError(f"Error sending command to vacuum: {e}")
+            raise ServiceValidationError(f"Error sending command to vacuum: {e}") from e
 
         coordinator.hass.bus.async_fire(
             f"event_{DOMAIN}.vacuum_map_save",
@@ -189,7 +189,7 @@ async def vacuum_map_save(call: ServiceCall, coordinator) -> None:
             context=call.context,
         )
     except KeyError as e:
-        raise ServiceValidationError(f"Missing required parameter: {e}")
+        raise ServiceValidationError(f"Missing required parameter: {e}") from e
 
 
 async def vacuum_map_load(call: ServiceCall, coordinator) -> None:
@@ -224,7 +224,7 @@ async def vacuum_map_load(call: ServiceCall, coordinator) -> None:
                 service_data["payload"],
             )
         except Exception as e:
-            raise ServiceValidationError(f"Error sending command to vacuum: {e}")
+            raise ServiceValidationError(f"Error sending command to vacuum: {e}") from e
 
         coordinator.hass.bus.async_fire(
             f"event_{DOMAIN}.vacuum_map_load",
@@ -233,7 +233,7 @@ async def vacuum_map_load(call: ServiceCall, coordinator) -> None:
         )
         await coordinator.hass.services.async_call(DOMAIN, "reset_trims")
     except KeyError as e:
-        raise ServiceValidationError(f"Missing required parameter: {e}")
+        raise ServiceValidationError(f"Missing required parameter: {e}") from e
 
 
 def resolve_datas(
