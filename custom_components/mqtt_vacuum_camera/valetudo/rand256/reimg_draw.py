@@ -366,6 +366,5 @@ class ImageDraw:
                 robot_pos[1],
                 robot_angle,
                 color_robot,
-                self.img_h.file_name,
             )
         return np_array
