@@ -2,7 +2,7 @@
 Hypfer Image Handler Class.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Version: 2024.10.0
+Version: 2024.11.1
 """
 
 from __future__ import annotations
@@ -298,7 +298,7 @@ class MapImageHandler(object):
             else:
                 _LOGGER.debug(f"{self.file_name}: Frame Completed.")
                 return pil_img
-        except RuntimeError or RuntimeWarning as e:
+        except (RuntimeError, RuntimeWarning) as e:
             _LOGGER.warning(
                 f"{self.file_name}: Error {e} during image creation.",
                 exc_info=True,
@@ -375,7 +375,12 @@ class MapImageHandler(object):
         :param hsf: Height scale factor.
         :param width: Width of the image.
         :param height: Height of the image.
+        :return: A tuple containing the adjusted (width, height) values
+        :raises ValueError: If any input parameters are negative
         """
+
+        if any(x < 0 for x in (wsf, hsf, width, height)):
+            raise ValueError("All parameters must be positive integers")
 
         if wsf == 1 and hsf == 1:
             self.imu.set_image_offset_ratio_1_1(width, height)
