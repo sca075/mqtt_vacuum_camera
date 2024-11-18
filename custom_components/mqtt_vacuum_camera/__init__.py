@@ -2,6 +2,7 @@
 Version: 2024.11.1"""
 
 import logging
+from functools import partial
 import os
 
 from homeassistant import config_entries, core
@@ -27,7 +28,7 @@ from .const import (
     DOMAIN,
 )
 from .coordinator import MQTTVacuumCoordinator
-from .utils.camera.camera_services import reset_trims, reload_config
+from .utils.camera.camera_services import reset_trims, reload_camera_config
 from .utils.files_operations import (
     async_clean_up_all_auto_crop_files,
     async_get_translations_vacuum_id,
@@ -83,10 +84,10 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
     # Register Services
     if not hass.services.has_service(DOMAIN, SERVICE_RELOAD):
         async_register_admin_service(
-            hass, DOMAIN, SERVICE_RELOAD, lambda call: reload_config(hass, DOMAIN)
+            hass, DOMAIN, SERVICE_RELOAD, partial(reload_camera_config, hass=hass)
         )
         hass.services.async_register(
-            DOMAIN, "reset_trims", lambda call: reset_trims(hass, call, DOMAIN)
+            DOMAIN, "reset_trims", partial(reset_trims, hass=hass)
         )
         await async_register_vacuums_services(hass, data_coordinator)
     # Registers update listener to update config entry when options are updated.
