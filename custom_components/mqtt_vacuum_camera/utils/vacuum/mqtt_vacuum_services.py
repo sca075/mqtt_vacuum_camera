@@ -50,7 +50,9 @@ async def vacuum_clean_segments(call: ServiceCall, coordinator) -> None:
                     service_data["payload"],
                 )
             except Exception as e:
-                raise ServiceValidationError(f"Error sending command to vacuum: {e}") from e
+                raise ServiceValidationError(
+                    f"Error sending command to vacuum: {e}"
+                ) from e
 
             coordinator.hass.bus.async_fire(
                 f"event_{DOMAIN}.vacuum_clean_zone",

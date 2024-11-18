@@ -9,11 +9,12 @@ from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import SERVICE_RELOAD
 
 from ...utils.files_operations import async_clean_up_all_auto_crop_files
-from ...const import  DOMAIN
+from ...const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
-async def reset_trims( call: ServiceCall, hass: HomeAssistant) -> None:
+
+async def reset_trims(call: ServiceCall, hass: HomeAssistant) -> None:
     """Action Reset Map Trims."""
     _LOGGER.debug(f"Resetting trims for {DOMAIN}")
     try:
@@ -46,13 +47,13 @@ async def reload_camera_config(call: ServiceCall, hass: HomeAssistant) -> None:
                 _LOGGER.error(f"Error processing entry {camera_entry.entry_id}: {err}")
                 continue
         else:
-            _LOGGER.debug(
-                f"Skipping entry {camera_entry.entry_id} as it is NOT_LOADED"
-            )
+            _LOGGER.debug(f"Skipping entry {camera_entry.entry_id} as it is NOT_LOADED")
 
-    hass.bus.async_fire(f"event_{DOMAIN}_reloaded",
-                        event_data= {
-                            "processed": processed,
-                            "total": total_entries,
-                        },
-                        context=call.context)
+    hass.bus.async_fire(
+        f"event_{DOMAIN}_reloaded",
+        event_data={
+            "processed": processed,
+            "total": total_entries,
+        },
+        context=call.context,
+    )
