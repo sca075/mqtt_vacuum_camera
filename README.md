@@ -33,20 +33,11 @@ Our current focus is evolving beyond map rendering to provide full vacuum contro
 <details>
    <summary>Planned in the next Release</summary>
 
-#### 2024.11.0 - **Rand256 Vacuum Interface Improved**
+#### 2024.12.0 - **Fully implement Coordinator**
 - **Features:**
-  - Camera adding support for [MapLoader](https://github.com/pkoehlers/maploader) -> maps change = reset_trims.
-  - Adding sensors for the current room and the number of recognized segments (rooms) to Rand256 sensors.
-  - Services for Rand256 vacuum control already implemented in HA:
-     - Start
-     - Stop
-     - Pause
-     - Return to dock
-  - New services added for Rand256:
-     - Go to specific coordinates
-     - Clean spot
-     - Clean area(s)
-     - Clean room(s)
+  - Added on 2024.11.0 the Actions for Rand256 to load and save maps fully integrate [MapLoader](https://github.com/pkoehlers/maploader).
+  - Fix #263: The init process will be coordinated as we have Cameras and Sensors that need to be initialized.
+  - Fix #276 "Unknown error" when some vacuum data is not reachable (refactoring).
 
 </details>
 
@@ -122,6 +113,8 @@ Our setup guide also includes **important** informations on how to setup the [lo
 10) No Go, Virtual Walls, Zone Clean, Active Segments and Obstacles are draw on the map when available.
 11) [Auto Zooming the room (segment)](./docs/auto_zoom.md) when the vacuum is cleaning it.
 12) Support Actions "reload" and "reset_trims" implemented for changing the camera settings without restarting Home Assistant.
+13) Rand256 sensors are pre-configured from the integration, this will allow you to have all the sensors available in Home Assistant.
+14) Added the [**Actions**](./docs/actions.md) for Rand256 / Hypfer to control the vacuums without to format the MQTT messages.
 </details>
 
 
