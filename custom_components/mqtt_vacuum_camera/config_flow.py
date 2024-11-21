@@ -13,6 +13,7 @@ from homeassistant import config_entries
 from homeassistant.components.vacuum import DOMAIN as ZONE_VACUUM
 from homeassistant.const import CONF_UNIQUE_ID
 from homeassistant.core import callback
+from homeassistant.exceptions import ConfigEntryError
 from homeassistant.helpers import entity_registry as er
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.selector import (
@@ -114,10 +115,13 @@ class MQTTCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             vacuum_entity_id = user_input["vacuum_entity"]
             entity_registry = er.async_get(self.hass)
             vacuum_entity = entity_registry.async_get(vacuum_entity_id)
+            vacuum_topic = get_vacuum_mqtt_topic(vacuum_entity_id, self.hass)
+            if not vacuum_topic:
+                raise ConfigEntryError(
+                    f"Vacuum {vacuum_entity_id} not supported! No MQTT topic found."
+                )
 
-            unique_id = get_vacuum_unique_id_from_mqtt_topic(
-                get_vacuum_mqtt_topic(vacuum_entity_id, self.hass)
-            )
+            unique_id = get_vacuum_unique_id_from_mqtt_topic(vacuum_topic)
 
             for existing_entity in self._async_current_entries():
                 if (
