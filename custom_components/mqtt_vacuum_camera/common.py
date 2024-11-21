@@ -99,6 +99,9 @@ def get_vacuum_unique_id_from_mqtt_topic(vacuum_mqtt_topic: str) -> str:
     """
     Returns the unique_id computed from the mqtt_topic for the vacuum.
     """
+    if not vacuum_mqtt_topic or "/" not in vacuum_mqtt_topic:
+        raise ValueError("Invalid MQTT topic format")
+
     return vacuum_mqtt_topic.split("/")[1].lower() + "_camera"
 
 
