@@ -216,6 +216,12 @@ class ValetudoConnector:
         /StatusStateAttribute/error_description is for Hypfer.
         """
         self._mqtt_vac_err = errors
+        # Fire the valetudo_error event when an error is detected
+        self._hass.bus.async_fire(
+            "valetudo_error",
+            {"entity_id": f"mqtt_vacuum.{self._file_name}", "error": self._mqtt_vac_err},
+            EventOrigin.local,
+        )
         _LOGGER.info(f"{self._mqtt_topic}: Received vacuum Error: {self._mqtt_vac_err}")
 
     async def hypfer_handle_battery_level(self, battery_state) -> None:
