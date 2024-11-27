@@ -112,6 +112,7 @@ class ValetudoConnector:
     async def get_vacuum_status(self) -> str:
         """Return the vacuum status."""
         if (self._mqtt_vac_stat == "error") or (self._mqtt_vac_re_stat == "error"):
+            # Fire the valetudo_error event when an error is detected
             self._hass.bus.async_fire(
                 "valetudo_error",
                 {"entity_id": f"vacuum.{self._file_name}", "error": self._mqtt_vac_err},
@@ -224,12 +225,6 @@ class ValetudoConnector:
         """
         self._mqtt_vac_err = errors
         _LOGGER.info(f"{self._mqtt_topic}: Received vacuum Error: {self._mqtt_vac_err}")
-        # Fire the valetudo_error event when an error is detected
-        self._hass.bus.async_fire(
-            "valetudo_error",
-            {"entity_id": f"vacuum.{self._file_name}", "error": self._mqtt_vac_err},
-            EventOrigin.local,
-        )
 
     async def hypfer_handle_battery_level(self, battery_state) -> None:
         """
