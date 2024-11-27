@@ -1,5 +1,5 @@
 """
-Version: v2024.11.0
+Version: v2024.12.0
 """
 
 import asyncio

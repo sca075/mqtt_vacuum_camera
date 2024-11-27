@@ -399,7 +399,7 @@ class Drawable:
         y: int,
         angle: float,
         fill: Color,
-        robot_state: str = None,
+        robot_state: str | None = None,
     ) -> NumpyArray:
         """
         We Draw the robot with in a smaller array
