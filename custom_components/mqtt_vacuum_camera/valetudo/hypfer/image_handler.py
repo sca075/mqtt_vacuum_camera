@@ -234,6 +234,7 @@ class MapImageHandler(object):
                 if self.shared.vacuum_state == "docked":
                     # Adjust the robot angle.
                     robot_position_angle -= 180
+
                 if robot_pos:
                     # Draw the robot
                     img_np_array = await self.draw.robot(
@@ -242,6 +243,7 @@ class MapImageHandler(object):
                         y=robot_position[1],
                         angle=robot_position_angle,
                         fill=colors["robot"],
+                        robot_state=self.shared.vacuum_state,
                     )
                 # Resize the image
                 img_np_array = await self.ac.async_auto_trim_and_zoom_image(

@@ -111,6 +111,13 @@ class ValetudoConnector:
 
     async def get_vacuum_status(self) -> str:
         """Return the vacuum status."""
+        if (self._mqtt_vac_stat == "error") or (self._mqtt_vac_re_stat == "error"):
+            self._hass.bus.async_fire(
+                "valetudo_error",
+                {"entity_id": f"vacuum.{self._file_name}", "error": self._mqtt_vac_err},
+                EventOrigin.local,
+            )
+            return "error"
         if self._mqtt_vac_stat:
             return str(self._mqtt_vac_stat)
         if self._mqtt_vac_re_stat:
@@ -216,13 +223,13 @@ class ValetudoConnector:
         /StatusStateAttribute/error_description is for Hypfer.
         """
         self._mqtt_vac_err = errors
+        _LOGGER.info(f"{self._mqtt_topic}: Received vacuum Error: {self._mqtt_vac_err}")
         # Fire the valetudo_error event when an error is detected
         self._hass.bus.async_fire(
             "valetudo_error",
-            {"entity_id": f"mqtt_vacuum.{self._file_name}", "error": self._mqtt_vac_err},
+            {"entity_id": f"vacuum.{self._file_name}", "error": self._mqtt_vac_err},
             EventOrigin.local,
         )
-        _LOGGER.info(f"{self._mqtt_topic}: Received vacuum Error: {self._mqtt_vac_err}")
 
     async def hypfer_handle_battery_level(self, battery_state) -> None:
         """
@@ -385,6 +392,12 @@ class ValetudoConnector:
             await self.async_handle_start_command(msg)
         elif self._rcv_topic == f"{self._mqtt_topic}/attributes":
             self.rrm_attributes = await self.async_decode_mqtt_payload(msg)
+            try:
+                self._mqtt_vac_err = self.rrm_attributes.get("last_run_stats", {}).get(
+                    "errorDescription", None
+                )
+            except AttributeError:
+                _LOGGER.debug("Error in getting last_run_stats")
         elif self._rcv_topic == f"{self._mqtt_topic}/maploader/map":
             await self.handle_pkohelrs_maploader_map(msg)
         elif self._rcv_topic == f"{self._mqtt_topic}/maploader/status":
