@@ -1,5 +1,5 @@
 """Sensors for Rand256.
-Version 2024.11.0
+Version 2024.12.0
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.const import AREA_SQUARE_METERS, PERCENTAGE, UnitOfTime
+from homeassistant.const import PERCENTAGE, UnitOfTime, UnitOfArea
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity import EntityCategory
@@ -81,7 +81,7 @@ SENSOR_TYPES = {
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "current_clean_area": VacuumSensorDescription(
-        native_unit_of_measurement=AREA_SQUARE_METERS,
+        native_unit_of_measurement=UnitOfArea.SQUARE_METERS,
         key="currentCleanArea",
         icon="mdi:texture-box",
         name="Current clean area",
@@ -133,7 +133,7 @@ SENSOR_TYPES = {
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "last_run_area": VacuumSensorDescription(
-        native_unit_of_measurement=AREA_SQUARE_METERS,
+        native_unit_of_measurement=UnitOfArea.SQUARE_METERS,
         key="last_run_area",
         icon="mdi:texture-box",
         name="Last run area",
