@@ -1,5 +1,5 @@
 """
-Version: v2024.11.0
+Version: v2024.12.0
 """
 
 import asyncio
@@ -111,6 +111,14 @@ class ValetudoConnector:
 
     async def get_vacuum_status(self) -> str:
         """Return the vacuum status."""
+        if (self._mqtt_vac_stat == "error") or (self._mqtt_vac_re_stat == "error"):
+            # Fire the valetudo_error event when an error is detected
+            self._hass.bus.async_fire(
+                "valetudo_error",
+                {"entity_id": f"vacuum.{self._file_name}", "error": self._mqtt_vac_err},
+                EventOrigin.local,
+            )
+            return "error"
         if self._mqtt_vac_stat:
             return str(self._mqtt_vac_stat)
         if self._mqtt_vac_re_stat:
@@ -379,6 +387,12 @@ class ValetudoConnector:
             await self.async_handle_start_command(msg)
         elif self._rcv_topic == f"{self._mqtt_topic}/attributes":
             self.rrm_attributes = await self.async_decode_mqtt_payload(msg)
+            try:
+                self._mqtt_vac_err = self.rrm_attributes.get("last_run_stats", {}).get(
+                    "errorDescription", None
+                )
+            except AttributeError:
+                _LOGGER.debug("Error in getting last_run_stats")
         elif self._rcv_topic == f"{self._mqtt_topic}/maploader/map":
             await self.handle_pkohelrs_maploader_map(msg)
         elif self._rcv_topic == f"{self._mqtt_topic}/maploader/status":

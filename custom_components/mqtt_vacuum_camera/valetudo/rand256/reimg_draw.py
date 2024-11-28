@@ -1,7 +1,7 @@
 """
 Image Draw Class for Valetudo Rand256 Image Handling.
 This class is used to simplify the ImageHandler class.
-Version: 2024.11.1
+Version: 2024.12.0
 """
 
 from __future__ import annotations
@@ -361,10 +361,11 @@ class ImageDraw:
         """Draw the robot on the map."""
         if robot_pos and robot_angle:
             np_array = await self.draw.robot(
-                np_array,
-                robot_pos[0],
-                robot_pos[1],
-                robot_angle,
-                color_robot,
+                layers=np_array,
+                x=robot_pos[0],
+                y=robot_pos[1],
+                angle=robot_angle,
+                fill=color_robot,
+                robot_state=self.img_h.shared.vacuum_state,
             )
         return np_array

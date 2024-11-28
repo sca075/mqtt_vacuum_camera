@@ -3,7 +3,7 @@ Collections of Drawing Utility
 Drawable is part of the Image_Handler
 used functions to draw the elements on the Numpy Array
 that is actually our camera frame.
-Version: v2024.11.0
+Version: v2024.12.0
 """
 
 from __future__ import annotations
@@ -399,6 +399,7 @@ class Drawable:
         y: int,
         angle: float,
         fill: Color,
+        robot_state: str | None = None,
     ) -> NumpyArray:
         """
         We Draw the robot with in a smaller array
@@ -424,7 +425,10 @@ class Drawable:
         r_lidar = r_scaled * 3  # Scale factor for the lidar
         r_button = r_scaled * 1  # scale factor of the button
         # Outline colour from fill colour
-        outline = (fill[0] // 2, fill[1] // 2, fill[2] // 2, fill[3])
+        if robot_state == "error":
+            outline = (255, 0, 0, fill[3])
+        else:
+            outline = (fill[0] // 2, fill[1] // 2, fill[2] // 2, fill[3])
         # Draw the robot outline
         tmp_layer = Drawable._filled_circle(
             tmp_layer, (tmp_x, tmp_y), radius, fill, outline, 1
