@@ -1,7 +1,7 @@
 """
 Image Draw Class for Valetudo Hypfer Image Handling.
 This class is used to simplify the ImageHandler class.
-Version: 2024.10.0
+Version: 2024.12.0
 """
 
 from __future__ import annotations
@@ -96,33 +96,39 @@ class ImageDraw:
             obstacle_data = entity_dict.get("obstacle")
         except KeyError:
             _LOGGER.info(f"{self.file_name} No obstacle found.")
-        else:
-            obstacle_positions = []
-            if obstacle_data:
-                for obstacle in obstacle_data:
-                    label = obstacle.get("metaData", {}).get("label")
-                    points = obstacle.get("points", [])
+            return np_array
 
-                    if label and points:
-                        obstacle_pos = {
-                            "label": label,
-                            "points": {"x": points[0], "y": points[1]},
-                        }
-                        obstacle_positions.append(obstacle_pos)
+        if not obstacle_data:
+            _LOGGER.debug(f"{self.file_name} No obstacle data available.")
+            return np_array
 
-            # List of dictionaries containing label and points for each obstacle
-            # and draw obstacles on the map
-            if obstacle_positions:
-                self.img_h.draw.draw_obstacles(
-                    np_array, obstacle_positions, color_no_go
-                )
-                _LOGGER.debug(
-                    f"{self.file_name} All obstacle positions: %s",
-                    obstacle_positions,
-                )
-                return np_array
-            else:
-                return np_array
+        obstacle_objects = []  # List of ObstacleData objects
+
+        for obstacle in obstacle_data:
+            meta_data = obstacle.get("metaData", {})
+            label = meta_data.get("label")
+            points = obstacle.get("points", [])
+            image_path = meta_data.get("image")
+            image_id = meta_data.get("id")
+
+            if label and points:
+                obstacle_obj = {
+                    "label": label,
+                    "id": image_id,
+                    "image_path": image_path,
+                    "points": {"x": points[0], "y": points[1]},
+                }
+                obstacle_objects.append(obstacle_obj)
+
+        # Store obstacle data in shared data
+        self.img_h.shared.obstacles_data = [obs.__dict__ for obs in obstacle_objects]
+
+        # Draw obstacles on the map
+        if obstacle_objects:
+            self.img_h.draw.draw_obstacles(np_array, obstacle_objects, color_no_go)
+            _LOGGER.debug(f"{self.file_name} All obstacle detected: {obstacle_objects}")
+
+        return np_array
 
     async def async_draw_charger(
         self,

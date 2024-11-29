@@ -1,6 +1,6 @@
 """
 Camera
-Version: v2024.11.0
+Version: v2024.12.0
 """
 
 from __future__ import annotations
@@ -26,7 +26,10 @@ from homeassistant.helpers.storage import STORAGE_DIR
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from psutil_home_assistant import PsutilWrapper as ProcInsp
 
-from .camera_processing import CameraProcessor
+from custom_components.mqtt_vacuum_camera.utils.camera.camera_processing import (
+    CameraProcessor,
+)
+
 from .common import get_vacuum_unique_id_from_mqtt_topic
 from .const import (
     ATTR_FRIENDLY_NAME,

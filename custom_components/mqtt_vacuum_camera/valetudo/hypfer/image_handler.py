@@ -25,7 +25,7 @@ from ...types import (
 from ...utils.auto_crop import AutoCrop
 from ...utils.colors_man import color_grey
 from ...utils.drawable import Drawable
-from ...utils.handler_utils import ImageUtils as ImUtils
+from ...utils.image_handler_utils import ImageUtils as ImUtils
 from ...utils.img_data import ImageData
 from ...valetudo.hypfer.image_draw import ImageDraw as ImDraw
 

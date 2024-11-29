@@ -2,7 +2,7 @@
 Image Handler Module for Valetudo Re Vacuums.
 It returns the PIL PNG image frame relative to the Map Data extrapolated from the vacuum json.
 It also returns calibration, rooms data to the card and other images information to the camera.
-Version: v2024.10.0
+Version: v2024.12.0
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ from homeassistant.core import HomeAssistant
 from ...const import COLORS, DEFAULT_IMAGE_SIZE, DEFAULT_PIXEL_SIZE
 from ...types import Colors, JsonType, PilPNG, RobotPosition, RoomsProperties
 from ...utils.auto_crop import AutoCrop
-from ...utils.handler_utils import ImageUtils as ImUtils
+from ...utils.image_handler_utils import ImageUtils as ImUtils
 from ...utils.img_data import ImageData
 from .reimg_draw import ImageDraw
 

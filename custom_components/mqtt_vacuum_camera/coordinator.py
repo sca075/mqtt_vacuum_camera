@@ -1,6 +1,6 @@
 """
 MQTT Vacuum Camera Coordinator.
-Version: v2024.11.0
+Version: v2024.12.0
 """
 
 import asyncio
@@ -15,7 +15,11 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .camera_shared import CameraShared, CameraSharedManager
+from custom_components.mqtt_vacuum_camera.utils.camera.camera_shared import (
+    CameraShared,
+    CameraSharedManager,
+)
+
 from .common import get_camera_device_info
 from .const import DEFAULT_NAME, SENSOR_NO_DATA
 from .valetudo.MQTT.connector import ValetudoConnector

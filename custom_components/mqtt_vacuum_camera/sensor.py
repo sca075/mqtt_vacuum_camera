@@ -15,7 +15,7 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.const import PERCENTAGE, UnitOfTime, UnitOfArea
+from homeassistant.const import PERCENTAGE, UnitOfArea, UnitOfTime
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity import EntityCategory

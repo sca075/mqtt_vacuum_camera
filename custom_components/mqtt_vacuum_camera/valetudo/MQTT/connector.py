@@ -51,10 +51,8 @@ class ValetudoConnector:
         self._shared = camera_shared
         self._room_store = RoomStore()
         self._vacuum_api_url = None
-        vacuum_identifier = self._mqtt_topic.split('/')[-1]
-        self.mqtt_hass_vacuum = (
-            f"homeassistant/vacuum/{vacuum_identifier}/{vacuum_identifier}_vacuum/config"
-        )
+        vacuum_identifier = self._mqtt_topic.split("/")[-1]
+        self.mqtt_hass_vacuum = f"homeassistant/vacuum/{vacuum_identifier}/{vacuum_identifier}_vacuum/config"
         self.command_topic = (
             f"{self._mqtt_topic}/hass/{vacuum_identifier}_vacuum/command"
         )
@@ -408,7 +406,9 @@ class ValetudoConnector:
             await self.handle_pkohelrs_maploader_state(msg)
         elif self._rcv_topic == self.mqtt_hass_vacuum:
             temp_json = await self.async_decode_mqtt_payload(msg)
-            self._vacuum_api_url = temp_json.get('device', {}).get('configuration_url', None)
+            self._vacuum_api_url = temp_json.get("device", {}).get(
+                "configuration_url", None
+            )
 
     async def async_subscribe_to_topics(self) -> None:
         """Subscribe to the MQTT topics for Hypfer and ValetudoRe."""
@@ -424,7 +424,7 @@ class ValetudoConnector:
                 topic_suffixes=DECODED_TOPICS,
                 add_topic=self.rrm_command,
             )
-            #add_topic=self.mqtt_hass_vacuum, for Hypfer config data.
+            # add_topic=self.mqtt_hass_vacuum, for Hypfer config data.
             topics_with_default_encoding.add(self.mqtt_hass_vacuum)
 
             for x in topics_with_none_encoding:
