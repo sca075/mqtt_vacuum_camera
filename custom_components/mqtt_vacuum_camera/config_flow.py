@@ -1,4 +1,4 @@
-"""config_flow 2024.10.0
+"""config_flow 2024.12.0
 IMPORTANT: Maintain code when adding new options to the camera
 it will be mandatory to update const.py and common.py update_options.
 Format of the new constants must be CONST_NAME = "const_name" update also
@@ -182,6 +182,8 @@ class MQTTCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 class OptionsFlowHandler(OptionsFlow):
     def __init__(self, config_entry: ConfigEntry):
         """Initialize options flow."""
+        if not config_entry:
+            raise ConfigEntryError("Config entry is required.")
         self.camera_config = config_entry
         self.unique_id = self.camera_config.unique_id
         self.camera_options = {}
@@ -867,12 +869,16 @@ class OptionsFlowHandler(OptionsFlow):
         Save the options in a sorted way. It stores all the options.
         """
         _LOGGER.info(f"Storing Updated Camera ({self.camera_config.unique_id}) Options.")
-        _, vacuum_device = get_vacuum_device_info(
-            self.camera_config.data.get(CONF_VACUUM_CONFIG_ENTRY_ID), self.hass
-        )
-        opt_update = await update_options(self.bk_options, self.camera_options)
-        _LOGGER.debug(f"updated options:{dict(opt_update)}")
-        return self.async_create_entry(
-            title="",
-            data=opt_update,
-        )
+        try:
+            _, vacuum_device = get_vacuum_device_info(
+                self.camera_config.data.get(CONF_VACUUM_CONFIG_ENTRY_ID), self.hass
+            )
+            opt_update = await update_options(self.bk_options, self.camera_options)
+            _LOGGER.debug(f"updated options:{dict(opt_update)}")
+            return self.async_create_entry(
+                title="",
+                data=opt_update,
+            )
+        except Exception as e:
+            _LOGGER.error(f"Error in storing the options: {e}")
+            return self.async_abort(reason="error")

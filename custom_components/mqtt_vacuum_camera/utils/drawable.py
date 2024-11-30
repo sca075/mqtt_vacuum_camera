@@ -22,7 +22,8 @@ class Drawable:
     This class contains static methods to draw various elements on the Numpy Arrays (images).
     We cant use openCV because it is not supported by the Home Assistant OS.
     """
-
+    ERROR_OUTLINE = (255, 0, 0, 255)  # Red color for error messages
+    ERROR_COLOR = (255, 0, 0, 191)  # Red color with lower opacity for error outlines
     @staticmethod
     async def create_empty_image(
         width: int, height: int, background_color: Color
@@ -426,8 +427,8 @@ class Drawable:
         r_button = r_scaled * 1  # scale factor of the button
         # Outline colour from fill colour
         if robot_state == "error":
-            outline = (255, 0, 0, 255)
-            fill = (255, 0, 0, 191)
+            outline = Drawable.ERROR_OUTLINE
+            fill = Drawable.ERROR_COLOR
         else:
             outline = (fill[0] // 2, fill[1] // 2, fill[2] // 2, fill[3])
         # Draw the robot outline
