@@ -324,7 +324,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
                     f"{self._file_name}: Camera image data update available: {process_data}"
                 )
             try:
-                parsed_json, is_a_test = await self._process_parsed_json(True)
+                parsed_json, is_a_test = await self._process_parsed_json()
             except ValueError:
                 self._vac_json_available = "Error"
                 pass

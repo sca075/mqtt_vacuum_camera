@@ -426,7 +426,8 @@ class Drawable:
         r_button = r_scaled * 1  # scale factor of the button
         # Outline colour from fill colour
         if robot_state == "error":
-            outline = (255, 0, 0, fill[3])
+            outline = (255, 0, 0, 255)
+            fill = (255, 0, 0, 191)
         else:
             outline = (fill[0] // 2, fill[1] // 2, fill[2] // 2, fill[3])
         # Draw the robot outline
