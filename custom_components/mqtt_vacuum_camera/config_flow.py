@@ -1,4 +1,4 @@
-"""config_flow 2024.10.0
+"""config_flow 2024.12.0
 IMPORTANT: Maintain code when adding new options to the camera
 it will be mandatory to update const.py and common.py update_options.
 Format of the new constants must be CONST_NAME = "const_name" update also
@@ -7,9 +7,11 @@ sting.json and en.json please.
 
 import logging
 import os
+from copy import deepcopy
 from typing import Any, Dict, Optional
 
 from homeassistant import config_entries
+from homeassistant.config_entries import OptionsFlow, ConfigEntry
 from homeassistant.components.vacuum import DOMAIN as ZONE_VACUUM
 from homeassistant.const import CONF_UNIQUE_ID
 from homeassistant.core import callback
@@ -107,7 +109,7 @@ class MQTTCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
     def __init__(self):
         self.data = {}
-        self.options = {}
+        self.camera_options = {}
         self.name = ""
 
     async def async_step_user(self, user_input: Optional[Dict[str, Any]] = None):
@@ -141,7 +143,7 @@ class MQTTCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             # set the unique_id in the entry configuration
             await self.async_set_unique_id(unique_id=unique_id)
             # set default options
-            self.options.update(DEFAULT_VALUES)
+            self.camera_options.update(DEFAULT_VALUES)
             # create the path for storing the snapshots.
             storage_path = f"{self.hass.config.path(STORAGE_DIR)}/{CAMERA_STORAGE}"
             if not os.path.exists(storage_path):
@@ -163,7 +165,7 @@ class MQTTCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_create_entry(
                 title=vacuum_device.name + " Camera",
                 data=self.data,
-                options=self.options,
+                options=self.camera_options,
             )
 
         return self.async_show_form(step_id="user", data_schema=VACUUM_SCHEMA)
@@ -171,26 +173,28 @@ class MQTTCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(
-        config_entry: config_entries.ConfigEntry,
+        config_entry: ConfigEntry,
     ) -> config_entries.OptionsFlow:
         """Create the options flow."""
         return OptionsFlowHandler(config_entry)
 
 
-class OptionsFlowHandler(config_entries.OptionsFlow):
-    def __init__(self, config_entry: config_entries.ConfigEntry):
+class OptionsFlowHandler(OptionsFlow):
+    def __init__(self, config_entry: ConfigEntry):
         """Initialize options flow."""
-        self.config_entry = config_entry
-        self.unique_id = self.config_entry.unique_id
-        self.options = {}
-        self.bk_options = self.config_entry.options
+        if not config_entry:
+            raise ConfigEntryError("Config entry is required.")
+        self.camera_config = config_entry
+        self.unique_id = self.camera_config.unique_id
+        self.camera_options = {}
+        self.bk_options = deepcopy(dict(self.camera_config.options))
         self.file_name = extract_file_name(self.unique_id)
         self._check_alpha = False
         self.number_of_rooms = DEFAULT_ROOMS
         _LOGGER.debug(
             "Options edit in progress.. options before edit: %s", dict(self.bk_options)
         )
-        options_values = list(self.config_entry.options.values())
+        options_values = list(self.camera_config.options.values())
         if len(options_values) > 0:
             self.config_dict: NumberSelectorConfig = ALPHA_VALUES
             config_size: NumberSelectorConfig = TEXT_SIZE_VALUES
@@ -345,7 +349,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         """
         Start the options menu configuration.
         """
-        _LOGGER.info(f"{self.config_entry.unique_id}: Options Configuration Started.")
+        _LOGGER.info(f"{self.camera_config.unique_id}: Options Configuration Started.")
         errors = {}
 
         self.number_of_rooms = await RoomStore().async_get_rooms_count(self.file_name)
@@ -466,7 +470,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         """
         # "get_svg_file": user_input.get(CONF_EXPORT_SVG),
         if user_input is not None:
-            self.options.update(
+            self.camera_options.update(
                 {
                     "rotate_image": user_input.get(ATTR_ROTATE),
                     "margins": user_input.get(ATTR_MARGINS),
@@ -482,7 +486,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="image_opt",
             data_schema=self.IMG_SCHEMA,
-            description_placeholders=self.options,
+            description_placeholders=self.camera_options,
         )
 
     async def async_step_image_offset(
@@ -492,7 +496,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         Images Offset Configuration
         """
         if user_input is not None:
-            self.options.update(
+            self.camera_options.update(
                 {
                     "offset_top": user_input.get(CONF_OFFSET_TOP),
                     "offset_bottom": user_input.get(CONF_OFFSET_BOTTOM),
@@ -506,7 +510,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="image_offset",
             data_schema=self.IMG_SCHEMA_2,
-            description_placeholders=self.options,
+            description_placeholders=self.camera_options,
         )
 
     async def async_step_status_text(self, user_input: Optional[Dict[str, Any]] = None):
@@ -514,7 +518,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         Images Status Text Configuration
         """
         if user_input is not None:
-            self.options.update(
+            self.camera_options.update(
                 {
                     "show_vac_status": user_input.get(CONF_VAC_STAT),
                     "vac_status_font": user_input.get(CONF_VAC_STAT_FONT),
@@ -529,7 +533,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="status_text",
             data_schema=self.TEXT_OPTIONS_SCHEMA,
-            description_placeholders=self.options,
+            description_placeholders=self.camera_options,
         )
 
     async def async_step_base_colours(
@@ -540,7 +544,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         """
         _LOGGER.debug("Base Colours Configuration Started")
         if user_input is not None:
-            self.options.update(
+            self.camera_options.update(
                 {
                     "color_charger": user_input.get(COLOR_CHARGER),
                     "color_move": user_input.get(COLOR_MOVE),
@@ -562,7 +566,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="base_colours",
             data_schema=self.COLOR_BASE_SCHEMA,
-            description_placeholders=self.options,
+            description_placeholders=self.camera_options,
         )
 
     async def async_step_alpha_1(self, user_input: Optional[Dict[str, Any]] = None):
@@ -571,7 +575,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         """
         _LOGGER.debug("Base Colours Alpha Configuration Started")
         if user_input is not None:
-            self.options.update(
+            self.camera_options.update(
                 {
                     "alpha_charger": user_input.get(ALPHA_CHARGER),
                     "alpha_move": user_input.get(ALPHA_MOVE),
@@ -589,7 +593,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="alpha_1",
             data_schema=self.ALPHA_1_SCHEMA,
-            description_placeholders=self.options,
+            description_placeholders=self.camera_options,
         )
 
     async def async_step_floor_only(self, user_input: Optional[Dict[str, Any]] = None):
@@ -598,7 +602,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         if user_input is not None:
             # Update options based on user input
-            self.options.update({"color_room_0": user_input.get(COLOR_ROOM_0)})
+            self.camera_options.update({"color_room_0": user_input.get(COLOR_ROOM_0)})
             self._check_alpha = user_input.get(IS_ALPHA_R1, False)
             if self._check_alpha:
                 return await self.async_step_alpha_floor()
@@ -607,7 +611,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         fields = {
             vol.Optional(
-                COLOR_ROOM_0, default=self.config_entry.options.get("color_room_0")
+                COLOR_ROOM_0, default=self.camera_config.options.get("color_room_0")
             ): ColorRGBSelector(),
             vol.Optional(IS_ALPHA_R1, default=self._check_alpha): BooleanSelector(),
         }
@@ -615,7 +619,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="floor_only",
             data_schema=vol.Schema(fields),
-            description_placeholders=self.options,
+            description_placeholders=self.camera_options,
         )
 
     async def async_step_rooms_colours_1(
@@ -633,7 +637,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             # Update options based on user input
             for i in range(rooms_count):
                 room_key = f"color_room_{i}"
-                self.options.update({room_key: user_input.get(room_key)})
+                self.camera_options.update({room_key: user_input.get(room_key)})
 
             self._check_alpha = user_input.get(IS_ALPHA_R1, False)
 
@@ -648,7 +652,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             fields[
                 vol.Optional(
                     f"color_room_{i}",
-                    default=self.config_entry.options.get(f"color_room_{i}"),
+                    default=self.camera_config.options.get(f"color_room_{i}"),
                 )
             ] = ColorRGBSelector()
 
@@ -657,7 +661,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="rooms_colours_1",
             data_schema=vol.Schema(fields),
-            description_placeholders=self.options,
+            description_placeholders=self.camera_options,
         )
 
     async def async_step_rooms_colours_2(
@@ -669,7 +673,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             # Update options based on user input
             for i in range(8, min(self.number_of_rooms, 16)):
                 room_key = f"color_room_{i}"
-                self.options.update({room_key: user_input.get(room_key)})
+                self.camera_options.update({room_key: user_input.get(room_key)})
 
             self._check_alpha = user_input.get(IS_ALPHA_R2, False)
 
@@ -684,7 +688,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             fields[
                 vol.Optional(
                     f"color_room_{i}",
-                    default=self.config_entry.options.get(f"color_room_{i}"),
+                    default=self.camera_config.options.get(f"color_room_{i}"),
                 )
             ] = ColorRGBSelector()
 
@@ -693,7 +697,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="rooms_colours_2",
             data_schema=vol.Schema(fields),
-            description_placeholders=self.options,
+            description_placeholders=self.camera_options,
         )
 
     async def async_step_alpha_floor(self, user_input: Optional[Dict[str, Any]] = None):
@@ -702,19 +706,19 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         if user_input is not None:
             # Update options based on user input
-            self.options.update({"alpha_room_0": user_input.get(ALPHA_ROOM_0)})
+            self.camera_options.update({"alpha_room_0": user_input.get(ALPHA_ROOM_0)})
             return await self.async_step_opt_save()
 
         fields = {
             vol.Optional(
-                ALPHA_ROOM_0, default=self.config_entry.options.get("alpha_room_0")
+                ALPHA_ROOM_0, default=self.camera_config.options.get("alpha_room_0")
             ): NumberSelector(self.config_dict),
         }
 
         return self.async_show_form(
             step_id="alpha_floor",
             data_schema=vol.Schema(fields),
-            description_placeholders=self.options,
+            description_placeholders=self.camera_options,
         )
 
     async def async_step_alpha_2(self, user_input: Optional[Dict[str, Any]] = None):
@@ -730,7 +734,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             # Update options based on user input
             for i in range(rooms_count):
                 room_key = f"alpha_room_{i}"
-                self.options.update({room_key: user_input.get(room_key)})
+                self.camera_options.update({room_key: user_input.get(room_key)})
 
             return await self.async_step_opt_save()
 
@@ -740,14 +744,14 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             fields[
                 vol.Optional(
                     f"alpha_room_{i}",
-                    default=self.config_entry.options.get(f"alpha_room_{i}"),
+                    default=self.camera_config.options.get(f"alpha_room_{i}"),
                 )
             ] = NumberSelector(self.config_dict)
 
         return self.async_show_form(
             step_id="alpha_2",
             data_schema=vol.Schema(fields),
-            description_placeholders=self.options,
+            description_placeholders=self.camera_options,
         )
 
     async def async_step_alpha_3(self, user_input: Optional[Dict[str, Any]] = None):
@@ -757,7 +761,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             # Update options based on user input
             for i in range(8, min(self.number_of_rooms, 16)):
                 room_key = f"alpha_room_{i}"
-                self.options.update({room_key: user_input.get(room_key)})
+                self.camera_options.update({room_key: user_input.get(room_key)})
 
             return await self.async_step_opt_save()
 
@@ -767,14 +771,14 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             fields[
                 vol.Optional(
                     f"alpha_room_{i}",
-                    default=self.config_entry.options.get(f"alpha_room_{i}"),
+                    default=self.camera_config.options.get(f"alpha_room_{i}"),
                 )
             ] = NumberSelector(self.config_dict)
 
         return self.async_show_form(
             step_id="alpha_3",
             data_schema=vol.Schema(fields),
-            description_placeholders=self.options,
+            description_placeholders=self.camera_options,
         )
 
     async def async_step_logs_move(self):
@@ -787,7 +791,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             run_async_save_logs(self.hass, self.file_name)
         )
 
-        self.options = self.bk_options
+        self.camera_options = self.bk_options
         return await self.async_step_opt_save()
 
     async def async_step_logs_remove(self):
@@ -797,7 +801,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         ha_dir = self.hass.config.path()
         destination_path = f"{ha_dir}/www/{self.file_name}.zip"
         await async_del_file(destination_path)
-        self.options = self.bk_options
+        self.camera_options = self.bk_options
         return await self.async_step_opt_save()
 
     async def async_step_download_logs(self, user_input=None):
@@ -839,7 +843,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         if (user_input is None) and self.bk_options:
             if self.hass:
                 await async_rename_room_description(hass, self.file_name)
-                self.options = self.bk_options
+                self.camera_options = self.bk_options
             return await self.async_step_opt_save()
 
         return self.async_show_form(step_id="rename_translations")
@@ -855,7 +859,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     STORAGE_DIR, CAMERA_STORAGE, f"auto_crop_{self.file_name}.json"
                 )
                 await async_del_file(file_path)
-                self.options = self.bk_options
+                self.camera_options = self.bk_options
             return await self.async_step_opt_save()
 
         return self.async_show_form(step_id="reset_map_trims")
@@ -864,13 +868,17 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         """
         Save the options in a sorted way. It stores all the options.
         """
-        _LOGGER.info(f"Storing Updated Camera ({self.config_entry.unique_id}) Options.")
-        _, vacuum_device = get_vacuum_device_info(
-            self.config_entry.data.get(CONF_VACUUM_CONFIG_ENTRY_ID), self.hass
-        )
-        opt_update = await update_options(self.bk_options, self.options)
-        _LOGGER.debug(f"updated options:{dict(opt_update)}")
-        return self.async_create_entry(
-            title="",
-            data=opt_update,
-        )
+        _LOGGER.info(f"Storing Updated Camera ({self.camera_config.unique_id}) Options.")
+        try:
+            _, vacuum_device = get_vacuum_device_info(
+                self.camera_config.data.get(CONF_VACUUM_CONFIG_ENTRY_ID), self.hass
+            )
+            opt_update = await update_options(self.bk_options, self.camera_options)
+            _LOGGER.debug(f"updated options:{dict(opt_update)}")
+            return self.async_create_entry(
+                title="",
+                data=opt_update,
+            )
+        except Exception as e:
+            _LOGGER.error(f"Error in storing the options: {e}")
+            return self.async_abort(reason="error")
