@@ -10,6 +10,7 @@ import hashlib
 import json
 import logging
 
+from ...common import compose_obstacle_links
 from ...types import Color, JsonType, NumpyArray, RobotPosition
 
 _LOGGER = logging.getLogger(__name__)
@@ -106,10 +107,10 @@ class ImageDraw:
 
         for obstacle in obstacle_data:
             meta_data = obstacle.get("metaData", {})
-            label = meta_data.get("label")
+            label = meta_data.get("label", "")
             points = obstacle.get("points", [])
             image_path = meta_data.get("image")
-            image_id = meta_data.get("id")
+            image_id = meta_data.get("id", "None")
 
             if label and points:
                 obstacle_obj = {
@@ -121,12 +122,14 @@ class ImageDraw:
                 obstacle_objects.append(obstacle_obj)
 
         # Store obstacle data in shared data
-        self.img_h.shared.obstacles_data = [obs.__dict__ for obs in obstacle_objects]
+        self.img_h.shared.obstacles_data = compose_obstacle_links(
+            self.img_h.shared.vacuum_api, obstacle_objects
+        )
 
         # Draw obstacles on the map
         if obstacle_objects:
-            self.img_h.draw.draw_obstacles(np_array, obstacle_objects, color_no_go)
             _LOGGER.debug(f"{self.file_name} All obstacle detected: {obstacle_objects}")
+            self.img_h.draw.draw_obstacles(np_array, obstacle_objects, color_no_go)
 
         return np_array
 

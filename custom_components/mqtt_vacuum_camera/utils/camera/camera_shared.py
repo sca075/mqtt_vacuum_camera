@@ -76,6 +76,7 @@ class CameraShared(object):
         self.vacuum_status_position: bool = True  # Vacuum status text image top
         self.snapshot_take = False  # Take snapshot
         self.vacuum_error = None  # Vacuum error
+        self.vacuum_api = None  # Vacuum API
         self.vac_json_id = None  # Vacuum json id
         self.margins = "100"  # Image margins
         self.obstacles_data = None  # Obstacles data

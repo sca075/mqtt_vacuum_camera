@@ -50,7 +50,6 @@ class ValetudoConnector:
         self._file_name = camera_shared.file_name
         self._shared = camera_shared
         self._room_store = RoomStore()
-        self._vacuum_api_url = None
         vacuum_identifier = self._mqtt_topic.split("/")[-1]
         self.mqtt_hass_vacuum = f"homeassistant/vacuum/{vacuum_identifier}/{vacuum_identifier}_vacuum/config"
         self.command_topic = (
@@ -144,10 +143,6 @@ class ValetudoConnector:
     async def get_destinations(self) -> any:
         """Return the destinations used only for Rand256."""
         return self._rrm_destinations
-
-    async def get_vacuum_api_url(self) -> str:
-        """Return the vacuum API URL."""
-        return self._vacuum_api_url
 
     async def get_rand256_active_segments(self) -> list:
         """Return the active segments used only for Rand256."""
@@ -406,9 +401,10 @@ class ValetudoConnector:
             await self.handle_pkohelrs_maploader_state(msg)
         elif self._rcv_topic == self.mqtt_hass_vacuum:
             temp_json = await self.async_decode_mqtt_payload(msg)
-            self._vacuum_api_url = temp_json.get("device", {}).get(
+            self._shared.vacuum_api = temp_json.get("device", {}).get(
                 "configuration_url", None
             )
+            _LOGGER.debug(f"Vacuum API URL: {self._shared.vacuum_api}")
 
     async def async_subscribe_to_topics(self) -> None:
         """Subscribe to the MQTT topics for Hypfer and ValetudoRe."""
