@@ -12,13 +12,19 @@ from asyncio import gather, get_event_loop
 import concurrent.futures
 import logging
 
-from .const import NOT_STREAMING_STATES
-from .types import Color, JsonType, PilPNG
-from .utils.drawable import Drawable as Draw
-from .utils.files_operations import async_get_active_user_language
-from .utils.status_text import StatusText
-from .valetudo.hypfer.image_handler import MapImageHandler
-from .valetudo.rand256.image_handler import ReImageHandler
+from custom_components.mqtt_vacuum_camera.const import NOT_STREAMING_STATES
+from custom_components.mqtt_vacuum_camera.types import Color, JsonType, PilPNG
+from custom_components.mqtt_vacuum_camera.utils.drawable import Drawable as Draw
+from custom_components.mqtt_vacuum_camera.utils.files_operations import (
+    async_get_active_user_language,
+)
+from custom_components.mqtt_vacuum_camera.utils.status_text import StatusText
+from custom_components.mqtt_vacuum_camera.valetudo.hypfer.image_handler import (
+    MapImageHandler,
+)
+from custom_components.mqtt_vacuum_camera.valetudo.rand256.image_handler import (
+    ReImageHandler,
+)
 
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.propagate = True

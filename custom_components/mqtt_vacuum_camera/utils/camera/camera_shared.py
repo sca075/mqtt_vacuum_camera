@@ -1,13 +1,13 @@
 """
 Class Camera Shared.
 Keep the data between the modules.
-Version: v2024.10.0
+Version: v2024.12.0
 """
 
 import asyncio
 import logging
 
-from .const import (
+from custom_components.mqtt_vacuum_camera.const import (
     ATTR_CALIBRATION_POINTS,
     ATTR_MARGINS,
     ATTR_POINTS,
@@ -33,7 +33,7 @@ from .const import (
     CONF_ZOOM_LOCK_RATIO,
     DEFAULT_VALUES,
 )
-from .types import Colors
+from custom_components.mqtt_vacuum_camera.types import Colors
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -76,8 +76,10 @@ class CameraShared(object):
         self.vacuum_status_position: bool = True  # Vacuum status text image top
         self.snapshot_take = False  # Take snapshot
         self.vacuum_error = None  # Vacuum error
+        self.vacuum_api = None  # Vacuum API
         self.vac_json_id = None  # Vacuum json id
         self.margins = "100"  # Image margins
+        self.obstacles_data = None  # Obstacles data
         self.offset_top = 0  # Image offset top
         self.offset_down = 0  # Image offset down
         self.offset_left = 0  # Image offset left
@@ -121,7 +123,7 @@ class CameraShared(object):
         return {key: getattr(self, key) for key in args}
 
     def generate_attributes(self) -> dict:
-        """Generate and return the shared attributes dictionary."""
+        """Generate and return the shared attribute's dictionary."""
         attrs = {
             ATTR_VACUUM_BATTERY: f"{self.vacuum_battery}%",
             ATTR_VACUUM_POSITION: self.current_room,

@@ -1,6 +1,6 @@
 """
 Common functions for the MQTT Vacuum Camera integration.
-Version: 2024.11.1
+Version: 2024.12.0
 """
 
 from __future__ import annotations
@@ -207,3 +207,40 @@ def get_entity_id(
         _LOGGER.error(f"No vacuum entities found for device_id: {device_id}")
         return None
     return vacuum_entity_id
+
+
+def compose_obstacle_links(vacuum_host: str, obstacles: list) -> list:
+    """
+    Compose JSON with obstacle details including the image link.
+    """
+    obstacle_links = []
+
+    for obstacle in obstacles:
+        # Extract obstacle details
+        label = obstacle.get("label", "")
+        points = obstacle.get("points", {})
+        image_id = obstacle.get("id", "None")
+
+        if label and points and image_id:
+            # Append formatted obstacle data
+            if image_id != "None":
+                # Compose the link
+                image_link = f"{vacuum_host}/api/v2/robot/capabilities/ObstacleImagesCapability/img/{image_id}"
+                obstacle_links.append(
+                    {
+                        "point": points,
+                        "label": label,
+                        "link": image_link,
+                    }
+                )
+            else:
+                obstacle_links.append(
+                    {
+                        "point": points,
+                        "label": label,
+                    }
+                )
+
+    _LOGGER.debug(f"Obstacle links: {obstacle_links}")
+
+    return obstacle_links
