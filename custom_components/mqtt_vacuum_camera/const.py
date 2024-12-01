@@ -1,6 +1,6 @@
 """Constants for the mqtt_vacuum_camera integration."""
+"""Version v2024.12.0"""
 
-"""Version v2024.11.0"""
 from homeassistant.components.camera import DOMAIN as CAMERA_DOMAIN
 from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
 from homeassistant.components.vacuum import DOMAIN as VACUUM_DOMAIN
@@ -399,3 +399,10 @@ ATTR_ROOMS = "rooms"
 ATTR_ZONES = "zones"
 ATTR_POINTS = "points"
 ATTR_OBSTACLES = "obstacles"
+
+class CameraModes:
+    """ Constants for the camera modes """
+    MAP_VIEW = "map_view"
+    OBSTACLE_VIEW = "obstacle_view"
+    OBSTACLE_DOWNLOAD = "obstacle_download"
+
