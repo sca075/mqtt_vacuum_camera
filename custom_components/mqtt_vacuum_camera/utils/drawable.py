@@ -22,7 +22,7 @@ class Drawable:
     This class contains static methods to draw various elements on the Numpy Arrays (images).
     We cant use openCV because it is not supported by the Home Assistant OS.
     """
-    ERROR_OUTLINE = (255, 0, 0, 255)  # Red color for error messages
+    ERROR_OUTLINE = (0, 0, 0, 255)  # Red color for error messages
     ERROR_COLOR = (255, 0, 0, 191)  # Red color with lower opacity for error outlines
     @staticmethod
     async def create_empty_image(
