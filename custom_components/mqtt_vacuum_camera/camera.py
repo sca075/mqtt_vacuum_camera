@@ -6,11 +6,14 @@ Version: v2024.12.0
 from __future__ import annotations
 
 import asyncio
+import aiohttp
 from asyncio import gather, get_event_loop
 import concurrent.futures
+from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
 from io import BytesIO
 import logging
+import math
 import os
 import platform
 import time
@@ -36,6 +39,7 @@ from .const import (
     CONF_VACUUM_IDENTIFIERS,
     DOMAIN,
     NOT_STREAMING_STATES,
+    CameraModes,
 )
 from .snapshots.snapshot import Snapshots
 from .types import SnapshotStore
@@ -121,6 +125,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
 
         # Listen to the vacuum.start event
         self.hass.bus.async_listen("event_vacuum_start", self.handle_vacuum_start)
+        self.hass.bus.async_listen("mqtt_vacuum_camera_obstacle_coordinates", self.handle_obstacle_view)
 
     @staticmethod
     def _start_up_logs():
@@ -236,6 +241,134 @@ class MQTTCamera(CoordinatorEntity, Camera):
         # Call the reset_trims service when vacuum.start event occurs
         await self.hass.services.async_call("mqtt_vacuum_camera", "reset_trims")
 
+    async def handle_obstacle_view(self, event):
+        """Handle the event mqtt_vacuum_camera_obstacle_coordinates."""
+
+        if self._shared.camera_mode == CameraModes.OBSTACLE_VIEW:
+            self._shared.camera_mode = CameraModes.MAP_VIEW
+            self._should_poll = True
+            return
+
+        if self._shared.obstacles_data and self._shared.camera_mode == CameraModes.MAP_VIEW:
+            _LOGGER.debug(f"Received event: {event.event_type}, Data: {event.data}")
+            if event.data.get("entity_id") == self.entity_id:
+                self._shared.camera_mode = CameraModes.OBSTACLE_DOWNLOAD
+                self._should_poll = False  # Turn off polling
+                coordinates = event.data.get("coordinates")
+                if coordinates:
+                    obstacles = self._shared.obstacles_data
+                    coordinates_x = coordinates.get("x")
+                    coordinates_y = coordinates.get("y")
+
+                    # Find the nearest obstacle
+                    nearest_obstacle = await self._async_find_nearest_obstacle(
+                        coordinates_x, coordinates_y, obstacles
+                    )
+
+                    if nearest_obstacle:
+                        _LOGGER.debug(f"Nearest obstacle found: {nearest_obstacle}")
+                        if nearest_obstacle["link"]:
+                            _LOGGER.debug(f"Downloading image: {nearest_obstacle['link']}")
+                            # You can now use nearest_obstacle["link"] to download the image
+                            temp_image = await self.download_image(nearest_obstacle['link'],
+                                                      self._storage_path, "obstacle.jpg")
+                        else:
+                            _LOGGER.info("No link found for the obstacle image. Skipping download.")
+                            self._should_poll = True  # Turn on polling
+                            self._shared.camera_mode = CameraModes.MAP_VIEW
+                            return None
+                        if temp_image is not None:
+                            try:
+                                # Open the downloaded image with PIL
+                                pil_img = Image.open(temp_image)
+
+                                # Resize the image if resize_to is provided
+                                pil_img.thumbnail((self._image_w, self._image_h))
+                                _LOGGER.debug(
+                                    f"{self._file_name}: Image resized to: {self._image_w}, {self._image_h}"
+                                )
+                            except Exception as e:
+                                _LOGGER.warning(f"{self._file_name}: Error processing image: {e}")
+                                self._shared.camera_mode = CameraModes.MAP_VIEW
+                                self._should_poll = True  # Turn on polling
+                                return None
+
+                            self.Image = await self.hass.async_create_task(self.run_async_pil_to_bytes(pil_img))
+                            self._shared.camera_mode = CameraModes.OBSTACLE_VIEW
+                        else:
+                            self._shared.camera_mode = CameraModes.MAP_VIEW
+                        self._should_poll = True  # Turn on polling
+                    else:
+                        _LOGGER.debug("No nearby obstacle found.")
+                        self._should_poll = True  # Turn on polling
+                        self._shared.camera_mode = CameraModes.MAP_VIEW
+        else:
+            _LOGGER.debug("No obstacles data available.")
+            self._should_poll = True
+
+    @staticmethod
+    async def _async_find_nearest_obstacle(x, y, obstacles):
+        """Find the nearest obstacle to the given coordinates."""
+        nearest_obstacle = None
+        min_distance = float('inf')  # Start with a very large distance
+        _LOGGER.debug(f"Finding the nearest {min_distance} obstacle to coordinates: {x}, {y}")
+
+        for obstacle in obstacles:
+            obstacle_point = obstacle["point"]
+            obstacle_x = obstacle_point["x"]
+            obstacle_y = obstacle_point["y"]
+
+            # Calculate Euclidean distance
+            distance = math.sqrt((x - obstacle_x) ** 2 + (y - obstacle_y) ** 2)
+
+            if distance < min_distance:
+                min_distance = distance
+                nearest_obstacle = obstacle
+
+        return nearest_obstacle
+
+
+    @staticmethod
+    async def download_image(url: str, storage_path: str, filename: str):
+        """
+        Asynchronously download an image using threading to avoid blocking.
+
+        Args:
+            url (str): The URL to download the image from.
+            storage_path (str): The directory to save the image.
+            filename (str): The name to save the image as.
+
+        Returns:
+            str: The full path to the saved image or None if the download fails.
+        """
+        # Ensure the storage path exists
+        os.makedirs(storage_path, exist_ok=True)
+
+        obstacle_file = os.path.join(storage_path, filename)
+
+        async def blocking_download():
+            """Run the blocking download in a separate thread."""
+            try:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url) as response:
+                        if response.status == 200:
+                            with open(obstacle_file, "wb") as f:
+                                f.write(await response.read())
+                            _LOGGER.debug(f"Image downloaded successfully: {obstacle_file}")
+                            return obstacle_file
+                        else:
+                            _LOGGER.warning(f"Failed to download image: {response.status}")
+                            return None
+            except Exception as e:
+                _LOGGER.error(f"Error downloading image: {e}")
+                return None
+
+
+        executor = ThreadPoolExecutor(max_workers=3)  # Limit to 3 workers
+
+        # Run the blocking I/O in a thread
+        return await asyncio.get_running_loop().run_in_executor(executor, asyncio.run, blocking_download())
+
     @property
     def should_poll(self) -> bool:
         """ON/OFF Camera Polling"""
@@ -309,7 +442,10 @@ class MQTTCamera(CoordinatorEntity, Camera):
         pid = os.getpid()  # Start to log the CPU usage of this PID.
         proc = ProcInsp().psutil.Process(pid)  # Get the process PID.
         process_data = await self._mqtt.is_data_available()
-        if process_data:
+        if self._shared.camera_mode == CameraModes.OBSTACLE_VIEW:
+            if self.Image is not None:
+                return self.camera_image(self._image_w, self._image_h)
+        if process_data and self._shared.camera_mode == CameraModes.MAP_VIEW:
             # to calculate the cycle time for frame adjustment.
             start_time = time.perf_counter()
             self._log_cpu_usage(proc)

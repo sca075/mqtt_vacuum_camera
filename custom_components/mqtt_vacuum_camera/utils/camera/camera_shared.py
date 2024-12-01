@@ -19,6 +19,7 @@ from custom_components.mqtt_vacuum_camera.const import (
     ATTR_VACUUM_POSITION,
     ATTR_VACUUM_STATUS,
     ATTR_ZONES,
+    CameraModes,
     CONF_ASPECT_RATIO,
     CONF_AUTO_ZOOM,
     CONF_OFFSET_BOTTOM,
@@ -45,6 +46,7 @@ class CameraShared(object):
     """
 
     def __init__(self, file_name):
+        self.camera_mode: str = CameraModes.MAP_VIEW  # Camera mode
         self.frame_number: int = 0  # camera Frame number
         self.destinations: list = []  # MQTT rand destinations
         self.rand256_active_zone: list = []  # Active zone for rand256
@@ -77,6 +79,7 @@ class CameraShared(object):
         self.snapshot_take = False  # Take snapshot
         self.vacuum_error = None  # Vacuum error
         self.vacuum_api = None  # Vacuum API
+        self.vacuum_ips = None  # Vacuum IPs
         self.vac_json_id = None  # Vacuum json id
         self.margins = "100"  # Image margins
         self.obstacles_data = None  # Obstacles data

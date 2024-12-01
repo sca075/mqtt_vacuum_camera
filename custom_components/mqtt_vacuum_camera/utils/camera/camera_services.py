@@ -9,6 +9,7 @@ from homeassistant.const import SERVICE_RELOAD
 from homeassistant.core import HomeAssistant, ServiceCall
 
 from ...const import DOMAIN
+from ...common import get_entity_id
 from ...utils.files_operations import async_clean_up_all_auto_crop_files
 
 _LOGGER = logging.getLogger(__name__)
@@ -54,6 +55,28 @@ async def reload_camera_config(call: ServiceCall, hass: HomeAssistant) -> None:
         event_data={
             "processed": processed,
             "total": total_entries,
+        },
+        context=call.context,
+    )
+
+async def obstacle_view(call: ServiceCall, hass: HomeAssistant) -> None:
+    """Action to download and show the obstacles in the maps."""
+    coordinates_x = call.data.get("coordinates_x")
+    coordinates_y = call.data.get("coordinates_y")
+
+    #attempt to get the entity_id or device.
+    entity_id = call.data.get("entity_id")
+    device_id = call.data.get("device_id")
+    #resolve the entity_id if not provided.
+    camera_entity_id = get_entity_id(entity_id, device_id, hass, "camera")[0]
+
+    _LOGGER.debug(f"Obstacle view for {camera_entity_id}")
+    _LOGGER.debug(f"Firing event for search and obstacle view at coordinates {coordinates_x}, {coordinates_y}")
+    hass.bus.async_fire(
+        event_type=f"{DOMAIN}_obstacle_coordinates",
+        event_data={
+            "entity_id": camera_entity_id,
+            "coordinates": {"x": coordinates_x, "y": coordinates_y}
         },
         context=call.context,
     )

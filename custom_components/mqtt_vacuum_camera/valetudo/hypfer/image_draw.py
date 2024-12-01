@@ -123,7 +123,7 @@ class ImageDraw:
 
         # Store obstacle data in shared data
         self.img_h.shared.obstacles_data = compose_obstacle_links(
-            self.img_h.shared.vacuum_api, obstacle_objects
+            self.img_h.shared.vacuum_ips, obstacle_objects
         )
 
         # Draw obstacles on the map

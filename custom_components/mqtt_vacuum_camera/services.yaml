@@ -26,6 +26,30 @@ snapshot:
 
 reset_trims:
 
+obstacle_view:
+  name: Obstacle view
+  description: Select the coordinates to Show the obstacle on the map.
+  target:
+    entity:
+      domain: camera
+  fields:
+    coordinates_x:
+      name: x
+      description: Coordinate x for the obstacle view.
+      required: true
+      selector:
+        number:
+            min: 0
+            max: 90000
+    coordinates_y:
+        name: y
+        description: Coordinate y for the obstacle view.
+        required: true
+        selector:
+            number:
+                min: 0
+                max: 90000
+
 vacuum_go_to:
   name: Vacuum go to
   description: Go to the specified coordinates
