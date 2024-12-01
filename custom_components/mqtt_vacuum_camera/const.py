@@ -293,6 +293,7 @@ DECODED_TOPICS = {
     "/StatusStateAttribute/error_description",
     "/$state",
     "/BatteryStateAttribute/level",
+    "/WifiConfigurationCapability/ips",
     "/state",  # Rand256
     "/destinations",  # Rand256
     "/command",  # Rand256

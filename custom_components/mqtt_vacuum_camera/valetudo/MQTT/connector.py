@@ -405,6 +405,9 @@ class ValetudoConnector:
                 "configuration_url", None
             )
             _LOGGER.debug(f"Vacuum API URL: {self._shared.vacuum_api}")
+        elif self._rcv_topic == f"{self._mqtt_topic}/WifiConfigurationCapability/ips":
+            self._shared.vacuum_ips = await self.async_decode_mqtt_payload(msg)
+            _LOGGER.debug(f"Vacuum IPs: {self._shared.vacuum_ips}")
 
     async def async_subscribe_to_topics(self) -> None:
         """Subscribe to the MQTT topics for Hypfer and ValetudoRe."""

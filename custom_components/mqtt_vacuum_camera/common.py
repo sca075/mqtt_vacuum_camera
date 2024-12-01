@@ -209,7 +209,7 @@ def get_entity_id(
     return vacuum_entity_id
 
 
-def compose_obstacle_links(vacuum_host: str, obstacles: list) -> list:
+def compose_obstacle_links(vacuum_host_ip: str, obstacles: list) -> list:
     """
     Compose JSON with obstacle details including the image link.
     """
@@ -225,7 +225,7 @@ def compose_obstacle_links(vacuum_host: str, obstacles: list) -> list:
             # Append formatted obstacle data
             if image_id != "None":
                 # Compose the link
-                image_link = f"{vacuum_host}/api/v2/robot/capabilities/ObstacleImagesCapability/img/{image_id}"
+                image_link = f"http://{vacuum_host_ip}/api/v2/robot/capabilities/ObstacleImagesCapability/img/{image_id}"
                 obstacle_links.append(
                     {
                         "point": points,
