@@ -162,7 +162,7 @@ def build_full_topic_set(
     return full_topics
 
 
-def from_device_ids_to_entity_ids(device_ids: str, hass: HomeAssistant) -> str:
+def from_device_ids_to_entity_ids(device_ids: str, hass: HomeAssistant, domain: str = "vacuum") -> str:
     """
     Convert a device_id to an entity_id.
     """
@@ -175,9 +175,9 @@ def from_device_ids_to_entity_ids(device_ids: str, hass: HomeAssistant) -> str:
         # Look up device by device_id
         device = dev_reg.async_get(device_id)
         if device:
-            # Find all entities linked to this device_id in the vacuum domain
+            # Find all entities linked to this device_id in the domain
             for entry in entity_reg.entities.values():
-                if entry.device_id == device_id and entry.domain == "vacuum":
+                if entry.device_id == device_id and entry.domain == domain:
                     resolved_entity_ids.append(entry.entity_id)
             return resolved_entity_ids
 
@@ -196,12 +196,12 @@ def get_device_info_from_entity_id(entity_id: str, hass) -> DeviceEntry:
 
 
 def get_entity_id(
-    entity_id: str | None, device_id: str | None, hass: HomeAssistant
+    entity_id: str | None, device_id: str | None, hass: HomeAssistant, domain: str = "vacuum"
 ) -> str | None:
-    """Resolve the Vacuum Entity ID"""
+    """Resolve the Entity ID"""
     vacuum_entity_id = entity_id  # Default to entity_id
     if device_id:
-        resolved_entities = from_device_ids_to_entity_ids(device_id, hass)
+        resolved_entities = from_device_ids_to_entity_ids(device_id, hass, domain)
         vacuum_entity_id = resolved_entities
     elif not vacuum_entity_id:
         _LOGGER.error(f"No vacuum entities found for device_id: {device_id}")

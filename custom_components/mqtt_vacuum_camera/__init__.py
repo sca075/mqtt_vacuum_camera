@@ -1,5 +1,5 @@
 """MQTT Vacuum Camera.
-Version: 2024.11.1"""
+Version: 2024.12.0"""
 
 from functools import partial
 import logging
@@ -27,7 +27,7 @@ from .const import (
     DOMAIN,
 )
 from .coordinator import MQTTVacuumCoordinator
-from .utils.camera.camera_services import reload_camera_config, reset_trims
+from .utils.camera.camera_services import reload_camera_config, reset_trims, obstacle_view
 from .utils.files_operations import (
     async_clean_up_all_auto_crop_files,
     async_get_translations_vacuum_id,
@@ -88,6 +88,9 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
         hass.services.async_register(
             DOMAIN, "reset_trims", partial(reset_trims, hass=hass)
         )
+        hass.services.async_register(
+            DOMAIN, "obstacle_view", partial(obstacle_view, hass=hass)
+        )
         await async_register_vacuums_services(hass, data_coordinator)
     # Registers update listener to update config entry when options are updated.
     unsub_options_update_listener = entry.add_update_listener(options_update_listener)
@@ -124,6 +127,7 @@ async def async_unload_entry(
         # Remove services
         if not hass.data[DOMAIN]:
             hass.services.async_remove(DOMAIN, "reset_trims")
+            hass.services.async_remove(DOMAIN, "obstacle_view")
             hass.services.async_remove(DOMAIN, SERVICE_RELOAD)
             await async_remove_vacuums_services(hass)
     return unload_ok
