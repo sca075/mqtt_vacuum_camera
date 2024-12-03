@@ -5,14 +5,14 @@ Format of the new constants must be CONST_NAME = "const_name" update also
 sting.json and en.json please.
 """
 
+from copy import deepcopy
 import logging
 import os
-from copy import deepcopy
 from typing import Any, Dict, Optional
 
 from homeassistant import config_entries
-from homeassistant.config_entries import OptionsFlow, ConfigEntry
 from homeassistant.components.vacuum import DOMAIN as ZONE_VACUUM
+from homeassistant.config_entries import ConfigEntry, OptionsFlow
 from homeassistant.const import CONF_UNIQUE_ID
 from homeassistant.core import callback
 from homeassistant.exceptions import ConfigEntryError
@@ -868,7 +868,9 @@ class OptionsFlowHandler(OptionsFlow):
         """
         Save the options in a sorted way. It stores all the options.
         """
-        _LOGGER.info(f"Storing Updated Camera ({self.camera_config.unique_id}) Options.")
+        _LOGGER.info(
+            f"Storing Updated Camera ({self.camera_config.unique_id}) Options."
+        )
         try:
             _, vacuum_device = get_vacuum_device_info(
                 self.camera_config.data.get(CONF_VACUUM_CONFIG_ENTRY_ID), self.hass

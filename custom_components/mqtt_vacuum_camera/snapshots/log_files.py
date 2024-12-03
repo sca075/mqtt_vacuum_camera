@@ -1,4 +1,4 @@
-""" Logs and files colloection
+"""Logs and files colloection
 MQTT Vacuum Camera component for Home Assistant
 Version: v2024.10.0"""
 

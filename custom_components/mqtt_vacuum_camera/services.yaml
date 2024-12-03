@@ -42,13 +42,13 @@ obstacle_view:
             min: 0
             max: 90000
     coordinates_y:
-        name: y
-        description: Coordinate y for the obstacle view.
-        required: true
-        selector:
-            number:
-                min: 0
-                max: 90000
+      name: y
+      description: Coordinate y for the obstacle view.
+      required: true
+      selector:
+          number:
+              min: 0
+              max: 90000
 
 vacuum_go_to:
   name: Vacuum go to

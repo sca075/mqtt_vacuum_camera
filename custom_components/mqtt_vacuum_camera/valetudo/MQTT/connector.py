@@ -406,7 +406,10 @@ class ValetudoConnector:
             )
             _LOGGER.debug(f"Vacuum API URL: {self._shared.vacuum_api}")
         elif self._rcv_topic == f"{self._mqtt_topic}/WifiConfigurationCapability/ips":
-            self._shared.vacuum_ips = await self.async_decode_mqtt_payload(msg)
+            vacuum_host_ip = await self.async_decode_mqtt_payload(msg)
+            # When IPV4 and IPV6 are available, use IPV4
+            if vacuum_host_ip.split(",").__len__() > 1:
+                self._shared.vacuum_ips = vacuum_host_ip.split(",")[0]
             _LOGGER.debug(f"Vacuum IPs: {self._shared.vacuum_ips}")
 
     async def async_subscribe_to_topics(self) -> None:

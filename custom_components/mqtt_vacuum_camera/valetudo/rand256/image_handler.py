@@ -79,10 +79,11 @@ class ReImageHandler(object):
         top, left = ImageData.get_rrm_image_position(json_data)
         try:
             if not self.segment_data or not self.outlines:
-                self.segment_data, self.outlines = (
-                    await ImageData.async_get_rrm_segments(
-                        json_data, size_x, size_y, top, left, True
-                    )
+                (
+                    self.segment_data,
+                    self.outlines,
+                ) = await ImageData.async_get_rrm_segments(
+                    json_data, size_x, size_y, top, left, True
                 )
             dest_json = destinations
             room_data = dict(dest_json).get("rooms", [])
@@ -172,9 +173,11 @@ class ReImageHandler(object):
                 self.json_id = str(uuid.uuid4())  # image id
                 _LOGGER.info(f"Vacuum Data ID: {self.json_id}")
                 # get the robot position
-                robot_pos, robot_position, robot_position_angle = (
-                    await self.imd.async_get_robot_position(m_json)
-                )
+                (
+                    robot_pos,
+                    robot_position,
+                    robot_position_angle,
+                ) = await self.imd.async_get_robot_position(m_json)
                 if self.frame_number == 0:
                     room_id, img_np_array = await self.imd.async_draw_base_layer(
                         m_json,
@@ -270,10 +273,11 @@ class ReImageHandler(object):
                             new_height = int(pil_img.width / new_aspect_ratio)
 
                         resized = ImageOps.pad(pil_img, (new_width, new_height))
-                        self.crop_img_size[0], self.crop_img_size[1] = (
-                            await self.async_map_coordinates_offset(
-                                wsf, hsf, new_width, new_height
-                            )
+                        (
+                            self.crop_img_size[0],
+                            self.crop_img_size[1],
+                        ) = await self.async_map_coordinates_offset(
+                            wsf, hsf, new_width, new_height
                         )
                         _LOGGER.debug(
                             f"{self.file_name}: Image Aspect Ratio ({wsf}, {hsf}): {new_width}x{new_height}"

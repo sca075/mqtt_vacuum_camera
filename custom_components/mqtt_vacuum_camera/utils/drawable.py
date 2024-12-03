@@ -22,8 +22,10 @@ class Drawable:
     This class contains static methods to draw various elements on the Numpy Arrays (images).
     We cant use openCV because it is not supported by the Home Assistant OS.
     """
+
     ERROR_OUTLINE = (0, 0, 0, 255)  # Red color for error messages
     ERROR_COLOR = (255, 0, 0, 191)  # Red color with lower opacity for error outlines
+
     @staticmethod
     async def create_empty_image(
         width: int, height: int, background_color: Color
@@ -542,7 +544,7 @@ class Drawable:
         draw = ImageDraw.Draw(image)
         # Draw the text
         for text in status:
-            if "\u2211" in text or "\u03DE" in text:
+            if "\u2211" in text or "\u03de" in text:
                 font = default_font
                 width = None
             else:

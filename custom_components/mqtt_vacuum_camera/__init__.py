@@ -27,9 +27,12 @@ from .const import (
     DOMAIN,
 )
 from .coordinator import MQTTVacuumCoordinator
-from .utils.camera.camera_services import reload_camera_config, reset_trims, obstacle_view
+from .utils.camera.camera_services import (
+    obstacle_view,
+    reload_camera_config,
+    reset_trims,
+)
 from .utils.files_operations import (
-    async_clean_up_all_auto_crop_files,
     async_get_translations_vacuum_id,
     async_rename_room_description,
 )
