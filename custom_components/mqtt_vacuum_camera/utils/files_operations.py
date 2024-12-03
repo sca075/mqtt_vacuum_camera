@@ -311,9 +311,9 @@ async def async_rename_room_description(hass: HomeAssistant, vacuum_id: str) -> 
             for j in range(start_index, end_index):
                 if j < len(room_data):
                     room_id, room_name = list(room_data.items())[j]
-                    data["options"]["step"][alpha_key]["data"][
-                        f"alpha_room_{j}"
-                    ] = f"RoomID {room_id} {room_name}"
+                    data["options"]["step"][alpha_key]["data"][f"alpha_room_{j}"] = (
+                        f"RoomID {room_id} {room_name}"
+                    )
 
     # Write the modified data back to the JSON files
     for idx, data in enumerate(data_list):

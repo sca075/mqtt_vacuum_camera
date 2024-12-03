@@ -19,7 +19,6 @@ from custom_components.mqtt_vacuum_camera.const import (
     ATTR_VACUUM_POSITION,
     ATTR_VACUUM_STATUS,
     ATTR_ZONES,
-    CameraModes,
     CONF_ASPECT_RATIO,
     CONF_AUTO_ZOOM,
     CONF_OFFSET_BOTTOM,
@@ -33,6 +32,7 @@ from custom_components.mqtt_vacuum_camera.const import (
     CONF_VAC_STAT_SIZE,
     CONF_ZOOM_LOCK_RATIO,
     DEFAULT_VALUES,
+    CameraModes,
 )
 from custom_components.mqtt_vacuum_camera.types import Colors
 

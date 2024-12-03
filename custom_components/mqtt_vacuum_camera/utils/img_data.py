@@ -332,7 +332,7 @@ class ImageData:
         except KeyError:
             return None
         else:
-            if path_data is not []:
+            if path_data != []:
                 path_data = ImageData.rrm_coordinates_to_valetudo(path_data)
                 return path_data
             else:

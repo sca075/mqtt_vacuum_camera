@@ -88,7 +88,7 @@ class StatusText:
         status_text = ["If you read me, something really went wrong.."]  # default text
         text_size_coverage = 1.5  # resize factor for the text
         text_size = self._shared.vacuum_status_size  # default text size
-        charge_level = "\u03DE"  # unicode Koppa symbol
+        charge_level = "\u03de"  # unicode Koppa symbol
         charging = "\u2211"  # unicode Charging symbol
         vacuum_state = self.translate_vacuum_status()
         if self._shared.show_vacuum_state:
@@ -106,17 +106,17 @@ class StatusText:
                             status_text.append(f" ({in_room})")
                 if self._shared.vacuum_state == "docked":
                     if int(self._shared.vacuum_battery) <= 99:
-                        status_text.append(" \u00B7 ")
+                        status_text.append(" \u00b7 ")
                         status_text.append(f"{charging}{charge_level} ")
                         status_text.append(f"{self._shared.vacuum_battery}%")
                         self._shared.vacuum_bat_charged = False
                     else:
-                        status_text.append(" \u00B7 ")
+                        status_text.append(" \u00b7 ")
                         status_text.append(f"{charge_level} ")
                         status_text.append("Ready.")
                         self._shared.vacuum_bat_charged = True
                 else:
-                    status_text.append(" \u00B7 ")
+                    status_text.append(" \u00b7 ")
                     status_text.append(f"{charge_level}")
                     status_text.append(f" {self._shared.vacuum_battery}%")
                 if text_size >= 50:

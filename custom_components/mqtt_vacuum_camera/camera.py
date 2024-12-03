@@ -6,7 +6,6 @@ Version: v2024.12.0
 from __future__ import annotations
 
 import asyncio
-import aiohttp
 from asyncio import gather, get_event_loop
 import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor
@@ -20,6 +19,7 @@ import time
 from typing import Any, Optional
 
 from PIL import Image
+import aiohttp
 from homeassistant import config_entries, core
 from homeassistant.components.camera import Camera, CameraEntityFeature
 from homeassistant.const import CONF_UNIQUE_ID, MATCH_ALL
@@ -125,7 +125,9 @@ class MQTTCamera(CoordinatorEntity, Camera):
 
         # Listen to the vacuum.start event
         self.hass.bus.async_listen("event_vacuum_start", self.handle_vacuum_start)
-        self.hass.bus.async_listen("mqtt_vacuum_camera_obstacle_coordinates", self.handle_obstacle_view)
+        self.hass.bus.async_listen(
+            "mqtt_vacuum_camera_obstacle_coordinates", self.handle_obstacle_view
+        )
 
     @staticmethod
     def _start_up_logs():
@@ -249,7 +251,10 @@ class MQTTCamera(CoordinatorEntity, Camera):
             self._should_poll = True
             return
 
-        if self._shared.obstacles_data and self._shared.camera_mode == CameraModes.MAP_VIEW:
+        if (
+            self._shared.obstacles_data
+            and self._shared.camera_mode == CameraModes.MAP_VIEW
+        ):
             _LOGGER.debug(f"Received event: {event.event_type}, Data: {event.data}")
             if event.data.get("entity_id") == self.entity_id:
                 self._shared.camera_mode = CameraModes.OBSTACLE_DOWNLOAD
@@ -268,12 +273,19 @@ class MQTTCamera(CoordinatorEntity, Camera):
                     if nearest_obstacle:
                         _LOGGER.debug(f"Nearest obstacle found: {nearest_obstacle}")
                         if nearest_obstacle["link"]:
-                            _LOGGER.debug(f"Downloading image: {nearest_obstacle['link']}")
+                            _LOGGER.debug(
+                                f"Downloading image: {nearest_obstacle['link']}"
+                            )
                             # You can now use nearest_obstacle["link"] to download the image
-                            temp_image = await self.download_image(nearest_obstacle['link'],
-                                                      self._storage_path, "obstacle.jpg")
+                            temp_image = await self.download_image(
+                                nearest_obstacle["link"],
+                                self._storage_path,
+                                "obstacle.jpg",
+                            )
                         else:
-                            _LOGGER.info("No link found for the obstacle image. Skipping download.")
+                            _LOGGER.info(
+                                "No link found for the obstacle image. Skipping download."
+                            )
                             self._should_poll = True  # Turn on polling
                             self._shared.camera_mode = CameraModes.MAP_VIEW
                             return None
@@ -288,12 +300,16 @@ class MQTTCamera(CoordinatorEntity, Camera):
                                     f"{self._file_name}: Image resized to: {self._image_w}, {self._image_h}"
                                 )
                             except Exception as e:
-                                _LOGGER.warning(f"{self._file_name}: Error processing image: {e}")
+                                _LOGGER.warning(
+                                    f"{self._file_name}: Error processing image: {e}"
+                                )
                                 self._shared.camera_mode = CameraModes.MAP_VIEW
                                 self._should_poll = True  # Turn on polling
                                 return None
 
-                            self.Image = await self.hass.async_create_task(self.run_async_pil_to_bytes(pil_img))
+                            self.Image = await self.hass.async_create_task(
+                                self.run_async_pil_to_bytes(pil_img)
+                            )
                             self._shared.camera_mode = CameraModes.OBSTACLE_VIEW
                         else:
                             self._shared.camera_mode = CameraModes.MAP_VIEW
@@ -310,8 +326,10 @@ class MQTTCamera(CoordinatorEntity, Camera):
     async def _async_find_nearest_obstacle(x, y, obstacles):
         """Find the nearest obstacle to the given coordinates."""
         nearest_obstacle = None
-        min_distance = float('inf')  # Start with a very large distance
-        _LOGGER.debug(f"Finding the nearest {min_distance} obstacle to coordinates: {x}, {y}")
+        min_distance = float("inf")  # Start with a very large distance
+        _LOGGER.debug(
+            f"Finding the nearest {min_distance} obstacle to coordinates: {x}, {y}"
+        )
 
         for obstacle in obstacles:
             obstacle_point = obstacle["point"]
@@ -326,7 +344,6 @@ class MQTTCamera(CoordinatorEntity, Camera):
                 nearest_obstacle = obstacle
 
         return nearest_obstacle
-
 
     @staticmethod
     async def download_image(url: str, storage_path: str, filename: str):
@@ -354,20 +371,25 @@ class MQTTCamera(CoordinatorEntity, Camera):
                         if response.status == 200:
                             with open(obstacle_file, "wb") as f:
                                 f.write(await response.read())
-                            _LOGGER.debug(f"Image downloaded successfully: {obstacle_file}")
+                            _LOGGER.debug(
+                                f"Image downloaded successfully: {obstacle_file}"
+                            )
                             return obstacle_file
                         else:
-                            _LOGGER.warning(f"Failed to download image: {response.status}")
+                            _LOGGER.warning(
+                                f"Failed to download image: {response.status}"
+                            )
                             return None
             except Exception as e:
                 _LOGGER.error(f"Error downloading image: {e}")
                 return None
 
-
         executor = ThreadPoolExecutor(max_workers=3)  # Limit to 3 workers
 
         # Run the blocking I/O in a thread
-        return await asyncio.get_running_loop().run_in_executor(executor, asyncio.run, blocking_download())
+        return await asyncio.get_running_loop().run_in_executor(
+            executor, asyncio.run, blocking_download()
+        )
 
     @property
     def should_poll(self) -> bool:
@@ -552,7 +574,11 @@ class MQTTCamera(CoordinatorEntity, Camera):
             self.Image = await self.hass.async_create_task(
                 self.run_async_pil_to_bytes(self.empty_if_no_data())
             )
-            raise ValueError
+            self.camera_image(self._image_w, self._image_h)
+            _LOGGER.warning(
+                f"{self._file_name}: No JSON data available. Camera Suspended."
+            )
+            self._should_pull = False
 
         if parsed_json[1] == "Rand256":
             self._shared.is_rand = True

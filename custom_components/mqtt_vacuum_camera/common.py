@@ -162,7 +162,9 @@ def build_full_topic_set(
     return full_topics
 
 
-def from_device_ids_to_entity_ids(device_ids: str, hass: HomeAssistant, domain: str = "vacuum") -> str:
+def from_device_ids_to_entity_ids(
+    device_ids: str, hass: HomeAssistant, domain: str = "vacuum"
+) -> str:
     """
     Convert a device_id to an entity_id.
     """
@@ -196,7 +198,10 @@ def get_device_info_from_entity_id(entity_id: str, hass) -> DeviceEntry:
 
 
 def get_entity_id(
-    entity_id: str | None, device_id: str | None, hass: HomeAssistant, domain: str = "vacuum"
+    entity_id: str | None,
+    device_id: str | None,
+    hass: HomeAssistant,
+    domain: str = "vacuum",
 ) -> str | None:
     """Resolve the Entity ID"""
     vacuum_entity_id = entity_id  # Default to entity_id

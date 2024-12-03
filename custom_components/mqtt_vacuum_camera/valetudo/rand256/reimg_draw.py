@@ -62,10 +62,11 @@ class ImageDraw:
         """Get the segments data from the JSON data."""
         try:
             if not self.img_h.segment_data:
-                self.img_h.segment_data, self.img_h.outlines = (
-                    await self.data.async_get_rrm_segments(
-                        m_json, size_x, size_y, pos_top, pos_left, True
-                    )
+                (
+                    self.img_h.segment_data,
+                    self.img_h.outlines,
+                ) = await self.data.async_get_rrm_segments(
+                    m_json, size_x, size_y, pos_top, pos_left, True
                 )
         except ValueError as e:
             self.img_h.segment_data = None

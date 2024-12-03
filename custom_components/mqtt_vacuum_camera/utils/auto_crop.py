@@ -263,7 +263,9 @@ class AutoCrop:
                     self.imh.trim_down,
                 ).to_list()
                 if self.imh.shared.vacuum_state == "docked":
-                    await self._async_save_auto_crop_data()  # Save the crop data to the disk
+                    await (
+                        self._async_save_auto_crop_data()
+                    )  # Save the crop data to the disk
                 self.auto_crop_offset()
             # If it is needed to zoom the image.
             trimmed = await self.async_check_if_zoom_is_on(
