@@ -122,9 +122,14 @@ class ImageDraw:
                 obstacle_objects.append(obstacle_obj)
 
         # Store obstacle data in shared data
-        self.img_h.shared.obstacles_data = compose_obstacle_links(
-            self.img_h.shared.vacuum_ips, obstacle_objects
-        )
+        if self.img_h.shared.vacuum_ips:
+            self.img_h.shared.obstacles_data = compose_obstacle_links(
+                self.img_h.shared.vacuum_ips, obstacle_objects
+            )
+        elif self.img_h.shared.vacuum_api:
+            self.img_h.shared.obstacles_data = compose_obstacle_links(
+                self.img_h.shared.vacuum_api.spit("http://")[1], obstacle_objects
+            )
 
         # Draw obstacles on the map
         if obstacle_objects:
