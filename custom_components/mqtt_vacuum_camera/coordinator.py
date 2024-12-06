@@ -143,35 +143,42 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         """
         Update the sensor data format before sending to the sensors.
         """
+        try:
+            if sensor_data:
+                # Assume sensor_data is a dictionary or transform it into the expected format
+                battery_level = await self.connector.get_battery_level()
+                vacuum_state = await self.connector.get_vacuum_status()
+                vacuum_room = self.shared.current_room
+                last_run_stats = sensor_data.get("last_run_stats", {})
+                last_loaded_map = sensor_data.get("last_loaded_map", {})
 
-        if sensor_data:
-            # Assume sensor_data is a dictionary or transform it into the expected format
-            battery_level = await self.connector.get_battery_level()
-            vacuum_state = await self.connector.get_vacuum_status()
-            vacuum_room = self.shared.current_room
-            if not vacuum_room:
-                vacuum_room = {"in_room": "Unsupported"}
-            last_run_stats = sensor_data.get("last_run_stats", {})
-            last_loaded_map = sensor_data.get("last_loaded_map", {})
-            formatted_data = {
-                "mainBrush": sensor_data.get("mainBrush", 0),
-                "sideBrush": sensor_data.get("sideBrush", 0),
-                "filter": sensor_data.get("filter", 0),
-                "currentCleanTime": sensor_data.get("currentCleanTime", 0),
-                "currentCleanArea": sensor_data.get("currentCleanArea", 0),
-                "cleanTime": sensor_data.get("cleanTime", 0),
-                "cleanArea": sensor_data.get("cleanArea", 0),
-                "cleanCount": sensor_data.get("cleanCount", 0),
-                "battery": battery_level,
-                "state": vacuum_state,
-                "last_run_start": last_run_stats.get("startTime", 0),
-                "last_run_end": last_run_stats.get("endTime", 0),
-                "last_run_duration": last_run_stats.get("duration", 0),
-                "last_run_area": last_run_stats.get("area", 0),
-                "last_bin_out": sensor_data.get("last_bin_out", 0),
-                "last_bin_full": sensor_data.get("last_bin_full", 0),
-                "last_loaded_map": last_loaded_map.get("name", "NoMap"),
-                "robot_in_room": vacuum_room.get("in_room", "Unsupported"),
-            }
-            return formatted_data
+                if not vacuum_room or last_loaded_map:
+                    vacuum_room = {"in_room": "Unsupported"}
+                    if not last_loaded_map:
+                        last_loaded_map = {"name", "NoMap"}
+
+                formatted_data = {
+                    "mainBrush": sensor_data.get("mainBrush", 0),
+                    "sideBrush": sensor_data.get("sideBrush", 0),
+                    "filter": sensor_data.get("filter", 0),
+                    "currentCleanTime": sensor_data.get("currentCleanTime", 0),
+                    "currentCleanArea": sensor_data.get("currentCleanArea", 0),
+                    "cleanTime": sensor_data.get("cleanTime", 0),
+                    "cleanArea": sensor_data.get("cleanArea", 0),
+                    "cleanCount": sensor_data.get("cleanCount", 0),
+                    "battery": battery_level,
+                    "state": vacuum_state,
+                    "last_run_start": last_run_stats.get("startTime", 0),
+                    "last_run_end": last_run_stats.get("endTime", 0),
+                    "last_run_duration": last_run_stats.get("duration", 0),
+                    "last_run_area": last_run_stats.get("area", 0),
+                    "last_bin_out": sensor_data.get("last_bin_out", 0),
+                    "last_bin_full": sensor_data.get("last_bin_full", 0),
+                    "last_loaded_map": last_loaded_map.get("name", "NoMap"),
+                    "robot_in_room": vacuum_room.get("in_room"),
+                }
+                return formatted_data
+        except Exception as err:
+            _LOGGER.warning(f"Error processing sensor data: {err}")
+            return SENSOR_NO_DATA
         return SENSOR_NO_DATA
