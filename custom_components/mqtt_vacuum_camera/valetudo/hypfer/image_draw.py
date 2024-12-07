@@ -126,7 +126,7 @@ class ImageDraw:
             self.img_h.shared.obstacles_data = compose_obstacle_links(
                 self.img_h.shared.vacuum_ips, obstacle_objects
             )
-        elif self.img_h.shared.vacuum_api: # Fall back to API usage if no IP.
+        elif self.img_h.shared.vacuum_api:  # Fall back to API usage if no IP.
             self.img_h.shared.obstacles_data = compose_obstacle_links(
                 self.img_h.shared.vacuum_api.split("http://")[1], obstacle_objects
             )

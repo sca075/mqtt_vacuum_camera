@@ -154,7 +154,7 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
 
                 if not vacuum_room:
                     vacuum_room = {"in_room": "Unsupported"}
-                if last_loaded_map=={}:
+                if last_loaded_map == {}:
                     last_loaded_map = {"name", "Default"}
 
                 formatted_data = {

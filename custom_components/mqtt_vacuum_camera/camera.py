@@ -57,9 +57,9 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
-        hass: core.HomeAssistant,
-        config_entry: config_entries.ConfigEntry,
-        async_add_entities,
+    hass: core.HomeAssistant,
+    config_entry: config_entries.ConfigEntry,
+    async_add_entities,
 ) -> None:
     """Setup camera from a config entry created in the integrations UI."""
     config = hass.data[DOMAIN][config_entry.entry_id]
@@ -145,7 +145,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         """Remove PNG and ZIP's stored in HA config WWW"""
         # If enable_snapshots check if for png in www
         if not self._shared.enable_snapshots and os.path.isfile(
-                f"{self._homeassistant_path}/www/snapshot_{self._file_name}.png"
+            f"{self._homeassistant_path}/www/snapshot_{self._file_name}.png"
         ):
             os.remove(f"{self._homeassistant_path}/www/snapshot_{self._file_name}.png")
         # If there is a log zip in www remove it
@@ -203,13 +203,13 @@ class MQTTCamera(CoordinatorEntity, Camera):
         """Return true if the device is streaming."""
         updated_status = self._shared.vacuum_state
         self._attr_is_streaming = (
-                updated_status not in NOT_STREAMING_STATES
-                or not self._shared.vacuum_bat_charged
+            updated_status not in NOT_STREAMING_STATES
+            or not self._shared.vacuum_bat_charged
         )
         return self._attr_is_streaming
 
     def camera_image(
-            self, width: Optional[int] = None, height: Optional[int] = None
+        self, width: Optional[int] = None, height: Optional[int] = None
     ) -> Optional[bytes]:
         """Camera Image"""
         return self.Image
@@ -252,8 +252,8 @@ class MQTTCamera(CoordinatorEntity, Camera):
             return await self.async_update()
 
         if (
-                self._shared.obstacles_data
-                and self._shared.camera_mode == CameraModes.MAP_VIEW
+            self._shared.obstacles_data
+            and self._shared.camera_mode == CameraModes.MAP_VIEW
         ):
             _LOGGER.debug(f"Received event: {event.event_type}, Data: {event.data}")
             if event.data.get("entity_id") == self.entity_id:
@@ -404,8 +404,6 @@ class MQTTCamera(CoordinatorEntity, Camera):
         except Exception as e:
             _LOGGER.error(f"Error downloading image: {e}")
             return None
-
-
 
     @property
     def should_poll(self) -> bool:
@@ -624,12 +622,12 @@ class MQTTCamera(CoordinatorEntity, Camera):
         """Log the memory usage."""
         memory_percent = round(
             (
-                    (proc.memory_info()[0] / 2.0**30)
-                    / (ProcInsp().psutil.virtual_memory().total / 2.0**30)
+                (proc.memory_info()[0] / 2.0**30)
+                / (ProcInsp().psutil.virtual_memory().total / 2.0**30)
             )
             * 100,
             2,
-            )
+        )
         _LOGGER.debug(
             f"{self._file_name} Camera Memory usage in GB: "
             f"{round(proc.memory_info()[0] / 2. ** 30, 2)}, {memory_percent}% of Total."
@@ -682,8 +680,8 @@ class MQTTCamera(CoordinatorEntity, Camera):
         pil_img_list = [pil_img for _ in range(num_processes)]
         loop = get_event_loop()
 
-        with (ThreadPoolExecutor(
-                max_workers=1, thread_name_prefix=f"{self._file_name}_camera")
+        with ThreadPoolExecutor(
+            max_workers=1, thread_name_prefix=f"{self._file_name}_camera"
         ) as executor:
             tasks = [
                 loop.run_in_executor(
