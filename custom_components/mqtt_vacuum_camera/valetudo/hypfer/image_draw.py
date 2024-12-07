@@ -122,13 +122,18 @@ class ImageDraw:
                 obstacle_objects.append(obstacle_obj)
 
         # Store obstacle data in shared data
-        self.img_h.shared.obstacles_data = compose_obstacle_links(
-            self.img_h.shared.vacuum_ips, obstacle_objects
-        )
+        if self.img_h.shared.vacuum_ips:
+            self.img_h.shared.obstacles_data = compose_obstacle_links(
+                self.img_h.shared.vacuum_ips, obstacle_objects
+            )
+        elif self.img_h.shared.vacuum_api:  # Fall back to API usage if no IP.
+            self.img_h.shared.obstacles_data = compose_obstacle_links(
+                self.img_h.shared.vacuum_api.split("http://")[1], obstacle_objects
+            )
 
         # Draw obstacles on the map
         if obstacle_objects:
-            _LOGGER.debug(f"{self.file_name} All obstacle detected: {obstacle_objects}")
+            _LOGGER.debug(f"{self.file_name} Obstacle detected.")
             self.img_h.draw.draw_obstacles(np_array, obstacle_objects, color_no_go)
 
         return np_array

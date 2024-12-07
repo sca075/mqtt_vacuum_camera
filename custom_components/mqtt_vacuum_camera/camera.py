@@ -1,13 +1,12 @@
 """
 Camera
-Version: v2024.12.0
+Version: v2024.12.1
 """
 
 from __future__ import annotations
 
 import asyncio
 from asyncio import gather, get_event_loop
-import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
 from io import BytesIO
@@ -248,8 +247,9 @@ class MQTTCamera(CoordinatorEntity, Camera):
 
         if self._shared.camera_mode == CameraModes.OBSTACLE_VIEW:
             self._shared.camera_mode = CameraModes.MAP_VIEW
+            _LOGGER.debug(f"Camera Mode Change to {self._shared.camera_mode}")
             self._should_poll = True
-            return
+            return await self.async_update()
 
         if (
             self._shared.obstacles_data
@@ -258,6 +258,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
             _LOGGER.debug(f"Received event: {event.event_type}, Data: {event.data}")
             if event.data.get("entity_id") == self.entity_id:
                 self._shared.camera_mode = CameraModes.OBSTACLE_DOWNLOAD
+                _LOGGER.debug(f"Camera Mode Change to {self._shared.camera_mode}")
                 self._should_poll = False  # Turn off polling
                 coordinates = event.data.get("coordinates")
                 if coordinates:
@@ -288,11 +289,14 @@ class MQTTCamera(CoordinatorEntity, Camera):
                             )
                             self._should_poll = True  # Turn on polling
                             self._shared.camera_mode = CameraModes.MAP_VIEW
+                            _LOGGER.debug(
+                                f"Camera Mode Change to {self._shared.camera_mode}"
+                            )
                             return None
                         if temp_image is not None:
                             try:
                                 # Open the downloaded image with PIL
-                                pil_img = Image.open(temp_image)
+                                pil_img = await self.async_open_image(temp_image)
 
                                 # Resize the image if resize_to is provided
                                 pil_img.thumbnail((self._image_w, self._image_h))
@@ -304,6 +308,9 @@ class MQTTCamera(CoordinatorEntity, Camera):
                                     f"{self._file_name}: Error processing image: {e}"
                                 )
                                 self._shared.camera_mode = CameraModes.MAP_VIEW
+                                _LOGGER.debug(
+                                    f"Camera Mode Change to {self._shared.camera_mode}"
+                                )
                                 self._should_poll = True  # Turn on polling
                                 return None
 
@@ -311,8 +318,14 @@ class MQTTCamera(CoordinatorEntity, Camera):
                                 self.run_async_pil_to_bytes(pil_img)
                             )
                             self._shared.camera_mode = CameraModes.OBSTACLE_VIEW
+                            _LOGGER.debug(
+                                f"Camera Mode Change to {self._shared.camera_mode}"
+                            )
                         else:
                             self._shared.camera_mode = CameraModes.MAP_VIEW
+                            _LOGGER.debug(
+                                f"Camera Mode Change to {self._shared.camera_mode}"
+                            )
                         self._should_poll = True  # Turn on polling
                     else:
                         _LOGGER.debug("No nearby obstacle found.")
@@ -326,9 +339,9 @@ class MQTTCamera(CoordinatorEntity, Camera):
     async def _async_find_nearest_obstacle(x, y, obstacles):
         """Find the nearest obstacle to the given coordinates."""
         nearest_obstacle = None
-        min_distance = float("inf")  # Start with a very large distance
+        min_distance = 500  # Start with a very large distance
         _LOGGER.debug(
-            f"Finding the nearest {min_distance} obstacle to coordinates: {x}, {y}"
+            f"Finding in the nearest {min_distance} pixels obstacle to coordinates: {x}, {y}"
         )
 
         for obstacle in obstacles:
@@ -345,10 +358,26 @@ class MQTTCamera(CoordinatorEntity, Camera):
 
         return nearest_obstacle
 
+    async def async_open_image(self, file_path) -> Image.Image:
+        """
+        Asynchronously open an image file using a thread pool.
+        Args:
+            file_path (str): Path to the image file.
+
+        Returns:
+            Image.Image: Opened PIL image.
+        """
+        executor = ThreadPoolExecutor(
+            max_workers=1, thread_name_prefix=f"{self._file_name}_camera"
+        )
+        loop = asyncio.get_running_loop()
+        pil_img = await loop.run_in_executor(executor, Image.open, file_path)
+        return pil_img
+
     @staticmethod
     async def download_image(url: str, storage_path: str, filename: str):
         """
-        Asynchronously download an image using threading to avoid blocking.
+        Asynchronously download an image without blocking.
 
         Args:
             url (str): The URL to download the image from.
@@ -358,38 +387,23 @@ class MQTTCamera(CoordinatorEntity, Camera):
         Returns:
             str: The full path to the saved image or None if the download fails.
         """
-        # Ensure the storage path exists
         os.makedirs(storage_path, exist_ok=True)
-
         obstacle_file = os.path.join(storage_path, filename)
 
-        async def blocking_download():
-            """Run the blocking download in a separate thread."""
-            try:
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(url) as response:
-                        if response.status == 200:
-                            with open(obstacle_file, "wb") as f:
-                                f.write(await response.read())
-                            _LOGGER.debug(
-                                f"Image downloaded successfully: {obstacle_file}"
-                            )
-                            return obstacle_file
-                        else:
-                            _LOGGER.warning(
-                                f"Failed to download image: {response.status}"
-                            )
-                            return None
-            except Exception as e:
-                _LOGGER.error(f"Error downloading image: {e}")
-                return None
-
-        executor = ThreadPoolExecutor(max_workers=3)  # Limit to 3 workers
-
-        # Run the blocking I/O in a thread
-        return await asyncio.get_running_loop().run_in_executor(
-            executor, asyncio.run, blocking_download()
-        )
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as response:
+                    if response.status == 200:
+                        with open(obstacle_file, "wb") as f:
+                            f.write(await response.read())
+                        _LOGGER.debug(f"Image downloaded successfully: {obstacle_file}")
+                        return obstacle_file
+                    else:
+                        _LOGGER.warning(f"Failed to download image: {response.status}")
+                        return None
+        except Exception as e:
+            _LOGGER.error(f"Error downloading image: {e}")
+            return None
 
     @property
     def should_poll(self) -> bool:
@@ -482,7 +496,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
                     f"{self._file_name}: Camera image data update available: {process_data}"
                 )
             try:
-                parsed_json, is_a_test = await self._process_parsed_json()
+                parsed_json, is_a_test = await self._process_parsed_json(True)
             except ValueError:
                 self._vac_json_available = "Error"
                 pass
@@ -666,7 +680,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         pil_img_list = [pil_img for _ in range(num_processes)]
         loop = get_event_loop()
 
-        with concurrent.futures.ThreadPoolExecutor(
+        with ThreadPoolExecutor(
             max_workers=1, thread_name_prefix=f"{self._file_name}_camera"
         ) as executor:
             tasks = [

@@ -219,6 +219,12 @@ def compose_obstacle_links(vacuum_host_ip: str, obstacles: list) -> list:
     Compose JSON with obstacle details including the image link.
     """
     obstacle_links = []
+    if not obstacles or not vacuum_host_ip:
+        _LOGGER.debug(
+            f"Obstacle links: no obstacles: "
+            f"{obstacles} and / or ip: {vacuum_host_ip} to link."
+        )
+        return None
 
     for obstacle in obstacles:
         # Extract obstacle details
@@ -226,7 +232,7 @@ def compose_obstacle_links(vacuum_host_ip: str, obstacles: list) -> list:
         points = obstacle.get("points", {})
         image_id = obstacle.get("id", "None")
 
-        if label and points and image_id:
+        if label and points and image_id and vacuum_host_ip:
             # Append formatted obstacle data
             if image_id != "None":
                 # Compose the link
@@ -246,6 +252,6 @@ def compose_obstacle_links(vacuum_host_ip: str, obstacles: list) -> list:
                     }
                 )
 
-    _LOGGER.debug(f"Obstacle links: {obstacle_links}")
+    _LOGGER.debug(f"Obstacle links: linked data complete.")
 
     return obstacle_links

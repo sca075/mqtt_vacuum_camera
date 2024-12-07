@@ -410,6 +410,9 @@ class ValetudoConnector:
             # When IPV4 and IPV6 are available, use IPV4
             if vacuum_host_ip.split(",").__len__() > 1:
                 self._shared.vacuum_ips = vacuum_host_ip.split(",")[0]
+            else:
+                # Use IPV4 when no IPV6 without split
+                self._shared.vacuum_ips = vacuum_host_ip
             _LOGGER.debug(f"Vacuum IPs: {self._shared.vacuum_ips}")
 
     async def async_subscribe_to_topics(self) -> None:
