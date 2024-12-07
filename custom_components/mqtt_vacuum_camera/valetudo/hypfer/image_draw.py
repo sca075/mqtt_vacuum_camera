@@ -128,7 +128,7 @@ class ImageDraw:
             )
         elif self.img_h.shared.vacuum_api:
             self.img_h.shared.obstacles_data = compose_obstacle_links(
-                self.img_h.shared.vacuum_api.spit("http://")[1], obstacle_objects
+                self.img_h.shared.vacuum_api.split("http://")[1], obstacle_objects
             )
 
         # Draw obstacles on the map

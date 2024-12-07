@@ -152,10 +152,10 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
                 last_run_stats = sensor_data.get("last_run_stats", {})
                 last_loaded_map = sensor_data.get("last_loaded_map", {})
 
-                if not vacuum_room or last_loaded_map:
+                if not vacuum_room:
                     vacuum_room = {"in_room": "Unsupported"}
-                    if not last_loaded_map:
-                        last_loaded_map = {"name", "NoMap"}
+                if last_loaded_map=={}:
+                    last_loaded_map = {"name", "Default"}
 
                 formatted_data = {
                     "mainBrush": sensor_data.get("mainBrush", 0),
@@ -174,11 +174,11 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
                     "last_run_area": last_run_stats.get("area", 0),
                     "last_bin_out": sensor_data.get("last_bin_out", 0),
                     "last_bin_full": sensor_data.get("last_bin_full", 0),
-                    "last_loaded_map": last_loaded_map.get("name", "NoMap"),
+                    "last_loaded_map": last_loaded_map.get("name", "Default"),
                     "robot_in_room": vacuum_room.get("in_room"),
                 }
                 return formatted_data
+            return SENSOR_NO_DATA
         except Exception as err:
             _LOGGER.warning(f"Error processing sensor data: {err}")
             return SENSOR_NO_DATA
-        return SENSOR_NO_DATA
