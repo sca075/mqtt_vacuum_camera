@@ -7,6 +7,7 @@ Version: 2024.08.1
 from __future__ import annotations
 
 import logging
+from PIL import Image, ImageOps
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -330,3 +331,65 @@ class ImageUtils:
             if id_count > 1:
                 _LOGGER.debug(f"{self.file_name}: Point Properties updated.")
         return point_properties
+
+    @staticmethod
+    async def resize_to_aspect_ratio(
+        pil_img: Image,
+        ref_width: int,
+        ref_height: int,
+        aspect_ratio: str = None,
+        async_map_coordinates_offset=None,
+    ) -> tuple:
+        """
+        Resize the image to match the given aspect ratio, maintaining the camera's aspect ratio.
+
+        Args:
+            pil_img (PIL.Image): The input image to resize.
+            ref_width (int): The reference width for the image.
+            ref_height (int): The reference height for the image.
+            aspect_ratio (str): Aspect ratio in the format "width,height" or None for default.
+            async_map_coordinates_offset (callable): Async function to compute coordinate offsets.
+
+        Returns:
+            tuple: A resized image and crop image size as a tuple (PIL.Image, list).
+        """
+        crop_img_size = [0, 0]
+
+        if aspect_ratio and aspect_ratio != "None":
+            try:
+                # Parse aspect ratio (e.g., "16,9")
+                wsf, hsf = [int(x) for x in aspect_ratio.split(",")]
+                new_aspect_ratio = wsf / hsf
+
+                # Calculate current aspect ratio
+                current_aspect_ratio = ref_width / ref_height
+
+                # Resize based on aspect ratio comparison
+                if current_aspect_ratio > new_aspect_ratio:
+                    new_width = int(pil_img.height * new_aspect_ratio)
+                    new_height = pil_img.height
+                else:
+                    new_width = pil_img.width
+                    new_height = int(pil_img.width / new_aspect_ratio)
+
+                # Resize image using padding
+                resized_img = ImageOps.pad(pil_img, (new_width, new_height))
+
+                # Compute crop image size if mapping offset function is provided
+                if async_map_coordinates_offset:
+                    (
+                        crop_img_size[0],
+                        crop_img_size[1],
+                    ) = await async_map_coordinates_offset(
+                        wsf, hsf, new_width, new_height
+                    )
+
+                return resized_img, crop_img_size
+
+            except Exception as e:
+                raise ValueError(
+                    f"Error resizing image with aspect ratio {aspect_ratio}: {e}"
+                )
+
+        # If no aspect ratio is provided, return the original image and default crop size
+        return pil_img, crop_img_size

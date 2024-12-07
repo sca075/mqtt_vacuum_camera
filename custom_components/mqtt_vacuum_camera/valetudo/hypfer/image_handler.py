@@ -10,7 +10,7 @@ from __future__ import annotations
 import json
 import logging
 
-from PIL import Image, ImageOps
+from PIL import Image
 from homeassistant.core import HomeAssistant
 
 from ...const import COLORS
@@ -276,33 +276,17 @@ class MapImageHandler(object):
             ):
                 width = self.shared.image_ref_width
                 height = self.shared.image_ref_height
-                if self.shared.image_aspect_ratio != "None":
-                    wsf, hsf = [
-                        int(x) for x in self.shared.image_aspect_ratio.split(",")
-                    ]
-                    new_aspect_ratio = wsf / hsf
-                    aspect_ratio = width / height
-                    if aspect_ratio > new_aspect_ratio:
-                        new_width = int(pil_img.height * new_aspect_ratio)
-                        new_height = pil_img.height
-                    else:
-                        new_width = pil_img.width
-                        new_height = int(pil_img.width / new_aspect_ratio)
-                    resized = ImageOps.pad(pil_img, (new_width, new_height))
-                    (
-                        self.crop_img_size[0],
-                        self.crop_img_size[1],
-                    ) = await self.async_map_coordinates_offset(
-                        wsf, hsf, new_width, new_height
-                    )
-                    _LOGGER.debug(
-                        f"{self.file_name}: Image Aspect Ratio ({wsf}, {hsf}): {new_width}x{new_height}"
-                    )
-                    _LOGGER.debug(f"{self.file_name}: Frame Completed.")
-                    return resized
-                else:
-                    _LOGGER.debug(f"{self.file_name}: Frame Completed.")
-                    return ImageOps.pad(pil_img, (width, height))
+                (
+                    resized_image,
+                    self.crop_img_size,
+                ) = await self.imu.resize_to_aspect_ratio(
+                    pil_img,
+                    width,
+                    height,
+                    self.shared.image_aspect_ratio,
+                    self.async_map_coordinates_offset,
+                )
+                return resized_image
             else:
                 _LOGGER.debug(f"{self.file_name}: Frame Completed.")
                 return pil_img
