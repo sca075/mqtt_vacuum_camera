@@ -48,7 +48,7 @@ from .utils.files_operations import (
     async_load_file,
     is_auth_updated,
 )
-from .utils.image_handler_utils import resize_to_aspect_ratio
+# from .utils.image_handler_utils import resize_to_aspect_ratio
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -82,6 +82,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
     _attr_has_entity_name = True
     _unrecorded_attributes = frozenset({MATCH_ALL})
 
+    # noinspection PyUnusedLocal
     def __init__(self, coordinator, device_info):
         super().__init__(coordinator)
         Camera.__init__(self)
@@ -123,10 +124,10 @@ class MQTTCamera(CoordinatorEntity, Camera):
         self.processor = CameraProcessor(self.hass, self._shared)
 
         # Listen to the vacuum.start event
-        self.hass.bus.async_listen("event_vacuum_start", self.handle_vacuum_start)
-        self.hass.bus.async_listen(
-            "mqtt_vacuum_camera_obstacle_coordinates", self.handle_obstacle_view
-        )
+        cancel = self.hass.bus.async_listen("event_vacuum_start", self.handle_vacuum_start)
+        cancel = self.hass.bus.async_listen(
+         "mqtt_vacuum_camera_obstacle_coordinates", self.handle_obstacle_view
+         )
 
     @staticmethod
     def _start_up_logs():
@@ -253,7 +254,6 @@ class MQTTCamera(CoordinatorEntity, Camera):
             CameraModes.MAP_VIEW,
         ]:
             self._should_poll = True
-        _LOGGER.debug(f"{self._file_name}: Camera Polling: {self._should_poll}")
         return self._should_poll
 
     @property
@@ -565,7 +565,9 @@ class MQTTCamera(CoordinatorEntity, Camera):
         async def _async_find_nearest_obstacle(x, y, all_obstacles):
             """Find the nearest obstacle to the given coordinates."""
             nearest_obstacles = None
-            min_distance = 50  # Start 50 pixels distance
+            width = self._shared.image_ref_width
+            height = self._shared.image_ref_height
+            min_distance = round(60 * (width / height))  # (60 * aspect ratio) pixels distance
             _LOGGER.debug(
                 f"Finding in the nearest {min_distance} pixels obstacle to coordinates: {x}, {y}"
             )
@@ -636,41 +638,38 @@ class MQTTCamera(CoordinatorEntity, Camera):
                             )
                             return  # Return to Camera Mode
                         if temp_image is not None:
-                            try:
-                                # Open the downloaded image with PIL
-                                pil_img = await self.processor.async_open_image(
-                                    temp_image
-                                )
-
-                                # Resize the image if resize_to is provided
-                                width = self._shared.image_ref_width
-                                height = self._shared.image_ref_height
-                                (resized_image, _) = await resize_to_aspect_ratio(
-                                    pil_img,
-                                    width,
-                                    height,
-                                    self._shared.image_aspect_ratio,
-                                )
-                                _LOGGER.debug(
-                                    f"{self._file_name}: Image resized to: {width}, {height}"
-                                )
-                            except Exception as e:
-                                _LOGGER.warning(
-                                    f"{self._file_name}: Unexpected Error processing image: {e}"
-                                )
-                                self._shared.camera_mode = CameraModes.MAP_VIEW
-                                _LOGGER.debug(
-                                    f"Camera Mode Change to {self._shared.camera_mode}"
-                                )
-                                return  # Return to Camera Mode
-
-                            self.Image = await self.hass.async_create_task(
-                                self.run_async_pil_to_bytes(resized_image)
-                            )
                             self._shared.camera_mode = CameraModes.OBSTACLE_VIEW
                             _LOGGER.debug(
                                 f"Camera Mode Change to {self._shared.camera_mode}"
                             )
+                            try:
+                                # Open the downloaded image with PIL
+                                pil_img = await self.hass.async_create_task(
+                                    self.processor.async_open_image(temp_image)
+                                )
+                                # Resize the image if resize_to is provided
+                                # width = self._shared.image_ref_width
+                                # height = self._shared.image_ref_height
+                                # (resized_image, _) = await resize_to_aspect_ratio(
+                                #     pil_img,
+                                #     width,
+                                #     height,
+                                #     self._shared.image_aspect_ratio,
+                                #     None,
+                                # )
+                                # _LOGGER.debug(
+                                #     f"{self._file_name}: Image resized to: {width}, {height}"
+                                # )
+                                self.Image = await self.hass.async_create_task(
+                                    self.run_async_pil_to_bytes(pil_img)
+                                )
+                                return
+                            except Exception as e:
+                                _LOGGER.warning(
+                                    f"{self._file_name}: Unexpected Error processing image: {e}"
+                                )
+                                await _set_map_view_mode()
+                                return
                         else:
                             await _set_map_view_mode("No image downloaded.")
                     else:
