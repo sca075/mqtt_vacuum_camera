@@ -73,7 +73,7 @@ async def obstacle_view(call: ServiceCall, hass: HomeAssistant) -> None:
 
     _LOGGER.debug(f"Obstacle view for {camera_entity_id}")
     _LOGGER.debug(
-        f"Firing event for search and obstacle view at coordinates {coordinates_x}, {coordinates_y}"
+        f"Firing event to search and view obstacle at coordinates {coordinates_x}, {coordinates_y}"
     )
     hass.bus.async_fire(
         event_type=f"{DOMAIN}_obstacle_coordinates",
