@@ -12,7 +12,7 @@ from homeassistant.core import EventOrigin, HomeAssistant, callback
 from isal import igzip, isal_zlib
 
 from ...common import build_full_topic_set
-from ...const import DECODED_TOPICS, NON_DECODED_TOPICS
+from ...const import DECODED_TOPICS, NON_DECODED_TOPICS, CameraModes
 from ...types import RoomStore
 from ...valetudo.rand256.rrparser import RRMapParser
 
@@ -356,64 +356,69 @@ class ValetudoConnector:
 
         """
         self._rcv_topic = msg.topic
-        if self._rcv_topic == f"{self._mqtt_topic}/map_data":
-            await self.rand256_handle_image_payload(msg)
-        elif (self._rcv_topic == f"{self._mqtt_topic}/MapData/map-data") and (
-            not self._ignore_data
-        ):
-            await self.hypfer_handle_image_data(msg)
-        elif self._rcv_topic == f"{self._mqtt_topic}/StatusStateAttribute/status":
-            decoded_state = await self.async_decode_mqtt_payload(msg)
-            await self.hypfer_handle_status_payload(decoded_state)
-        elif self._rcv_topic == f"{self._mqtt_topic}/$state":
-            decoded_connect_state = await self.async_decode_mqtt_payload(msg)
-            await self.hypfer_handle_connect_state(decoded_connect_state)
-        elif (
-            self._rcv_topic
-            == f"{self._mqtt_topic}/StatusStateAttribute/error_description"
-        ):
-            decode_errors = await self.async_decode_mqtt_payload(msg)
-            await self.hypfer_handle_errors(decode_errors)
-        elif self._rcv_topic == f"{self._mqtt_topic}/BatteryStateAttribute/level":
-            decoded_battery_state = await self.async_decode_mqtt_payload(msg)
-            await self.hypfer_handle_battery_level(decoded_battery_state)
-        elif self._rcv_topic == f"{self._mqtt_topic}/state":
-            await self.rand256_handle_statuses(msg)
-        elif self._rcv_topic == f"{self._mqtt_topic}/custom_command":
-            await self.rrm_handle_active_segments(msg)
-        elif self._rcv_topic == f"{self._mqtt_topic}/destinations":
-            await self._hass.async_create_task(self.rand256_handle_destinations(msg))
-        elif self._rcv_topic == f"{self._mqtt_topic}/MapData/segments":
-            await self.hypfer_handle_map_segments(msg)
-        elif self._rcv_topic in [self.command_topic, self.rrm_command]:
-            await self.async_handle_start_command(msg)
-        elif self._rcv_topic == f"{self._mqtt_topic}/attributes":
-            self.rrm_attributes = await self.async_decode_mqtt_payload(msg)
-            try:
-                self._mqtt_vac_err = self.rrm_attributes.get("last_run_stats", {}).get(
-                    "errorDescription", None
+        if self._shared.camera_mode == CameraModes.MAP_VIEW:
+            if self._rcv_topic == f"{self._mqtt_topic}/map_data":
+                await self.rand256_handle_image_payload(msg)
+            elif (self._rcv_topic == f"{self._mqtt_topic}/MapData/map-data") and (
+                not self._ignore_data
+            ):
+                await self.hypfer_handle_image_data(msg)
+            elif self._rcv_topic == f"{self._mqtt_topic}/StatusStateAttribute/status":
+                decoded_state = await self.async_decode_mqtt_payload(msg)
+                await self.hypfer_handle_status_payload(decoded_state)
+            elif self._rcv_topic == f"{self._mqtt_topic}/$state":
+                decoded_connect_state = await self.async_decode_mqtt_payload(msg)
+                await self.hypfer_handle_connect_state(decoded_connect_state)
+            elif (
+                self._rcv_topic
+                == f"{self._mqtt_topic}/StatusStateAttribute/error_description"
+            ):
+                decode_errors = await self.async_decode_mqtt_payload(msg)
+                await self.hypfer_handle_errors(decode_errors)
+            elif self._rcv_topic == f"{self._mqtt_topic}/BatteryStateAttribute/level":
+                decoded_battery_state = await self.async_decode_mqtt_payload(msg)
+                await self.hypfer_handle_battery_level(decoded_battery_state)
+            elif self._rcv_topic == f"{self._mqtt_topic}/state":
+                await self.rand256_handle_statuses(msg)
+            elif self._rcv_topic == f"{self._mqtt_topic}/custom_command":
+                await self.rrm_handle_active_segments(msg)
+            elif self._rcv_topic == f"{self._mqtt_topic}/destinations":
+                await self._hass.async_create_task(
+                    self.rand256_handle_destinations(msg)
                 )
-            except AttributeError:
-                _LOGGER.debug("Error in getting last_run_stats")
-        elif self._rcv_topic == f"{self._mqtt_topic}/maploader/map":
-            await self.handle_pkohelrs_maploader_map(msg)
-        elif self._rcv_topic == f"{self._mqtt_topic}/maploader/status":
-            await self.handle_pkohelrs_maploader_state(msg)
-        elif self._rcv_topic == self.mqtt_hass_vacuum:
-            temp_json = await self.async_decode_mqtt_payload(msg)
-            self._shared.vacuum_api = temp_json.get("device", {}).get(
-                "configuration_url", None
-            )
-            _LOGGER.debug(f"Vacuum API URL: {self._shared.vacuum_api}")
-        elif self._rcv_topic == f"{self._mqtt_topic}/WifiConfigurationCapability/ips":
-            vacuum_host_ip = await self.async_decode_mqtt_payload(msg)
-            # When IPV4 and IPV6 are available, use IPV4
-            if vacuum_host_ip.split(",").__len__() > 1:
-                self._shared.vacuum_ips = vacuum_host_ip.split(",")[0]
-            else:
-                # Use IPV4 when no IPV6 without split
-                self._shared.vacuum_ips = vacuum_host_ip
-            _LOGGER.debug(f"Vacuum IPs: {self._shared.vacuum_ips}")
+            elif self._rcv_topic == f"{self._mqtt_topic}/MapData/segments":
+                await self.hypfer_handle_map_segments(msg)
+            elif self._rcv_topic in [self.command_topic, self.rrm_command]:
+                await self.async_handle_start_command(msg)
+            elif self._rcv_topic == f"{self._mqtt_topic}/attributes":
+                self.rrm_attributes = await self.async_decode_mqtt_payload(msg)
+                try:
+                    self._mqtt_vac_err = self.rrm_attributes.get(
+                        "last_run_stats", {}
+                    ).get("errorDescription", None)
+                except AttributeError:
+                    _LOGGER.debug("Error in getting last_run_stats")
+            elif self._rcv_topic == f"{self._mqtt_topic}/maploader/map":
+                await self.handle_pkohelrs_maploader_map(msg)
+            elif self._rcv_topic == f"{self._mqtt_topic}/maploader/status":
+                await self.handle_pkohelrs_maploader_state(msg)
+            elif self._rcv_topic == self.mqtt_hass_vacuum:
+                temp_json = await self.async_decode_mqtt_payload(msg)
+                self._shared.vacuum_api = temp_json.get("device", {}).get(
+                    "configuration_url", None
+                )
+                _LOGGER.debug(f"Vacuum API URL: {self._shared.vacuum_api}")
+            elif (
+                self._rcv_topic == f"{self._mqtt_topic}/WifiConfigurationCapability/ips"
+            ):
+                vacuum_host_ip = await self.async_decode_mqtt_payload(msg)
+                # When IPV4 and IPV6 are available, use IPV4
+                if vacuum_host_ip.split(",").__len__() > 1:
+                    self._shared.vacuum_ips = vacuum_host_ip.split(",")[0]
+                else:
+                    # Use IPV4 when no IPV6 without split
+                    self._shared.vacuum_ips = vacuum_host_ip
+                _LOGGER.debug(f"Vacuum IPs: {self._shared.vacuum_ips}")
 
     async def async_subscribe_to_topics(self) -> None:
         """Subscribe to the MQTT topics for Hypfer and ValetudoRe."""
