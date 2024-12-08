@@ -252,6 +252,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
             CameraModes.MAP_VIEW,
         ]:
             self._should_poll = True
+        _LOGGER.debug(f"{self._file_name}: Camera Polling: {self._should_poll}")
         return self._should_poll
 
     @property
@@ -552,6 +553,12 @@ class MQTTCamera(CoordinatorEntity, Camera):
     async def handle_obstacle_view(self, event):
         """Handle the event mqtt_vacuum_camera_obstacle_coordinates."""
 
+        async def _set_map_view_mode(reason: str = None):
+            """Set the camera mode to MAP_VIEW."""
+            self._shared.camera_mode = CameraModes.MAP_VIEW
+            _LOGGER.debug(f"Camera Mode Change to {self._shared.camera_mode}"
+                          f"{f': {reason}' if reason else ''}")
+
         async def _async_find_nearest_obstacle(x, y, all_obstacles):
             """Find the nearest obstacle to the given coordinates."""
             nearest_obstacles = None
@@ -577,8 +584,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         _LOGGER.debug(f"Received event: {event.event_type}, Data: {event.data}")
         # Check if we are in obstacle view and switch back to map view
         if self._shared.camera_mode == CameraModes.OBSTACLE_VIEW:
-            self._shared.camera_mode = CameraModes.MAP_VIEW
-            _LOGGER.debug(f"Camera Mode Change to {self._shared.camera_mode}")
+            await _set_map_view_mode("Obstacle View Exit Requested.")
             return  # Return to Camera Mode
 
         if (
@@ -606,17 +612,19 @@ class MQTTCamera(CoordinatorEntity, Camera):
                                 f"Downloading image: {nearest_obstacle['link']}"
                             )
                             # You can now use nearest_obstacle["link"] to download the image
-                            temp_image = await self.processor.download_image(
-                                nearest_obstacle["link"],
-                            )
+                            try:
+                                temp_image = await asyncio.wait_for(
+                                    fut=self.processor.download_image(nearest_obstacle["link"]),
+                                    timeout=10,
+                                )
+                            except asyncio.TimeoutError:
+                                await _set_map_view_mode("Image download timeout.")
+                                return
+                            except Exception as e:
+                                await _set_map_view_mode(f"Error downloading image: {e}")
+                                return
                         else:
-                            _LOGGER.info(
-                                "No link found for the obstacle image. Skipping download."
-                            )
-                            self._shared.camera_mode = CameraModes.MAP_VIEW
-                            _LOGGER.debug(
-                                f"Camera Mode Change to {self._shared.camera_mode}"
-                            )
+                            await _set_map_view_mode("No link found for the obstacle image.")
                             return  # Return to Camera Mode
                         if temp_image is not None:
                             try:
@@ -648,15 +656,10 @@ class MQTTCamera(CoordinatorEntity, Camera):
                                 f"Camera Mode Change to {self._shared.camera_mode}"
                             )
                         else:
-                            self._shared.camera_mode = CameraModes.MAP_VIEW
-                            _LOGGER.debug(
-                                f"Camera Mode Change to {self._shared.camera_mode}"
-                            )
+                            await _set_map_view_mode("No image downloaded.")
                     else:
                         _LOGGER.debug("No nearby obstacle found.")
                         self._shared.camera_mode = CameraModes.MAP_VIEW
                         return  # Return to Camera Mode
         else:
-            _LOGGER.debug("No obstacles data available.")
-            self._shared.camera_mode = CameraModes.MAP_VIEW
-            _LOGGER.debug(f"Camera Mode Change to {self._shared.camera_mode}")
+            await _set_map_view_mode("No obstacles data available.")

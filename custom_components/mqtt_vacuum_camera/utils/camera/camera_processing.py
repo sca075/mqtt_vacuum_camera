@@ -294,7 +294,7 @@ class CameraProcessor:
             async with aiohttp.ClientSession(timeout=timeout) as session:
                 async with session.get(url) as response:
                     if response.status == 200:
-                        obstacle_image = BytesIO(await response.read())
+                        obstacle_image = await response.read()
                         _LOGGER.debug("Image downloaded successfully!")
                         return obstacle_image
                     else:
@@ -317,5 +317,5 @@ class CameraProcessor:
             max_workers=1, thread_name_prefix=f"{self._file_name}_camera"
         )
         loop = asyncio.get_running_loop()
-        pil_img = await loop.run_in_executor(executor, Image.open, obstacle_image)
+        pil_img = await loop.run_in_executor(executor, Image.open, BytesIO(obstacle_image))
         return pil_img
