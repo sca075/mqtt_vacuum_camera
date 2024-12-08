@@ -18,7 +18,6 @@ import time
 from typing import Any, Optional
 
 from PIL import Image
-import aiohttp
 from homeassistant import config_entries, core
 from homeassistant.components.camera import Camera, CameraEntityFeature
 from homeassistant.const import CONF_UNIQUE_ID, MATCH_ALL
@@ -165,6 +164,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         """Handle entity added to Home Assistant."""
         await self._mqtt.async_subscribe_to_topics()
         self._should_poll = True
+        self._shared.camera_mode = CameraModes.MAP_VIEW
         self.async_schedule_update_ha_state(True)
 
     async def async_will_remove_from_hass(self) -> None:
@@ -235,174 +235,23 @@ class MQTTCamera(CoordinatorEntity, Camera):
 
         return attributes
 
-    async def handle_vacuum_start(self, event):
-        """Handle the event_vacuum_start event."""
-        _LOGGER.debug(f"Received event: {event.event_type}, Data: {event.data}")
-
-        # Call the reset_trims service when vacuum.start event occurs
-        await self.hass.services.async_call("mqtt_vacuum_camera", "reset_trims")
-
-    async def handle_obstacle_view(self, event):
-        """Handle the event mqtt_vacuum_camera_obstacle_coordinates."""
-
-        _LOGGER.debug(f"Received event: {event.event_type}, Data: {event.data}")
-        # Check if we are in obstacle view and switch back to map view
-        if self._shared.camera_mode == CameraModes.OBSTACLE_VIEW:
-            self._shared.camera_mode = CameraModes.MAP_VIEW
-            _LOGGER.debug(f"Camera Mode Change to {self._shared.camera_mode}")
-            self._should_poll = True
-            return await self.async_update()
-
-        if (
-            self._shared.obstacles_data
-            and self._shared.camera_mode == CameraModes.MAP_VIEW
-        ):
-            if event.data.get("entity_id") == self.entity_id:
-                self._shared.camera_mode = CameraModes.OBSTACLE_DOWNLOAD
-                _LOGGER.debug(f"Camera Mode Change to {self._shared.camera_mode}")
-                self._should_poll = False  # Turn off polling
-                coordinates = event.data.get("coordinates")
-                if coordinates:
-                    obstacles = self._shared.obstacles_data
-                    coordinates_x = coordinates.get("x")
-                    coordinates_y = coordinates.get("y")
-
-                    # Find the nearest obstacle
-                    nearest_obstacle = await self._async_find_nearest_obstacle(
-                        coordinates_x, coordinates_y, obstacles
-                    )
-
-                    if nearest_obstacle:
-                        _LOGGER.debug(f"Nearest obstacle found: {nearest_obstacle}")
-                        if nearest_obstacle["link"]:
-                            _LOGGER.debug(
-                                f"Downloading image: {nearest_obstacle['link']}"
-                            )
-                            # You can now use nearest_obstacle["link"] to download the image
-                            temp_image = await self.download_image(
-                                nearest_obstacle["link"],
-                            )
-                        else:
-                            _LOGGER.info(
-                                "No link found for the obstacle image. Skipping download."
-                            )
-                            self._should_poll = True  # Turn on polling
-                            self._shared.camera_mode = CameraModes.MAP_VIEW
-                            _LOGGER.debug(
-                                f"Camera Mode Change to {self._shared.camera_mode}"
-                            )
-                            return None
-                        if temp_image is not None:
-                            try:
-                                # Open the downloaded image with PIL
-                                pil_img = await self.async_open_image(temp_image)
-
-                                # Resize the image if resize_to is provided
-                                pil_img.thumbnail((self._image_w, self._image_h))
-                                _LOGGER.debug(
-                                    f"{self._file_name}: Image resized to: {self._image_w}, {self._image_h}"
-                                )
-                            except Exception as e:
-                                _LOGGER.warning(
-                                    f"{self._file_name}: Unexpected Error processing image: {e}"
-                                )
-                                self._shared.camera_mode = CameraModes.MAP_VIEW
-                                self._should_poll = True  # Turn on polling
-                                _LOGGER.debug(
-                                    f"Camera Mode Change to {self._shared.camera_mode}"
-                                )
-                                return await self.async_update()
-
-                            self.Image = await self.hass.async_create_task(
-                                self.run_async_pil_to_bytes(pil_img)
-                            )
-                            self._shared.camera_mode = CameraModes.OBSTACLE_VIEW
-                            _LOGGER.debug(
-                                f"Camera Mode Change to {self._shared.camera_mode}"
-                            )
-                        else:
-                            self._shared.camera_mode = CameraModes.MAP_VIEW
-                            _LOGGER.debug(
-                                f"Camera Mode Change to {self._shared.camera_mode}"
-                            )
-                        self._should_poll = True  # Turn on polling
-                    else:
-                        _LOGGER.debug("No nearby obstacle found.")
-                        self._shared.camera_mode = CameraModes.MAP_VIEW
-                        self._should_poll = True  # Turn on polling
-        else:
-            _LOGGER.debug("No obstacles data available.")
-            self._should_poll = True
-
-    @staticmethod
-    async def _async_find_nearest_obstacle(x, y, obstacles):
-        """Find the nearest obstacle to the given coordinates."""
-        nearest_obstacle = None
-        min_distance = 50  # Start with a very large distance
-        _LOGGER.debug(
-            f"Finding in the nearest {min_distance} pixels obstacle to coordinates: {x}, {y}"
-        )
-
-        for obstacle in obstacles:
-            obstacle_point = obstacle["point"]
-            obstacle_x = obstacle_point["x"]
-            obstacle_y = obstacle_point["y"]
-
-            # Calculate Euclidean distance
-            distance = math.sqrt((x - obstacle_x) ** 2 + (y - obstacle_y) ** 2)
-
-            if distance < min_distance:
-                min_distance = distance
-                nearest_obstacle = obstacle
-
-        return nearest_obstacle
-
-    async def async_open_image(self, obstacle_image: bytes) -> Image.Image:
-        """
-        Asynchronously open an image file using a thread pool.
-        Args:
-            obstacle_image (bytes): image file.
-
-        Returns:
-            Image.Image: Opened PIL image.
-        """
-        executor = ThreadPoolExecutor(
-            max_workers=1, thread_name_prefix=f"{self._file_name}_camera"
-        )
-        loop = asyncio.get_running_loop()
-        pil_img = await loop.run_in_executor(executor, Image.open, obstacle_image)
-        return pil_img
-
-    @staticmethod
-    async def download_image(url: str):
-        """
-        Asynchronously download an image without blocking.
-
-        Args:
-            url (str): The URL to download the image from.
-
-        Returns:
-            str: The full path to the saved image or None if the download fails.
-        """
-
-        try:
-            timeout = aiohttp.ClientTimeout(total=3)  # Set the timeout to 3 seconds
-            async with aiohttp.ClientSession(timeout=timeout) as session:
-                async with session.get(url) as response:
-                    if response.status == 200:
-                        obstacle_image = BytesIO(await response.read())
-                        _LOGGER.debug(f"Image downloaded successfully!")
-                        return obstacle_image
-                    else:
-                        _LOGGER.warning(f"Failed to download image: {response.status}")
-                        return None
-        except Exception as e:
-            _LOGGER.error(f"Error downloading image: {e}")
-            return None
-
     @property
     def should_poll(self) -> bool:
-        """ON/OFF Camera Polling"""
+        """ON/OFF Camera Polling Based on Camera Mode."""
+        if self._shared.camera_mode == [CameraModes.OBSTACLE_DOWNLOAD]:
+            self._should_poll = False
+        elif isinstance(self._shared.camera_mode, bool):
+            if self._shared.camera_mode:
+                self._shared.camera_mode = CameraModes.MAP_VIEW
+                self._should_poll = True
+            else:
+                self._shared.camera_mode = CameraModes.CAMERA_STANDBY
+                self._should_poll = False
+        elif self._shared.camera_mode in [
+            CameraModes.OBSTACLE_VIEW,
+            CameraModes.MAP_VIEW,
+        ]:
+            self._should_poll = True
         return self._should_poll
 
     @property
@@ -420,13 +269,11 @@ class MQTTCamera(CoordinatorEntity, Camera):
 
     def turn_on(self) -> None:
         """Camera Turn On"""
-        # self._attr_is_on = True
-        self._should_poll = True
+        self._shared.camera_mode = CameraModes.CAMERA_ON
 
     def turn_off(self) -> None:
         """Camera Turn Off"""
-        # self._attr_is_on = False
-        self._should_poll = False
+        self._shared.camera_mode = CameraModes.CAMERA_OFF
 
     def empty_if_no_data(self) -> Image.Image:
         """
@@ -575,7 +422,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
                 file_to_load="custom_components/mqtt_vacuum_camera/snapshots/test.json",
                 is_json=True,
             )
-            self._should_poll = False
+            self._shared.camera_mode = CameraModes.MAP_VIEW
             return parsed_json, test_mode
         parsed_json = await self._mqtt.update_data(self._shared.image_grab)
         if not parsed_json:
@@ -694,3 +541,122 @@ class MQTTCamera(CoordinatorEntity, Camera):
             result = None
 
         return result
+
+    async def handle_vacuum_start(self, event):
+        """Handle the event_vacuum_start event."""
+        _LOGGER.debug(f"Received event: {event.event_type}, Data: {event.data}")
+
+        # Call the reset_trims service when vacuum.start event occurs
+        await self.hass.services.async_call("mqtt_vacuum_camera", "reset_trims")
+
+    async def handle_obstacle_view(self, event):
+        """Handle the event mqtt_vacuum_camera_obstacle_coordinates."""
+
+        async def _async_find_nearest_obstacle(x, y, all_obstacles):
+            """Find the nearest obstacle to the given coordinates."""
+            nearest_obstacles = None
+            min_distance = 50  # Start 50 pixels distance
+            _LOGGER.debug(
+                f"Finding in the nearest {min_distance} pixels obstacle to coordinates: {x}, {y}"
+            )
+
+            for obstacle in all_obstacles:
+                obstacle_point = obstacle["point"]
+                obstacle_x = obstacle_point["x"]
+                obstacle_y = obstacle_point["y"]
+
+                # Calculate Euclidean distance
+                distance = math.sqrt((x - obstacle_x) ** 2 + (y - obstacle_y) ** 2)
+
+                if distance < min_distance:
+                    min_distance = distance
+                    nearest_obstacles = obstacle
+
+            return nearest_obstacles
+
+        _LOGGER.debug(f"Received event: {event.event_type}, Data: {event.data}")
+        # Check if we are in obstacle view and switch back to map view
+        if self._shared.camera_mode == CameraModes.OBSTACLE_VIEW:
+            self._shared.camera_mode = CameraModes.MAP_VIEW
+            _LOGGER.debug(f"Camera Mode Change to {self._shared.camera_mode}")
+            return  # Return to Camera Mode
+
+        if (
+            self._shared.obstacles_data
+            and self._shared.camera_mode == CameraModes.MAP_VIEW
+        ):
+            if event.data.get("entity_id") == self.entity_id:
+                self._shared.camera_mode = CameraModes.OBSTACLE_DOWNLOAD
+                _LOGGER.debug(f"Camera Mode Change to {self._shared.camera_mode}")
+                coordinates = event.data.get("coordinates")
+                if coordinates:
+                    obstacles = self._shared.obstacles_data
+                    coordinates_x = coordinates.get("x")
+                    coordinates_y = coordinates.get("y")
+
+                    # Find the nearest obstacle
+                    nearest_obstacle = await _async_find_nearest_obstacle(
+                        coordinates_x, coordinates_y, obstacles
+                    )
+
+                    if nearest_obstacle:
+                        _LOGGER.debug(f"Nearest obstacle found: {nearest_obstacle}")
+                        if nearest_obstacle["link"]:
+                            _LOGGER.debug(
+                                f"Downloading image: {nearest_obstacle['link']}"
+                            )
+                            # You can now use nearest_obstacle["link"] to download the image
+                            temp_image = await self.processor.download_image(
+                                nearest_obstacle["link"],
+                            )
+                        else:
+                            _LOGGER.info(
+                                "No link found for the obstacle image. Skipping download."
+                            )
+                            self._shared.camera_mode = CameraModes.MAP_VIEW
+                            _LOGGER.debug(
+                                f"Camera Mode Change to {self._shared.camera_mode}"
+                            )
+                            return  # Return to Camera Mode
+                        if temp_image is not None:
+                            try:
+                                # Open the downloaded image with PIL
+                                pil_img = await self.processor.async_open_image(
+                                    temp_image
+                                )
+
+                                # Resize the image if resize_to is provided
+                                pil_img.thumbnail((self._image_w, self._image_h))
+                                _LOGGER.debug(
+                                    f"{self._file_name}: Image resized to: {self._image_w}, {self._image_h}"
+                                )
+                            except Exception as e:
+                                _LOGGER.warning(
+                                    f"{self._file_name}: Unexpected Error processing image: {e}"
+                                )
+                                self._shared.camera_mode = CameraModes.MAP_VIEW
+                                _LOGGER.debug(
+                                    f"Camera Mode Change to {self._shared.camera_mode}"
+                                )
+                                return  # Return to Camera Mode
+
+                            self.Image = await self.hass.async_create_task(
+                                self.run_async_pil_to_bytes(pil_img)
+                            )
+                            self._shared.camera_mode = CameraModes.OBSTACLE_VIEW
+                            _LOGGER.debug(
+                                f"Camera Mode Change to {self._shared.camera_mode}"
+                            )
+                        else:
+                            self._shared.camera_mode = CameraModes.MAP_VIEW
+                            _LOGGER.debug(
+                                f"Camera Mode Change to {self._shared.camera_mode}"
+                            )
+                    else:
+                        _LOGGER.debug("No nearby obstacle found.")
+                        self._shared.camera_mode = CameraModes.MAP_VIEW
+                        return  # Return to Camera Mode
+        else:
+            _LOGGER.debug("No obstacles data available.")
+            self._shared.camera_mode = CameraModes.MAP_VIEW
+            _LOGGER.debug(f"Camera Mode Change to {self._shared.camera_mode}")

@@ -252,6 +252,6 @@ def compose_obstacle_links(vacuum_host_ip: str, obstacles: list) -> list:
                     }
                 )
 
-    _LOGGER.debug(f"Obstacle links: linked data complete.")
+    _LOGGER.debug("Obstacle links: linked data complete.")
 
     return obstacle_links
