@@ -48,6 +48,7 @@ from .utils.files_operations import (
     async_load_file,
     is_auth_updated,
 )
+from .utils.image_handler_utils import resize_to_aspect_ratio
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -556,8 +557,10 @@ class MQTTCamera(CoordinatorEntity, Camera):
         async def _set_map_view_mode(reason: str = None):
             """Set the camera mode to MAP_VIEW."""
             self._shared.camera_mode = CameraModes.MAP_VIEW
-            _LOGGER.debug(f"Camera Mode Change to {self._shared.camera_mode}"
-                          f"{f': {reason}' if reason else ''}")
+            _LOGGER.debug(
+                f"Camera Mode Change to {self._shared.camera_mode}"
+                f"{f': {reason}' if reason else ''}"
+            )
 
         async def _async_find_nearest_obstacle(x, y, all_obstacles):
             """Find the nearest obstacle to the given coordinates."""
@@ -614,17 +617,23 @@ class MQTTCamera(CoordinatorEntity, Camera):
                             # You can now use nearest_obstacle["link"] to download the image
                             try:
                                 temp_image = await asyncio.wait_for(
-                                    fut=self.processor.download_image(nearest_obstacle["link"]),
+                                    fut=self.processor.download_image(
+                                        nearest_obstacle["link"]
+                                    ),
                                     timeout=10,
                                 )
                             except asyncio.TimeoutError:
                                 await _set_map_view_mode("Image download timeout.")
                                 return
                             except Exception as e:
-                                await _set_map_view_mode(f"Error downloading image: {e}")
+                                await _set_map_view_mode(
+                                    f"Error downloading image: {e}"
+                                )
                                 return
                         else:
-                            await _set_map_view_mode("No link found for the obstacle image.")
+                            await _set_map_view_mode(
+                                "No link found for the obstacle image."
+                            )
                             return  # Return to Camera Mode
                         if temp_image is not None:
                             try:
@@ -634,9 +643,16 @@ class MQTTCamera(CoordinatorEntity, Camera):
                                 )
 
                                 # Resize the image if resize_to is provided
-                                pil_img.thumbnail((self._image_w, self._image_h))
+                                width = self._shared.image_ref_width
+                                height = self._shared.image_ref_height
+                                (resized_image, _) = await resize_to_aspect_ratio(
+                                    pil_img,
+                                    width,
+                                    height,
+                                    self._shared.image_aspect_ratio,
+                                )
                                 _LOGGER.debug(
-                                    f"{self._file_name}: Image resized to: {self._image_w}, {self._image_h}"
+                                    f"{self._file_name}: Image resized to: {width}, {height}"
                                 )
                             except Exception as e:
                                 _LOGGER.warning(
@@ -649,7 +665,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
                                 return  # Return to Camera Mode
 
                             self.Image = await self.hass.async_create_task(
-                                self.run_async_pil_to_bytes(pil_img)
+                                self.run_async_pil_to_bytes(resized_image)
                             )
                             self._shared.camera_mode = CameraModes.OBSTACLE_VIEW
                             _LOGGER.debug(

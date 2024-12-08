@@ -25,7 +25,7 @@ from ...types import (
 from ...utils.auto_crop import AutoCrop
 from ...utils.colors_man import color_grey
 from ...utils.drawable import Drawable
-from ...utils.image_handler_utils import ImageUtils as ImUtils
+from ...utils.image_handler_utils import ImageUtils as ImUtils, resize_to_aspect_ratio
 from ...utils.img_data import ImageData
 from ...valetudo.hypfer.image_draw import ImageDraw as ImDraw
 
@@ -279,7 +279,7 @@ class MapImageHandler(object):
                 (
                     resized_image,
                     self.crop_img_size,
-                ) = await self.imu.resize_to_aspect_ratio(
+                ) = await resize_to_aspect_ratio(
                     pil_img,
                     width,
                     height,

@@ -9,11 +9,13 @@ from __future__ import annotations
 
 import asyncio
 from asyncio import gather, get_event_loop
-from io import BytesIO
-import aiohttp
 import concurrent.futures
+from io import BytesIO
 import logging
+from typing import Any
+
 from PIL import Image
+import aiohttp
 
 from custom_components.mqtt_vacuum_camera.const import NOT_STREAMING_STATES
 from custom_components.mqtt_vacuum_camera.types import Color, JsonType, PilPNG
@@ -286,7 +288,7 @@ class CameraProcessor:
             url (str): The URL to download the image from.
 
         Returns:
-            str: The full path to the saved image or None if the download fails.
+            Image: The downloaded image in jpeg format.
         """
 
         try:
@@ -304,18 +306,20 @@ class CameraProcessor:
             _LOGGER.error(f"Error downloading image: {e}")
             return None
 
-    async def async_open_image(self, obstacle_image: bytes) -> Image.Image:
+    async def async_open_image(self, obstacle_image: Any) -> Image.Image:
         """
         Asynchronously open an image file using a thread pool.
         Args:
-            obstacle_image (bytes): image file.
+            obstacle_image (Any): image file bytes or jpeg format.
 
         Returns:
-            Image.Image: Opened PIL image.
+            Image.Image: PIL image.
         """
         executor = concurrent.futures.ThreadPoolExecutor(
             max_workers=1, thread_name_prefix=f"{self._file_name}_camera"
         )
         loop = asyncio.get_running_loop()
-        pil_img = await loop.run_in_executor(executor, Image.open, BytesIO(obstacle_image))
+        pil_img = await loop.run_in_executor(
+            executor, Image.open, BytesIO(obstacle_image)
+        )
         return pil_img
