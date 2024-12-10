@@ -26,12 +26,13 @@ from homeassistant.helpers.storage import STORAGE_DIR
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from psutil_home_assistant import PsutilWrapper as ProcInsp
 
-from .common import get_vacuum_unique_id_from_mqtt_topic
+from .common import get_vacuum_unique_id_from_mqtt_topic, RedactIPFilter
 from .const import (
     ATTR_FRIENDLY_NAME,
     ATTR_JSON_DATA,
     ATTR_OBSTACLES,
     ATTR_SNAPSHOT_PATH,
+    ATTR_CAMERA_MODE,
     ATTR_VACUUM_TOPIC,
     CAMERA_STORAGE,
     CONF_VACUUM_IDENTIFIERS,
@@ -54,6 +55,7 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 SCAN_INTERVAL = timedelta(seconds=3)
 _LOGGER = logging.getLogger(__name__)
+_LOGGER.addFilter(RedactIPFilter())
 
 
 async def async_setup_entry(
@@ -124,10 +126,12 @@ class MQTTCamera(CoordinatorEntity, Camera):
         self.processor = CameraProcessor(self.hass, self._shared)
 
         # Listen to the vacuum.start event
-        cancel = self.hass.bus.async_listen("event_vacuum_start", self.handle_vacuum_start)
-        cancel = self.hass.bus.async_listen(
-         "mqtt_vacuum_camera_obstacle_coordinates", self.handle_obstacle_view
-         )
+        self.uns_event_vacuum_start = self.hass.bus.async_listen(
+            "event_vacuum_start", self.handle_vacuum_start
+        )
+        self.uns_event_obstacle_coordinates = self.hass.bus.async_listen(
+            "mqtt_vacuum_camera_obstacle_coordinates", self.handle_obstacle_view
+        )
 
     @staticmethod
     def _start_up_logs():
@@ -229,6 +233,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
             ATTR_VACUUM_TOPIC: self._mqtt_listen_topic,
             ATTR_JSON_DATA: self._vac_json_available,
             ATTR_SNAPSHOT_PATH: f"/local/snapshot_{self._file_name}.png",
+            ATTR_CAMERA_MODE: self._shared.camera_mode,
         }
         if self._shared.obstacles_data:
             attributes.update({ATTR_OBSTACLES: self._shared.obstacles_data})
@@ -240,7 +245,10 @@ class MQTTCamera(CoordinatorEntity, Camera):
     @property
     def should_poll(self) -> bool:
         """ON/OFF Camera Polling Based on Camera Mode."""
-        if self._shared.camera_mode == [CameraModes.OBSTACLE_DOWNLOAD]:
+        if self._shared.camera_mode in [
+            CameraModes.OBSTACLE_DOWNLOAD,
+            CameraModes.OBSTACLE_SEARCH,
+        ]:
             self._should_poll = False
         elif isinstance(self._shared.camera_mode, bool):
             if self._shared.camera_mode:
@@ -308,6 +316,12 @@ class MQTTCamera(CoordinatorEntity, Camera):
     async def async_update(self):
         """Camera Frame Update."""
 
+        # Obstacle View Processing
+        if self._shared.camera_mode == CameraModes.OBSTACLE_VIEW:
+            if self.Image is not None:
+                return self.camera_image(self._image_w, self._image_h)
+
+        # Map View Processing
         if is_auth_updated(self):
             # Get the active user language
             self._shared.user_language = await async_get_active_user_language(self.hass)
@@ -322,9 +336,6 @@ class MQTTCamera(CoordinatorEntity, Camera):
         pid = os.getpid()  # Start to log the CPU usage of this PID.
         proc = ProcInsp().psutil.Process(pid)  # Get the process PID.
         process_data = await self._mqtt.is_data_available()
-        if self._shared.camera_mode == CameraModes.OBSTACLE_VIEW:
-            if self.Image is not None:
-                return self.camera_image(self._image_w, self._image_h)
         if process_data and self._shared.camera_mode == CameraModes.MAP_VIEW:
             # to calculate the cycle time for frame adjustment.
             start_time = time.perf_counter()
@@ -482,13 +493,19 @@ class MQTTCamera(CoordinatorEntity, Camera):
         processing_time = round((time.perf_counter() - start_time), 3)
         self._attr_frame_interval = max(0.1, processing_time)
 
-    async def async_pil_to_bytes(self, pil_img) -> Optional[bytes]:
+    async def async_pil_to_bytes(
+        self, pil_img, image_id: str = None
+    ) -> Optional[bytes]:
         """Convert PIL image to bytes"""
-        if pil_img:
+        if self._shared.camera_mode != CameraModes.MAP_VIEW:
+            self._image_bk = pil_img
+            _LOGGER.debug(f"{self._file_name}: Output Image: {image_id}.")
+        else:
             self._last_image = pil_img
             _LOGGER.debug(
                 f"{self._file_name}: Image from Json: {self._shared.vac_json_id}."
             )
+        if pil_img:
             if self._shared.show_vacuum_state:
                 pil_img = await self.processor.run_async_draw_image_text(
                     pil_img, self._shared.user_colors[8]
@@ -508,17 +525,17 @@ class MQTTCamera(CoordinatorEntity, Camera):
         del buffered, pil_img
         return bytes_data
 
-    def process_pil_to_bytes(self, pil_img):
+    def process_pil_to_bytes(self, pil_img, image_id: str = None):
         """Async function to process the image data from the Vacuum Json data."""
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         try:
-            result = loop.run_until_complete(self.async_pil_to_bytes(pil_img))
+            result = loop.run_until_complete(self.async_pil_to_bytes(pil_img, image_id))
         finally:
             loop.close()
         return result
 
-    async def run_async_pil_to_bytes(self, pil_img):
+    async def run_async_pil_to_bytes(self, pil_img, image_id: str = None):
         """Thread function to process the image data from the Vacuum Json data."""
         num_processes = 1
         pil_img_list = [pil_img for _ in range(num_processes)]
@@ -531,7 +548,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
                 loop.run_in_executor(
                     executor,
                     self.process_pil_to_bytes,
-                    pil_img,
+                    pil_img, image_id
                 )
                 for pil_img in pil_img_list
             ]
@@ -557,6 +574,16 @@ class MQTTCamera(CoordinatorEntity, Camera):
         async def _set_map_view_mode(reason: str = None):
             """Set the camera mode to MAP_VIEW."""
             self._shared.camera_mode = CameraModes.MAP_VIEW
+            self._shared.frame_number = 0
+            self._shared.image_grab = True
+            _LOGGER.debug(
+                f"Camera Mode Change to {self._shared.camera_mode}"
+                f"{f': {reason}' if reason else ''}"
+            )
+
+        async def _set_camera_mode(mode_of_camera: CameraModes, reason: str = None):
+            """Set the camera mode."""
+            self._shared.camera_mode = mode_of_camera
             _LOGGER.debug(
                 f"Camera Mode Change to {self._shared.camera_mode}"
                 f"{f': {reason}' if reason else ''}"
@@ -567,7 +594,9 @@ class MQTTCamera(CoordinatorEntity, Camera):
             nearest_obstacles = None
             width = self._shared.image_ref_width
             height = self._shared.image_ref_height
-            min_distance = round(60 * (width / height))  # (60 * aspect ratio) pixels distance
+            min_distance = round(
+                60 * (width / height)
+            )  # (60 * aspect ratio) pixels distance
             _LOGGER.debug(
                 f"Finding in the nearest {min_distance} pixels obstacle to coordinates: {x}, {y}"
             )
@@ -597,14 +626,12 @@ class MQTTCamera(CoordinatorEntity, Camera):
             and self._shared.camera_mode == CameraModes.MAP_VIEW
         ):
             if event.data.get("entity_id") == self.entity_id:
-                self._shared.camera_mode = CameraModes.OBSTACLE_DOWNLOAD
-                _LOGGER.debug(f"Camera Mode Change to {self._shared.camera_mode}")
+                await _set_camera_mode(CameraModes.OBSTACLE_SEARCH)
                 coordinates = event.data.get("coordinates")
                 if coordinates:
                     obstacles = self._shared.obstacles_data
                     coordinates_x = coordinates.get("x")
                     coordinates_y = coordinates.get("y")
-
                     # Find the nearest obstacle
                     nearest_obstacle = await _async_find_nearest_obstacle(
                         coordinates_x, coordinates_y, obstacles
@@ -613,10 +640,10 @@ class MQTTCamera(CoordinatorEntity, Camera):
                     if nearest_obstacle:
                         _LOGGER.debug(f"Nearest obstacle found: {nearest_obstacle}")
                         if nearest_obstacle["link"]:
-                            _LOGGER.debug(
-                                f"Downloading image: {nearest_obstacle['link']}"
+                            await _set_camera_mode(
+                                mode_of_camera=CameraModes.OBSTACLE_DOWNLOAD,
+                                reason=f"Downloading image: {nearest_obstacle['link']}",
                             )
-                            # You can now use nearest_obstacle["link"] to download the image
                             try:
                                 temp_image = await asyncio.wait_for(
                                     fut=self.processor.download_image(
@@ -638,11 +665,9 @@ class MQTTCamera(CoordinatorEntity, Camera):
                             )
                             return  # Return to Camera Mode
                         if temp_image is not None:
-                            self._shared.camera_mode = CameraModes.OBSTACLE_VIEW
-                            _LOGGER.debug(
-                                f"Camera Mode Change to {self._shared.camera_mode}"
-                            )
+                            await _set_camera_mode(CameraModes.OBSTACLE_VIEW)
                             try:
+                                start_time = time.perf_counter()
                                 # Open the downloaded image with PIL
                                 pil_img = await self.hass.async_create_task(
                                     self.processor.async_open_image(temp_image)
@@ -661,7 +686,13 @@ class MQTTCamera(CoordinatorEntity, Camera):
                                 #     f"{self._file_name}: Image resized to: {width}, {height}"
                                 # )
                                 self.Image = await self.hass.async_create_task(
-                                    self.run_async_pil_to_bytes(pil_img)
+                                    self.run_async_pil_to_bytes(
+                                        pil_img, image_id=nearest_obstacle["label"]
+                                    )
+                                )
+                                end_time = time.perf_counter()
+                                _LOGGER.debug(
+                                    f"Image processing time: {end_time - start_time} seconds"
                                 )
                                 return
                             except Exception as e:
@@ -673,8 +704,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
                         else:
                             await _set_map_view_mode("No image downloaded.")
                     else:
-                        _LOGGER.debug("No nearby obstacle found.")
-                        self._shared.camera_mode = CameraModes.MAP_VIEW
+                        await _set_map_view_mode("No nearby obstacle found.")
                         return  # Return to Camera Mode
         else:
             await _set_map_view_mode("No obstacles data available.")

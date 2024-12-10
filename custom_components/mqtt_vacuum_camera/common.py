@@ -255,3 +255,12 @@ def compose_obstacle_links(vacuum_host_ip: str, obstacles: list) -> list:
     _LOGGER.debug("Obstacle links: linked data complete.")
 
     return obstacle_links
+
+class RedactIPFilter(logging.Filter):
+    """ Remove from the logs IP address"""
+    def filter(self, record):
+        """Regex to match IP addresses"""
+        ip_pattern = r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b'
+        if record.msg:
+            record.msg = re.sub(ip_pattern, '[Redacted IP]', record.msg)
+        return True
