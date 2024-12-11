@@ -1,10 +1,10 @@
 # Obstacle Detection and Image Processing
 
 ## Overview
-The Obstacle Detection and Image Processing feature allows users to visualize obstacles detected by their vacuum directly in Home Assistant. This feature is designed for vacuums supporting the `ObstacleImagesCapability` and enables a dynamic experience by switching between map and obstacle views.
+The Obstacle Detection and Image Processing feature allows users to visualize obstacles detected by their vacuum directly in Home Assistant. This feature is designed for vacuums supporting Obstacles and the `ObstacleImagesCapability` and enables a dynamic experience by switching between map and obstacle views (if the vacuum support it).
 
 ## Key Features
-- **Dynamic Obstacle Interaction**:
+- **Dynamic ObstacleImages Interaction**:
     - Click on detected obstacles in the map view to display their corresponding images.
     - Switch back to the map view by clicking anywhere on the obstacle image.
 
@@ -45,7 +45,6 @@ map_modes:
 
 2. **Finding the Nearest Obstacle**:
     - The system locates the nearest obstacle to the given coordinates it isn't necessary to point directly on it.
-    - 
 3. **Image Download and Processing**:
     - If an obstacle is found, the integration:
         1. Downloads the image from the vacuum.
@@ -56,12 +55,27 @@ map_modes:
     - Clicking on an obstacle switches the camera to `Obstacle View`.
     - Clicking any ware obstacle image switches back to `Map View`.
 
+In order to monitor from the card in what state is the camera, it is necessary to add the following code to the card configuration:
+```yaml
+tiles:
+  ...
+  - tile_id: camera_mode
+    label: Camera Mode
+    icon: mdi:map
+    entity: camera.valetudo_v1_silenttepidstinkbug_camera
+    attribute: camera_mode
+    translations: {}
+```
+
 ## Configuration
 1. Ensure your vacuum supports `ObstacleImagesCapability` and is integrated into Home Assistant.
 2. Use a compatible frontend card that allows interaction with map coordinates such the [Xaiomi Vacuum Map Card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
 
 ## Notes
 ### Supported Vacuums
-If the vacuum do not support the `ObstacleImagesCapability`, the Camera will simply display the obstacles with a Red Dot on the map, when the Vacuum support Obstacle Detections and has no oboard camera.
-If the vacuum supports the capability, the user can interact with the map and view obstacles in near real-time.
+When the Vacuum support Obstacle Detections and has no oboard camera.
+The vacuum **do not support** the `ObstacleImagesCapability`, then the Camera will simply display the obstacles as a Red Dot on the map. 
+If the vacuum supports the `ObstacleImagesCapability` capability, the user can interact with the map and view obstacles in near real-time.
 This feature was tested on Supervised HA-OS on Pi4 with 8GB RAM and 64GB disk.
+It is possible of course to use this future while the Vacuum works, but **it is not recommended to use it while the vacuum is working**.
+
