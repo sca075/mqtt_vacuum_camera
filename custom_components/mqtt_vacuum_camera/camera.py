@@ -383,6 +383,8 @@ class MQTTCamera(CoordinatorEntity, Camera):
                     )
                     if self._shared.vacuum_state == "docked":
                         self._image_bk = self.Image
+                    else:
+                        self._image_bk = None
                     # take a snapshot if we meet the conditions.
                     await self._take_snapshot(parsed_json, pil_img)
 
@@ -565,8 +567,11 @@ class MQTTCamera(CoordinatorEntity, Camera):
                 f"Camera Mode Change to {self._shared.camera_mode}"
                 f"{f': {reason}' if reason else ''}"
             )
-            self.Image = self._image_bk
-            return self.camera_image(self._image_w, self._image_h)
+            if self._image_bk:
+                _LOGGER.debug(f"{self._file_name}: Restoring the backup image.")
+                self.Image = self._image_bk
+                return self.camera_image(self._image_w, self._image_h)
+            return
 
         async def _set_camera_mode(mode_of_camera: CameraModes, reason: str = None):
             """Set the camera mode."""
@@ -670,7 +675,8 @@ class MQTTCamera(CoordinatorEntity, Camera):
                                 )
                                 self.Image = await self.hass.async_create_task(
                                     self.run_async_pil_to_bytes(
-                                        resized_image, image_id=nearest_obstacle["label"]
+                                        resized_image,
+                                        image_id=nearest_obstacle["label"],
                                     )
                                 )
                                 end_time = time.perf_counter()
