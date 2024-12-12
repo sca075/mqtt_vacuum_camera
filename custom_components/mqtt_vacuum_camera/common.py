@@ -1,6 +1,6 @@
 """
 Common functions for the MQTT Vacuum Camera integration.
-Version: 2024.12.0
+Version: 2024.12.2
 """
 
 from __future__ import annotations
@@ -101,8 +101,8 @@ def get_vacuum_unique_id_from_mqtt_topic(vacuum_mqtt_topic: str) -> str:
     """
     if not vacuum_mqtt_topic or "/" not in vacuum_mqtt_topic:
         raise ValueError("Invalid MQTT topic format")
-
-    return vacuum_mqtt_topic.split("/")[1].lower() + "_camera"
+    # Take the identifier no matter what prefixes are used @markus_sedi.
+    return vacuum_mqtt_topic.split("/")[-1].lower() + "_camera"
 
 
 async def update_options(bk_options, new_options):
@@ -110,8 +110,7 @@ async def update_options(bk_options, new_options):
     Keep track of the modified options.
     Returns updated options after editing in Config_Flow.
     """
-    # Initialize updated_options as an empty dictionary
-    # updated_options = {}
+
     keys_to_update = KEYS_TO_UPDATE
     try:
         updated_options = {
@@ -252,6 +251,17 @@ def compose_obstacle_links(vacuum_host_ip: str, obstacles: list) -> list:
                     }
                 )
 
-    _LOGGER.debug(f"Obstacle links: linked data complete.")
+    _LOGGER.debug("Obstacle links: linked data complete.")
 
     return obstacle_links
+
+
+class RedactIPFilter(logging.Filter):
+    """Remove from the logs IP address"""
+
+    def filter(self, record):
+        """Regex to match IP addresses"""
+        ip_pattern = r"\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b"
+        if record.msg:
+            record.msg = re.sub(ip_pattern, "[Redacted IP]", record.msg)
+        return True

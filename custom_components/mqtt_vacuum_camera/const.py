@@ -1,6 +1,5 @@
-"""Constants for the mqtt_vacuum_camera integration."""
-
-"""Version v2024.12.0"""
+"""Constants for the mqtt_vacuum_camera integration.
+Version v2024.12.0"""
 
 from homeassistant.components.camera import DOMAIN as CAMERA_DOMAIN
 from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
@@ -10,6 +9,7 @@ from homeassistant.components.vacuum import DOMAIN as VACUUM_DOMAIN
 DOMAIN = "mqtt_vacuum_camera"
 DEFAULT_NAME = "mqtt vacuum camera"
 
+"""Required in Coordinator and Services"""
 CAMERA = CAMERA_DOMAIN
 VACUUM = VACUUM_DOMAIN
 SENSOR = SENSOR_DOMAIN
@@ -399,6 +399,7 @@ ATTR_ROOMS = "rooms"
 ATTR_ZONES = "zones"
 ATTR_POINTS = "points"
 ATTR_OBSTACLES = "obstacles"
+ATTR_CAMERA_MODE = "camera_mode"
 
 
 class CameraModes:
@@ -406,4 +407,8 @@ class CameraModes:
 
     MAP_VIEW = "map_view"
     OBSTACLE_VIEW = "obstacle_view"
-    OBSTACLE_DOWNLOAD = "obstacle_download"
+    OBSTACLE_DOWNLOAD = "load_view"
+    OBSTACLE_SEARCH = "search_view"
+    CAMERA_STANDBY = "camera_standby"
+    CAMERA_OFF = False
+    CAMERA_ON = True

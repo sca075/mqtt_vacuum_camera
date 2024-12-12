@@ -19,6 +19,8 @@ from custom_components.mqtt_vacuum_camera.const import (
     ATTR_VACUUM_POSITION,
     ATTR_VACUUM_STATUS,
     ATTR_ZONES,
+    ATTR_CAMERA_MODE,
+    ATTR_OBSTACLES,
     CONF_ASPECT_RATIO,
     CONF_AUTO_ZOOM,
     CONF_OFFSET_BOTTOM,
@@ -128,12 +130,15 @@ class CameraShared(object):
     def generate_attributes(self) -> dict:
         """Generate and return the shared attribute's dictionary."""
         attrs = {
+            ATTR_CAMERA_MODE: self.camera_mode,
             ATTR_VACUUM_BATTERY: f"{self.vacuum_battery}%",
             ATTR_VACUUM_POSITION: self.current_room,
             ATTR_VACUUM_STATUS: self.vacuum_state,
             ATTR_VACUUM_JSON_ID: self.vac_json_id,
             ATTR_CALIBRATION_POINTS: self.attr_calibration_points,
         }
+        if self.obstacles_data:
+            attrs[ATTR_OBSTACLES] = self.obstacles_data
 
         if self.enable_snapshots:
             attrs[ATTR_SNAPSHOT] = self.snapshot_take
