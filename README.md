@@ -6,12 +6,12 @@
   <img width="256" alt="logo@2x" src="https://github.com/sca075/mqtt_vacuum_camera/assets/82227818/0c623494-2844-4ed9-a246-0ad27f32503e">
 </p>
 
-### Current Release: [![GitHub Latest Release][releases_shield]][latest_release]
+## Current Release: [![GitHub Latest Release][releases_shield]][latest_release]
 
 ![Screenshot 2023-12-27 at 13 37 57](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/4f1f76ee-b507-4fde-b1bd-32e6980873cb)
 
 
-## Valetudo Vacuums maps in Home Assistant was never so easy.
+# Valetudo Vacuums maps in Home Assistant was never so easy.
 
 **About:**
 Extract the maps of Vacuum Cleaners connected via MQTT to Home Assistant such as Valetudo [Hypfer](https://valetudo.cloud/) or [RE(rand256)](https://github.com/rand256/valetudo) firmwares, [easy setup](./docs/install.md) thanks to [HACS](https://hacs.xyz/)  and guided Home Assistant GUI configuration.
@@ -33,57 +33,22 @@ Our current focus is evolving beyond map rendering to provide full vacuum contro
 <details>
    <summary>Planned in the next Release</summary>
 
-#### 2024.12.0 - **Fully implement Coordinator**
+In the last releases we did start to implement the Actions for Rand256 and Hypfer.
+We can now see the Obstacles Images when available, and somehow we start to organize the code. 
+The camera is stable and updated to all requirements of Home Assistant.
+Will be also time to take a brake and work in the background, so I do not expect unless required releases in January.
+
+#### 2025.2.0 - **Refactoring and some add**
+- **Changes**
+  - Exporting libraries to PyPi to reduce the code lines.
+  - Refactoring the code to make it more readable and easy to maintain.
+  - Fully Coordinated implementation of the cameras and sensors.
+  - Remove files operations (not for logging).
 - **Features:**
   - Added on 2024.11.0 the Actions for Rand256 to load and save maps fully integrate [MapLoader](https://github.com/pkoehlers/maploader).
-  - Fix #263: The init process will be coordinated as we have Cameras and Sensors that need to be initialized.
-  - Fix #276 "Unknown error" when some vacuum data is not reachable (refactoring).
 
 </details>
 
-### Limitations and Compatibility:
-<details>
-   <summary>
-      Please Read the "Limitations and Compatibility" before to install the camera.
-   </summary>
-
-I kindly ask for your understanding regarding any limitations you may encounter with this custom component (please read also
-our [**notice**](./NOTICE.txt)).
-While it's been extensively tested on a PI4 8GB and now also on ProxMox VE, hardware below PI4 8GB may face issues. **Your feedback on such platforms is invaluable**;
-please report any problems you encounter.
-As a team of one, I'm diligently working to address compatibility across all environments, but this process takes time. In the interim, you can utilize [ValetudoPNG](https://github.com/erkexzcx/valetudopng) as an alternative on unsupported platforms.
-Your support in making this component compatible with all environments is greatly appreciated. If you'd like to contribute, whether through code or time, please consider joining our efforts.
-For further details on how the camera operates and how you can contribute, refer to the Wiki section of this project. Your patience and assistance are crucial as we strive toward our goal of universal compatibility.
-
-- PI3 4GB: The camera is working on PI3 4GB, anyhow no chance there to run two vacuums cameras at the same time.
-- PI4 4GB: The camera is working on PI4 4GB, anyhow run two vacuums cameras at the same time isn't advised even if possible.
-</details> 
-
-
-### Known Supported Vacuums:
-<details><summary>We here list, thanks to our users and tests done, the known working vacuums.</summary>
-
-- Dreame D9
-- Dreame Z10 Pro
-- Dreame L10s Ultra
-- Mi Robot Vacuum-Mop P
-- Roborock.S5 / S50 / S55 (Gen.2)
-- Roborock.S6
-- Roborock.S7
-- Roborock.S8
-- Roborock.V1 (Gen.1)
-- Xiaomi C1
-- In general, **it works with all flashed Valetudo Hypfer or RE(rand256) vacuums**.
-
-</details>
-
-
-### How to install:
-
-[![Open HACS repository in Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=sca075&repository=mqtt_vacuum_camera&category=integration)
-
-The instructions in [here](./docs/install.md) show detailed steps and will help to set up the camera also without HACS (manual setup).
-Our setup guide also includes **important** informations on how to setup the [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
 
 ### Features:
 <details><summary> We here List what this camera offers as futures.</summary>
@@ -115,10 +80,41 @@ Our setup guide also includes **important** informations on how to setup the [lo
 12) Support Actions "reload" and "reset_trims" implemented for changing the camera settings without restarting Home Assistant.
 13) Rand256 sensors are pre-configured from the integration, this will allow you to have all the sensors available in Home Assistant.
 14) Added the [**Actions**](./docs/actions.md) for Rand256 / Hypfer to control the vacuums without to format the MQTT messages.
+15) [Obstacles](./docs/obstacles_detection.md) are displayed on the map when available. When the vacuum support  ```ObstaclesImage``` is also possible to view the obstacles images.
 </details>
 
 
-## Notes:
+### How to install:
+
+[![Open HACS repository in Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=sca075&repository=mqtt_vacuum_camera&category=integration)
+
+The instructions in [here](./docs/install.md) show detailed steps and will help to set up the camera also without HACS (manual setup).
+Our setup guide also includes **important** informations on how to setup the [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
+
+
+### Limitations and Compatibility:
+<details>
+   <summary>
+      Please Read the "Limitations and Compatibility" before to install the camera.
+   </summary>
+
+I kindly ask for your understanding regarding any limitations you may encounter with this custom component (please read also
+our [**notice**](./NOTICE.txt)).
+While it's been extensively tested on a PI4 8GB and now also on ProxMox VE, hardware below PI4 8GB may face issues. **Your feedback on such platforms is invaluable**;
+please report any problems you encounter.
+As a team of one, I'm diligently working to address compatibility across all environments, but this process takes time. In the interim, you can utilize [ValetudoPNG](https://github.com/erkexzcx/valetudopng) as an alternative on unsupported platforms.
+Your support in making this component compatible with all environments is greatly appreciated. If you'd like to contribute, whether through code or time, please consider joining our efforts.
+For further details on how the camera operates and how you can contribute, refer to the Wiki section of this project. Your patience and assistance are crucial as we strive toward our goal of universal compatibility.
+
+#### Compatibility:
+- PI3 4GB: The camera is working on PI3 4GB, anyhow no chance there to run two vacuums cameras at the same time.
+- PI4 4GB: The camera is working on PI4 4GB, anyhow run two vacuums cameras at the same time isn't advised even if possible.
+- All Vacuums with Valetudo Hypfer or Rand256 firmware are supported.
+- If you have a vacuum with a different firmware connected via MQTT, please let us know, we will try to add the support for it.
+</details> 
+
+
+### Notes:
 - This integration is developed and tested using a PI4 with Home Assistant OS fully updated [to the last version](https://www.home-assistant.io/faq/release/), this allows us to confirm that the component is working properly with Home Assistant. Tested also on ProxMox and Docker Supervised "production" enviroment (fully setup home installation).
 ### Tanks to:
 - [@PiotrMachowski](https://github.com/PiotrMachowski) inspiring this integration and his amazing work.
@@ -127,5 +123,5 @@ Our setup guide also includes **important** informations on how to setup the [lo
 - [@rohankapoorcom](https://github.com/rohankapoorcom) autor of the v1.4.0 that make really easy to set up this integration.
 - [@gunjambi](https://github.com/gunjambi) that found a solution to re-draw the robot and also implemented the snapshots png to be enabled or disabled from the options.
 - [@T0ytoy](https://github.com/T0ytoy) for the amazing cooperation in testing our Camera that improved [using the threading](https://github.com/sca075/valetudo_vacuum_camera/discussions/71).
+- [@borgqueenx](https://github.com/borgqueenx) for the amazing cooperation in testing our Camera and helping us to improve it, [see more here](https://github.com/sca075/mqtt_vacuum_camera/discussions/296#:~:text=Edit-,borgqueenx,-2%20weeks%20ago)
 - And to all of you using this integration and reporting any issues, improvements and vacuums used with it.
-

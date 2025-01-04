@@ -11,12 +11,13 @@ from homeassistant.components import mqtt
 from homeassistant.core import EventOrigin, HomeAssistant, callback
 from isal import igzip, isal_zlib
 
-from ...common import build_full_topic_set
+from ...common import build_full_topic_set, RedactIPFilter
 from ...const import DECODED_TOPICS, NON_DECODED_TOPICS, CameraModes
 from ...types import RoomStore
 from ...valetudo.rand256.rrparser import RRMapParser
 
 _LOGGER = logging.getLogger(__name__)
+_LOGGER.addFilter(RedactIPFilter())
 
 _QOS = 0
 

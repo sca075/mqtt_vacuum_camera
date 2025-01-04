@@ -327,18 +327,6 @@ COLOR_ZONE_CLEAN = "color_zone_clean"
 COLOR_WALL = "color_wall"
 COLOR_TEXT = "color_text"
 
-"""Base Colours RGB array, not in use"""
-CONF_COLORS = [
-    COLOR_WALL,
-    COLOR_ZONE_CLEAN,
-    COLOR_ROBOT,
-    COLOR_BACKGROUND,
-    COLOR_MOVE,
-    COLOR_CHARGER,
-    COLOR_NO_GO,
-    COLOR_GO_TO,
-]
-
 "Rooms Colours RGB"
 COLOR_ROOM_0 = "color_room_0"
 COLOR_ROOM_1 = "color_room_1"

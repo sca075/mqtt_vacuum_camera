@@ -72,11 +72,16 @@ async def vacuum_clean_zone(call: ServiceCall, coordinator) -> None:
     try:
         # Retrieve coordinates
         zone_lists = call.data.get("zone")
-        zone_ids = call.data.get("zone_ids")
         repeats = call.data.get("repeats")
-
+        zone_ids = call.data.get("zone_ids")
+        if zone_lists:
+            if not isinstance(zone_lists, list):
+                raise ServiceValidationError("Zone must be a list.")
         if zone_ids:
-            zone_lists = zone_ids
+            if isinstance(zone_ids, list):
+                zone_lists = zone_ids
+            else:
+                raise ServiceValidationError("ZoneIds must be a list.")
 
         # Attempt to get entity_id or device_id
         entity_ids = call.data.get("entity_id")
