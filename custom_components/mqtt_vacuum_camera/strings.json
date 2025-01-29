@@ -292,6 +292,12 @@
   "exceptions": {
     "no_entity_id_provided": {
       "message": "Missing entity_id in the configuration."
+    },
+    "missing_zone_or_zone_ids": {
+            "message": "Either 'zone' or 'zone_ids' must be provided."
+        },
+    "zone_must_be_list": {
+        "message": "The 'zone' parameter must be a list."
     }
   }
 }

@@ -5,7 +5,9 @@ Autor: @sca075"""
 from functools import partial
 import logging
 
-from homeassistant.core import HomeAssistant, ServiceCall
+import voluptuous as vol
+from homeassistant.core import HomeAssistant, ServiceCall, ServiceResponse, SupportsResponse
+from homeassistant.helpers import config_validation as cv
 from homeassistant.exceptions import ServiceValidationError
 
 from ...common import (
@@ -17,6 +19,30 @@ from ...common import (
 from ...const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
+
+
+SERVICE_SCHEMAS = {
+    "vacuum_clean_segments": cv.make_entity_service_schema({
+        vol.Required("segments"): cv.ensure_list,
+        vol.Required("repeats", default=1): vol.All(vol.Coerce(int), vol.Range(min=1, max=3)),
+    }),
+    "vacuum_clean_zone": cv.make_entity_service_schema({
+        vol.Optional("zone"): cv.ensure_list,
+        vol.Optional("zone_ids"): vol.All(cv.ensure_list, [cv.string]),
+        vol.Optional("repeats", default=1): vol.All(vol.Coerce(int), vol.Range(min=1, max=3)),
+    }),
+    "vacuum_go_to": cv.make_entity_service_schema({
+        vol.Optional("spot_id"): cv.string,
+        vol.Optional("x_coord"): vol.Coerce(int),
+        vol.Optional("y_coord"): vol.Coerce(int),
+    }),
+    "vacuum_map_save": cv.make_entity_service_schema({
+        vol.Required("map_name"): cv.string,
+    }),
+    "vacuum_map_load": cv.make_entity_service_schema({
+        vol.Required("map_name"): cv.string,
+    }),
+}
 
 
 async def vacuum_clean_segments(call: ServiceCall, coordinator) -> None:
@@ -40,9 +66,8 @@ async def vacuum_clean_segments(call: ServiceCall, coordinator) -> None:
         )
 
         if not service_data:
-            raise ServiceValidationError("No Service data generated. Aborting!")
-        # elif not service_data["have_rooms"]:
-        #     raise ServiceValidationError("No rooms found in the vacuum map.")
+            _LOGGER.warning("No Service data generated. Aborting!")
+            return
         else:
             try:
                 await coordinator.connector.publish_to_broker(
@@ -50,9 +75,10 @@ async def vacuum_clean_segments(call: ServiceCall, coordinator) -> None:
                     service_data["payload"],
                 )
             except Exception as e:
-                raise ServiceValidationError(
+                _LOGGER.warning(
                     f"Error sending command to vacuum: {e}"
-                ) from e
+                )
+                return
 
             coordinator.hass.bus.async_fire(
                 f"event_{DOMAIN}.vacuum_clean_zone",
@@ -64,28 +90,44 @@ async def vacuum_clean_segments(call: ServiceCall, coordinator) -> None:
                 context=call.context,
             )
     except KeyError as e:
-        raise ServiceValidationError(f"Missing required parameter: {e}") from e
+        _LOGGER.warning(f"Missing required parameter: {e}")
 
 
-async def vacuum_clean_zone(call: ServiceCall, coordinator) -> None:
+async def vacuum_clean_zone(call: ServiceCall, coordinator) -> ServiceResponse:
     """Vacuum Zone Clean Action"""
+
+    got_error: str = "No Errors"
     try:
         # Retrieve coordinates
-        zone_lists = call.data.get("zone")
-        repeats = call.data.get("repeats")
-        zone_ids = call.data.get("zone_ids")
-        if zone_lists:
-            if not isinstance(zone_lists, list):
-                raise ServiceValidationError("Zone must be a list.")
-        if zone_ids:
-            if isinstance(zone_ids, list):
-                zone_lists = zone_ids
-            else:
-                raise ServiceValidationError("ZoneIds must be a list.")
-
+        zone_lists = call.data.get("zone", None)
+        zone_ids = call.data.get("zone_ids", None)
+        repeats = call.data.get("repeats", 1)
+        _LOGGER.warning(f"zone_ids: {zone_ids}, zone_lists: {zone_lists}, repeats: {repeats}")
         # Attempt to get entity_id or device_id
         entity_ids = call.data.get("entity_id")
         device_ids = call.data.get("device_id")
+        if not zone_lists and not zone_ids:
+            got_error = "missing_zone_or_zone_ids"
+        elif zone_lists and isinstance(zone_lists, list):
+            for sub_zone in zone_lists:
+                if len(sub_zone) != 4:
+                    got_error = "zone_list_length"
+        elif zone_lists and (not isinstance(zone_lists, list)):
+            got_error = "zone_must_be_list"
+        elif zone_ids and isinstance(zone_ids, list):
+            zone_lists = zone_ids
+        elif not isinstance(zone_ids, list):
+            got_error = "zoneid_must_be_list"
+
+        if got_error is not "No Errors":
+            # Raise a ServiceValidationError if there are errors
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key=got_error,
+                translation_placeholders={
+                    "return_response": "return_response=True",
+                    "params": "got_error"}
+            )
 
         service_data = generate_service_data_clean_zone(
             entity_id=entity_ids,
@@ -95,14 +137,15 @@ async def vacuum_clean_zone(call: ServiceCall, coordinator) -> None:
             hass=coordinator.hass,
         )
         if not service_data:
-            raise ServiceValidationError("No Service data generated. Aborting!")
+            _LOGGER.warning("No Service data generated. Aborting!")
+            return
         try:
             await coordinator.connector.publish_to_broker(
                 service_data["topic"],
                 service_data["payload"],
             )
         except Exception as e:
-            raise ServiceValidationError(f"Error sending command to vacuum: {e}") from e
+            _LOGGER.warning(f"Error sending command to vacuum: {e}")
         coordinator.hass.bus.async_fire(
             f"event_{DOMAIN}.vacuum_clean_zone",
             {
@@ -110,10 +153,18 @@ async def vacuum_clean_zone(call: ServiceCall, coordinator) -> None:
                 "zones": zone_lists,
                 "repeats": repeats,
             },
-            context=call.context,
+            context=call.context.id,
         )
-    except KeyError as e:
-        raise ServiceValidationError(f"Missing required parameter: {e}") from e
+    except ServiceValidationError as e:
+        _LOGGER.warning(f"{call.context.id} Missing required parameter: {e}")
+        # raise ServiceValidationError(
+        #     translation_domain=DOMAIN,
+        #     translation_key=got_error,
+        #     translation_placeholders={
+        #         "return_response": "return_response=True",
+        #         "context": "call.context",
+        #         "params": "got_error"}
+        # )
 
 
 async def vacuum_goto(call: ServiceCall, coordinator) -> None:
@@ -137,23 +188,23 @@ async def vacuum_goto(call: ServiceCall, coordinator) -> None:
             entity_ids, device_ids, x_coord, y_coord, spot_id, coordinator.hass
         )
         if not service_data:
-            raise ServiceValidationError("No Service data generated. Aborting!")
-
+            _LOGGER.warning("No Service data generated. Aborting!")
+            return
         try:
             await coordinator.connector.publish_to_broker(
                 service_data["topic"],
                 service_data["payload"],
             )
         except Exception as e:
-            raise ServiceValidationError(f"Error sending command to vacuum: {e}") from e
-
+            _LOGGER.warning(f"Error sending command to vacuum: {e}")
+            return
         coordinator.hass.bus.async_fire(
             f"event_{DOMAIN}.vacuum_go_to",
             {"topic": service_data["topic"], "x": x_coord, "y": y_coord},
             context=call.context,
         )
     except KeyError as e:
-        raise ServiceValidationError(f"Missing required parameter: {e}") from e
+        _LOGGER.warning(f"Missing required parameter: {e}")
 
 
 async def vacuum_map_save(call: ServiceCall, coordinator) -> None:
@@ -169,7 +220,8 @@ async def vacuum_map_save(call: ServiceCall, coordinator) -> None:
 
         map_name = call.data.get("map_name")
         if not map_name:
-            raise ServiceValidationError("A map name is required to save the map.")
+            _LOGGER.warning("A map name is required to save the map.")
+            return
         if is_a_rand256:
             service_data = {
                 "topic": f"{base_topic}/custom_command",
@@ -179,16 +231,18 @@ async def vacuum_map_save(call: ServiceCall, coordinator) -> None:
                 },
             }
         else:
-            raise ServiceValidationError(
+            _LOGGER.warning(
                 "This feature is only available for rand256 vacuums."
             )
+            return
         try:
             await coordinator.connector.publish_to_broker(
                 service_data["topic"],
                 service_data["payload"],
             )
         except Exception as e:
-            raise ServiceValidationError(f"Error sending command to vacuum: {e}") from e
+            _LOGGER.warning(f"Error sending command to vacuum: {e}")
+            return
 
         coordinator.hass.bus.async_fire(
             f"event_{DOMAIN}.vacuum_map_save",
@@ -196,7 +250,7 @@ async def vacuum_map_save(call: ServiceCall, coordinator) -> None:
             context=call.context,
         )
     except KeyError as e:
-        raise ServiceValidationError(f"Missing required parameter: {e}") from e
+        _LOGGER.warning(f"Missing required parameter: {e}")
 
 
 async def vacuum_map_load(call: ServiceCall, coordinator) -> None:
@@ -212,7 +266,8 @@ async def vacuum_map_load(call: ServiceCall, coordinator) -> None:
 
         map_name = call.data.get("map_name")
         if not map_name:
-            raise ServiceValidationError("A map name is required to load the map.")
+            _LOGGER.warning("A map name is required to load the map.")
+            return
         if is_a_rand256:
             service_data = {
                 "topic": f"{base_topic}/custom_command",
@@ -222,17 +277,18 @@ async def vacuum_map_load(call: ServiceCall, coordinator) -> None:
                 },
             }
         else:
-            raise ServiceValidationError(
+            _LOGGER.warning(
                 "This feature is only available for rand256 vacuums."
             )
+            return
         try:
             await coordinator.connector.publish_to_broker(
                 service_data["topic"],
                 service_data["payload"],
             )
         except Exception as e:
-            raise ServiceValidationError(f"Error sending command to vacuum: {e}") from e
-
+            _LOGGER.warning(f"Error sending command to vacuum: {e}")
+            return
         coordinator.hass.bus.async_fire(
             f"event_{DOMAIN}.vacuum_map_load",
             {"topic": service_data["topic"]},
@@ -240,7 +296,7 @@ async def vacuum_map_load(call: ServiceCall, coordinator) -> None:
         )
         await coordinator.hass.services.async_call(DOMAIN, "reset_trims")
     except KeyError as e:
-        raise ServiceValidationError(f"Missing required parameter: {e}") from e
+        _LOGGER.warning(f"Missing required parameter: {e}")
 
 
 def resolve_datas(
@@ -499,11 +555,10 @@ def convert_string_ids_to_integers(ids_list):
 SERVICES = {
     "vacuum_go_to": vacuum_goto,
     "vacuum_clean_zone": vacuum_clean_zone,
-    "vacuum_clean_segment": vacuum_clean_segments,
+    "vacuum_clean_segments": vacuum_clean_segments,
     "vacuum_map_save": vacuum_map_save,
     "vacuum_map_load": vacuum_map_load,
 }
-
 
 async def async_register_vacuums_services(hass: HomeAssistant, coordinator) -> None:
     """Register the Vacuums services."""
@@ -511,7 +566,11 @@ async def async_register_vacuums_services(hass: HomeAssistant, coordinator) -> N
     for service_name, service_func in SERVICES.items():
         # Use functools.partial to bind the coordinator to the service function
         hass.services.async_register(
-            DOMAIN, service_name, partial(service_func, coordinator=coordinator)
+            DOMAIN,
+            service_name,
+            partial(service_func, coordinator=coordinator),
+            schema=SERVICE_SCHEMAS.get(service_name),
+            supports_response=SupportsResponse.NONE,
         )
 
 
