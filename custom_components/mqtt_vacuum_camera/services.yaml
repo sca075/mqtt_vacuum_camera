@@ -91,7 +91,7 @@ vacuum_clean_zone:
     zone:
       name: Zone
       description: Array of zones. Each zone is an array of 4 integer values.
-      required: true
+      required: flase
       example: "[[23510,25311,25110,26362]]"
       selector:
         object:

@@ -15,14 +15,14 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from custom_components.mqtt_vacuum_camera.utils.camera.camera_shared import (
+from valetudo_map_parser.config.shared import (
     CameraShared,
     CameraSharedManager,
 )
 
 from .common import get_camera_device_info
 from .const import DEFAULT_NAME, SENSOR_NO_DATA
-from .valetudo.MQTT.connector import ValetudoConnector
+from .utils.MQTT.connector import ValetudoConnector
 
 _LOGGER = logging.getLogger(__name__)
 

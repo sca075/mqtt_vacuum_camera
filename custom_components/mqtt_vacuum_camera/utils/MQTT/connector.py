@@ -14,7 +14,7 @@ from isal import igzip, isal_zlib
 from ...common import build_full_topic_set, RedactIPFilter
 from ...const import DECODED_TOPICS, NON_DECODED_TOPICS, CameraModes
 from ...types import RoomStore
-from ...valetudo.rand256.rrparser import RRMapParser
+from valetudo_map_parser.config.rand25_parser import RRMapParser
 
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.addFilter(RedactIPFilter())
