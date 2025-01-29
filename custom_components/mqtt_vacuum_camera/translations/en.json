@@ -287,11 +287,38 @@
           "description": "Template of a filename. Variable available is `entity_id`."
         }
       }
+    },
+    "vacuum_clean_zone": {
+      "name": "Vacuum clean zone",
+      "description": "Start the cleaning operation in the selected areas for the number of repeats indicated.",
+      "fields": {
+        "zone": {
+          "name": "Zone",
+          "description": "Array of zones. Each zone is an array of 4 integer values.",
+          "example": "[[23510,25311,25110,26362]]"
+        },
+        "zone_ids": {
+          "name": "Zone Ids",
+          "description": "Optional for Rand256 predefined zone_ids (array of strings).",
+          "example": "[\"Bar\", \"Trash Can\"]"
+        },
+        "repeats": {
+          "name": "Repeats",
+          "description": "Number of cleaning repeats for each zone.",
+          "example": "1"
+        }
+      }
     }
   },
   "exceptions": {
     "no_entity_id_provided": {
       "message": "Missing entity_id in the configuration."
+    },
+    "missing_zone_or_zone_ids": {
+            "message": "Either 'zone' or 'zone_ids' must be provided."
+        },
+    "zone_must_be_list": {
+        "message": "The 'zone' parameter must be a list."
     }
   }
 }
