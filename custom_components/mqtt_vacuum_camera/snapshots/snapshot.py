@@ -8,9 +8,9 @@ import os
 import shutil
 
 from homeassistant.helpers.storage import STORAGE_DIR
+from valetudo_map_parser.config.types import Any, PilPNG, SnapshotStore
 
 from ..const import CAMERA_STORAGE
-from ..types import Any, PilPNG, SnapshotStore
 from ..utils.files_operations import async_populate_user_languages
 
 _LOGGER = logging.getLogger(__name__)

@@ -21,9 +21,9 @@ from typing import Any, Optional
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.storage import STORAGE_DIR
+from valetudo_map_parser.config.types import RoomStore, UserLanguageStore
 
 from ..const import CAMERA_STORAGE
-from ..types import RoomStore, UserLanguageStore
 
 _LOGGER = logging.getLogger(__name__)
 

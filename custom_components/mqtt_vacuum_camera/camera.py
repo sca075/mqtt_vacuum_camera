@@ -1,6 +1,6 @@
 """
 Camera
-Version: v2025.2.4
+Version: v2025.2.0
 """
 
 from __future__ import annotations
@@ -25,8 +25,10 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.storage import STORAGE_DIR
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from psutil_home_assistant import PsutilWrapper as ProcInsp
+from valetudo_map_parser.config.types import SnapshotStore
+from valetudo_map_parser.config.utils import ResizeParams, async_resize_image
 
-from .common import get_vacuum_unique_id_from_mqtt_topic, RedactIPFilter
+from .common import RedactIPFilter, get_vacuum_unique_id_from_mqtt_topic
 from .const import (
     ATTR_FRIENDLY_NAME,
     ATTR_JSON_DATA,
@@ -39,7 +41,6 @@ from .const import (
     CameraModes,
 )
 from .snapshots.snapshot import Snapshots
-from .types import SnapshotStore
 from .utils.camera.camera_processing import CameraProcessor
 from .utils.colors_man import ColorsManagment
 from .utils.files_operations import (
@@ -47,7 +48,6 @@ from .utils.files_operations import (
     async_load_file,
     is_auth_updated,
 )
-from valetudo_map_parser.config.utils import async_resize_image, ResizeParams
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -674,7 +674,9 @@ class MQTTCamera(CoordinatorEntity, Camera):
                                     is_rand=False,
                                     offset_func=None,
                                 )
-                                resized_image, _ = await async_resize_image(params=resize_data)
+                                resized_image, _ = await async_resize_image(
+                                    params=resize_data
+                                )
                                 self.Image = await self.hass.async_create_task(
                                     self.run_async_pil_to_bytes(
                                         resized_image,

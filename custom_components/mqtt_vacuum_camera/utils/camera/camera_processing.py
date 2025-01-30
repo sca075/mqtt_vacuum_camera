@@ -1,6 +1,6 @@
 """
 Multiprocessing module
-Version: v2024.10.0
+Version: v2025.2.0
 This module provide the image multiprocessing in order to
 avoid the overload of the main_thread of Home Assistant.
 """
@@ -16,16 +16,16 @@ from typing import Any
 
 from PIL import Image
 import aiohttp
+from valetudo_map_parser.config.drawable import Drawable as Draw
+from valetudo_map_parser.config.types import Color, JsonType, PilPNG
+from valetudo_map_parser.hypfer_handler import HypferMapImageHandler
+from valetudo_map_parser.rand25_handler import ReImageHandler
 
 from custom_components.mqtt_vacuum_camera.const import NOT_STREAMING_STATES
-from custom_components.mqtt_vacuum_camera.types import Color, JsonType, PilPNG
-from valetudo_map_parser.config.drawable import Drawable as Draw
 from custom_components.mqtt_vacuum_camera.utils.files_operations import (
     async_get_active_user_language,
 )
 from custom_components.mqtt_vacuum_camera.utils.status_text import StatusText
-from valetudo_map_parser.hypfer_handler import HypferMapImageHandler
-from valetudo_map_parser.rand25_handler import ReImageHandler
 
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.propagate = True
@@ -92,12 +92,12 @@ class CameraProcessor:
 
                 update_vac_state = self._shared.vacuum_state
                 if not self._shared.snapshot_take and (
-                        update_vac_state in NOT_STREAMING_STATES
+                    update_vac_state in NOT_STREAMING_STATES
                 ):
                     # suspend image processing if we are at the next frame.
                     if (
-                            self._shared.frame_number
-                            != self._map_handler.get_frame_number()
+                        self._shared.frame_number
+                        != self._map_handler.get_frame_number()
                     ):
                         self._shared.image_grab = False
                         _LOGGER.info(
@@ -152,7 +152,7 @@ class CameraProcessor:
 
                 update_vac_state = self._shared.vacuum_state
                 if not self._shared.snapshot_take and (
-                        update_vac_state in NOT_STREAMING_STATES
+                    update_vac_state in NOT_STREAMING_STATES
                 ):
                     # suspend image processing if we are at the next frame.
                     _LOGGER.info(
@@ -182,7 +182,7 @@ class CameraProcessor:
         return result
 
     async def run_async_process_valetudo_data(
-            self, parsed_json: JsonType
+        self, parsed_json: JsonType
     ) -> PilPNG | None:
         """Thread function to process the image data from the Vacuum Json data."""
         num_processes = 1
@@ -190,7 +190,7 @@ class CameraProcessor:
         loop = get_event_loop()
 
         with concurrent.futures.ThreadPoolExecutor(
-                max_workers=1, thread_name_prefix=f"{self._file_name}_camera"
+            max_workers=1, thread_name_prefix=f"{self._file_name}_camera"
         ) as executor:
             tasks = [
                 loop.run_in_executor(executor, self.process_valetudo_data, parsed_json)
@@ -215,7 +215,7 @@ class CameraProcessor:
     """
 
     async def async_draw_image_text(
-            self, pil_img: PilPNG, color: Color, font: str, img_top: bool = True
+        self, pil_img: PilPNG, color: Color, font: str, img_top: bool = True
     ) -> PilPNG:
         """Draw text on the image."""
         if self._shared.user_language is None:
@@ -233,7 +233,7 @@ class CameraProcessor:
         return pil_img
 
     def process_status_text(
-            self, pil_img: PilPNG, color: Color, font: str, img_top: bool = True
+        self, pil_img: PilPNG, color: Color, font: str, img_top: bool = True
     ):
         """Async function to process the image data from the Vacuum Json data."""
         loop = asyncio.new_event_loop()
@@ -253,7 +253,7 @@ class CameraProcessor:
         loop = get_event_loop()
 
         with concurrent.futures.ThreadPoolExecutor(
-                max_workers=1, thread_name_prefix=f"{self._file_name}_camera_text"
+            max_workers=1, thread_name_prefix=f"{self._file_name}_camera_text"
         ) as executor:
             tasks = [
                 loop.run_in_executor(
@@ -302,6 +302,7 @@ class CameraProcessor:
             _LOGGER.error(f"Error downloading image: {e}")
             return None
 
+    # noinspection PyTypeChecker
     async def async_open_image(self, obstacle_image: Any) -> Image.Image:
         """
         Asynchronously open an image file using a thread pool.

@@ -30,6 +30,7 @@ from homeassistant.helpers.selector import (
     SelectSelectorMode,
 )
 from homeassistant.helpers.storage import STORAGE_DIR
+from valetudo_map_parser.config.types import RoomStore
 import voluptuous as vol
 
 from .common import (
@@ -90,7 +91,6 @@ from .const import (
     TEXT_SIZE_VALUES,
 )
 from .snapshots.log_files import run_async_save_logs
-from .types import RoomStore
 from .utils.files_operations import async_del_file, async_rename_room_description
 
 _LOGGER = logging.getLogger(__name__)

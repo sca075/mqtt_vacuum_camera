@@ -9,8 +9,9 @@ from __future__ import annotations
 import json
 import logging
 
+from valetudo_map_parser.config.types import JsonType, PilPNG
+
 from ..const import DOMAIN
-from ..types import JsonType, PilPNG
 
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.propagate = True

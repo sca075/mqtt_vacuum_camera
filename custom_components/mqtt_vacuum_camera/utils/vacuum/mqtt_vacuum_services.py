@@ -5,10 +5,10 @@ Autor: @sca075"""
 from functools import partial
 import logging
 
-import voluptuous as vol
-from homeassistant.core import HomeAssistant, ServiceCall, ServiceResponse, SupportsResponse
-from homeassistant.helpers import config_validation as cv
+from homeassistant.core import HomeAssistant, ServiceCall, SupportsResponse
 from homeassistant.exceptions import ServiceValidationError
+from homeassistant.helpers import config_validation as cv
+import voluptuous as vol
 
 from ...common import (
     get_device_info_from_entity_id,
@@ -21,27 +21,50 @@ from ...const import DOMAIN
 _LOGGER = logging.getLogger(__name__)
 
 
+def validate_zone_or_zone_ids(data):
+    """Ensure either zone_list or zone_id is provided."""
+    if "zone" not in data and "zone_ids" not in data:
+        raise vol.Invalid("Either 'zone' or 'zone_ids' must be provided.")
+    return data
+
+
 SERVICE_SCHEMAS = {
-    "vacuum_clean_segments": cv.make_entity_service_schema({
-        vol.Required("segments"): cv.ensure_list,
-        vol.Required("repeats", default=1): vol.All(vol.Coerce(int), vol.Range(min=1, max=3)),
-    }),
-    "vacuum_clean_zone": cv.make_entity_service_schema({
-        vol.Optional("zone"): cv.ensure_list,
-        vol.Optional("zone_ids"): vol.All(cv.ensure_list, [cv.string]),
-        vol.Optional("repeats", default=1): vol.All(vol.Coerce(int), vol.Range(min=1, max=3)),
-    }),
-    "vacuum_go_to": cv.make_entity_service_schema({
-        vol.Optional("spot_id"): cv.string,
-        vol.Optional("x_coord"): vol.Coerce(int),
-        vol.Optional("y_coord"): vol.Coerce(int),
-    }),
-    "vacuum_map_save": cv.make_entity_service_schema({
-        vol.Required("map_name"): cv.string,
-    }),
-    "vacuum_map_load": cv.make_entity_service_schema({
-        vol.Required("map_name"): cv.string,
-    }),
+    "vacuum_clean_segments": cv.make_entity_service_schema(
+        {
+            vol.Required("segments"): cv.ensure_list,
+            vol.Required("repeats", default=1): vol.All(
+                vol.Coerce(int), vol.Range(min=1, max=3)
+            ),
+        }
+    ),
+    "vacuum_clean_zone": cv.make_entity_service_schema(
+        {
+            vol.Optional("zone"): cv.ensure_list,
+            vol.Optional("zone_ids"): vol.All(cv.ensure_list, [cv.string]),
+            vol.Optional("repeats", default=1): vol.All(
+                vol.Coerce(int), vol.Range(min=1, max=3)
+            ),
+            vol.Inclusive("zone", "zone_group"): cv.ensure_list,
+            vol.Inclusive("zone_ids", "zone_group"): cv.ensure_list,
+        },
+    ),
+    "vacuum_go_to": cv.make_entity_service_schema(
+        {
+            vol.Optional("spot_id"): cv.string,
+            vol.Optional("x_coord"): vol.Coerce(int),
+            vol.Optional("y_coord"): vol.Coerce(int),
+        }
+    ),
+    "vacuum_map_save": cv.make_entity_service_schema(
+        {
+            vol.Required("map_name"): cv.string,
+        }
+    ),
+    "vacuum_map_load": cv.make_entity_service_schema(
+        {
+            vol.Required("map_name"): cv.string,
+        }
+    ),
 }
 
 
@@ -75,9 +98,7 @@ async def vacuum_clean_segments(call: ServiceCall, coordinator) -> None:
                     service_data["payload"],
                 )
             except Exception as e:
-                _LOGGER.warning(
-                    f"Error sending command to vacuum: {e}"
-                )
+                _LOGGER.warning(f"Error sending command to vacuum: {e}")
                 return
 
             coordinator.hass.bus.async_fire(
@@ -93,78 +114,71 @@ async def vacuum_clean_segments(call: ServiceCall, coordinator) -> None:
         _LOGGER.warning(f"Missing required parameter: {e}")
 
 
-async def vacuum_clean_zone(call: ServiceCall, coordinator) -> ServiceResponse:
+async def vacuum_clean_zone(call: ServiceCall, coordinator) -> None:
     """Vacuum Zone Clean Action"""
 
     got_error: str = "No Errors"
-    try:
-        # Retrieve coordinates
-        zone_lists = call.data.get("zone", None)
-        zone_ids = call.data.get("zone_ids", None)
-        repeats = call.data.get("repeats", 1)
-        _LOGGER.warning(f"zone_ids: {zone_ids}, zone_lists: {zone_lists}, repeats: {repeats}")
-        # Attempt to get entity_id or device_id
-        entity_ids = call.data.get("entity_id")
-        device_ids = call.data.get("device_id")
-        if not zone_lists and not zone_ids:
-            got_error = "missing_zone_or_zone_ids"
-        elif zone_lists and isinstance(zone_lists, list):
-            for sub_zone in zone_lists:
-                if len(sub_zone) != 4:
-                    got_error = "zone_list_length"
-        elif zone_lists and (not isinstance(zone_lists, list)):
-            got_error = "zone_must_be_list"
-        elif zone_ids and isinstance(zone_ids, list):
-            zone_lists = zone_ids
-        elif not isinstance(zone_ids, list):
-            got_error = "zoneid_must_be_list"
 
-        if got_error is not "No Errors":
-            # Raise a ServiceValidationError if there are errors
-            raise ServiceValidationError(
-                translation_domain=DOMAIN,
-                translation_key=got_error,
-                translation_placeholders={
-                    "return_response": "return_response=True",
-                    "params": "got_error"}
-            )
+    # Retrieve coordinates
+    zone_lists = call.data.get("zone", None)
+    zone_ids = call.data.get("zone_ids", None)
+    repeats = call.data.get("repeats", 1)
+    _LOGGER.debug(
+        "zone_ids: %s, zone_lists: %s, repeats: %d", zone_ids, zone_lists, repeats
+    )
+    # Attempt to get entity_id or device_id
+    entity_ids = call.data.get("entity_id")
+    device_ids = call.data.get("device_id")
+    if not zone_lists and not zone_ids:
+        got_error = "missing_zone_or_zone_ids"
+    elif zone_lists and isinstance(zone_lists, list):
+        for sub_zone in zone_lists:
+            if len(sub_zone) != 4:
+                got_error = "zone_list_length"
+    elif zone_lists and (not isinstance(zone_lists, list)):
+        got_error = "zone_must_be_list"
+    elif zone_ids and isinstance(zone_ids, list):
+        zone_lists = zone_ids
+    elif not isinstance(zone_ids, list):
+        got_error = "zoneid_must_be_list"
 
-        service_data = generate_service_data_clean_zone(
-            entity_id=entity_ids,
-            device_id=device_ids,
-            zones=zone_lists,
-            repeat=repeats,
-            hass=coordinator.hass,
-        )
-        if not service_data:
-            _LOGGER.warning("No Service data generated. Aborting!")
-            return
-        try:
-            await coordinator.connector.publish_to_broker(
-                service_data["topic"],
-                service_data["payload"],
-            )
-        except Exception as e:
-            _LOGGER.warning(f"Error sending command to vacuum: {e}")
-        coordinator.hass.bus.async_fire(
-            f"event_{DOMAIN}.vacuum_clean_zone",
-            {
-                "topic": service_data["topic"],
-                "zones": zone_lists,
-                "repeats": repeats,
+    if got_error != "No Errors":
+        # Raise a ServiceValidationError if there are errors
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key=got_error,
+            translation_placeholders={
+                "domain": DOMAIN,
             },
-            context=call.context.id,
         )
-    except ServiceValidationError as e:
-        _LOGGER.warning(f"{call.context.id} Missing required parameter: {e}")
-        # raise ServiceValidationError(
-        #     translation_domain=DOMAIN,
-        #     translation_key=got_error,
-        #     translation_placeholders={
-        #         "return_response": "return_response=True",
-        #         "context": "call.context",
-        #         "params": "got_error"}
-        # )
+
+    service_data = generate_service_data_clean_zone(
+        entity_id=entity_ids,
+        device_id=device_ids,
+        zones=zone_lists,
+        repeat=repeats,
+        hass=coordinator.hass,
+    )
+    if not service_data:
+        _LOGGER.warning("No Service data generated. Aborting!")
+        return
+    try:
+        await coordinator.connector.publish_to_broker(
+            service_data["topic"],
+            service_data["payload"],
+        )
+    except Exception as e:
+        _LOGGER.warning("Error sending command to vacuum: %s", str(e))
+    coordinator.hass.bus.async_fire(
+        f"service.{DOMAIN}.vacuum_clean_zone",
+        {
+            "topic": service_data["topic"],
+            "zones": zone_lists,
+            "repeats": repeats,
+            "result": got_error,
+        },
+        context=call.context,
+    )
 
 
 async def vacuum_goto(call: ServiceCall, coordinator) -> None:
@@ -231,9 +245,7 @@ async def vacuum_map_save(call: ServiceCall, coordinator) -> None:
                 },
             }
         else:
-            _LOGGER.warning(
-                "This feature is only available for rand256 vacuums."
-            )
+            _LOGGER.warning("This feature is only available for rand256 vacuums.")
             return
         try:
             await coordinator.connector.publish_to_broker(
@@ -277,9 +289,7 @@ async def vacuum_map_load(call: ServiceCall, coordinator) -> None:
                 },
             }
         else:
-            _LOGGER.warning(
-                "This feature is only available for rand256 vacuums."
-            )
+            _LOGGER.warning("This feature is only available for rand256 vacuums.")
             return
         try:
             await coordinator.connector.publish_to_broker(
@@ -559,6 +569,7 @@ SERVICES = {
     "vacuum_map_save": vacuum_map_save,
     "vacuum_map_load": vacuum_map_load,
 }
+
 
 async def async_register_vacuums_services(hass: HomeAssistant, coordinator) -> None:
     """Register the Vacuums services."""
