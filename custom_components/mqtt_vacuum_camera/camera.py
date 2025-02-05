@@ -1,6 +1,6 @@
 """
-Camera
-Version: v2024.12.2
+MQTT Vacuum Camera
+Version: v2025.2.0
 """
 
 from __future__ import annotations
@@ -25,8 +25,10 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.storage import STORAGE_DIR
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from psutil_home_assistant import PsutilWrapper as ProcInsp
+from valetudo_map_parser.config.types import SnapshotStore
+from valetudo_map_parser.config.utils import ResizeParams, async_resize_image
 
-from .common import get_vacuum_unique_id_from_mqtt_topic, RedactIPFilter
+from .common import RedactIPFilter, get_vacuum_unique_id_from_mqtt_topic
 from .const import (
     ATTR_FRIENDLY_NAME,
     ATTR_JSON_DATA,
@@ -39,7 +41,6 @@ from .const import (
     CameraModes,
 )
 from .snapshots.snapshot import Snapshots
-from .types import SnapshotStore
 from .utils.camera.camera_processing import CameraProcessor
 from .utils.colors_man import ColorsManagment
 from .utils.files_operations import (
@@ -47,7 +48,6 @@ from .utils.files_operations import (
     async_load_file,
     is_auth_updated,
 )
-from .utils.image_handler_utils import resize_to_aspect_ratio
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -87,13 +87,13 @@ class MQTTCamera(CoordinatorEntity, Camera):
         super().__init__(coordinator)
         Camera.__init__(self)
         self.hass = coordinator.hass
+        self._shared, self._file_name = coordinator.update_shared_data(device_info)
         self._state = "init"
         self._attr_model = "MQTT Vacuums"
         self._attr_brand = "MQTT Vacuum Camera"
         self._attr_name = "Camera"
         self._attr_is_on = True
         self._homeassistant_path = self.hass.config.path()  # get Home Assistant path
-        self._shared, self._file_name = coordinator.update_shared_data(device_info)
         self._start_up_logs()
         self._storage_path, self.snapshot_img, self.log_file = self._init_paths()
         self._mqtt_listen_topic = coordinator.vacuum_topic
@@ -105,7 +105,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         self._identifiers = device_info.get(CONF_VACUUM_IDENTIFIERS)
         self._snapshots = Snapshots(self.hass, self._shared)
         self.Image = None
-        self._image_bk = None  # Backup image for testing.
+        self._image_bk = None
         self._processing = False
         self._image_w = None
         self._image_h = None
@@ -122,7 +122,6 @@ class MQTTCamera(CoordinatorEntity, Camera):
         self._colours.set_initial_colours(device_info)
         # Create the processor for the camera.
         self.processor = CameraProcessor(self.hass, self._shared)
-
         # Listen to the vacuum.start event
         self.uns_event_vacuum_start = self.hass.bus.async_listen(
             "event_vacuum_start", self.handle_vacuum_start
@@ -480,7 +479,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         )
         _LOGGER.debug(
             f"{self._file_name} Camera Memory usage in GB: "
-            f"{round(proc.memory_info()[0] / 2. ** 30, 2)}, {memory_percent}% of Total."
+            f"{round(proc.memory_info()[0] / 2.0**30, 2)}, {memory_percent}% of Total."
         )
 
     def _update_frame_interval(self, start_time):
@@ -666,12 +665,17 @@ class MQTTCamera(CoordinatorEntity, Camera):
                                 # Resize the image if resize_to is provided
                                 width = self._shared.image_ref_width
                                 height = self._shared.image_ref_height
-                                (resized_image, _) = await resize_to_aspect_ratio(
-                                    pil_img,
-                                    width,
-                                    height,
-                                    self._shared.image_aspect_ratio,
-                                    None,
+                                resize_data = ResizeParams(
+                                    pil_img=pil_img,
+                                    width=width,
+                                    height=height,
+                                    aspect_ratio=self._shared.image_aspect_ratio,
+                                    crop_size=[],
+                                    is_rand=False,
+                                    offset_func=None,
+                                )
+                                resized_image, _ = await async_resize_image(
+                                    params=resize_data
                                 )
                                 self.Image = await self.hass.async_create_task(
                                     self.run_async_pil_to_bytes(

@@ -1,6 +1,6 @@
 """
 Multiprocessing module
-Version: v2024.10.0
+Version: v2025.2.0
 This module provide the image multiprocessing in order to
 avoid the overload of the main_thread of Home Assistant.
 """
@@ -16,20 +16,16 @@ from typing import Any
 
 from PIL import Image
 import aiohttp
+from valetudo_map_parser.config.drawable import Drawable as Draw
+from valetudo_map_parser.config.types import Color, JsonType, PilPNG
+from valetudo_map_parser.hypfer_handler import HypferMapImageHandler
+from valetudo_map_parser.rand25_handler import ReImageHandler
 
 from custom_components.mqtt_vacuum_camera.const import NOT_STREAMING_STATES
-from custom_components.mqtt_vacuum_camera.types import Color, JsonType, PilPNG
-from custom_components.mqtt_vacuum_camera.utils.drawable import Drawable as Draw
 from custom_components.mqtt_vacuum_camera.utils.files_operations import (
     async_get_active_user_language,
 )
 from custom_components.mqtt_vacuum_camera.utils.status_text import StatusText
-from custom_components.mqtt_vacuum_camera.valetudo.hypfer.image_handler import (
-    MapImageHandler,
-)
-from custom_components.mqtt_vacuum_camera.valetudo.rand256.image_handler import (
-    ReImageHandler,
-)
 
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.propagate = True
@@ -42,8 +38,8 @@ class CameraProcessor:
 
     def __init__(self, hass, camera_shared):
         self.hass = hass
-        self._map_handler = MapImageHandler(camera_shared, hass)
-        self._re_handler = ReImageHandler(camera_shared, hass)
+        self._map_handler = HypferMapImageHandler(camera_shared)
+        self._re_handler = ReImageHandler(camera_shared)
         self._shared = camera_shared
         self._file_name = self._shared.file_name
         self._translations_path = self.hass.config.path(
@@ -306,6 +302,7 @@ class CameraProcessor:
             _LOGGER.error(f"Error downloading image: {e}")
             return None
 
+    # noinspection PyTypeChecker
     async def async_open_image(self, obstacle_image: Any) -> Image.Image:
         """
         Asynchronously open an image file using a thread pool.

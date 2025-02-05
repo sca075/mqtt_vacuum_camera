@@ -1,5 +1,5 @@
 """MQTT Vacuum Camera.
-Version: 2024.12.0"""
+Version: 2025.2.0"""
 
 from functools import partial
 import logging
@@ -18,7 +18,7 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.reload import async_register_admin_service
 from homeassistant.helpers.storage import STORAGE_DIR
 
-from .common import get_vacuum_device_info, get_vacuum_mqtt_topic
+from .common import get_vacuum_device_info, get_vacuum_mqtt_topic, update_options
 from .const import (
     CAMERA_STORAGE,
     CONF_VACUUM_CONFIG_ENTRY_ID,
@@ -166,3 +166,45 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
         return False
     hass.data.setdefault(DOMAIN, {})
     return True
+
+
+# async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
+#     """Migrate old entry."""
+#     _LOGGER.debug("Migrating config entry from version %s", config_entry.version)
+#
+#     if config_entry.version == 3.1:
+#         old_data = {**config_entry.data}
+#         new_data = {"vacuum_config_entry": old_data["vacuum_config_entry"]}
+#         _LOGGER.debug(dict(new_data))
+#         old_options = {**config_entry.options}
+#         if len(old_options) != 0:
+#             tmp_option = {}
+#             if config_entry.version >= 3.0:
+#                 tmp_option = {
+#                    "trims_data": {
+#                        "trim_left": 0,
+#                        "trim_up": 0,
+#                        "trim_right": 0,
+#                        "trim_down": 0
+#                    },
+#                 }
+#
+#             if tmp_option == {}:
+#                 _LOGGER.error(
+#                     "Please SETUP the Camera Error in migration process!! No options found."
+#                 )
+#                 return False
+#             new_options = await update_options(old_options, tmp_option)
+#             _LOGGER.debug(f"migration data:{dict(new_options)}")
+#             config_entry.version = 3.2
+#             hass.config_entries.async_update_entry(
+#                 config_entry, data=new_data, options=new_options
+#             )
+#         else:
+#             _LOGGER.error(
+#                 "Please SETUP the Camera again. Error in migration process!!"
+#             )
+#             return False
+#
+#     _LOGGER.info(f"Migration to config entry version successful {config_entry.version}")
+#     return True

@@ -292,6 +292,18 @@
   "exceptions": {
     "no_entity_id_provided": {
       "message": "Missing entity_id in the configuration."
+    },
+    "missing_zone_or_zone_ids": {
+      "message": "Either 'zone' or 'zone_ids' must be provided."
+    },
+    "zone_must_be_list": {
+      "message": "The 'Zone' parameter must be a list."
+    },
+    "zoneid_must_be_list": {
+      "message": "The 'Zone_Ids' parameter must be a list."
+    },
+    "zone_list_length": {
+      "message": "The 'Zone' must have at least 1 item that contain a list of 4 integers."
     }
   }
 }
