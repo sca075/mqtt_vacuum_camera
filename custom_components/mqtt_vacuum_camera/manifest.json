@@ -11,5 +11,5 @@
         "pillow>=10.3.0,<=11.5.0",
         "numpy>=1.26.4",
         "valetudo_map_parser==0.1.9.b23"],
-    "version": "2024.2.0b0"
+    "version": "2024.2.0"
 }
