@@ -168,43 +168,43 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
     return True
 
 
-async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
-    """Migrate old entry."""
-    _LOGGER.debug("Migrating config entry from version %s", config_entry.version)
-
-    if config_entry.version == 3.1:
-        old_data = {**config_entry.data}
-        new_data = {"vacuum_config_entry": old_data["vacuum_config_entry"]}
-        _LOGGER.debug(dict(new_data))
-        old_options = {**config_entry.options}
-        if len(old_options) != 0:
-            tmp_option = {}
-            if config_entry.version >= 3.0:
-                tmp_option = {
-                   "trims_data": {
-                       "trim_left": 0,
-                       "trim_up": 0,
-                       "trim_right": 0,
-                       "trim_down": 0
-                   },
-                }
-
-            if tmp_option == {}:
-                _LOGGER.error(
-                    "Please SETUP the Camera Error in migration process!! No options found."
-                )
-                return False
-            new_options = await update_options(old_options, tmp_option)
-            _LOGGER.debug(f"migration data:{dict(new_options)}")
-            config_entry.version = 3.2
-            hass.config_entries.async_update_entry(
-                config_entry, data=new_data, options=new_options
-            )
-        else:
-            _LOGGER.error(
-                "Please SETUP the Camera again. Error in migration process!!"
-            )
-            return False
-
-    _LOGGER.info(f"Migration to config entry version successful {config_entry.version}")
-    return True
+# async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
+#     """Migrate old entry."""
+#     _LOGGER.debug("Migrating config entry from version %s", config_entry.version)
+#
+#     if config_entry.version == 3.1:
+#         old_data = {**config_entry.data}
+#         new_data = {"vacuum_config_entry": old_data["vacuum_config_entry"]}
+#         _LOGGER.debug(dict(new_data))
+#         old_options = {**config_entry.options}
+#         if len(old_options) != 0:
+#             tmp_option = {}
+#             if config_entry.version >= 3.0:
+#                 tmp_option = {
+#                    "trims_data": {
+#                        "trim_left": 0,
+#                        "trim_up": 0,
+#                        "trim_right": 0,
+#                        "trim_down": 0
+#                    },
+#                 }
+#
+#             if tmp_option == {}:
+#                 _LOGGER.error(
+#                     "Please SETUP the Camera Error in migration process!! No options found."
+#                 )
+#                 return False
+#             new_options = await update_options(old_options, tmp_option)
+#             _LOGGER.debug(f"migration data:{dict(new_options)}")
+#             config_entry.version = 3.2
+#             hass.config_entries.async_update_entry(
+#                 config_entry, data=new_data, options=new_options
+#             )
+#         else:
+#             _LOGGER.error(
+#                 "Please SETUP the Camera again. Error in migration process!!"
+#             )
+#             return False
+#
+#     _LOGGER.info(f"Migration to config entry version successful {config_entry.version}")
+#     return True
