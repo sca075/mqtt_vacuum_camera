@@ -1,4 +1,4 @@
-"""config_flow 2024.12.0
+"""config_flow 2025.2.1
 IMPORTANT: Maintain code when adding new options to the camera
 it will be mandatory to update const.py and common.py update_options.
 Format of the new constants must be CONST_NAME = "const_name" update also
@@ -105,7 +105,7 @@ VACUUM_SCHEMA = vol.Schema(
 
 
 class MQTTCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
-    VERSION = 3.1
+    VERSION = 3.2
 
     def __init__(self):
         self.data = {}
@@ -352,7 +352,9 @@ class OptionsFlowHandler(OptionsFlow):
         _LOGGER.info(f"{self.camera_config.unique_id}: Options Configuration Started.")
         errors = {}
 
-        self.number_of_rooms = await RoomStore().async_get_rooms_count(self.file_name)
+        rooms_data = RoomStore(self.file_name)
+        self.number_of_rooms = rooms_data.get_rooms_count()
+        _LOGGER.debug(f"Rooms count: {self.number_of_rooms}")
         if (
             not isinstance(self.number_of_rooms, int)
             or self.number_of_rooms < DEFAULT_ROOMS

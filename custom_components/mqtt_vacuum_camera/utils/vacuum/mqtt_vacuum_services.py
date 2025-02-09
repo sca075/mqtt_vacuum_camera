@@ -1,12 +1,13 @@
 """Collection of services for the vacuums and camera components.
-Version 2024.11.1
+Version 2025.2.0
 Autor: @sca075"""
 
 from functools import partial
 import logging
 
 from homeassistant.core import HomeAssistant, ServiceCall, SupportsResponse
-from homeassistant.exceptions import ServiceValidationError
+
+# from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import config_validation as cv
 import voluptuous as vol
 
@@ -142,15 +143,13 @@ async def vacuum_clean_zone(call: ServiceCall, coordinator) -> None:
     elif not isinstance(zone_ids, list):
         got_error = "zoneid_must_be_list"
 
+    # Raise a ServiceValidationError if there are errors
     if got_error != "No Errors":
-        # Raise a ServiceValidationError if there are errors
-        raise ServiceValidationError(
-            translation_domain=DOMAIN,
-            translation_key=got_error,
-            translation_placeholders={
-                "domain": DOMAIN,
-            },
-        )
+        # raise ServiceValidationError(
+        #     translation_domain=DOMAIN,
+        #     translation_key=got_error,
+        # )
+        _LOGGER.warning("Validation Error: %s", got_error)
 
     service_data = generate_service_data_clean_zone(
         entity_id=entity_ids,
@@ -573,7 +572,6 @@ SERVICES = {
 
 async def async_register_vacuums_services(hass: HomeAssistant, coordinator) -> None:
     """Register the Vacuums services."""
-
     for service_name, service_func in SERVICES.items():
         # Use functools.partial to bind the coordinator to the service function
         hass.services.async_register(

@@ -176,6 +176,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         if self._mqtt:
             await self._mqtt.async_unsubscribe_from_topics()
 
+
     @property
     def name(self) -> str:
         """Camera Entity Name"""
@@ -278,7 +279,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         """Camera Turn Off"""
         self._shared.camera_mode = CameraModes.CAMERA_OFF
 
-    def empty_if_no_data(self) -> Image.Image:
+    def empty_if_no_data(self) -> Image:
         """
         It will return the last image if available or
         an empty image if there are no data.
