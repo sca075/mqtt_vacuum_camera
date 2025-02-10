@@ -145,11 +145,9 @@ async def vacuum_clean_zone(call: ServiceCall, coordinator) -> None:
 
     # Raise a ServiceValidationError if there are errors
     if got_error != "No Errors":
-        # raise ServiceValidationError(
-        #     translation_domain=DOMAIN,
-        #     translation_key=got_error,
-        # )
-        _LOGGER.warning("Validation Error: %s", got_error)
+        # Raise a ServiceValidationError if there are errors generate WebApi errors.
+        _LOGGER.warning(f"Error sending command to vacuum: {got_error}")
+        return None
 
     service_data = generate_service_data_clean_zone(
         entity_id=entity_ids,

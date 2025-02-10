@@ -1,5 +1,5 @@
 """
-Camera
+MQTT Vacuum Camera
 Version: v2025.2.0
 """
 
@@ -480,7 +480,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         )
         _LOGGER.debug(
             f"{self._file_name} Camera Memory usage in GB: "
-            f"{round(proc.memory_info()[0] / 2. ** 30, 2)}, {memory_percent}% of Total."
+            f"{round(proc.memory_info()[0] / 2.0**30, 2)}, {memory_percent}% of Total."
         )
 
     def _update_frame_interval(self, start_time):
