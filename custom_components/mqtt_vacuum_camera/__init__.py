@@ -1,5 +1,5 @@
 """MQTT Vacuum Camera.
-Version: 2025.2.0"""
+Version: 2025.2.1"""
 
 from functools import partial
 import logging
@@ -120,7 +120,7 @@ async def async_unload_entry(
         unload_platform = PLATFORMS
     else:
         unload_platform = [Platform.CAMERA]
-    _LOGGER.debug(f"Platforms to unload: {unload_platform}")
+    _LOGGER.debug("Platforms to unload: %s", unload_platform)
     if unload_ok := await hass.config_entries.async_unload_platforms(
         entry, unload_platform
     ):
@@ -145,13 +145,13 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
         _LOGGER.info("Home Assistant is stopping. Writing down the rooms data.")
         storage = hass.config.path(STORAGE_DIR, CAMERA_STORAGE)
         if not os.path.exists(storage):
-            _LOGGER.debug(f"Storage path: {storage} do not exists. Aborting!")
+            _LOGGER.debug("Storage path: %s do not exists. Aborting!", storage)
             return False
         vacuum_entity_id = await async_get_translations_vacuum_id(storage)
         if not vacuum_entity_id:
             _LOGGER.debug("No vacuum room data found. Aborting!")
             return False
-        _LOGGER.debug(f"Writing down the rooms data for {vacuum_entity_id}.")
+        _LOGGER.debug("Writing down the rooms data for %s.", vacuum_entity_id)
         await async_rename_room_description(hass, vacuum_entity_id)
         await hass.async_block_till_done()
         return True
@@ -168,43 +168,36 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
     return True
 
 
-# async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
-#     """Migrate old entry."""
-#     _LOGGER.debug("Migrating config entry from version %s", config_entry.version)
-#
-#     if config_entry.version == 3.1:
-#         old_data = {**config_entry.data}
-#         new_data = {"vacuum_config_entry": old_data["vacuum_config_entry"]}
-#         _LOGGER.debug(dict(new_data))
-#         old_options = {**config_entry.options}
-#         if len(old_options) != 0:
-#             tmp_option = {}
-#             if config_entry.version >= 3.0:
-#                 tmp_option = {
-#                    "trims_data": {
-#                        "trim_left": 0,
-#                        "trim_up": 0,
-#                        "trim_right": 0,
-#                        "trim_down": 0
-#                    },
-#                 }
-#
-#             if tmp_option == {}:
-#                 _LOGGER.error(
-#                     "Please SETUP the Camera Error in migration process!! No options found."
-#                 )
-#                 return False
-#             new_options = await update_options(old_options, tmp_option)
-#             _LOGGER.debug(f"migration data:{dict(new_options)}")
-#             config_entry.version = 3.2
-#             hass.config_entries.async_update_entry(
-#                 config_entry, data=new_data, options=new_options
-#             )
-#         else:
-#             _LOGGER.error(
-#                 "Please SETUP the Camera again. Error in migration process!!"
-#             )
-#             return False
-#
-#     _LOGGER.info(f"Migration to config entry version successful {config_entry.version}")
-#     return True
+async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
+    """Migrate old entry."""
+    _LOGGER.debug("Migrating config entry from version %s", config_entry.version)
+
+    if config_entry.version == 3.1:
+        old_data = {**config_entry.data}
+        new_data = {"vacuum_config_entry": old_data["vacuum_config_entry"]}
+        _LOGGER.debug(dict(new_data))
+        old_options = {**config_entry.options}
+        if len(old_options) != 0:
+            tmp_option = {
+                "trims_data": {
+                    "trim_left": 0,
+                    "trim_up": 0,
+                    "trim_right": 0,
+                    "trim_down": 0,
+                },
+            }
+            new_options = await update_options(old_options, tmp_option)
+            _LOGGER.debug("Migration data: %s", dict(new_options))
+            hass.config_entries.async_update_entry(
+                config_entry, version=3.2, data=new_data, options=new_options
+            )
+        else:
+            _LOGGER.error(
+                "Migration failed: No options found in config entry. Please reconfigure the camera."
+            )
+            return False
+
+    _LOGGER.info(
+        "Migration to config entry version %s successful", config_entry.version
+    )
+    return True

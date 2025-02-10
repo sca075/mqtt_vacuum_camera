@@ -57,7 +57,7 @@ class ValetudoConnector:
         self.rrm_attributes = None  # Rand256
         self._file_name = camera_shared.file_name
         self._shared = camera_shared
-        self._room_store = RoomStore()
+        self._room_store = RoomStore(self._file_name)
         vacuum_identifier = self._mqtt_topic.split("/")[-1]
         self.mqtt_hass_vacuum = f"homeassistant/vacuum/{vacuum_identifier}/{vacuum_identifier}_vacuum/config"
         self.command_topic = (
@@ -251,8 +251,8 @@ class ValetudoConnector:
         """
         self._mqtt_segments = await self.async_decode_mqtt_payload(msg)
         # Store the decoded segments in RoomStore
-        await self._room_store.async_set_rooms_data(
-            self._file_name, self._mqtt_segments
+        await self._room_store.set_rooms(
+            self._mqtt_segments
         )
 
     async def rand256_handle_image_payload(self, msg):
@@ -305,7 +305,7 @@ class ValetudoConnector:
             rooms_data = {
                 str(room["id"]): room["name"].strip("#") for room in tmp_data["rooms"]
             }
-            await RoomStore().async_set_rooms_data(self._file_name, rooms_data)
+            self._room_store.set_rooms(rooms_data)
 
     async def rrm_handle_active_segments(self, msg) -> None:
         """

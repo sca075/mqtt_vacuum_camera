@@ -4,7 +4,7 @@ Common functions for the MQTT Vacuum Camera integration.
 Those functions are used to store and retrieve user data from the Home Assistant storage.
 The data will be stored locally in the Home Assistant in .storage/valetudo_camera directory.
 Author: @sca075
-Version: 2024.08.1
+Version: 2025.02.1
 """
 
 from __future__ import annotations
@@ -262,7 +262,8 @@ async def async_rename_room_description(hass: HomeAssistant, vacuum_id: str) -> 
     Add room names to the room descriptions in the translations.
     """
     # Load the room data using the new MQTT-based function
-    room_data = await RoomStore().async_get_rooms_data(vacuum_id)
+    rooms = RoomStore(vacuum_id)
+    room_data = rooms.get_rooms()
 
     if not room_data:
         _LOGGER.warning(
@@ -280,51 +281,68 @@ async def async_rename_room_description(hass: HomeAssistant, vacuum_id: str) -> 
     data_list = await async_load_translations_json(hass, language)
     if None in data_list:
         _LOGGER.warning(
-            f"Translation for {language} not found."
-            " Please report the missing translation to the author."
+            f"Translation for {language} not found. Please report the missing translation to the author."
         )
         data_list = await async_load_translations_json(hass, ["en"])
+
+    # Maintain the original room order as stored in the dictionary
+    room_list = list(room_data.items())
 
     # Modify the "data_description" keys for rooms_colours_1 and rooms_colours_2
     for data in data_list:
         if data is None:
             continue
+
         for i in range(1, 3):
             room_key = f"rooms_colours_{i}"
+            # For rooms_colours_1 use rooms 0-7, for rooms_colours_2 use 8-15
             start_index = 0 if i == 1 else 8
             end_index = 8 if i == 1 else 16
+
             for j in range(start_index, end_index):
-                if j < len(room_data):
-                    room_id, room_name = list(room_data.items())[j]
-                    data["options"]["step"][room_key]["data_description"][
-                        f"color_room_{j}"
-                    ] = f"### **RoomID {room_id} {room_name}**"  # Markdown format
+                if j < len(room_list):
+                    room_id, room_info = room_list[j]
+                    # Get the room name; if missing, fallback to a default name
+                    room_name = room_info.get("name", f"Room {room_id}")
+                    data["options"]["step"][room_key]["data_description"][f"color_room_{j}"] = (
+                        f"### **RoomID {room_id} {room_name}**"
+                    )
+                else:
+                    # Clear unused keys if there are fewer rooms than expected
+                    data["options"]["step"][room_key]["data_description"][f"color_room_{j}"] = ""
 
     # Modify the "data" keys for alpha_2 and alpha_3
     for data in data_list:
         if data is None:
             continue
+
         for i in range(2, 4):
             alpha_key = f"alpha_{i}"
             start_index = 0 if i == 2 else 8
             end_index = 8 if i == 2 else 16
+
             for j in range(start_index, end_index):
-                if j < len(room_data):
-                    room_id, room_name = list(room_data.items())[j]
+                if j < len(room_list):
+                    room_id, room_info = room_list[j]
+                    room_name = room_info.get("name", f"Room {room_id}")
                     data["options"]["step"][alpha_key]["data"][f"alpha_room_{j}"] = (
                         f"RoomID {room_id} {room_name}"
                     )
+                else:
+                    data["options"]["step"][alpha_key]["data"][f"alpha_room_{j}"] = ""
 
     # Write the modified data back to the JSON files
     for idx, data in enumerate(data_list):
         if data is not None:
+            lang = language[idx] if isinstance(language, list) else language
             await async_write_json_to_disk(
-                os.path.join(edit_path, f"{language[idx]}.json"), data
+                os.path.join(edit_path, f"{lang}.json"), data
             )
             _LOGGER.info(
-                f"Room names added to the room descriptions in the {language[idx]} translations."
+                f"Room names added to the room descriptions in the {lang} translations."
             )
     return True
+
 
 
 async def async_del_file(file):
