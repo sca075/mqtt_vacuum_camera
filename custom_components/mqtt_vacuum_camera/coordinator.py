@@ -146,12 +146,12 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
                 vacuum_state = await self.connector.get_vacuum_status()
                 vacuum_room = self.shared.current_room
                 last_run_stats = sensor_data.get("last_run_stats", {})
-                last_loaded_map = sensor_data.get("last_loaded_map", {})
+                last_loaded_map = sensor_data.get("last_loaded_map", {"name": "Default"})
 
                 if not vacuum_room:
                     vacuum_room = {"in_room": "Unsupported"}
-                if last_loaded_map == {}:
-                    last_loaded_map = {"name", "Default"}
+                if not last_loaded_map:
+                    last_loaded_map = {"name": "Default"}
 
                 formatted_data = {
                     "mainBrush": sensor_data.get("mainBrush", 0),
