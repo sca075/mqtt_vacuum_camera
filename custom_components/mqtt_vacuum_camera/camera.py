@@ -176,7 +176,6 @@ class MQTTCamera(CoordinatorEntity, Camera):
         if self._mqtt:
             await self._mqtt.async_unsubscribe_from_topics()
 
-
     @property
     def name(self) -> str:
         """Camera Entity Name"""
