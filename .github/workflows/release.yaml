@@ -1,0 +1,38 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+env:
+  COMPONENT_NAME: mqtt_vacuum_camera
+
+jobs:
+  release:
+    name: Prepare release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: Download repo
+        uses: actions/checkout@v4.2.2
+
+      - name: Adjust version number
+        shell: bash
+        run: |
+          version="${{ github.event.release.tag_name }}"
+          yq e -P -o=json \
+            -i ".version = \"${version}\"" \
+            "${{ github.workspace }}/custom_components/${{ env.COMPONENT_NAME }}/manifest.json"
+
+      - name: Zip ${{ env.COMPONENT_NAME }} dir
+        run: |
+          cd "${{ github.workspace }}/custom_components/${{ env.COMPONENT_NAME }}"
+          zip ${{ env.COMPONENT_NAME }}.zip -r ./
+
+
+      - name: Upload zip to release
+        uses: softprops/action-gh-release@v2.2.1
+        with:
+          files: ${{ github.workspace }}/custom_components/${{ env.COMPONENT_NAME }}/${{ env.COMPONENT_NAME }}.zip
