@@ -22,8 +22,8 @@ from homeassistant import config_entries, core
 from homeassistant.components.camera import Camera, CameraEntityFeature
 from homeassistant.const import CONF_UNIQUE_ID, MATCH_ALL
 from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers.device_registry import DeviceInfo as dev_info
-from homeassistant.helpers.entity import DeviceInfo as entity_info
+from homeassistant.helpers.device_registry import DeviceInfo as Dev_Info
+from homeassistant.helpers.entity import DeviceInfo as Entity_Info
 from homeassistant.helpers.storage import STORAGE_DIR
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from psutil_home_assistant import PsutilWrapper as ProcInsp
@@ -271,10 +271,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
     @property
     def device_info(self):
         """Return the device info."""
-        if dev_info:
-            device_info = dev_info
-        else:
-            device_info = entity_info
+        device_info = Dev_Info if Dev_Info else Entity_Info
         return device_info(identifiers=self._identifiers)
 
     def turn_on(self) -> None:
@@ -492,7 +489,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
             2,
         )
         _LOGGER.debug(
-            "%s Camera Memory GB: in use %f / available %f.",
+            "%s: Camera Memory: GB in use %.2f / system available %.2f%%.",
             self._file_name,
             round(proc.memory_info()[0] / 2.0**30, 2),
             memory_percent,
