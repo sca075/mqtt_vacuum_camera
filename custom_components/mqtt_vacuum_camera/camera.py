@@ -594,7 +594,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         async def _set_camera_mode(mode_of_camera: CameraModes, reason: str = None):
             """Set the camera mode."""
             self._shared.camera_mode = mode_of_camera
-            if mode_of_camera.OBSTACLE_SEARCH and not self._image_bk:
+            if mode_of_camera == CameraModes.OBSTACLE_SEARCH and not self._image_bk:
                 self._image_bk = self.Image
 
             _LOGGER.debug(
