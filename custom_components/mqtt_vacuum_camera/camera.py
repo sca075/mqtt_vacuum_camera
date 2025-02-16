@@ -215,11 +215,13 @@ class MQTTCamera(CoordinatorEntity, Camera):
         return self._attr_is_streaming
 
     def disable_motion_detection(self) -> bool:
-        """Disable Motion Detection"""
+        """Disable Motion Detection
+        :return bool always False as this is not in use in this implementation"""
         return False
 
     def enable_motion_detection(self) -> bool:
-        """Enable Motion Detection"""
+        """Enable Motion Detection
+        :return bool always False as this is not in use in this implementation"""
         return False
 
     def camera_image(
