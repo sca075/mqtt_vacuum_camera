@@ -1,5 +1,5 @@
 """
-Version: v2025.2.0
+Version: v2025.2.2
 """
 
 import asyncio
@@ -251,7 +251,7 @@ class ValetudoConnector:
         """
         self._mqtt_segments = await self.async_decode_mqtt_payload(msg)
         # Store the decoded segments in RoomStore
-        await self._room_store.set_rooms(self._mqtt_segments)
+        self._room_store.set_rooms(self._mqtt_segments)
 
     async def rand256_handle_image_payload(self, msg):
         """
