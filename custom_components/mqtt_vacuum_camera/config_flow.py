@@ -878,8 +878,14 @@ class OptionsFlowHandler(OptionsFlow):
             else:
                 # If the stored values are not all zero, reset the trims.
                 reset_trims = coordinator.shared.trims.clear()
-                _LOGGER.debug(f"Resetting trims to defaults: {reset_trims}")
-                self.camera_options = {"trims_data": reset_trims}
+                _LOGGER.debug(f"Resetting trims and offsets to defaults: {reset_trims}")
+                self.camera_options = {
+                    "offset_bottom": 0,
+                    "offset_left": 0,
+                    "offset_top": 0,
+                    "offset_right": 0,
+                    "trims_data": reset_trims
+                }
             return await self.async_step_opt_save()
 
     async def async_step_opt_save(self):

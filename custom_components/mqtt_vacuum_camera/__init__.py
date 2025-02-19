@@ -1,5 +1,5 @@
 """MQTT Vacuum Camera.
-Version: 2025.2.1"""
+Version: 2025.2.2"""
 
 from functools import partial
 import logging

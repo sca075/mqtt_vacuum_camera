@@ -1,6 +1,7 @@
 """Constants for the mqtt_vacuum_camera integration.
-Version 2025.2.1"""
+Version 2025.2.2"""
 
+import logging
 from homeassistant.components.camera import DOMAIN as CAMERA_DOMAIN
 from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
 from homeassistant.components.vacuum import DOMAIN as VACUUM_DOMAIN
@@ -39,6 +40,9 @@ CONF_ZOOM_LOCK_RATIO = "zoom_lock_ratio"
 CONF_TRIMS_SAVE = "save_trims"
 ICON = "mdi:camera"
 NAME = "MQTT Vacuum Camera"
+
+LOGGER = logging.getLogger(__package__)
+
 
 DEFAULT_IMAGE_SIZE = {
     "x": 5120,
