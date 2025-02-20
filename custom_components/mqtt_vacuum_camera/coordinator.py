@@ -157,6 +157,7 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
                     "mainBrush": sensor_data.get("mainBrush", 0),
                     "sideBrush": sensor_data.get("sideBrush", 0),
                     "filter": sensor_data.get("filter", 0),
+                    "sensor": sensor_data.get("sensor", 0),
                     "currentCleanTime": sensor_data.get("currentCleanTime", 0),
                     "currentCleanArea": sensor_data.get("currentCleanArea", 0),
                     "cleanTime": sensor_data.get("cleanTime", 0),
