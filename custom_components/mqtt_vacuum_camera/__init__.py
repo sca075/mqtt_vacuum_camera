@@ -2,7 +2,6 @@
 Version: 2025.2.2"""
 
 from functools import partial
-import logging
 import os
 
 from homeassistant import config_entries, core
@@ -25,8 +24,10 @@ from .const import (
     CONF_VACUUM_CONNECTION_STRING,
     CONF_VACUUM_IDENTIFIERS,
     DOMAIN,
+    LOGGER,
 )
 from .coordinator import MQTTVacuumCoordinator
+from .common import RedactIPFilter
 from .utils.camera.camera_services import (
     obstacle_view,
     reload_camera_config,
@@ -43,7 +44,7 @@ from .utils.vacuum.mqtt_vacuum_services import (
 )
 
 PLATFORMS = [Platform.CAMERA, Platform.SENSOR]
-_LOGGER = logging.getLogger(__name__)
+LOGGER.addFilter(RedactIPFilter())
 
 
 async def options_update_listener(hass: core.HomeAssistant, config_entry: ConfigEntry):
@@ -101,13 +102,9 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
     hass_data["unsub_options_update_listener"] = unsub_options_update_listener
     hass.data[DOMAIN][entry.entry_id] = hass_data
     if bool(hass_data.get("is_rand256")):
-        await hass.async_create_task(
-            hass.config_entries.async_forward_entry_setups(entry, ["camera", "sensor"])
-        )
+        await hass.config_entries.async_forward_entry_setups(entry, ["camera", "sensor"])
     else:
-        await hass.async_create_task(
-            hass.config_entries.async_forward_entry_setups(entry, ["camera"])
-        )
+        await hass.config_entries.async_forward_entry_setups(entry, ["camera"])
 
     return True
 
@@ -120,7 +117,7 @@ async def async_unload_entry(
         unload_platform = PLATFORMS
     else:
         unload_platform = [Platform.CAMERA]
-    _LOGGER.debug("Platforms to unload: %s", unload_platform)
+    LOGGER.debug("Platforms to unload: %s", unload_platform)
     if unload_ok := await hass.config_entries.async_unload_platforms(
         entry, unload_platform
     ):
@@ -142,16 +139,16 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
 
     async def handle_homeassistant_stop(event):
         """Handle Home Assistant stop event."""
-        _LOGGER.info("Home Assistant is stopping. Writing down the rooms data.")
+        LOGGER.info("Home Assistant is stopping. Writing down the rooms data.")
         storage = hass.config.path(STORAGE_DIR, CAMERA_STORAGE)
         if not os.path.exists(storage):
-            _LOGGER.debug("Storage path: %s do not exists. Aborting!", storage)
+            LOGGER.debug("Storage path: %s do not exists. Aborting!", storage)
             return False
         vacuum_entity_id = await async_get_translations_vacuum_id(storage)
         if not vacuum_entity_id:
-            _LOGGER.debug("No vacuum room data found. Aborting!")
+            LOGGER.debug("No vacuum room data found. Aborting!")
             return False
-        _LOGGER.debug("Writing down the rooms data for %s.", vacuum_entity_id)
+        LOGGER.debug("Writing down the rooms data for %s.", vacuum_entity_id)
         await async_rename_room_description(hass, vacuum_entity_id)
         await hass.async_block_till_done()
         return True
@@ -162,7 +159,7 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
 
     # Make sure MQTT integration is enabled and the client is available
     if not await mqtt.async_wait_for_mqtt_client(hass):
-        _LOGGER.error("MQTT integration is not available")
+        LOGGER.error("MQTT integration is not available")
         return False
     hass.data.setdefault(DOMAIN, {})
     return True
@@ -172,10 +169,10 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
     """Migrate old entry."""
     # as it loads at every rebot, the logs stay in the migration steps
     if config_entry.version == 3.1:
-        _LOGGER.debug("Migrating config entry from version %s", config_entry.version)
+        LOGGER.debug("Migrating config entry from version %s", config_entry.version)
         old_data = {**config_entry.data}
         new_data = {"vacuum_config_entry": old_data["vacuum_config_entry"]}
-        _LOGGER.debug(dict(new_data))
+        LOGGER.debug(dict(new_data))
         old_options = {**config_entry.options}
         if len(old_options) != 0:
             tmp_option = {
@@ -187,15 +184,15 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
                 },
             }
             new_options = await update_options(old_options, tmp_option)
-            _LOGGER.debug("Migration data: %s", dict(new_options))
+            LOGGER.debug("Migration data: %s", dict(new_options))
             hass.config_entries.async_update_entry(
                 config_entry, version=3.2, data=new_data, options=new_options
             )
-            _LOGGER.info(
+            LOGGER.info(
                 "Migration to config entry version %s successful", config_entry.version
             )
         else:
-            _LOGGER.error(
+            LOGGER.error(
                 "Migration failed: No options found in config entry. Please reconfigure the camera."
             )
             return False

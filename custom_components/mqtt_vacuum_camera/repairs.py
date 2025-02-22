@@ -1,3 +1,4 @@
+
 """Repairs for the MQTT Vacuum Camera integration."""
 
 from __future__ import annotations
