@@ -1,5 +1,5 @@
 """MQTT Vacuum Camera.
-Version: 2025.2.1"""
+Version: 2025.2.2"""
 
 from functools import partial
 import logging
@@ -170,9 +170,9 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
 
 async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
     """Migrate old entry."""
-    _LOGGER.debug("Migrating config entry from version %s", config_entry.version)
-
+    # as it loads at every rebot, the logs stay in the migration steps
     if config_entry.version == 3.1:
+        _LOGGER.debug("Migrating config entry from version %s", config_entry.version)
         old_data = {**config_entry.data}
         new_data = {"vacuum_config_entry": old_data["vacuum_config_entry"]}
         _LOGGER.debug(dict(new_data))
@@ -191,13 +191,12 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
             hass.config_entries.async_update_entry(
                 config_entry, version=3.2, data=new_data, options=new_options
             )
+            _LOGGER.info(
+                "Migration to config entry version %s successful", config_entry.version
+            )
         else:
             _LOGGER.error(
                 "Migration failed: No options found in config entry. Please reconfigure the camera."
             )
             return False
-
-    _LOGGER.info(
-        "Migration to config entry version %s successful", config_entry.version
-    )
     return True

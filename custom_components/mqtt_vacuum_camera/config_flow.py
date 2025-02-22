@@ -1,4 +1,4 @@
-"""config_flow 2025.2.1
+"""config_flow 2025.2.2
 IMPORTANT: Maintain code when adding new options to the camera
 it will be mandatory to update const.py and common.py update_options.
 Format of the new constants must be CONST_NAME = "const_name" update also
@@ -852,19 +852,41 @@ class OptionsFlowHandler(OptionsFlow):
 
     async def async_reset_map_trims(self, user_input=None):
         """
-        Reset the map trims.
-        """
-        if (user_input is None) and self.bk_options:
-            if self.hass:
-                _LOGGER.debug("Resetting the map trims.")
-                file_path = self.hass.config.path(
-                    STORAGE_DIR, CAMERA_STORAGE, f"auto_crop_{self.file_name}.json"
-                )
-                await async_del_file(file_path)
-                self.camera_options = self.bk_options
-            return await self.async_step_opt_save()
+        Update the map trims based on the camera configuration.
 
-        return self.async_show_form(step_id="reset_map_trims")
+        If the stored trims (from camera_config.to_dict()) are all 0,
+        then we update them with the current trims from the coordinator.
+        Otherwise, we clear the trims (reset them to 0).
+        """
+        entry = self.camera_config.entry_id
+        _LOGGER.debug(f"Updating the map trims for {entry}")
+
+        # Retrieve the coordinator from hass.data
+        coordinator = self.hass.data[DOMAIN][entry]["coordinator"]
+
+        # Retrieve the stored trims from the camera_config
+        config_options = self.camera_config.as_dict().get("options", {})
+        config_trims = config_options.get("trims_data", {})
+        _LOGGER.debug(f"Current config trims_data: {config_trims}")
+        if (user_input is None) and self.bk_options:
+            # Decide whether to update (store) or reset (clear) the trims
+            if all(value == 0 for value in config_trims.values()):
+                # If all stored values are 0, then update them with the current trims.
+                new_trims = coordinator.shared.trims.to_dict()
+                _LOGGER.debug(f"Storing new trims: {new_trims}")
+                self.camera_options = {"trims_data": new_trims}
+            else:
+                # If the stored values are not all zero, reset the trims.
+                reset_trims = coordinator.shared.trims.clear()
+                _LOGGER.debug(f"Resetting trims and offsets to defaults: {reset_trims}")
+                self.camera_options = {
+                    "offset_bottom": 0,
+                    "offset_left": 0,
+                    "offset_top": 0,
+                    "offset_right": 0,
+                    "trims_data": reset_trims
+                }
+            return await self.async_step_opt_save()
 
     async def async_step_opt_save(self):
         """

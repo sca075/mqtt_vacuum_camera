@@ -304,12 +304,14 @@ async def async_rename_room_description(hass: HomeAssistant, vacuum_id: str) -> 
                     room_id, room_info = room_list[j]
                     # Get the room name; if missing, fallback to a default name
                     room_name = room_info.get("name", f"Room {room_id}")
-                    data["options"]["step"][room_key]["data_description"][f"color_room_{j}"] = (
-                        f"### **RoomID {room_id} {room_name}**"
-                    )
+                    data["options"]["step"][room_key]["data_description"][
+                        f"color_room_{j}"
+                    ] = f"### **RoomID {room_id} {room_name}**"
                 else:
                     # Clear unused keys if there are fewer rooms than expected
-                    data["options"]["step"][room_key]["data_description"][f"color_room_{j}"] = ""
+                    data["options"]["step"][room_key]["data_description"][
+                        f"color_room_{j}"
+                    ] = ""
 
     # Modify the "data" keys for alpha_2 and alpha_3
     for data in data_list:
@@ -342,7 +344,6 @@ async def async_rename_room_description(hass: HomeAssistant, vacuum_id: str) -> 
                 f"Room names added to the room descriptions in the {lang} translations."
             )
     return True
-
 
 
 async def async_del_file(file):
