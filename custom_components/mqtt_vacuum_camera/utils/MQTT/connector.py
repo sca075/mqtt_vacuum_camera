@@ -4,7 +4,6 @@ Version: v2025.2.2
 
 import asyncio
 import json
-import logging
 from typing import Any
 
 from homeassistant.components import mqtt
@@ -14,17 +13,14 @@ from valetudo_map_parser.config.rand25_parser import RRMapParser
 from valetudo_map_parser.config.types import RoomStore
 
 from custom_components.mqtt_vacuum_camera.common import (
-    RedactIPFilter,
     build_full_topic_set,
 )
 from custom_components.mqtt_vacuum_camera.const import (
     DECODED_TOPICS,
     NON_DECODED_TOPICS,
     CameraModes,
+    LOGGER,
 )
-
-_LOGGER = logging.getLogger(__name__)
-_LOGGER.addFilter(RedactIPFilter())
 
 _QOS = 0
 
@@ -79,7 +75,7 @@ class ValetudoConnector:
         loop = asyncio.get_running_loop()
         if payload:
             if process:
-                _LOGGER.debug(
+                LOGGER.debug(
                     f"{self._file_name}: Processing {data_type} data from MQTT."
                 )
                 if data_type == "Hypfer":
@@ -99,12 +95,12 @@ class ValetudoConnector:
                     result = None
                 self._is_rrm = bool(self._rrm_json)
                 self._data_in = False
-                _LOGGER.info(
+                LOGGER.info(
                     f"{self._file_name}: Extraction of {data_type} JSON Complete."
                 )
                 return result, data_type
             else:
-                _LOGGER.info(
+                LOGGER.info(
                     f"No image data from {self._mqtt_topic},"
                     f"vacuum in {self._mqtt_vac_stat} status."
                 )
@@ -169,12 +165,12 @@ class ValetudoConnector:
     async def handle_pkohelrs_maploader_map(self, msg) -> None:
         """Handle Pkohelrs Maploader current map loaded payload"""
         self._pkohelrs_maploader_map = await self.async_decode_mqtt_payload(msg)
-        _LOGGER.debug(f"{self._file_name}: Loaded Map {self._pkohelrs_maploader_map}.")
+        LOGGER.debug(f"{self._file_name}: Loaded Map {self._pkohelrs_maploader_map}.")
 
     async def handle_pkohelrs_maploader_state(self, msg) -> None:
         """Get the pkohelrs state and handle camera restart"""
         new_state = await self.async_decode_mqtt_payload(msg)
-        _LOGGER.debug(f"{self._file_name}: {self.pkohelrs_state} -> {new_state}")
+        LOGGER.debug(f"{self._file_name}: {self.pkohelrs_state} -> {new_state}")
         if (self.pkohelrs_state == "loading_map") and (new_state == "idle"):
             await self.async_fire_event_restart_camera(data=str(msg.payload))
         self.pkohelrs_state = new_state
@@ -186,7 +182,7 @@ class ValetudoConnector:
         @param msg: MQTT message
         """
         if not self._data_in:
-            _LOGGER.info(f"Received Hypfer {self._file_name} image data from MQTT")
+            LOGGER.info(f"Received Hypfer {self._file_name} image data from MQTT")
             self._img_payload = msg.payload
             self._data_in = True
 
@@ -218,7 +214,7 @@ class ValetudoConnector:
             self._mqtt_vac_connect_state == "disconnected"
             or self._mqtt_vac_connect_state == "lost"
         ):
-            _LOGGER.debug(
+            LOGGER.debug(
                 f"{self._mqtt_topic}: Vacuum Disconnected from MQTT, waiting for connection."
             )
             self._mqtt_vac_stat = "disconnected"
@@ -234,7 +230,7 @@ class ValetudoConnector:
         /StatusStateAttribute/error_description is for Hypfer.
         """
         self._mqtt_vac_err = errors
-        _LOGGER.info(f"{self._mqtt_topic}: Received vacuum Error: {self._mqtt_vac_err}")
+        LOGGER.info(f"{self._mqtt_topic}: Received vacuum Error: {self._mqtt_vac_err}")
 
     async def hypfer_handle_battery_level(self, battery_state) -> None:
         """
@@ -258,7 +254,7 @@ class ValetudoConnector:
         Handle new MQTT messages.
         map-data is for Rand256.
         """
-        _LOGGER.info(f"Received Rand256 {self._file_name} image data from MQTT")
+        LOGGER.info(f"Received Rand256 {self._file_name} image data from MQTT")
         # RRM Image data update the received payload
         self._rrm_payload = msg.payload
         if self._mqtt_vac_connect_state == "disconnected":
@@ -403,7 +399,7 @@ class ValetudoConnector:
                         "last_run_stats", {}
                     ).get("errorDescription", None)
                 except AttributeError:
-                    _LOGGER.debug("Error in getting last_run_stats")
+                    LOGGER.debug("Error in getting last_run_stats")
             elif self._rcv_topic == f"{self._mqtt_topic}/maploader/map":
                 await self.handle_pkohelrs_maploader_map(msg)
             elif self._rcv_topic == f"{self._mqtt_topic}/maploader/status":
@@ -413,7 +409,7 @@ class ValetudoConnector:
                 self._shared.vacuum_api = temp_json.get("device", {}).get(
                     "configuration_url", None
                 )
-                _LOGGER.debug(f"Vacuum API URL: {self._shared.vacuum_api}")
+                LOGGER.debug(f"Vacuum API URL: {self._shared.vacuum_api}")
             elif (
                 self._rcv_topic == f"{self._mqtt_topic}/WifiConfigurationCapability/ips"
             ):
@@ -424,7 +420,7 @@ class ValetudoConnector:
                 else:
                     # Use IPV4 when no IPV6 without split
                     self._shared.vacuum_ips = vacuum_host_ip
-                _LOGGER.debug(f"Vacuum IPs: {self._shared.vacuum_ips}")
+                LOGGER.debug(f"Vacuum IPs: {self._shared.vacuum_ips}")
 
     async def async_subscribe_to_topics(self) -> None:
         """Subscribe to the MQTT topics for Hypfer and ValetudoRe."""
@@ -459,7 +455,7 @@ class ValetudoConnector:
 
     async def async_unsubscribe_from_topics(self) -> None:
         """Unsubscribe from all MQTT topics."""
-        _LOGGER.debug("Unsubscribing topics!!!")
+        LOGGER.debug("Unsubscribing topics!!!")
         map(lambda x: x(), self._unsubscribe_handlers)
 
     @staticmethod
@@ -494,10 +490,10 @@ class ValetudoConnector:
             else:
                 return msg.payload
         except ValueError as e:
-            _LOGGER.warning(f"Value error during payload decoding: {e}")
+            LOGGER.warning(f"Value error during payload decoding: {e}")
             raise
         except TypeError as e:
-            _LOGGER.warning(f"Type error during payload decoding: {e}")
+            LOGGER.warning(f"Type error during payload decoding: {e}")
             raise
 
     async def publish_to_broker(
