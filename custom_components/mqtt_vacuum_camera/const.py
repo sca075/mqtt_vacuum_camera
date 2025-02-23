@@ -5,10 +5,13 @@ import logging
 from homeassistant.components.camera import DOMAIN as CAMERA_DOMAIN
 from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
 from homeassistant.components.vacuum import DOMAIN as VACUUM_DOMAIN
+from typing import Final
 
 """Required in Config_Flow"""
-DOMAIN = "mqtt_vacuum_camera"
-DEFAULT_NAME = "mqtt vacuum camera"
+DOMAIN: Final = "mqtt_vacuum_camera"
+DEFAULT_NAME: Final = "mqtt vacuum camera"
+ICON: Final = "mdi:camera"
+NAME: Final = "MQTT Vacuum Camera"
 
 """Required in Coordinator and Services"""
 CAMERA = CAMERA_DOMAIN
@@ -38,8 +41,7 @@ CONF_EXPORT_SVG = "get_svg_file"
 CONF_AUTO_ZOOM = "auto_zoom"
 CONF_ZOOM_LOCK_RATIO = "zoom_lock_ratio"
 CONF_TRIMS_SAVE = "save_trims"
-ICON = "mdi:camera"
-NAME = "MQTT Vacuum Camera"
+
 
 LOGGER = logging.getLogger(__package__)
 
