@@ -25,7 +25,7 @@ from homeassistant.helpers.device_registry import DeviceInfo as Dev_Info
 from homeassistant.helpers.entity import DeviceInfo as Entity_Info
 from homeassistant.helpers.storage import STORAGE_DIR
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from psutil_home_assistant import PsutilWrapper as ProcInsp
+from psutil_home_assistant import PsutilWrapper as ProcInspector
 from valetudo_map_parser.config.types import SnapshotStore, TrimsData
 from valetudo_map_parser.config.utils import ResizeParams, async_resize_image
 
@@ -54,7 +54,6 @@ from .utils.files_operations import (
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 SCAN_INTERVAL = timedelta(seconds=3)
-
 
 
 async def async_setup_entry(
@@ -141,8 +140,8 @@ class MQTTCamera(CoordinatorEntity, Camera):
         LOGGER.info("Python Version: %r", platform.python_version())
         LOGGER.info(
             "Memory Available: %r and In Use: %r",
-            round((ProcInsp().psutil.virtual_memory().available / (1024 * 1024)), 1),
-            round((ProcInsp().psutil.virtual_memory().used / (1024 * 1024)), 1),
+            round((ProcInspector().psutil.virtual_memory().available / (1024 * 1024)), 1),
+            round((ProcInspector().psutil.virtual_memory().used / (1024 * 1024)), 1),
         )
 
     def _init_clear_www_folder(self):
@@ -251,7 +250,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
     @property
     def should_poll(self) -> bool:
         """ON/OFF Camera Polling Based on Camera Mode."""
-        POLLING_STATES = {
+        poling_states = {
             CameraModes.OBSTACLE_DOWNLOAD: False,
             CameraModes.OBSTACLE_SEARCH: False,
             CameraModes.MAP_VIEW: True,
@@ -266,7 +265,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
                 else CameraModes.CAMERA_STANDBY
             )
 
-        self._should_poll = POLLING_STATES.get(self._shared.camera_mode, False)
+        self._should_poll = poling_states.get(self._shared.camera_mode, False)
         return self._should_poll
 
     @property
@@ -330,7 +329,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         await self._update_vacuum_state()
 
         pid = os.getpid()  # Start to log the CPU usage of this PID.
-        proc = ProcInsp().psutil.Process(pid)  # Get the process PID.
+        proc = ProcInspector().psutil.Process(pid)  # Get the process PID.
         process_data = await self._mqtt.is_data_available()
         if process_data and self._shared.camera_mode == CameraModes.MAP_VIEW:
             # to calculate the cycle time for frame adjustment.
@@ -453,7 +452,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
             LOGGER.warning(
                 "%s: No JSON data available. Camera Suspended.", self._file_name
             )
-            self._should_pull = False
+            self._should_poll = False
 
         if parsed_json[1] == "Rand256":
             self._shared.is_rand = True
@@ -476,7 +475,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
     def _log_cpu_usage(self, proc):
         """Log the CPU usage."""
         self._cpu_percent = round(
-            ((proc.cpu_percent() / int(ProcInsp().psutil.cpu_count())) / 10), 1
+            ((proc.cpu_percent() / int(ProcInspector().psutil.cpu_count())) / 10), 1
         )
 
     def _log_memory_usage(self, proc):
@@ -484,7 +483,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         memory_percent = round(
             (
                 (proc.memory_info()[0] / 2.0**30)
-                / (ProcInsp().psutil.virtual_memory().total / 2.0**30)
+                / (ProcInspector().psutil.virtual_memory().total / 2.0**30)
             )
             * 100,
             2,
@@ -526,10 +525,13 @@ class MQTTCamera(CoordinatorEntity, Camera):
         self._image_w = pil_img.width
         self._image_h = pil_img.height
         buffered = BytesIO()
-        pil_img.save(buffered, format="PNG")
-        bytes_data = buffered.getvalue()
-        del buffered, pil_img
-        return bytes_data
+        try:
+            pil_img.save(buffered, format="PNG")
+            return buffered.getvalue()
+        finally:
+            buffered.close()
+            if pil_img != self._last_image:
+                pil_img.close()
 
     def process_pil_to_bytes(self, pil_img, image_id: str = None):
         """Async function to process the image data from the Vacuum Json data."""
@@ -568,7 +570,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
     async def handle_vacuum_start(self, event):
         """Handle the event_vacuum_start event."""
         LOGGER.debug("Received event: %s, Data: %s", event.event_type, str(event.data))
-        self._shared.trims = TrimsData.clear
+        self._shared.reset_trims() # requires valetudo_map_parser >0.1.9b41
         LOGGER.debug("%s Trims cleared: %s", self._file_name, self._shared.trims)
 
     async def handle_obstacle_view(self, event):
@@ -605,10 +607,10 @@ class MQTTCamera(CoordinatorEntity, Camera):
         async def _async_find_nearest_obstacle(x, y, all_obstacles):
             """Find the nearest obstacle to the given coordinates."""
             nearest_obstacles = None
-            width = self._shared.image_ref_width
-            height = self._shared.image_ref_height
+            w = self._shared.image_ref_width
+            h = self._shared.image_ref_height
             min_distance = round(
-                60 * (width / height)
+                60 * (w / h)
             )  # (60 * aspect ratio) pixels distance
             LOGGER.debug(
                 "Finding in the nearest %d pixels obstacle to coordinates: %d, %d",
