@@ -4,7 +4,7 @@ Common functions for the MQTT Vacuum Camera integration.
 Those functions are used to store and retrieve user data from the Home Assistant storage.
 The data will be stored locally in the Home Assistant in .storage/valetudo_camera directory.
 Author: @sca075
-Version: 2025.02.1
+Version: 2025.3.0b0
 """
 
 from __future__ import annotations
@@ -13,7 +13,6 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 import glob
 import json
-import logging
 import os
 import re
 from typing import Any, Optional
@@ -23,9 +22,7 @@ from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.storage import STORAGE_DIR
 from valetudo_map_parser.config.types import RoomStore, UserLanguageStore
 
-from ..const import CAMERA_STORAGE
-
-_LOGGER = logging.getLogger(__name__)
+from ..const import CAMERA_STORAGE, LOGGER
 
 
 async def async_write_vacuum_id(
@@ -35,17 +32,17 @@ async def async_write_vacuum_id(
     # Create the full file path
     if vacuum_id:
         json_path = f"{hass.config.path(STORAGE_DIR, CAMERA_STORAGE)}/{file_name}"
-        _LOGGER.debug(f"Writing vacuum_id: {vacuum_id} to {json_path}")
+        LOGGER.debug(f"Writing vacuum_id: {vacuum_id} to {json_path}")
         # Data to be written
         data = {"vacuum_id": vacuum_id}
         # Write data to a JSON file
         await async_write_json_to_disk(json_path, data)
         if os.path.exists(json_path):
-            _LOGGER.info(f"vacuum_id saved: {vacuum_id}")
+            LOGGER.info("vacuum_id saved: %s", vacuum_id)
         else:
-            _LOGGER.warning(f"Error saving vacuum_id: {vacuum_id}")
+            LOGGER.warning("Error saving vacuum_id: %s", vacuum_id, exc_info=True)
     else:
-        _LOGGER.warning("No vacuum_id provided.")
+        LOGGER.warning("No vacuum_id provided.")
 
 
 async def async_get_translations_vacuum_id(storage_dir: str) -> str or None:
@@ -59,9 +56,9 @@ async def async_get_translations_vacuum_id(storage_dir: str) -> str or None:
         vacuum_id = data.get("vacuum_id", None)
         return vacuum_id
     except json.JSONDecodeError:
-        _LOGGER.warning(f"Error reading the file {vacuum_id_path}.")
+        LOGGER.warning("Error reading the file %s.", vacuum_id_path, exc_info=True)
     except OSError as e:
-        _LOGGER.error(f"Unhandled exception: {e}")
+        LOGGER.error("Unhandled exception: %s", e, exc_info=True)
         return None
 
 
@@ -72,15 +69,15 @@ def remove_room_data_files(directory: str) -> None:
     # Find all files matching the pattern
     files = glob.glob(path_pattern)
     if not files:
-        _LOGGER.debug(f"No files found matching pattern: {path_pattern}")
+        LOGGER.debug("No files found matching pattern: %s", path_pattern)
         return
     # Loop through and remove each file
     for file in files:
         try:
             os.remove(file)
-            _LOGGER.debug(f"Removed file: {file}")
+            LOGGER.debug("Removed file: %s", file)
         except OSError as e:
-            _LOGGER.debug(f"Error removing file {file}: {e}")
+            LOGGER.debug(f"Error removing file {file}: {e}")
 
 
 def is_auth_updated(self) -> bool:
@@ -117,7 +114,7 @@ async def async_find_last_logged_in_user(hass: HomeAssistant) -> str or None:
     if last_user:
         return last_user.id
     else:
-        _LOGGER.info("No users have logged in yet.")
+        LOGGER.info("No users have logged in yet.")
         return None
 
 
@@ -140,7 +137,7 @@ async def async_get_active_user_language(hass: HomeAssistant) -> str:
     active_user_id = await async_find_last_logged_in_user(hass)
 
     if not active_user_id:
-        _LOGGER.info("No active user found. Defaulting to English language.")
+        LOGGER.info("No active user found. Defaulting to English language.")
         return "en"
 
     user_language_store = UserLanguageStore()
@@ -166,7 +163,7 @@ async def async_get_active_user_language(hass: HomeAssistant) -> str:
             else:
                 raise KeyError
     except (KeyError, json.JSONDecodeError, FileNotFoundError) as e:
-        _LOGGER.debug(f"Defaulting to English language due to error: {e}")
+        LOGGER.debug("Defaulting to English language due to error: %s", e)
     return "en"
 
 
@@ -183,7 +180,7 @@ async def async_load_languages(selected_languages=None) -> list:
         if all_languages:
             selected_languages.extend(all_languages)
     except Exception as e:
-        _LOGGER.warning(f"Error while loading languages: {str(e)}")
+        LOGGER.warning("Error while loading languages: %s", str(e), exc_info=True)
 
     return selected_languages
 
@@ -198,7 +195,7 @@ async def async_populate_user_languages(hass: HomeAssistant):
         # Check if already initialized
         test_instance = await UserLanguageStore.is_initialized()
         if test_instance:
-            _LOGGER.info("UserLanguageStore is already initialized.")
+            LOGGER.info("UserLanguageStore is already initialized.")
             return
 
         user_ids = await async_get_user_ids(hass)  # This function excludes system users
@@ -214,22 +211,26 @@ async def async_populate_user_languages(hass: HomeAssistant):
                     data = json.loads(user_data)
                     language = data["data"]["language"]["language"]
                     await user_language_store.set_user_language(user_id, language)
-                    _LOGGER.info(f"User ID: {user_id}, language: {language}")
+                    LOGGER.info(f"User ID: {user_id}, language: {language}")
                 except KeyError:
-                    _LOGGER.error(f"Key error while processing user ID: {user_id}")
+                    LOGGER.error(
+                        "Key error while processing user ID: %s", user_id, exc_info=True
+                    )
                 except json.JSONDecodeError as json_error:
-                    _LOGGER.error(
+                    LOGGER.error(
                         f"JSON decode error for user ID: {user_id}: {json_error}"
                     )
             else:
-                _LOGGER.info(f"User ID: {user_id}, skipping...")
+                LOGGER.info("User ID: %s, skipping...", user_id)
                 continue
 
         # Mark as initialized after populating
         UserLanguageStore._initialized = True
 
     except Exception as e:
-        _LOGGER.warning(f"Error while populating UserLanguageStore: {str(e)}")
+        LOGGER.warning(
+            "Error while populating UserLanguageStore: %s", str(e), exc_info=True
+        )
 
 
 async def async_load_translations_json(
@@ -244,7 +245,7 @@ async def async_load_translations_json(
     )
 
     for language in languages:
-        _LOGGER.debug(f"Loading translations for language: {language}")
+        LOGGER.debug("Loading translations for language: %s", language)
         locals_file_name = f"{language}.json"
         locals_file_path = f"{translations_path}/{locals_file_name}"
 
@@ -266,7 +267,7 @@ async def async_rename_room_description(hass: HomeAssistant, vacuum_id: str) -> 
     room_data = rooms.get_rooms()
 
     if not room_data:
-        _LOGGER.warning(
+        LOGGER.warning(
             f"Vacuum ID: {vacuum_id} does not support Rooms! Aborting room name addition."
         )
         return False
@@ -277,10 +278,10 @@ async def async_rename_room_description(hass: HomeAssistant, vacuum_id: str) -> 
     # Get the languages to modify
     language = await async_load_languages()
     edit_path = hass.config.path("custom_components/mqtt_vacuum_camera/translations")
-    _LOGGER.info(f"Editing the translations file for language: {language}")
+    LOGGER.info("Editing the translations file for language: %s", language)
     data_list = await async_load_translations_json(hass, language)
     if None in data_list:
-        _LOGGER.warning(
+        LOGGER.warning(
             f"Translation for {language} not found. Please report the missing translation to the author."
         )
         data_list = await async_load_translations_json(hass, ["en"])
@@ -340,7 +341,7 @@ async def async_rename_room_description(hass: HomeAssistant, vacuum_id: str) -> 
             await async_write_json_to_disk(
                 os.path.join(edit_path, f"{lang}.json"), data
             )
-            _LOGGER.info(
+            LOGGER.info(
                 f"Room names added to the room descriptions in the {lang} translations."
             )
     return True
@@ -349,10 +350,10 @@ async def async_rename_room_description(hass: HomeAssistant, vacuum_id: str) -> 
 async def async_del_file(file):
     """Delete a file if it exists."""
     if os.path.exists(file):
-        _LOGGER.info(f"Removing the file {file}")
+        LOGGER.info("Removing the file %s", file)
         os.remove(file)
     else:
-        _LOGGER.debug(f"File not found: {file}")
+        LOGGER.debug("File not found: %s", file)
 
 
 async def async_write_file_to_disk(
@@ -374,9 +375,9 @@ async def async_write_file_to_disk(
     try:
         await asyncio.to_thread(_write_to_file, file_to_write, data, is_binary)
     except (OSError, IOError) as e:
-        _LOGGER.warning(f"Error on writing data to disk.: {e}")
+        LOGGER.warning("Error on writing data to disk.: %s", e, exc_info=True)
     except Exception as e:
-        _LOGGER.warning(f"Unexpected issue detected: {e}")
+        LOGGER.warning("Unexpected issue detected: %s", e, exc_info=True)
 
 
 async def async_write_json_to_disk(file_to_write: str, json_data) -> None:
@@ -390,9 +391,9 @@ async def async_write_json_to_disk(file_to_write: str, json_data) -> None:
     try:
         await asyncio.to_thread(_write_to_file, file_to_write, json_data)
     except (OSError, IOError, json.JSONDecodeError) as e:
-        _LOGGER.warning(f"Json File Operation Error: {e}")
+        LOGGER.warning("Json File Operation Error: %s", e, exc_info=True)
     except Exception as e:
-        _LOGGER.warning(f"Unexpected issue detected: {e}")
+        LOGGER.warning("Unexpected issue detected: %s", e, exc_info=True)
 
 
 async def async_load_file(file_to_load: str, is_json: bool = False) -> Any:
@@ -408,13 +409,13 @@ async def async_load_file(file_to_load: str, is_json: bool = False) -> Any:
                 with open(my_file) as file:
                     return file.read()
         except (FileNotFoundError, json.JSONDecodeError):
-            _LOGGER.warning(f"{my_file} does not exist.")
+            LOGGER.warning("%s does not exist.", my_file, exc_info=True)
             return None
 
     try:
         return await asyncio.to_thread(read_file, file_to_load, is_json)
     except (FileNotFoundError, json.JSONDecodeError) as e:
-        _LOGGER.warning(f"Blocking IO issue detected: {e}")
+        LOGGER.warning("Blocking IO issue detected: %s", e, exc_info=True)
         return None
 
 
@@ -472,9 +473,9 @@ async def async_reset_map_trims(hass: HomeAssistant, entity_list: list) -> bool:
     Reset the map trims.
     """
     if not entity_list:
-        _LOGGER.debug("No entity IDs provided.")
+        LOGGER.debug("No entity IDs provided.")
         raise ServiceValidationError("no_entity_id_provided")
-    _LOGGER.debug("Resetting the map trims.")
+    LOGGER.debug("Resetting the map trims.")
     files_path = hass.config.path(STORAGE_DIR, CAMERA_STORAGE)
 
     # Collect files to delete
@@ -482,7 +483,7 @@ async def async_reset_map_trims(hass: HomeAssistant, entity_list: list) -> bool:
 
     # Loop through the list of files and remove each one asynchronously
     if not files_to_delete:
-        _LOGGER.debug("No files found to delete.")
+        LOGGER.debug("No files found to delete.")
         return False
 
     for file_path in files_to_delete:

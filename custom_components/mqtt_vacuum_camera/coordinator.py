@@ -1,6 +1,6 @@
 """
 MQTT Vacuum Camera Coordinator.
-Version: v2025.2.0
+Version: 2025.3.0b0
 """
 
 import asyncio
@@ -18,7 +18,7 @@ from valetudo_map_parser.config.shared import CameraShared, CameraSharedManager
 
 from .common import get_camera_device_info
 from .const import DEFAULT_NAME, SENSOR_NO_DATA
-from .utils.MQTT.connector import ValetudoConnector
+from .utils.connection.connector import ValetudoConnector
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -69,10 +69,7 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         """
         Fetch data from the MQTT topics for sensors.
         """
-        if (
-            (self.sensor_data == SENSOR_NO_DATA)
-            or (self.shared is not None and self.shared.vacuum_state != "docked")
-        ) and self.connector:
+        if self.shared is not None and self.connector:
             try:
                 async with async_timeout.timeout(10):
                     # Fetch and process sensor data from the MQTT connector
@@ -85,7 +82,9 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
                         return self.sensor_data
                     return self.sensor_data
             except Exception as err:
-                _LOGGER.error(f"Exception raised fetching sensor data: {err}")
+                _LOGGER.error(
+                    "Exception raised fetching sensor data: %s", err, exc_info=True
+                )
                 raise UpdateFailed(f"Error fetching sensor data: {err}") from err
         else:
             return self.sensor_data
@@ -103,7 +102,7 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
             file_name = mqtt_listen_topic.split("/")[1].lower()
             self.shared_manager = CameraSharedManager(file_name, self.device_info)
             shared = self.shared_manager.get_instance()
-            _LOGGER.debug(f"Camera {file_name} Starting up..")
+            _LOGGER.debug("Camera %s Starting up..", file_name)
 
         return shared, file_name
 
@@ -132,7 +131,11 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
                 # Fetch and process maps data from the MQTT connector
                 return await self.connector.update_data(process)
         except Exception as err:
-            _LOGGER.error(f"Error communicating with MQTT or processing data: {err}")
+            _LOGGER.error(
+                "Error communicating with MQTT or processing data: %s",
+                err,
+                exc_info=True,
+            )
             raise UpdateFailed(f"Error communicating with MQTT: {err}") from err
 
     async def async_update_sensor_data(self, sensor_data):
@@ -179,5 +182,5 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
                 return formatted_data
             return SENSOR_NO_DATA
         except Exception as err:
-            _LOGGER.warning(f"Error processing sensor data: {err}")
+            _LOGGER.warning("Error processing sensor data: %s", err, exc_info=True)
             return SENSOR_NO_DATA

@@ -1,5 +1,5 @@
 """
-Version: 2024.10.0
+Version: 2025.3.0b0
 Status text of the vacuum cleaners.
 Clas to handle the status text of the vacuum cleaners.
 """
@@ -7,14 +7,13 @@ Clas to handle the status text of the vacuum cleaners.
 from __future__ import annotations
 
 import json
-import logging
 
 from valetudo_map_parser.config.types import JsonType, PilPNG
 
-from ..const import DOMAIN
+from ..const import DOMAIN, LOGGER
 
-_LOGGER = logging.getLogger(__name__)
-_LOGGER.propagate = True
+
+LOGGER.propagate = True
 
 
 class StatusText:
@@ -42,12 +41,12 @@ class StatusText:
             with open(file_path) as file:
                 translations = json.load(file)
         except FileNotFoundError:
-            _LOGGER.warning(
+            LOGGER.warning(
                 f"{file_path} Not found. Report to the author that {language} is missing."
             )
             return None
         except json.JSONDecodeError:
-            _LOGGER.warning(f"{file_path} is not a valid JSON file.")
+            LOGGER.warning("%s is not a valid JSON file.", file_path, exc_info=True)
             return None
         return translations
 
@@ -101,7 +100,7 @@ class StatusText:
                     try:
                         in_room = self._shared.current_room.get("in_room", None)
                     except (ValueError, KeyError):
-                        _LOGGER.debug("No in_room data.")
+                        LOGGER.debug("No in_room data.")
                     else:
                         if in_room:
                             status_text.append(f" ({in_room})")

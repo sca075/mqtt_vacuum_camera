@@ -1,6 +1,6 @@
 """
 Multiprocessing module
-Version: v2025.2.0
+Version: 2025.3.0b0
 This module provide the image multiprocessing in order to
 avoid the overload of the main_thread of Home Assistant.
 """
@@ -11,7 +11,6 @@ import asyncio
 from asyncio import gather, get_event_loop
 import concurrent.futures
 from io import BytesIO
-import logging
 from typing import Any
 
 from PIL import Image
@@ -21,14 +20,14 @@ from valetudo_map_parser.config.types import Color, JsonType, PilPNG
 from valetudo_map_parser.hypfer_handler import HypferMapImageHandler
 from valetudo_map_parser.rand25_handler import ReImageHandler
 
-from custom_components.mqtt_vacuum_camera.const import NOT_STREAMING_STATES
+from custom_components.mqtt_vacuum_camera.const import NOT_STREAMING_STATES, LOGGER
 from custom_components.mqtt_vacuum_camera.utils.files_operations import (
     async_get_active_user_language,
 )
 from custom_components.mqtt_vacuum_camera.utils.status_text import StatusText
 
-_LOGGER = logging.getLogger(__name__)
-_LOGGER.propagate = True
+
+LOGGER.propagate = True
 
 
 class CameraProcessor:
@@ -67,7 +66,7 @@ class CameraProcessor:
                         await self._map_handler.async_get_rooms_attributes()
                     )
                     if self._shared.map_rooms:
-                        _LOGGER.debug(
+                        LOGGER.debug(
                             f"\n{self._file_name}: State attributes rooms updated"
                         )
 
@@ -86,7 +85,7 @@ class CameraProcessor:
                 self._shared.current_room = self._map_handler.get_robot_position()
                 self._shared.map_rooms = self._map_handler.room_propriety
                 if self._shared.map_rooms:
-                    _LOGGER.debug(f"{self._file_name}: State attributes rooms updated")
+                    LOGGER.debug("%s: State attributes rooms updated", self._file_name)
                 if not self._shared.image_size:
                     self._shared.image_size = self._map_handler.get_img_size()
 
@@ -100,13 +99,13 @@ class CameraProcessor:
                         != self._map_handler.get_frame_number()
                     ):
                         self._shared.image_grab = False
-                        _LOGGER.info(
+                        LOGGER.info(
                             f"\nSuspended the camera data processing for: {self._file_name}."
                         )
                         # take a snapshot
                         self._shared.snapshot_take = True
             return pil_img
-        _LOGGER.debug(f"\n{self._file_name}: No Json, returned None.")
+        LOGGER.debug("\n%s: No Json, returned None.", self._file_name)
         return None
 
     async def async_process_rand256_data(self, parsed_json: JsonType) -> PilPNG | None:
@@ -131,7 +130,7 @@ class CameraProcessor:
                             self._shared.map_pred_points,
                         ) = await self._re_handler.get_rooms_attributes(destinations)
                     if self._shared.map_rooms:
-                        _LOGGER.debug(
+                        LOGGER.debug(
                             f"\n{self._file_name}: State attributes rooms updated"
                         )
 
@@ -155,7 +154,7 @@ class CameraProcessor:
                     update_vac_state in NOT_STREAMING_STATES
                 ):
                     # suspend image processing if we are at the next frame.
-                    _LOGGER.info(
+                    LOGGER.info(
                         f"\nSuspended the camera data processing for: {self._file_name}."
                     )
                     # take a snapshot
@@ -199,7 +198,7 @@ class CameraProcessor:
             images = await gather(*tasks)
 
         if isinstance(images, list) and len(images) > 0:
-            _LOGGER.debug(f"\n{self._file_name}: Camera frame processed.")
+            LOGGER.debug("\n%s: Camera frame processed.", self._file_name)
             result = images[0]
         else:
             result = None
@@ -293,13 +292,17 @@ class CameraProcessor:
                 async with session.get(url) as response:
                     if response.status == 200:
                         obstacle_image = await response.read()
-                        _LOGGER.debug("Image downloaded successfully!")
+                        LOGGER.debug("Image downloaded successfully!")
                         return obstacle_image
                     else:
-                        _LOGGER.warning(f"Failed to download image: {response.status}")
+                        LOGGER.warning(
+                            "Failed to download image: %s",
+                            response.status,
+                            exc_info=True,
+                        )
                         return None
         except Exception as e:
-            _LOGGER.error(f"Error downloading image: {e}")
+            LOGGER.error("Error downloading image: %s", e, exc_info=True)
             return None
 
     # noinspection PyTypeChecker

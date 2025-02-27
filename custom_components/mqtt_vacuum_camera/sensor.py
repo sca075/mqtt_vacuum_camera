@@ -1,5 +1,5 @@
 """Sensors for Rand256.
-Version 2024.12.0
+Version: 2025.3.0b0
 """
 
 from __future__ import annotations
@@ -7,7 +7,6 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-import logging
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -21,12 +20,11 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import CONF_VACUUM_IDENTIFIERS, DOMAIN, SENSOR_NO_DATA
+from .const import CONF_VACUUM_IDENTIFIERS, DOMAIN, SENSOR_NO_DATA, LOGGER
 from .coordinator import MQTTVacuumCoordinator
 
-SCAN_INTERVAL = timedelta(seconds=3)
+SCAN_INTERVAL = timedelta(seconds=2)
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
-_LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
@@ -284,7 +282,7 @@ def process_timestamp(native_value):
 
         return utc_time
     except ValueError:
-        _LOGGER.debug(f"Invalid timestamp: {native_value}")
+        LOGGER.debug("Invalid timestamp: %s", native_value)
         return None
 
 

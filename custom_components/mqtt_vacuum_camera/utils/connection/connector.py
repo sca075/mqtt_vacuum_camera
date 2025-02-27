@@ -1,5 +1,5 @@
 """
-Version: v2025.3.0 - Consolidated ValetudoConnector with grouped data.
+Version: 2025.3.0b0 - Consolidated ValetudoConnector with grouped data.
 """
 
 import asyncio
@@ -26,6 +26,7 @@ _QOS = 0
 @dataclass
 class RRMData:
     """Class for RRM data."""
+
     rrm_json: Any = None
     rrm_payload: Any = None
     rrm_destinations: Any = None
@@ -38,6 +39,7 @@ class RRMData:
 @dataclass
 class MQTTData:
     """Class for MQTT data."""
+
     mqtt_vac_stat: str = ""
     mqtt_segments: Dict[Any, Any] = field(default_factory=dict)
     mqtt_vac_connect_state: str = "disconnected"
@@ -49,6 +51,7 @@ class MQTTData:
 @dataclass
 class PkohelrsData:
     """Class for Pkohelrs data."""
+
     maploader_map: Any = None
     state: Any = None
 
@@ -56,6 +59,7 @@ class PkohelrsData:
 @dataclass
 class ConnectorData:
     """Class for connector data."""
+
     hass: HomeAssistant
     unsubscribe_handlers: List[Any] = field(default_factory=list)
     ignore_data: bool = False
@@ -68,6 +72,7 @@ class ConnectorData:
 @dataclass
 class ConfigData:
     """Class for config data."""
+
     mqtt_topic: str
     command_topic: str
     mqtt_hass_vacuum: str
@@ -85,8 +90,10 @@ class ValetudoConnector:
     def __init__(self, mqtt_topic: str, hass: HomeAssistant, camera_shared: Any):
         vacuum_identifier = mqtt_topic.split("/")[-1]
         command_topic = f"{mqtt_topic}/hass/{vacuum_identifier}_vacuum/command"
-        mqtt_hass_vacuum = (f"homeassistant/vacuum/{vacuum_identifier}"
-                            f"/{vacuum_identifier}_vacuum/config")
+        mqtt_hass_vacuum = (
+            f"homeassistant/vacuum/{vacuum_identifier}"
+            f"/{vacuum_identifier}_vacuum/config"
+        )
         self.config = ConfigData(
             mqtt_topic=mqtt_topic,
             command_topic=command_topic,
@@ -124,7 +131,8 @@ class ValetudoConnector:
             if data_type == "Hypfer":
                 # pylint: disable=c-extension-no-member
                 json_data = await loop.run_in_executor(
-                    None, lambda: isal_zlib.decompress(payload).decode(),
+                    None,
+                    lambda: isal_zlib.decompress(payload).decode(),
                 )
                 result = json.loads(json_data)
             elif data_type == "Rand256" and not self.connector_data.ignore_data:
@@ -331,8 +339,7 @@ class ValetudoConnector:
         if command_status.get("command", None) == "segmented_cleanup":
             segment_ids = command_status.get("segment_ids", [])
             room_id_to_index = {
-                room_id: idx
-                for idx, room_id in enumerate(self.config.shared.map_rooms)
+                room_id: idx for idx, room_id in enumerate(self.config.shared.map_rooms)
             }
             rrm_active_segments = [0] * len(self.config.shared.map_rooms)
             for segment_id in segment_ids:

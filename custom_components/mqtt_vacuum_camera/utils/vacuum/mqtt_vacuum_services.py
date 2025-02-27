@@ -1,9 +1,8 @@
 """Collection of services for the vacuums and camera components.
-Version 2025.2.0
+Version: 2025.3.0b0
 Autor: @sca075"""
 
 from functools import partial
-import logging
 
 from homeassistant.core import HomeAssistant, ServiceCall, SupportsResponse
 
@@ -17,9 +16,7 @@ from ...common import (
     get_vacuum_mqtt_topic,
     is_rand256_vacuum,
 )
-from ...const import DOMAIN
-
-_LOGGER = logging.getLogger(__name__)
+from ...const import DOMAIN, LOGGER
 
 
 def validate_zone_or_zone_ids(data):
@@ -90,7 +87,7 @@ async def vacuum_clean_segments(call: ServiceCall, coordinator) -> None:
         )
 
         if not service_data:
-            _LOGGER.warning("No Service data generated. Aborting!")
+            LOGGER.warning("No Service data generated. Aborting!")
             return
         else:
             try:
@@ -99,7 +96,7 @@ async def vacuum_clean_segments(call: ServiceCall, coordinator) -> None:
                     service_data["payload"],
                 )
             except Exception as e:
-                _LOGGER.warning(f"Error sending command to vacuum: {e}")
+                LOGGER.warning("Error sending command to vacuum: %s", e, exc_info=True)
                 return
 
             coordinator.hass.bus.async_fire(
@@ -112,7 +109,7 @@ async def vacuum_clean_segments(call: ServiceCall, coordinator) -> None:
                 context=call.context,
             )
     except KeyError as e:
-        _LOGGER.warning(f"Missing required parameter: {e}")
+        LOGGER.warning("Missing required parameter: %s", e, exc_info=True)
 
 
 async def vacuum_clean_zone(call: ServiceCall, coordinator) -> None:
@@ -124,7 +121,7 @@ async def vacuum_clean_zone(call: ServiceCall, coordinator) -> None:
     zone_lists = call.data.get("zone", None)
     zone_ids = call.data.get("zone_ids", None)
     repeats = call.data.get("repeats", 1)
-    _LOGGER.debug(
+    LOGGER.debug(
         "zone_ids: %s, zone_lists: %s, repeats: %d", zone_ids, zone_lists, repeats
     )
     # Attempt to get entity_id or device_id
@@ -146,7 +143,7 @@ async def vacuum_clean_zone(call: ServiceCall, coordinator) -> None:
     # Raise a ServiceValidationError if there are errors
     if got_error != "No Errors":
         # Raise a ServiceValidationError if there are errors generate WebApi errors.
-        _LOGGER.warning(f"Error sending command to vacuum: {got_error}")
+        LOGGER.warning("Error sending command to vacuum: %s", got_error, exc_info=True)
         return None
 
     service_data = generate_service_data_clean_zone(
@@ -157,7 +154,7 @@ async def vacuum_clean_zone(call: ServiceCall, coordinator) -> None:
         hass=coordinator.hass,
     )
     if not service_data:
-        _LOGGER.warning("No Service data generated. Aborting!")
+        LOGGER.warning("No Service data generated. Aborting!")
         return
     try:
         await coordinator.connector.publish_to_broker(
@@ -165,7 +162,7 @@ async def vacuum_clean_zone(call: ServiceCall, coordinator) -> None:
             service_data["payload"],
         )
     except Exception as e:
-        _LOGGER.warning("Error sending command to vacuum: %s", str(e))
+        LOGGER.warning("Error sending command to vacuum: %s", str(e))
     coordinator.hass.bus.async_fire(
         f"service.{DOMAIN}.vacuum_clean_zone",
         {
@@ -199,7 +196,7 @@ async def vacuum_goto(call: ServiceCall, coordinator) -> None:
             entity_ids, device_ids, x_coord, y_coord, spot_id, coordinator.hass
         )
         if not service_data:
-            _LOGGER.warning("No Service data generated. Aborting!")
+            LOGGER.warning("No Service data generated. Aborting!")
             return
         try:
             await coordinator.connector.publish_to_broker(
@@ -207,7 +204,7 @@ async def vacuum_goto(call: ServiceCall, coordinator) -> None:
                 service_data["payload"],
             )
         except Exception as e:
-            _LOGGER.warning(f"Error sending command to vacuum: {e}")
+            LOGGER.warning("Error sending command to vacuum: %s", e, exc_info=True)
             return
         coordinator.hass.bus.async_fire(
             f"event_{DOMAIN}.vacuum_go_to",
@@ -215,7 +212,7 @@ async def vacuum_goto(call: ServiceCall, coordinator) -> None:
             context=call.context,
         )
     except KeyError as e:
-        _LOGGER.warning(f"Missing required parameter: {e}")
+        LOGGER.warning("Missing required parameter: %s", e, exc_info=True)
 
 
 async def vacuum_map_save(call: ServiceCall, coordinator) -> None:
@@ -231,7 +228,7 @@ async def vacuum_map_save(call: ServiceCall, coordinator) -> None:
 
         map_name = call.data.get("map_name")
         if not map_name:
-            _LOGGER.warning("A map name is required to save the map.")
+            LOGGER.warning("A map name is required to save the map.")
             return
         if is_a_rand256:
             service_data = {
@@ -242,7 +239,7 @@ async def vacuum_map_save(call: ServiceCall, coordinator) -> None:
                 },
             }
         else:
-            _LOGGER.warning("This feature is only available for rand256 vacuums.")
+            LOGGER.warning("This feature is only available for rand256 vacuums.")
             return
         try:
             await coordinator.connector.publish_to_broker(
@@ -250,7 +247,7 @@ async def vacuum_map_save(call: ServiceCall, coordinator) -> None:
                 service_data["payload"],
             )
         except Exception as e:
-            _LOGGER.warning(f"Error sending command to vacuum: {e}")
+            LOGGER.warning("Error sending command to vacuum: %s", e, exc_info=True)
             return
 
         coordinator.hass.bus.async_fire(
@@ -259,7 +256,7 @@ async def vacuum_map_save(call: ServiceCall, coordinator) -> None:
             context=call.context,
         )
     except KeyError as e:
-        _LOGGER.warning(f"Missing required parameter: {e}")
+        LOGGER.warning("Missing required parameter: %s", e, exc_info=True)
 
 
 async def vacuum_map_load(call: ServiceCall, coordinator) -> None:
@@ -275,7 +272,7 @@ async def vacuum_map_load(call: ServiceCall, coordinator) -> None:
 
         map_name = call.data.get("map_name")
         if not map_name:
-            _LOGGER.warning("A map name is required to load the map.")
+            LOGGER.warning("A map name is required to load the map.")
             return
         if is_a_rand256:
             service_data = {
@@ -286,7 +283,7 @@ async def vacuum_map_load(call: ServiceCall, coordinator) -> None:
                 },
             }
         else:
-            _LOGGER.warning("This feature is only available for rand256 vacuums.")
+            LOGGER.warning("This feature is only available for rand256 vacuums.")
             return
         try:
             await coordinator.connector.publish_to_broker(
@@ -294,7 +291,7 @@ async def vacuum_map_load(call: ServiceCall, coordinator) -> None:
                 service_data["payload"],
             )
         except Exception as e:
-            _LOGGER.warning(f"Error sending command to vacuum: {e}")
+            LOGGER.warning("Error sending command to vacuum: %s", e, exc_info=True)
             return
         coordinator.hass.bus.async_fire(
             f"event_{DOMAIN}.vacuum_map_load",
@@ -303,7 +300,7 @@ async def vacuum_map_load(call: ServiceCall, coordinator) -> None:
         )
         await coordinator.hass.services.async_call(DOMAIN, "reset_trims")
     except KeyError as e:
-        _LOGGER.warning(f"Missing required parameter: {e}")
+        LOGGER.warning("Missing required parameter: %s", e, exc_info=True)
 
 
 def resolve_datas(
@@ -554,7 +551,7 @@ def convert_string_ids_to_integers(ids_list):
             )
         except ValueError:
             # Log a warning if conversion fails, and keep the original item
-            _LOGGER.warning(f"Could not convert item '{item}' to an integer.")
+            LOGGER.warning(f"Could not convert item '{item}' to an integer.")
             converted_list.append(item)
     return converted_list
 

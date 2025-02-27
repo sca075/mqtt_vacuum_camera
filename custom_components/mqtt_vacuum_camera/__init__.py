@@ -102,7 +102,9 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
     hass_data["unsub_options_update_listener"] = unsub_options_update_listener
     hass.data[DOMAIN][entry.entry_id] = hass_data
     if bool(hass_data.get("is_rand256")):
-        await hass.config_entries.async_forward_entry_setups(entry, ["camera", "sensor"])
+        await hass.config_entries.async_forward_entry_setups(
+            entry, ["camera", "sensor"]
+        )
     else:
         await hass.config_entries.async_forward_entry_setups(entry, ["camera"])
 

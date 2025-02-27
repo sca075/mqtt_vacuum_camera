@@ -1,9 +1,7 @@
 """
 Colors RGBA
-Version: v2025.02.0
+Version: 2025.3.0b0
 """
-
-import logging
 
 from ..const import (
     ALPHA_BACKGROUND,
@@ -56,6 +54,7 @@ from ..const import (
     COLOR_TEXT,
     COLOR_WALL,
     COLOR_ZONE_CLEAN,
+    LOGGER,
 )
 
 color_transparent = (0, 0, 0, 0)
@@ -133,10 +132,8 @@ color_array = [
     rooms_color,
 ]
 
-_LOGGER = logging.getLogger(__name__)
 
-
-class ColorsManagment:
+class ColorsManagement:
     """Class to manage the colors.
     Imports and updates the colors from the user configuration."""
 
@@ -156,7 +153,7 @@ class ColorsManagment:
             List[Tuple[int, int, int, int]]: List of RGBA colors with alpha channel added.
         """
         if len(alpha_channels) != len(rgb_colors):
-            _LOGGER.error("Input lists must have the same length.")
+            LOGGER.error("Input lists must have the same length.")
             return []
 
         result = []
@@ -245,4 +242,4 @@ class ColorsManagment:
                 self.add_alpha_to_rgb(rooms_alpha, rooms_colors)
             )
         except (ValueError, IndexError, UnboundLocalError) as e:
-            _LOGGER.error("Error while populating colors: %s", e)
+            LOGGER.error("Error while populating colors: %s", e)

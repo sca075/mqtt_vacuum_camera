@@ -1,6 +1,6 @@
 """
 Camera
-Version: v2025.2.2
+Version: 2025.3.0b0
 """
 
 from __future__ import annotations
@@ -44,7 +44,7 @@ from .const import (
 )
 from .snapshots.snapshot import Snapshots
 from .utils.camera.camera_processing import CameraProcessor
-from .utils.colors_man import ColorsManagment
+from .utils.colors_man import ColorsManagement
 from .utils.files_operations import (
     async_get_active_user_language,
     async_load_file,
@@ -119,7 +119,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         self._update_time = None
         self._rrm_data = False  # Check for rrm data
         # get the colours used in the maps.
-        self._colours = ColorsManagment(self._shared)
+        self._colours = ColorsManagement(self._shared)
         self._colours.set_initial_colours(device_info)
         # Create the processor for the camera.
         self.processor = CameraProcessor(self.hass, self._shared)
@@ -140,7 +140,9 @@ class MQTTCamera(CoordinatorEntity, Camera):
         LOGGER.info("Python Version: %r", platform.python_version())
         LOGGER.info(
             "Memory Available: %r and In Use: %r",
-            round((ProcInspector().psutil.virtual_memory().available / (1024 * 1024)), 1),
+            round(
+                (ProcInspector().psutil.virtual_memory().available / (1024 * 1024)), 1
+            ),
             round((ProcInspector().psutil.virtual_memory().used / (1024 * 1024)), 1),
         )
 
@@ -570,7 +572,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
     async def handle_vacuum_start(self, event):
         """Handle the event_vacuum_start event."""
         LOGGER.debug("Received event: %s, Data: %s", event.event_type, str(event.data))
-        self._shared.reset_trims() # requires valetudo_map_parser >0.1.9b41
+        self._shared.reset_trims()  # requires valetudo_map_parser >0.1.9b41
         LOGGER.debug("%s Trims cleared: %s", self._file_name, self._shared.trims)
 
     async def handle_obstacle_view(self, event):
@@ -609,9 +611,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
             nearest_obstacles = None
             w = self._shared.image_ref_width
             h = self._shared.image_ref_height
-            min_distance = round(
-                60 * (w / h)
-            )  # (60 * aspect ratio) pixels distance
+            min_distance = round(60 * (w / h))  # (60 * aspect ratio) pixels distance
             LOGGER.debug(
                 "Finding in the nearest %d pixels obstacle to coordinates: %d, %d",
                 min_distance,
