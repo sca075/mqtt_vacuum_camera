@@ -4,11 +4,11 @@ import asyncio
 
 import async_timeout
 from homeassistant.config_entries import ConfigEntryState
-from homeassistant.const import SERVICE_RELOAD, LOGGER
+from homeassistant.const import SERVICE_RELOAD
 from homeassistant.core import HomeAssistant, ServiceCall
 
 from ...common import get_entity_id
-from ...const import DOMAIN
+from ...const import DOMAIN, LOGGER
 from ...utils.files_operations import async_clean_up_all_auto_crop_files
 
 
@@ -19,7 +19,7 @@ async def reset_trims(call: ServiceCall, hass: HomeAssistant) -> None:
         await async_clean_up_all_auto_crop_files(hass)
         await hass.services.async_call(DOMAIN, SERVICE_RELOAD)
         hass.bus.async_fire(f"event_{DOMAIN}_reset_trims", context=call.context)
-    except Exception as err:
+    except ValueError as err:
         LOGGER.error("Error resetting trims: %s", err, exc_info=True)
 
 
@@ -33,7 +33,7 @@ async def reload_camera_config(call: ServiceCall, hass: HomeAssistant) -> None:
 
     for camera_entry in camera_entries:
         processed += 1
-        LOGGER.info(f"Processing entry {processed}/{total_entries}")
+        LOGGER.info("Processing entry %r / %r", processed, total_entries)
         if camera_entry.state == ConfigEntryState.LOADED:
             try:
                 with async_timeout.timeout(10):
@@ -43,8 +43,10 @@ async def reload_camera_config(call: ServiceCall, hass: HomeAssistant) -> None:
                 LOGGER.error(
                     "Timeout processing entry %s", camera_entry.entry_id, exc_info=True
                 )
-            except Exception as err:
-                LOGGER.error(f"Error processing entry {camera_entry.entry_id}: {err}")
+            except ValueError as err:
+                LOGGER.error(
+                    "Error processing entry %s: %s", camera_entry.entry_id, err
+                )
                 continue
         else:
             LOGGER.debug("Skipping entry %s as it is NOT_LOADED", camera_entry.entry_id)
@@ -72,7 +74,9 @@ async def obstacle_view(call: ServiceCall, hass: HomeAssistant) -> None:
 
     LOGGER.debug("Obstacle view for %s", camera_entity_id)
     LOGGER.debug(
-        f"Firing event to search and view obstacle at coordinates {coordinates_x}, {coordinates_y}"
+        "Firing event to search and view obstacle at coordinates %r, %r",
+        coordinates_x,
+        coordinates_y,
     )
     hass.bus.async_fire(
         event_type=f"{DOMAIN}_obstacle_coordinates",

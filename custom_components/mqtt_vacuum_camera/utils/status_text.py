@@ -32,8 +32,6 @@ class StatusText:
     def load_translations(self, language: str) -> JsonType:
         """
         Load the user selected language json file and return it.
-        @param language:self.hass.config.path(f"custom_components/mqtt_vacuum_camera/translations/
-        @return: json format
         """
         file_name = f"{language}.json"
         file_path = f"{self._translations_path}/{file_name}"
@@ -42,7 +40,9 @@ class StatusText:
                 translations = json.load(file)
         except FileNotFoundError:
             LOGGER.warning(
-                f"{file_path} Not found. Report to the author that {language} is missing."
+                "%s Not found. Report to the author that %s is missing.",
+                file_path,
+                language,
             )
             return None
         except json.JSONDecodeError:
@@ -76,8 +76,7 @@ class StatusText:
         translations = self.get_vacuum_status_translation(language)
         if translations is not None and status in translations:
             return translations[status]
-        else:
-            return status.capitalize()
+        return status.capitalize()
 
     def get_status_text(self, text_img: PilPNG) -> tuple[list[str], int]:
         """

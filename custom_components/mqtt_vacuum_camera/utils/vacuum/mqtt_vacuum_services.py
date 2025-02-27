@@ -89,15 +89,14 @@ async def vacuum_clean_segments(call: ServiceCall, coordinator) -> None:
         if not service_data:
             LOGGER.warning("No Service data generated. Aborting!")
             return
-        else:
-            try:
-                await coordinator.connector.publish_to_broker(
-                    service_data["topic"],
-                    service_data["payload"],
-                )
-            except Exception as e:
-                LOGGER.warning("Error sending command to vacuum: %s", e, exc_info=True)
-                return
+        try:
+            await coordinator.connector.publish_to_broker(
+                service_data["topic"],
+                service_data["payload"],
+            )
+        except Exception as e:
+            LOGGER.warning("Error sending command to vacuum: %s", e, exc_info=True)
+            return
 
             coordinator.hass.bus.async_fire(
                 f"event_{DOMAIN}.vacuum_clean_zone",
@@ -222,7 +221,7 @@ async def vacuum_map_save(call: ServiceCall, coordinator) -> None:
         entity_ids = call.data.get("entity_id")
         device_ids = call.data.get("device_id")
 
-        vacuum_entity_id, base_topic, is_a_rand256 = resolve_datas(
+        _, base_topic, is_a_rand256 = resolve_datas(
             entity_ids, device_ids, coordinator.hass
         )
 
@@ -341,70 +340,68 @@ def generate_zone_payload(zones, repeat, is_rand256, after_cleaning="Base"):
             "afterCleaning": after_cleaning,
         }
         return rand256_payload
-    else:
-        # Initialize the payload_zones
 
-        payload_zones = []
+    # Initialize the payload_zones
+    payload_zones = []
 
-        # Loop through each zone to determine its format
-        for zone in zones:
-            if len(zone) == 4:
-                # Rectangle format with x1, y1, x2, y2
-                x1, y1, x2, y2 = zone
-                if is_rand256:
-                    payload_zones.append(
-                        {"x1": x1, "y1": y1, "x2": x2, "y2": y2, "repeats": repeat}
-                    )
-                else:
-                    payload_zones.append(
-                        {
-                            "points": {
-                                "pA": {"x": x1, "y": y1},
-                                "pB": {"x": x2, "y": y1},
-                                "pC": {"x": x2, "y": y2},
-                                "pD": {"x": x1, "y": y2},
-                            }
-                        }
-                    )
-
-            elif len(zone) == 8:
-                # Polygon format with x1, y1, x2, y2, x3, y3, x4, y4
-                x1, y1, x2, y2, x3, y3, x4, y4 = zone
-                if is_rand256:
-                    payload_zones.append(
-                        {
-                            "x1": x1,
-                            "y1": y1,
-                            "x2": x2,
-                            "y2": y2,
-                            "x3": x3,
-                            "y3": y3,
-                            "x4": x4,
-                            "y4": y4,
-                            "repeats": repeat,
-                        }
-                    )
-                else:
-                    payload_zones.append(
-                        {
-                            "points": {
-                                "pA": {"x": x1, "y": y1},
-                                "pB": {"x": x2, "y": y2},
-                                "pC": {"x": x3, "y": y3},
-                                "pD": {"x": x4, "y": y4},
-                            }
-                        }
-                    )
-            else:
-                raise ValueError(
-                    "Invalid zone format. Each zone should contain 4 or 8 coordinates."
+    # Loop through each zone to determine its format
+    for zone in zones:
+        if len(zone) == 4:
+            # Rectangle format with x1, y1, x2, y2
+            x1, y1, x2, y2 = zone
+            if is_rand256:
+                payload_zones.append(
+                    {"x1": x1, "y1": y1, "x2": x2, "y2": y2, "repeats": repeat}
                 )
+            else:
+                payload_zones.append(
+                    {
+                        "points": {
+                            "pA": {"x": x1, "y": y1},
+                            "pB": {"x": x2, "y": y1},
+                            "pC": {"x": x2, "y": y2},
+                            "pD": {"x": x1, "y": y2},
+                        }
+                    }
+                )
+
+        elif len(zone) == 8:
+            # Polygon format with x1, y1, x2, y2, x3, y3, x4, y4
+            x1, y1, x2, y2, x3, y3, x4, y4 = zone
+            if is_rand256:
+                payload_zones.append(
+                    {
+                        "x1": x1,
+                        "y1": y1,
+                        "x2": x2,
+                        "y2": y2,
+                        "x3": x3,
+                        "y3": y3,
+                        "x4": x4,
+                        "y4": y4,
+                        "repeats": repeat,
+                    }
+                )
+            else:
+                payload_zones.append(
+                    {
+                        "points": {
+                            "pA": {"x": x1, "y": y1},
+                            "pB": {"x": x2, "y": y2},
+                            "pC": {"x": x3, "y": y3},
+                            "pD": {"x": x4, "y": y4},
+                        }
+                    }
+                )
+        else:
+            raise ValueError(
+                "Invalid zone format. Each zone should contain 4 or 8 coordinates."
+            )
 
         # Return the full payload for the specified firmware
         if is_rand256:
             return {"command": "zoned_cleanup", "zone_coordinates": payload_zones}
-        else:
-            return {"zones": payload_zones, "iterations": repeat}
+        return {"zones": payload_zones, "iterations": repeat}
 
 
 def generate_service_data_go_to(
@@ -419,7 +416,7 @@ def generate_service_data_go_to(
     Generates the data necessary for sending the service go_to point to the vacuum.
     """
     # Resolve entity ID if only device ID is given
-    vacuum_entity_id, base_topic, is_rand256 = resolve_datas(entity_id, device_id, hass)
+    _, base_topic, is_rand256 = resolve_datas(entity_id, device_id, hass)
 
     if not is_rand256:
         topic = f"{base_topic}/GoToLocationCapability/go/set"
@@ -551,7 +548,7 @@ def convert_string_ids_to_integers(ids_list):
             )
         except ValueError:
             # Log a warning if conversion fails, and keep the original item
-            LOGGER.warning(f"Could not convert item '{item}' to an integer.")
+            LOGGER.warning("Could not convert item '%r' to an integer.", item)
             converted_list.append(item)
     return converted_list
 

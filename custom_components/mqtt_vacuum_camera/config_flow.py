@@ -103,6 +103,7 @@ VACUUM_SCHEMA = vol.Schema(
 
 
 class MQTTCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
+    """Camera Configration Flow Handler"""
     VERSION = 3.2
 
     def __init__(self):
@@ -149,9 +150,9 @@ class MQTTCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 try:
                     os.mkdir(storage_path)
                 except FileExistsError as e:
-                    LOGGER.debug(f"Error {e} creating the path {storage_path}")
+                    LOGGER.error("Error %s can not find path %s", e, storage_path, exc_info=True)
                 except OSError as e:
-                    LOGGER.error(f"Error {e} creating the path {storage_path}")
+                    LOGGER.error("Error %s creating the path %s", e, storage_path, exc_info=True)
             else:
                 LOGGER.debug("Storage %s path found.", storage_path)
             # Finally set up the entry.
@@ -364,23 +365,18 @@ class OptionsFlowHandler(OptionsFlow):
             next_action = user_input["camera_config_action"]
             if next_action == "opt_1":
                 return await self.async_step_image_opt()
-            elif next_action == "opt_2":
+            if next_action == "opt_2":
                 return await self.async_step_base_colours()
-            elif next_action == "opt_3":
+            if next_action == "opt_3":
                 if self.number_of_rooms == 1:
                     return await self.async_step_floor_only()
-                else:
-                    return await self.async_step_rooms_colours_1()
-            elif next_action == "opt_4":
+                return await self.async_step_rooms_colours_1()
+            if next_action == "opt_4":
                 return await self.async_step_rooms_colours_2()
-            elif next_action == "opt_5":
+            if next_action == "opt_5":
                 return await self.async_step_advanced()
-            elif next_action == "more options":
-                """
-                From TAPO custom control component, this is,
-                a great idea of how to simply the configuration
-                simple old style menu ;).
-                """
+            if next_action == "more options":
+                ...
             else:
                 errors["base"] = "incorrect_options_action"
 
@@ -426,20 +422,16 @@ class OptionsFlowHandler(OptionsFlow):
             next_action = user_input["camera_config_advanced"]
             if next_action == "opt_1":
                 return await self.async_step_image_offset()
-            elif next_action == "opt_2":
+            if next_action == "opt_2":
                 return await self.async_step_status_text()
-            elif next_action == "opt_3":
+            if next_action == "opt_3":
                 return await self.async_step_download_logs()
-            elif next_action == "opt_4":
+            if next_action == "opt_4":
                 return await self.async_rename_translations()
-            elif next_action == "opt_5":
+            if next_action == "opt_5":
                 return await self.async_reset_map_trims()
-            elif next_action == "more options":
-                """
-                From TAPO custom control component, this is,
-                a great idea of how to simply the configuration
-                simple old style menu ;).
-                """
+            if next_action == "more options":
+                ...
             else:
                 errors["base"] = "incorrect_options_action"
 
@@ -560,8 +552,7 @@ class OptionsFlowHandler(OptionsFlow):
             if self._check_alpha:
                 self._check_alpha = False
                 return await self.async_step_alpha_1()
-            else:
-                return await self.async_step_opt_save()
+            return await self.async_step_opt_save()
 
         return self.async_show_form(
             step_id="base_colours",
@@ -606,8 +597,7 @@ class OptionsFlowHandler(OptionsFlow):
             self._check_alpha = user_input.get(IS_ALPHA_R1, False)
             if self._check_alpha:
                 return await self.async_step_alpha_floor()
-            else:
-                return await self.async_step_opt_save()
+            return await self.async_step_opt_save()
 
         fields = {
             vol.Optional(
@@ -643,8 +633,7 @@ class OptionsFlowHandler(OptionsFlow):
 
             if self._check_alpha:
                 return await self.async_step_alpha_2()
-            else:
-                return await self.async_step_opt_save()
+            return await self.async_step_opt_save()
 
         # Dynamically create data schema based on the number of rooms
         fields = {}
@@ -679,8 +668,7 @@ class OptionsFlowHandler(OptionsFlow):
 
             if self._check_alpha:
                 return await self.async_step_alpha_3()
-            else:
-                return await self.async_step_opt_save()
+            return await self.async_step_opt_save()
 
         # Dynamically create data schema based on the number of rooms
         fields = {}
@@ -813,9 +801,9 @@ class OptionsFlowHandler(OptionsFlow):
             next_action = user_input["camera_logs_progres"]
             if next_action == "opt_1":
                 return await self.async_step_logs_move()
-            elif next_action == "opt_2":
+            if next_action == "opt_2":
                 return await self.async_step_logs_remove()
-            elif next_action == "no_action":
+            if next_action == "no_action":
                 ...  # do nothing
             else:
                 errors["base"] = "incorrect_options_action"
@@ -890,7 +878,7 @@ class OptionsFlowHandler(OptionsFlow):
         """
         Save the options in a sorted way. It stores all the options.
         """
-        LOGGER.info(f"Storing Updated Camera ({self.camera_config.unique_id}) Options.")
+        LOGGER.info("Storing Updated Camera (%s) Options.", self.camera_config.unique_id)
         try:
             _, vacuum_device = get_vacuum_device_info(
                 self.camera_config.data.get(CONF_VACUUM_CONFIG_ENTRY_ID), self.hass

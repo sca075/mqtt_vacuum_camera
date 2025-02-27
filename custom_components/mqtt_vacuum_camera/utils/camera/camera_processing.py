@@ -15,6 +15,7 @@ from typing import Any
 
 from PIL import Image
 import aiohttp
+from aiohttp.abc import HTTPException
 from valetudo_map_parser.config.drawable import Drawable as Draw
 from valetudo_map_parser.config.types import Color, JsonType, PilPNG
 from valetudo_map_parser.hypfer_handler import HypferMapImageHandler
@@ -67,7 +68,7 @@ class CameraProcessor:
                     )
                     if self._shared.map_rooms:
                         LOGGER.debug(
-                            f"\n{self._file_name}: State attributes rooms updated"
+                            "%s: State attributes rooms updated", self._file_name
                         )
 
                 if self._shared.attr_calibration_points is None:
@@ -100,12 +101,13 @@ class CameraProcessor:
                     ):
                         self._shared.image_grab = False
                         LOGGER.info(
-                            f"\nSuspended the camera data processing for: {self._file_name}."
+                            "Suspended the camera data processing for: %s.",
+                            self._file_name,
                         )
                         # take a snapshot
                         self._shared.snapshot_take = True
             return pil_img
-        LOGGER.debug("\n%s: No Json, returned None.", self._file_name)
+        LOGGER.debug("%s: No Json, returned None.", self._file_name)
         return None
 
     async def async_process_rand256_data(self, parsed_json: JsonType) -> PilPNG | None:
@@ -131,7 +133,7 @@ class CameraProcessor:
                         ) = await self._re_handler.get_rooms_attributes(destinations)
                     if self._shared.map_rooms:
                         LOGGER.debug(
-                            f"\n{self._file_name}: State attributes rooms updated"
+                            "%s: State attributes rooms updated", self._file_name
                         )
 
                 if self._shared.attr_calibration_points is None:
@@ -155,7 +157,7 @@ class CameraProcessor:
                 ):
                     # suspend image processing if we are at the next frame.
                     LOGGER.info(
-                        f"\nSuspended the camera data processing for: {self._file_name}."
+                        "Suspended the camera data processing for: %s.", self._file_name
                     )
                     # take a snapshot
                     self._shared.snapshot_take = True
@@ -198,7 +200,7 @@ class CameraProcessor:
             images = await gather(*tasks)
 
         if isinstance(images, list) and len(images) > 0:
-            LOGGER.debug("\n%s: Camera frame processed.", self._file_name)
+            LOGGER.debug("%s: Camera frame processed.", self._file_name)
             result = images[0]
         else:
             result = None
@@ -209,10 +211,7 @@ class CameraProcessor:
         """Get the frame number."""
         return self._map_handler.get_frame_number() - 2
 
-    """
-    Functions to Thread the image text processing.
-    """
-
+    # Functions to Thread the image text processing.
     async def async_draw_image_text(
         self, pil_img: PilPNG, color: Color, font: str, img_top: bool = True
     ) -> PilPNG:
@@ -294,14 +293,18 @@ class CameraProcessor:
                         obstacle_image = await response.read()
                         LOGGER.debug("Image downloaded successfully!")
                         return obstacle_image
-                    else:
-                        LOGGER.warning(
-                            "Failed to download image: %s",
-                            response.status,
-                            exc_info=True,
-                        )
-                        return None
-        except Exception as e:
+                    raise HTTPException(
+                        text="Failed to download the Obstacle image.",
+                        reason=response.reason,
+                    )
+        except aiohttp.ClientTimeoutError as e:
+            LOGGER.warning(
+                "Timeout error occurred: %s",
+                e,
+                exc_info=True,
+            )
+            return None
+        except asyncio.TimeoutError as e:
             LOGGER.error("Error downloading image: %s", e, exc_info=True)
             return None
 

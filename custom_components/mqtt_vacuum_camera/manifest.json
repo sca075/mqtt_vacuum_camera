@@ -10,6 +10,6 @@
     "requirements": [
         "pillow>=10.3.0,<=11.5.0",
         "numpy>=1.26.4",
-        "valetudo_map_parser==0.1.9.b40"],
+        "valetudo_map_parser==0.1.9.b41"],
     "version": "2025.3.0b0"
 }
