@@ -1,6 +1,6 @@
 """
 Custom HassKey types for Home Assistant.
-Version: 2024.07.1
+Version: 2025.3.0b0
 """
 
 from homeassistant.components.mqtt.models import MqttData

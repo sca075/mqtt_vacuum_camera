@@ -1,12 +1,13 @@
 """
 Common functions for the MQTT Vacuum Camera integration.
-Version: 2024.12.2
+Version: 2025.3.0b0
 """
 
 from __future__ import annotations
 
-import logging
 import re
+import logging
+from typing import Any
 
 from homeassistant.components.mqtt import DOMAIN as MQTT_DOMAIN
 from homeassistant.components.vacuum import DOMAIN as VACUUM_DOMAIN
@@ -14,10 +15,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.helpers.device_registry import DeviceEntry
 
-from .const import KEYS_TO_UPDATE
+from .const import KEYS_TO_UPDATE, LOGGER
 from .hass_types import GET_MQTT_DATA
-
-_LOGGER = logging.getLogger(__name__)
 
 
 def get_vacuum_device_info(
@@ -29,7 +28,7 @@ def get_vacuum_device_info(
     """
     vacuum_entity_id = er.async_resolve_entity_id(er.async_get(hass), config_entry_id)
     if not vacuum_entity_id:
-        _LOGGER.error("Unable to lookup vacuum's entity ID. Was it removed?")
+        LOGGER.error("Unable to lookup vacuum's entity ID. Was it removed?")
         return None
 
     device_registry = dr.async_get(hass)
@@ -38,7 +37,7 @@ def get_vacuum_device_info(
         entity_registry.async_get(vacuum_entity_id).device_id
     )
     if not vacuum_device:
-        _LOGGER.error("Unable to locate vacuum's device ID. Was it removed?")
+        LOGGER.error("Unable to locate vacuum's device ID. Was it removed?")
         return None
 
     return vacuum_entity_id, vacuum_device
@@ -118,7 +117,11 @@ async def update_options(bk_options, new_options):
             for key in keys_to_update
         }
     except KeyError as e:
-        _LOGGER.warning(f"Error in migrating options, please re-setup the camera: {e}")
+        LOGGER.warning(
+            "Error in migrating options, please re-setup the camera: %s",
+            e,
+            exc_info=True,
+        )
         return bk_options
     # updated_options is a dictionary containing the merged options
     updated_bk_options = updated_options  # or backup_options, as needed
@@ -138,7 +141,7 @@ def is_rand256_vacuum(vacuum_device: DeviceEntry) -> bool:
     # Check if the software version contains "valetudo" (for Hypfer) or something else for Rand256
     sof_version = str(vacuum_device.sw_version)
     if (sof_version.lower()).startswith("valetudo"):
-        _LOGGER.debug("No Sensors to startup!")
+        LOGGER.debug("No Sensors to startup!")
         return False  # This is a Hypfer vacuum (Valetudo)
     return True
 
@@ -163,7 +166,7 @@ def build_full_topic_set(
 
 def from_device_ids_to_entity_ids(
     device_ids: str, hass: HomeAssistant, domain: str = "vacuum"
-) -> str:
+) -> list[Any] | None:
     """
     Convert a device_id to an entity_id.
     """
@@ -183,7 +186,7 @@ def from_device_ids_to_entity_ids(
             return resolved_entity_ids
 
 
-def get_device_info_from_entity_id(entity_id: str, hass) -> DeviceEntry:
+def get_device_info_from_entity_id(entity_id: str, hass) -> DeviceEntry | None:
     """
     Fetch the device info from the device registry based on entity_id.
     """
@@ -208,18 +211,20 @@ def get_entity_id(
         resolved_entities = from_device_ids_to_entity_ids(device_id, hass, domain)
         vacuum_entity_id = resolved_entities
     elif not vacuum_entity_id:
-        _LOGGER.error(f"No vacuum entities found for device_id: {device_id}")
+        LOGGER.error(
+            "No vacuum entities found for device_id: %s", device_id, exc_info=True
+        )
         return None
     return vacuum_entity_id
 
 
-def compose_obstacle_links(vacuum_host_ip: str, obstacles: list) -> list:
+def compose_obstacle_links(vacuum_host_ip: str, obstacles: list) -> list | None:
     """
     Compose JSON with obstacle details including the image link.
     """
     obstacle_links = []
     if not obstacles or not vacuum_host_ip:
-        _LOGGER.debug(
+        LOGGER.debug(
             f"Obstacle links: no obstacles: "
             f"{obstacles} and / or ip: {vacuum_host_ip} to link."
         )
@@ -251,7 +256,7 @@ def compose_obstacle_links(vacuum_host_ip: str, obstacles: list) -> list:
                     }
                 )
 
-    _LOGGER.debug("Obstacle links: linked data complete.")
+    LOGGER.debug("Obstacle links: linked data complete.")
 
     return obstacle_links
 

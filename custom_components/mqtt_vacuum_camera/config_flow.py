@@ -1,4 +1,4 @@
-"""config_flow 2025.2.2
+"""config_flow 2025.3.0
 IMPORTANT: Maintain code when adding new options to the camera
 it will be mandatory to update const.py and common.py update_options.
 Format of the new constants must be CONST_NAME = "const_name" update also
@@ -6,7 +6,6 @@ sting.json and en.json please.
 """
 
 from copy import deepcopy
-import logging
 import os
 from typing import Any, Dict, Optional
 
@@ -89,11 +88,10 @@ from .const import (
     RATIO_VALUES,
     ROTATION_VALUES,
     TEXT_SIZE_VALUES,
+    LOGGER,
 )
 from .snapshots.log_files import run_async_save_logs
 from .utils.files_operations import async_del_file, async_rename_room_description
-
-_LOGGER = logging.getLogger(__name__)
 
 VACUUM_SCHEMA = vol.Schema(
     {
@@ -105,6 +103,8 @@ VACUUM_SCHEMA = vol.Schema(
 
 
 class MQTTCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
+    """Camera Configration Flow Handler"""
+
     VERSION = 3.2
 
     def __init__(self):
@@ -147,15 +147,19 @@ class MQTTCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             # create the path for storing the snapshots.
             storage_path = f"{self.hass.config.path(STORAGE_DIR)}/{CAMERA_STORAGE}"
             if not os.path.exists(storage_path):
-                _LOGGER.debug(f"Creating the {storage_path} path.")
+                LOGGER.debug("Creating the %s path.", storage_path)
                 try:
                     os.mkdir(storage_path)
                 except FileExistsError as e:
-                    _LOGGER.debug(f"Error {e} creating the path {storage_path}")
+                    LOGGER.error(
+                        "Error %s can not find path %s", e, storage_path, exc_info=True
+                    )
                 except OSError as e:
-                    _LOGGER.error(f"Error {e} creating the path {storage_path}")
+                    LOGGER.error(
+                        "Error %s creating the path %s", e, storage_path, exc_info=True
+                    )
             else:
-                _LOGGER.debug(f"Storage {storage_path} path found.")
+                LOGGER.debug("Storage %s path found.", storage_path)
             # Finally set up the entry.
             _, vacuum_device = get_vacuum_device_info(
                 self.data[CONF_VACUUM_CONFIG_ENTRY_ID], self.hass
@@ -191,7 +195,7 @@ class OptionsFlowHandler(OptionsFlow):
         self.file_name = extract_file_name(self.unique_id)
         self._check_alpha = False
         self.number_of_rooms = DEFAULT_ROOMS
-        _LOGGER.debug(
+        LOGGER.debug(
             "Options edit in progress.. options before edit: %s", dict(self.bk_options)
         )
         options_values = list(self.camera_config.options.values())
@@ -349,40 +353,35 @@ class OptionsFlowHandler(OptionsFlow):
         """
         Start the options menu configuration.
         """
-        _LOGGER.info(f"{self.camera_config.unique_id}: Options Configuration Started.")
+        LOGGER.info("%s: Options Configuration Started.", self.camera_config.unique_id)
         errors = {}
 
         rooms_data = RoomStore(self.file_name)
         self.number_of_rooms = rooms_data.get_rooms_count()
-        _LOGGER.debug(f"Rooms count: {self.number_of_rooms}")
+        LOGGER.debug("Rooms count: %s", self.number_of_rooms)
         if (
             not isinstance(self.number_of_rooms, int)
             or self.number_of_rooms < DEFAULT_ROOMS
         ):
             errors["base"] = "no_rooms"
-            _LOGGER.error("No rooms found in the configuration. Aborting.")
+            LOGGER.error("No rooms found in the configuration. Aborting.")
             return self.async_abort(reason="no_rooms")
         if user_input is not None and "camera_config_action" in user_input:
             next_action = user_input["camera_config_action"]
             if next_action == "opt_1":
                 return await self.async_step_image_opt()
-            elif next_action == "opt_2":
+            if next_action == "opt_2":
                 return await self.async_step_base_colours()
-            elif next_action == "opt_3":
+            if next_action == "opt_3":
                 if self.number_of_rooms == 1:
                     return await self.async_step_floor_only()
-                else:
-                    return await self.async_step_rooms_colours_1()
-            elif next_action == "opt_4":
+                return await self.async_step_rooms_colours_1()
+            if next_action == "opt_4":
                 return await self.async_step_rooms_colours_2()
-            elif next_action == "opt_5":
+            if next_action == "opt_5":
                 return await self.async_step_advanced()
-            elif next_action == "more options":
-                """
-                From TAPO custom control component, this is,
-                a great idea of how to simply the configuration
-                simple old style menu ;).
-                """
+            if next_action == "more options":
+                ...
             else:
                 errors["base"] = "incorrect_options_action"
 
@@ -428,20 +427,16 @@ class OptionsFlowHandler(OptionsFlow):
             next_action = user_input["camera_config_advanced"]
             if next_action == "opt_1":
                 return await self.async_step_image_offset()
-            elif next_action == "opt_2":
+            if next_action == "opt_2":
                 return await self.async_step_status_text()
-            elif next_action == "opt_3":
+            if next_action == "opt_3":
                 return await self.async_step_download_logs()
-            elif next_action == "opt_4":
+            if next_action == "opt_4":
                 return await self.async_rename_translations()
-            elif next_action == "opt_5":
+            if next_action == "opt_5":
                 return await self.async_reset_map_trims()
-            elif next_action == "more options":
-                """
-                From TAPO custom control component, this is,
-                a great idea of how to simply the configuration
-                simple old style menu ;).
-                """
+            if next_action == "more options":
+                ...
             else:
                 errors["base"] = "incorrect_options_action"
 
@@ -544,7 +539,7 @@ class OptionsFlowHandler(OptionsFlow):
         """
         Base Colours Configuration.
         """
-        _LOGGER.debug("Base Colours Configuration Started")
+        LOGGER.debug("Base Colours Configuration Started")
         if user_input is not None:
             self.camera_options.update(
                 {
@@ -562,8 +557,7 @@ class OptionsFlowHandler(OptionsFlow):
             if self._check_alpha:
                 self._check_alpha = False
                 return await self.async_step_alpha_1()
-            else:
-                return await self.async_step_opt_save()
+            return await self.async_step_opt_save()
 
         return self.async_show_form(
             step_id="base_colours",
@@ -575,7 +569,7 @@ class OptionsFlowHandler(OptionsFlow):
         """
         Transparency Configuration for the Base Colours
         """
-        _LOGGER.debug("Base Colours Alpha Configuration Started")
+        LOGGER.debug("Base Colours Alpha Configuration Started")
         if user_input is not None:
             self.camera_options.update(
                 {
@@ -600,7 +594,7 @@ class OptionsFlowHandler(OptionsFlow):
 
     async def async_step_floor_only(self, user_input: Optional[Dict[str, Any]] = None):
         """Floor colours configuration step based on one room only"""
-        _LOGGER.info("Floor Colour Configuration Started.")
+        LOGGER.info("Floor Colour Configuration Started.")
 
         if user_input is not None:
             # Update options based on user input
@@ -608,8 +602,7 @@ class OptionsFlowHandler(OptionsFlow):
             self._check_alpha = user_input.get(IS_ALPHA_R1, False)
             if self._check_alpha:
                 return await self.async_step_alpha_floor()
-            else:
-                return await self.async_step_opt_save()
+            return await self.async_step_opt_save()
 
         fields = {
             vol.Optional(
@@ -628,7 +621,7 @@ class OptionsFlowHandler(OptionsFlow):
         self, user_input: Optional[Dict[str, Any]] = None
     ):
         """Dynamically generate rooms colours configuration step based on the number of rooms."""
-        _LOGGER.info("Dynamic Rooms Colours Configuration Started.")
+        LOGGER.info("Dynamic Rooms Colours Configuration Started.")
         rooms_count = 1
         if self.number_of_rooms > 8:
             rooms_count = 8
@@ -645,8 +638,7 @@ class OptionsFlowHandler(OptionsFlow):
 
             if self._check_alpha:
                 return await self.async_step_alpha_2()
-            else:
-                return await self.async_step_opt_save()
+            return await self.async_step_opt_save()
 
         # Dynamically create data schema based on the number of rooms
         fields = {}
@@ -670,7 +662,7 @@ class OptionsFlowHandler(OptionsFlow):
         self, user_input: Optional[Dict[str, Any]] = None
     ):
         """Dynamically generate rooms colours configuration step based on the number of rooms."""
-        _LOGGER.info("Dynamic Rooms Colours over 8 Configuration Started.")
+        LOGGER.info("Dynamic Rooms Colours over 8 Configuration Started.")
         if user_input is not None:
             # Update options based on user input
             for i in range(8, min(self.number_of_rooms, 16)):
@@ -681,8 +673,7 @@ class OptionsFlowHandler(OptionsFlow):
 
             if self._check_alpha:
                 return await self.async_step_alpha_3()
-            else:
-                return await self.async_step_opt_save()
+            return await self.async_step_opt_save()
 
         # Dynamically create data schema based on the number of rooms
         fields = {}
@@ -704,7 +695,7 @@ class OptionsFlowHandler(OptionsFlow):
 
     async def async_step_alpha_floor(self, user_input: Optional[Dict[str, Any]] = None):
         """Floor alpha configuration step based on one room only"""
-        _LOGGER.info("Floor Alpha Configuration Started.")
+        LOGGER.info("Floor Alpha Configuration Started.")
 
         if user_input is not None:
             # Update options based on user input
@@ -725,7 +716,7 @@ class OptionsFlowHandler(OptionsFlow):
 
     async def async_step_alpha_2(self, user_input: Optional[Dict[str, Any]] = None):
         """Dynamically generate rooms colours configuration step based on the number of rooms."""
-        _LOGGER.info("Dynamic Rooms 1 to 8 Alpha Configuration Started.")
+        LOGGER.info("Dynamic Rooms 1 to 8 Alpha Configuration Started.")
         rooms_count = 1
         if self.number_of_rooms > 8:
             rooms_count = 8
@@ -758,7 +749,7 @@ class OptionsFlowHandler(OptionsFlow):
 
     async def async_step_alpha_3(self, user_input: Optional[Dict[str, Any]] = None):
         """Dynamically generate rooms colours configuration step based on the number of rooms."""
-        _LOGGER.info("Dynamic Rooms Alpha up to 16 Configuration Started.")
+        LOGGER.info("Dynamic Rooms Alpha up to 16 Configuration Started.")
         if user_input is not None:
             # Update options based on user input
             for i in range(8, min(self.number_of_rooms, 16)):
@@ -788,7 +779,7 @@ class OptionsFlowHandler(OptionsFlow):
         Move the logs from www config folder to .storage.
         """
 
-        _LOGGER.debug("Generating and Moving the logs.")
+        LOGGER.debug("Generating and Moving the logs.")
         await self.hass.async_create_task(
             run_async_save_logs(self.hass, self.file_name)
         )
@@ -815,9 +806,9 @@ class OptionsFlowHandler(OptionsFlow):
             next_action = user_input["camera_logs_progres"]
             if next_action == "opt_1":
                 return await self.async_step_logs_move()
-            elif next_action == "opt_2":
+            if next_action == "opt_2":
                 return await self.async_step_logs_remove()
-            elif next_action == "no_action":
+            if next_action == "no_action":
                 ...  # do nothing
             else:
                 errors["base"] = "incorrect_options_action"
@@ -840,7 +831,7 @@ class OptionsFlowHandler(OptionsFlow):
         """
         Copy the logs from .storage to www config folder.
         """
-        _LOGGER.debug("Renaming the translations.")
+        LOGGER.debug("Renaming the translations.")
         hass = self.hass
         if (user_input is None) and self.bk_options:
             if self.hass:
@@ -859,7 +850,7 @@ class OptionsFlowHandler(OptionsFlow):
         Otherwise, we clear the trims (reset them to 0).
         """
         entry = self.camera_config.entry_id
-        _LOGGER.debug(f"Updating the map trims for {entry}")
+        LOGGER.debug("Updating the map trims for %s", entry)
 
         # Retrieve the coordinator from hass.data
         coordinator = self.hass.data[DOMAIN][entry]["coordinator"]
@@ -867,24 +858,27 @@ class OptionsFlowHandler(OptionsFlow):
         # Retrieve the stored trims from the camera_config
         config_options = self.camera_config.as_dict().get("options", {})
         config_trims = config_options.get("trims_data", {})
-        _LOGGER.debug(f"Current config trims_data: {config_trims}")
+        LOGGER.debug("Current config trims_data: %s", config_trims)
         if (user_input is None) and self.bk_options:
             # Decide whether to update (store) or reset (clear) the trims
-            if all(value == 0 for value in config_trims.values()):
+            if all(
+                config_trims.get(key, 0) == 0
+                for key in ("trim_down", "trim_left", "trim_right", "trim_up")
+            ):
                 # If all stored values are 0, then update them with the current trims.
                 new_trims = coordinator.shared.trims.to_dict()
-                _LOGGER.debug(f"Storing new trims: {new_trims}")
+                LOGGER.debug("Storing new trims: %s", new_trims)
                 self.camera_options = {"trims_data": new_trims}
             else:
                 # If the stored values are not all zero, reset the trims.
                 reset_trims = coordinator.shared.trims.clear()
-                _LOGGER.debug(f"Resetting trims and offsets to defaults: {reset_trims}")
+                LOGGER.debug("Resetting trims and offsets to defaults: %s", reset_trims)
                 self.camera_options = {
                     "offset_bottom": 0,
                     "offset_left": 0,
                     "offset_top": 0,
                     "offset_right": 0,
-                    "trims_data": reset_trims
+                    "trims_data": reset_trims,
                 }
             return await self.async_step_opt_save()
 
@@ -892,19 +886,19 @@ class OptionsFlowHandler(OptionsFlow):
         """
         Save the options in a sorted way. It stores all the options.
         """
-        _LOGGER.info(
-            f"Storing Updated Camera ({self.camera_config.unique_id}) Options."
+        LOGGER.info(
+            "Storing Updated Camera (%s) Options.", self.camera_config.unique_id
         )
         try:
             _, vacuum_device = get_vacuum_device_info(
                 self.camera_config.data.get(CONF_VACUUM_CONFIG_ENTRY_ID), self.hass
             )
             opt_update = await update_options(self.bk_options, self.camera_options)
-            _LOGGER.debug(f"updated options:{dict(opt_update)}")
+            LOGGER.debug("updated options:%s", dict(opt_update))
             return self.async_create_entry(
                 title="",
                 data=opt_update,
             )
         except Exception as e:
-            _LOGGER.error(f"Error in storing the options: {e}")
+            LOGGER.error("Error in storing the options: %s", e, exc_info=True)
             return self.async_abort(reason="error")

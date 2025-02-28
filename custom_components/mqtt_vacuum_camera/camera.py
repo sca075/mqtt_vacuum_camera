@@ -1,6 +1,6 @@
 """
 Camera
-Version: v2025.2.2
+Version: 2025.3.0b0
 """
 
 from __future__ import annotations
@@ -10,7 +10,6 @@ from asyncio import gather, get_event_loop
 from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
 from io import BytesIO
-import logging
 import math
 import os
 import platform
@@ -26,11 +25,11 @@ from homeassistant.helpers.device_registry import DeviceInfo as Dev_Info
 from homeassistant.helpers.entity import DeviceInfo as Entity_Info
 from homeassistant.helpers.storage import STORAGE_DIR
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from psutil_home_assistant import PsutilWrapper as ProcInsp
-from valetudo_map_parser.config.types import SnapshotStore, TrimsData
+from psutil_home_assistant import PsutilWrapper as ProcInspector
+from valetudo_map_parser.config.types import SnapshotStore
 from valetudo_map_parser.config.utils import ResizeParams, async_resize_image
 
-from .common import RedactIPFilter, get_vacuum_unique_id_from_mqtt_topic
+from .common import get_vacuum_unique_id_from_mqtt_topic
 from .const import (
     ATTR_FRIENDLY_NAME,
     ATTR_JSON_DATA,
@@ -39,12 +38,13 @@ from .const import (
     CAMERA_STORAGE,
     CONF_VACUUM_IDENTIFIERS,
     DOMAIN,
+    LOGGER,
     NOT_STREAMING_STATES,
     CameraModes,
 )
 from .snapshots.snapshot import Snapshots
 from .utils.camera.camera_processing import CameraProcessor
-from .utils.colors_man import ColorsManagment
+from .utils.colors_man import ColorsManagement
 from .utils.files_operations import (
     async_get_active_user_language,
     async_load_file,
@@ -54,8 +54,6 @@ from .utils.files_operations import (
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 SCAN_INTERVAL = timedelta(seconds=3)
-_LOGGER = logging.getLogger(__name__)
-_LOGGER.addFilter(RedactIPFilter())
 
 
 async def async_setup_entry(
@@ -118,10 +116,10 @@ class MQTTCamera(CoordinatorEntity, Camera):
         self._cpu_percent = None
         self._init_clear_www_folder()
         self._last_image = None
-        self._update_time = None
+        self.auth_update_time = None
         self._rrm_data = False  # Check for rrm data
         # get the colours used in the maps.
-        self._colours = ColorsManagment(self._shared)
+        self._colours = ColorsManagement(self._shared)
         self._colours.set_initial_colours(device_info)
         # Create the processor for the camera.
         self.processor = CameraProcessor(self.hass, self._shared)
@@ -136,14 +134,16 @@ class MQTTCamera(CoordinatorEntity, Camera):
     @staticmethod
     def _start_up_logs():
         """Logs the machine running the component data"""
-        _LOGGER.info("System Release: %r, %r", platform.node(), platform.release())
-        _LOGGER.info("System Version: %r", platform.version())
-        _LOGGER.info("System Machine: %r", platform.machine())
-        _LOGGER.info("Python Version: %r", platform.python_version())
-        _LOGGER.info(
+        LOGGER.info("System Release: %r, %r", platform.node(), platform.release())
+        LOGGER.info("System Version: %r", platform.version())
+        LOGGER.info("System Machine: %r", platform.machine())
+        LOGGER.info("Python Version: %r", platform.python_version())
+        LOGGER.info(
             "Memory Available: %r and In Use: %r",
-            round((ProcInsp().psutil.virtual_memory().available / (1024 * 1024)), 1),
-            round((ProcInsp().psutil.virtual_memory().used / (1024 * 1024)), 1),
+            round(
+                (ProcInspector().psutil.virtual_memory().available / (1024 * 1024)), 1
+            ),
+            round((ProcInspector().psutil.virtual_memory().used / (1024 * 1024)), 1),
         )
 
     def _init_clear_www_folder(self):
@@ -252,7 +252,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
     @property
     def should_poll(self) -> bool:
         """ON/OFF Camera Polling Based on Camera Mode."""
-        POLLING_STATES = {
+        poling_states = {
             CameraModes.OBSTACLE_DOWNLOAD: False,
             CameraModes.OBSTACLE_SEARCH: False,
             CameraModes.MAP_VIEW: True,
@@ -267,7 +267,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
                 else CameraModes.CAMERA_STANDBY
             )
 
-        self._should_poll = POLLING_STATES.get(self._shared.camera_mode, False)
+        self._should_poll = poling_states.get(self._shared.camera_mode, False)
         return self._should_poll
 
     @property
@@ -290,18 +290,18 @@ class MQTTCamera(CoordinatorEntity, Camera):
         an empty image if there are no data.
         """
         if self._last_image:
-            _LOGGER.debug("%s: Returning Last image.", self._file_name)
+            LOGGER.debug("%s: Returning Last image.", self._file_name)
             return self._last_image
         # Check if the snapshot file exists
-        _LOGGER.info("%s: Searching for %s.", self._file_name, self.snapshot_img)
+        LOGGER.info("%s: Searching for %s.", self._file_name, self.snapshot_img)
         if os.path.isfile(self.snapshot_img):
             # Load the snapshot image
             self._last_image = Image.open(self.snapshot_img)
-            _LOGGER.debug("%s: Returning Snapshot image.", self._file_name)
+            LOGGER.debug("%s: Returning Snapshot image.", self._file_name)
             return self._last_image
         # Create an empty image with a gray background
         empty_img = Image.new("RGB", (800, 600), "gray")
-        _LOGGER.info("%s: Returning Empty image.", self._file_name)
+        LOGGER.info("%s: Returning Empty image.", self._file_name)
         return empty_img
 
     async def take_snapshot(self, json_data: Any, image_data: Image.Image) -> None:
@@ -323,7 +323,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
             # Get the active user language
             self._shared.user_language = await async_get_active_user_language(self.hass)
         if not self._mqtt:
-            _LOGGER.debug("%s: No MQTT data available.", self._file_name)
+            LOGGER.debug("%s: No MQTT data available.", self._file_name)
             # return last/empty image if no MQTT or CPU usage too high.
             await self._handle_no_mqtt_data()
 
@@ -331,7 +331,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         await self._update_vacuum_state()
 
         pid = os.getpid()  # Start to log the CPU usage of this PID.
-        proc = ProcInsp().psutil.Process(pid)  # Get the process PID.
+        proc = ProcInspector().psutil.Process(pid)  # Get the process PID.
         process_data = await self._mqtt.is_data_available()
         if process_data and self._shared.camera_mode == CameraModes.MAP_VIEW:
             # to calculate the cycle time for frame adjustment.
@@ -344,7 +344,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
                 self._shared.image_grab = True
                 self._shared.snapshot_take = False
                 self._shared.frame_number = self.processor.get_frame_number()
-                _LOGGER.info(
+                LOGGER.info(
                     "%s: Camera image data update available: %r",
                     self._file_name,
                     process_data,
@@ -365,7 +365,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
                             )
                         )
                     elif self._rrm_data is None:
-                        _LOGGER.debug("Image creation in progress")
+                        LOGGER.debug("Image creation in progress")
                         pil_img = await self.hass.async_create_task(
                             self.processor.run_async_process_valetudo_data(parsed_json)
                         )
@@ -374,7 +374,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
                         if not is_a_test:
                             pil_img = self.empty_if_no_data()
                         else:
-                            _LOGGER.debug("Producing test mode image")
+                            LOGGER.debug("Producing test mode image")
                             pil_img = await self.hass.async_create_task(
                                 self.processor.run_async_process_valetudo_data(
                                     parsed_json
@@ -399,10 +399,10 @@ class MQTTCamera(CoordinatorEntity, Camera):
                     # take a snapshot if we meet the conditions.
                     await self._take_snapshot(parsed_json, pil_img)
 
-                    _LOGGER.debug("%s: Image update complete", self._file_name)
+                    LOGGER.debug("%s: Image update complete", self._file_name)
                     self._update_frame_interval(start_time)
                 else:
-                    _LOGGER.info(
+                    LOGGER.info(
                         "%s: Image not processed. Returning not updated image.",
                         self._file_name,
                     )
@@ -437,7 +437,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
     async def _process_parsed_json(self, test_mode: bool = False):
         """Process the parsed JSON data and return the generated image."""
         if test_mode:
-            _LOGGER.debug("Camera Test Mode Active...")
+            LOGGER.debug("Camera Test Mode Active...")
             parsed_json = await async_load_file(
                 file_to_load="custom_components/mqtt_vacuum_camera/snapshots/test.json",
                 is_json=True,
@@ -451,10 +451,10 @@ class MQTTCamera(CoordinatorEntity, Camera):
                 self.run_async_pil_to_bytes(self.empty_if_no_data())
             )
             self.camera_image(self._image_w, self._image_h)
-            _LOGGER.warning(
+            LOGGER.warning(
                 "%s: No JSON data available. Camera Suspended.", self._file_name
             )
-            self._should_pull = False
+            self._should_poll = False
 
         if parsed_json[1] == "Rand256":
             self._shared.is_rand = True
@@ -477,7 +477,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
     def _log_cpu_usage(self, proc):
         """Log the CPU usage."""
         self._cpu_percent = round(
-            ((proc.cpu_percent() / int(ProcInsp().psutil.cpu_count())) / 10), 1
+            ((proc.cpu_percent() / int(ProcInspector().psutil.cpu_count())) / 10), 1
         )
 
     def _log_memory_usage(self, proc):
@@ -485,12 +485,12 @@ class MQTTCamera(CoordinatorEntity, Camera):
         memory_percent = round(
             (
                 (proc.memory_info()[0] / 2.0**30)
-                / (ProcInsp().psutil.virtual_memory().total / 2.0**30)
+                / (ProcInspector().psutil.virtual_memory().total / 2.0**30)
             )
             * 100,
             2,
         )
-        _LOGGER.debug(
+        LOGGER.debug(
             "%s: Camera Memory: GB in use %.2f / system available %.2f%%.",
             self._file_name,
             round(proc.memory_info()[0] / 2.0**30, 2),
@@ -508,7 +508,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         """Convert PIL image to bytes"""
         if pil_img:
             self._last_image = pil_img
-            _LOGGER.debug(
+            LOGGER.debug(
                 "%s: Output Image: %s.",
                 self._file_name,
                 image_id if image_id else self._shared.vac_json_id,
@@ -519,18 +519,21 @@ class MQTTCamera(CoordinatorEntity, Camera):
                 )
         else:
             if self._last_image is not None:
-                _LOGGER.debug("%s: Output Last Image.", self._file_name)
+                LOGGER.debug("%s: Output Last Image.", self._file_name)
                 pil_img = self._last_image
             else:
-                _LOGGER.debug("%s: Output Gray Image.", self._file_name)
+                LOGGER.debug("%s: Output Gray Image.", self._file_name)
                 pil_img = self.empty_if_no_data()
         self._image_w = pil_img.width
         self._image_h = pil_img.height
         buffered = BytesIO()
-        pil_img.save(buffered, format="PNG")
-        bytes_data = buffered.getvalue()
-        del buffered, pil_img
-        return bytes_data
+        try:
+            pil_img.save(buffered, format="PNG")
+            return buffered.getvalue()
+        finally:
+            buffered.close()
+            if pil_img != self._last_image:
+                pil_img.close()
 
     def process_pil_to_bytes(self, pil_img, image_id: str = None):
         """Async function to process the image data from the Vacuum Json data."""
@@ -568,9 +571,9 @@ class MQTTCamera(CoordinatorEntity, Camera):
 
     async def handle_vacuum_start(self, event):
         """Handle the event_vacuum_start event."""
-        _LOGGER.debug("Received event: %s, Data: %s", event.event_type, str(event.data))
-        self._shared.trims = TrimsData.clear
-        _LOGGER.debug("%s Trims cleared: %s", self._file_name, self._shared.trims)
+        LOGGER.debug("Received event: %s, Data: %s", event.event_type, str(event.data))
+        self._shared.reset_trims()  # requires valetudo_map_parser >0.1.9b41
+        LOGGER.debug("%s Trims cleared: %s", self._file_name, self._shared.trims)
 
     async def handle_obstacle_view(self, event):
         """Handle the event mqtt_vacuum_camera_obstacle_coordinates."""
@@ -578,14 +581,14 @@ class MQTTCamera(CoordinatorEntity, Camera):
         async def _set_map_view_mode(reason: str = None):
             """Set the camera mode to MAP_VIEW."""
             self._shared.camera_mode = CameraModes.MAP_VIEW
-            _LOGGER.debug(
+            LOGGER.debug(
                 "%s: Camera Mode Change to %s",
                 self._file_name,
                 self._shared.camera_mode,
                 reason if reason else ", ''.",
             )
             if self._image_bk:
-                _LOGGER.debug("%s: Restoring the backup image.", self._file_name)
+                LOGGER.debug("%s: Restoring the backup image.", self._file_name)
                 self.Image = self._image_bk
                 return self.camera_image(self._image_w, self._image_h)
             return
@@ -596,7 +599,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
             if mode_of_camera == CameraModes.OBSTACLE_SEARCH and not self._image_bk:
                 self._image_bk = self.Image
 
-            _LOGGER.debug(
+            LOGGER.debug(
                 "%s: Camera Mode Change to %s",
                 self._file_name,
                 self._shared.camera_mode,
@@ -606,12 +609,10 @@ class MQTTCamera(CoordinatorEntity, Camera):
         async def _async_find_nearest_obstacle(x, y, all_obstacles):
             """Find the nearest obstacle to the given coordinates."""
             nearest_obstacles = None
-            width = self._shared.image_ref_width
-            height = self._shared.image_ref_height
-            min_distance = round(
-                60 * (width / height)
-            )  # (60 * aspect ratio) pixels distance
-            _LOGGER.debug(
+            w = self._shared.image_ref_width
+            h = self._shared.image_ref_height
+            min_distance = round(60 * (w / h))  # (60 * aspect ratio) pixels distance
+            LOGGER.debug(
                 "Finding in the nearest %d pixels obstacle to coordinates: %d, %d",
                 min_distance,
                 x,
@@ -632,7 +633,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
 
             return nearest_obstacles
 
-        _LOGGER.debug(
+        LOGGER.debug(
             "%s: Received event: %s, Data: %s",
             self._file_name,
             str(event.event_type),
@@ -659,7 +660,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
                     )
 
                     if nearest_obstacle:
-                        _LOGGER.debug(
+                        LOGGER.debug(
                             "%s: Nearest obstacle found: %r",
                             self._file_name,
                             nearest_obstacle,
@@ -718,14 +719,14 @@ class MQTTCamera(CoordinatorEntity, Camera):
                                     )
                                 )
                                 end_time = time.perf_counter()
-                                _LOGGER.debug(
+                                LOGGER.debug(
                                     "%s: Image processing time: %r seconds",
                                     self._file_name,
                                     end_time - start_time,
                                 )
                                 return
                             except Exception as e:
-                                _LOGGER.warning(
+                                LOGGER.warning(
                                     "%s: Unexpected Error processing image: %r",
                                     self._file_name,
                                     e,

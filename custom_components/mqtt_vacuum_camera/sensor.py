@@ -1,5 +1,5 @@
 """Sensors for Rand256.
-Version 2024.12.0
+Version: 2025.3.0b0
 """
 
 from __future__ import annotations
@@ -7,7 +7,6 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-import logging
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -21,12 +20,11 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import CONF_VACUUM_IDENTIFIERS, DOMAIN, SENSOR_NO_DATA
+from .const import CONF_VACUUM_IDENTIFIERS, DOMAIN, SENSOR_NO_DATA, LOGGER
 from .coordinator import MQTTVacuumCoordinator
 
-SCAN_INTERVAL = timedelta(seconds=3)
+SCAN_INTERVAL = timedelta(seconds=2)
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
-_LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
@@ -41,7 +39,7 @@ class VacuumSensorDescription(SensorEntityDescription):
 
 SENSOR_TYPES = {
     "consumable_main_brush": VacuumSensorDescription(
-        native_unit_of_measurement=UnitOfTime.SECONDS,
+        native_unit_of_measurement=UnitOfTime.HOURS,
         key="mainBrush",
         icon="mdi:brush",
         name="Main brush",
@@ -49,7 +47,7 @@ SENSOR_TYPES = {
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "consumable_side_brush": VacuumSensorDescription(
-        native_unit_of_measurement=UnitOfTime.SECONDS,
+        native_unit_of_measurement=UnitOfTime.HOURS,
         key="sideBrush",
         icon="mdi:brush",
         name="Side brush",
@@ -57,10 +55,18 @@ SENSOR_TYPES = {
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "consumable_filter": VacuumSensorDescription(
-        native_unit_of_measurement=UnitOfTime.SECONDS,
+        native_unit_of_measurement=UnitOfTime.HOURS,
         key="filter",
         icon="mdi:air-filter",
         name="Filter",
+        state_class=SensorStateClass.MEASUREMENT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    "clean_sensor": VacuumSensorDescription(
+        native_unit_of_measurement=UnitOfTime.HOURS,
+        key="sensor",
+        icon="mdi:access-point",
+        name="Clean sensors",
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
@@ -73,7 +79,7 @@ SENSOR_TYPES = {
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "current_clean_time": VacuumSensorDescription(
-        native_unit_of_measurement=UnitOfTime.SECONDS,
+        native_unit_of_measurement=UnitOfTime.MINUTES,
         key="currentCleanTime",
         icon="mdi:timer-sand",
         name="Current clean time",
@@ -96,7 +102,7 @@ SENSOR_TYPES = {
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     "clean_time": VacuumSensorDescription(
-        native_unit_of_measurement=UnitOfTime.SECONDS,
+        native_unit_of_measurement=UnitOfTime.HOURS,
         key="cleanTime",
         icon="mdi:timer-sand",
         name="Total clean time",
@@ -276,7 +282,7 @@ def process_timestamp(native_value):
 
         return utc_time
     except ValueError:
-        _LOGGER.debug(f"Invalid timestamp: {native_value}")
+        LOGGER.debug("Invalid timestamp: %s", native_value)
         return None
 
 

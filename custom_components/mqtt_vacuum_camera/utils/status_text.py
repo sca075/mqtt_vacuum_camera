@@ -1,5 +1,5 @@
 """
-Version: 2024.10.0
+Version: 2025.3.0b0
 Status text of the vacuum cleaners.
 Clas to handle the status text of the vacuum cleaners.
 """
@@ -7,14 +7,13 @@ Clas to handle the status text of the vacuum cleaners.
 from __future__ import annotations
 
 import json
-import logging
 
 from valetudo_map_parser.config.types import JsonType, PilPNG
 
-from ..const import DOMAIN
+from ..const import DOMAIN, LOGGER
 
-_LOGGER = logging.getLogger(__name__)
-_LOGGER.propagate = True
+
+LOGGER.propagate = True
 
 
 class StatusText:
@@ -33,8 +32,6 @@ class StatusText:
     def load_translations(self, language: str) -> JsonType:
         """
         Load the user selected language json file and return it.
-        @param language:self.hass.config.path(f"custom_components/mqtt_vacuum_camera/translations/
-        @return: json format
         """
         file_name = f"{language}.json"
         file_path = f"{self._translations_path}/{file_name}"
@@ -42,12 +39,14 @@ class StatusText:
             with open(file_path) as file:
                 translations = json.load(file)
         except FileNotFoundError:
-            _LOGGER.warning(
-                f"{file_path} Not found. Report to the author that {language} is missing."
+            LOGGER.warning(
+                "%s Not found. Report to the author that %s is missing.",
+                file_path,
+                language,
             )
             return None
         except json.JSONDecodeError:
-            _LOGGER.warning(f"{file_path} is not a valid JSON file.")
+            LOGGER.warning("%s is not a valid JSON file.", file_path, exc_info=True)
             return None
         return translations
 
@@ -77,8 +76,7 @@ class StatusText:
         translations = self.get_vacuum_status_translation(language)
         if translations is not None and status in translations:
             return translations[status]
-        else:
-            return status.capitalize()
+        return status.capitalize()
 
     def get_status_text(self, text_img: PilPNG) -> tuple[list[str], int]:
         """
@@ -101,7 +99,7 @@ class StatusText:
                     try:
                         in_room = self._shared.current_room.get("in_room", None)
                     except (ValueError, KeyError):
-                        _LOGGER.debug("No in_room data.")
+                        LOGGER.debug("No in_room data.")
                     else:
                         if in_room:
                             status_text.append(f" ({in_room})")

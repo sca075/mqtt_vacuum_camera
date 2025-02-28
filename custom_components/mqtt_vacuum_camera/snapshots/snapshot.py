@@ -1,4 +1,4 @@
-"""Snapshot Version 2024.10.0"""
+"""Snapshot Version: 2025.3.0b0"""
 
 import asyncio
 from asyncio import gather, get_event_loop
@@ -51,7 +51,7 @@ class Snapshots:
         # Save the users languages data if the Camera is the first run
         if self._first_run:
             self._first_run = False
-            _LOGGER.info(f"Writing {self.file_name} users languages data.")
+            _LOGGER.info("Writing %s users languages data.", self.file_name)
             await async_populate_user_languages(self.hass)
         await self._store_all.async_set_vacuum_json(self.file_name, json_data)
         try:
