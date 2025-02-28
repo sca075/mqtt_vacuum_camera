@@ -32,7 +32,7 @@ async def async_write_vacuum_id(
     # Create the full file path
     if vacuum_id:
         json_path = f"{hass.config.path(STORAGE_DIR, CAMERA_STORAGE)}/{file_name}"
-        LOGGER.debug(f"Writing vacuum_id: {vacuum_id} to {json_path}")
+        LOGGER.debug("Writing vacuum_id: %s to %s", vacuum_id, json_path)
         # Data to be written
         data = {"vacuum_id": vacuum_id}
         # Write data to a JSON file
@@ -77,7 +77,7 @@ def remove_room_data_files(directory: str) -> None:
             os.remove(file)
             LOGGER.debug("Removed file: %s", file)
         except OSError as e:
-            LOGGER.debug(f"Error removing file {file}: {e}")
+            LOGGER.debug("Error removing file %s: %r", file, e, exc_info=True)
 
 
 def is_auth_updated(self) -> bool:
@@ -113,9 +113,8 @@ async def async_find_last_logged_in_user(hass: HomeAssistant) -> str or None:
 
     if last_user:
         return last_user.id
-    else:
-        LOGGER.info("No users have logged in yet.")
-        return None
+    LOGGER.info("No users have logged in yet.")
+    return None
 
 
 async def async_get_user_ids(hass: HomeAssistant) -> list[str]:
@@ -160,8 +159,7 @@ async def async_get_active_user_language(hass: HomeAssistant) -> str:
                 # Optionally, update the UserLanguageStore with this information
                 await user_language_store.set_user_language(active_user_id, language)
                 return language
-            else:
-                raise KeyError
+            raise KeyError
     except (KeyError, json.JSONDecodeError, FileNotFoundError) as e:
         LOGGER.debug("Defaulting to English language due to error: %s", e)
     return "en"
@@ -211,14 +209,14 @@ async def async_populate_user_languages(hass: HomeAssistant):
                     data = json.loads(user_data)
                     language = data["data"]["language"]["language"]
                     await user_language_store.set_user_language(user_id, language)
-                    LOGGER.info(f"User ID: {user_id}, language: {language}")
+                    LOGGER.info("User ID: %s, language: %s", user_id, language)
                 except KeyError:
                     LOGGER.error(
                         "Key error while processing user ID: %s", user_id, exc_info=True
                     )
                 except json.JSONDecodeError as json_error:
                     LOGGER.error(
-                        f"JSON decode error for user ID: {user_id}: {json_error}"
+                        "JSON decode error for user ID: %s: %r", user_id, json_error, exc_info=True
                     )
             else:
                 LOGGER.info("User ID: %s, skipping...", user_id)
@@ -268,7 +266,7 @@ async def async_rename_room_description(hass: HomeAssistant, vacuum_id: str) -> 
 
     if not room_data:
         LOGGER.warning(
-            f"Vacuum ID: {vacuum_id} does not support Rooms! Aborting room name addition."
+            "Vacuum ID: %s does not support Rooms! Aborting room name addition.", vacuum_id
         )
         return False
 
@@ -282,7 +280,7 @@ async def async_rename_room_description(hass: HomeAssistant, vacuum_id: str) -> 
     data_list = await async_load_translations_json(hass, language)
     if None in data_list:
         LOGGER.warning(
-            f"Translation for {language} not found. Please report the missing translation to the author."
+            "Translation for %s not found. Please report the missing translation to the author.", language
         )
         data_list = await async_load_translations_json(hass, ["en"])
 
@@ -342,7 +340,7 @@ async def async_rename_room_description(hass: HomeAssistant, vacuum_id: str) -> 
                 os.path.join(edit_path, f"{lang}.json"), data
             )
             LOGGER.info(
-                f"Room names added to the room descriptions in the {lang} translations."
+                "Room names added to the room descriptions in the %s translations.", lang
             )
     return True
 
