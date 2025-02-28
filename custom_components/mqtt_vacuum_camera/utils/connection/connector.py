@@ -109,6 +109,42 @@ class ValetudoConnector:
         self.mqtt_data = MQTTData()
         self.rrm_data = RRMData(rrm_command=f"{mqtt_topic}/command")
         self.pkohelrs_data = PkohelrsData()
+        # Create a queue for decompression tasks
+        self._decompression_queue = asyncio.Queue()
+        # Start the background worker
+        self._decompression_worker_task = asyncio.create_task(self._process_decompression_queue())
+
+    async def _process_decompression_queue(self):
+        """
+        Worker that continuously processes decompression tasks from the queue.
+        Each task is a tuple (payload, data_type, future).
+        """
+        while True:
+            payload, data_type, future = await self._decompression_queue.get()
+            loop = asyncio.get_running_loop()
+            try:
+                if data_type == "Hypfer":
+                    # Decompress using isal_zlib in an executor
+                    json_data = await loop.run_in_executor(
+                        None, lambda: isal_zlib.decompress(payload).decode()
+                    )
+                    result = json.loads(json_data)
+                elif data_type == "Rand256" and not self.connector_data.ignore_data:
+                    # Decompress using igzip in an executor
+                    payload_decompressed = await loop.run_in_executor(
+                        None, lambda: igzip.decompress(payload)
+                    )
+                    result = self.config.rrm_parser.parse_data(
+                        payload=payload_decompressed, pixels=True
+                    )
+                    self.rrm_data.rrm_json = result
+                else:
+                    result = None
+                future.set_result(result)
+            except Exception as e:
+                future.set_exception(e)
+            finally:
+                self._decompression_queue.task_done()
 
     async def update_data(self, process: bool = True):
         """
@@ -121,30 +157,19 @@ class ValetudoConnector:
             else self.rrm_data.rrm_payload
         )
         data_type = "Hypfer" if self.mqtt_data.img_payload else "Rand256"
-        loop = asyncio.get_running_loop()
         if payload and process:
             LOGGER.debug(
-                "%s: Processing %s data from MQTT.",
+                "%s: Queuing %s data from MQTT for processing.",
                 self.connector_data.file_name,
                 data_type,
             )
-            if data_type == "Hypfer":
-                # pylint: disable=c-extension-no-member
-                json_data = await loop.run_in_executor(
-                    None,
-                    lambda: isal_zlib.decompress(payload).decode(),
-                )
-                result = json.loads(json_data)
-            elif data_type == "Rand256" and not self.connector_data.ignore_data:
-                payload_decompressed = await loop.run_in_executor(
-                    None, lambda: igzip.decompress(payload)
-                )
-                result = self.config.rrm_parser.parse_data(
-                    payload=payload_decompressed, pixels=True
-                )
-                self.rrm_data.rrm_json = result
-            else:
-                result = None
+            loop = asyncio.get_running_loop()
+            # Create a Future to be fulfilled by the worker
+            future = loop.create_future()
+            # Enqueue the decompression task
+            await self._decompression_queue.put((payload, data_type, future))
+            # Await the result once the worker processes the task
+            result = await future
             self.config.is_rrm = bool(self.rrm_data.rrm_json)
             self.connector_data.data_in = False
             LOGGER.info(

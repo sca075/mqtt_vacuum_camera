@@ -861,7 +861,10 @@ class OptionsFlowHandler(OptionsFlow):
         LOGGER.debug("Current config trims_data: %s", config_trims)
         if (user_input is None) and self.bk_options:
             # Decide whether to update (store) or reset (clear) the trims
-            if all(value == 0 for value in config_trims.values()):
+            if all(
+                config_trims.get(key, 0) == 0
+                for key in ("trim_down", "trim_left", "trim_right", "trim_up")
+            ):
                 # If all stored values are 0, then update them with the current trims.
                 new_trims = coordinator.shared.trims.to_dict()
                 LOGGER.debug("Storing new trims: %s", new_trims)
