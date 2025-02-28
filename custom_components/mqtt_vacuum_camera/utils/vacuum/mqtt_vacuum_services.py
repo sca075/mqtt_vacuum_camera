@@ -96,8 +96,6 @@ async def vacuum_clean_segments(call: ServiceCall, coordinator) -> None:
             )
         except Exception as e:
             LOGGER.warning("Error sending command to vacuum: %s", e, exc_info=True)
-            return
-
             coordinator.hass.bus.async_fire(
                 f"event_{DOMAIN}.vacuum_clean_zone",
                 {
@@ -107,6 +105,7 @@ async def vacuum_clean_segments(call: ServiceCall, coordinator) -> None:
                 },
                 context=call.context,
             )
+            return
     except KeyError as e:
         LOGGER.warning("Missing required parameter: %s", e, exc_info=True)
 

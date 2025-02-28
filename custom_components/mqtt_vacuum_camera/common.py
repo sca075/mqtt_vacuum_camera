@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import re
 import logging
+from typing import Any
 
 from homeassistant.components.mqtt import DOMAIN as MQTT_DOMAIN
 from homeassistant.components.vacuum import DOMAIN as VACUUM_DOMAIN
@@ -165,7 +166,7 @@ def build_full_topic_set(
 
 def from_device_ids_to_entity_ids(
     device_ids: str, hass: HomeAssistant, domain: str = "vacuum"
-) -> str:
+) -> list[Any] | None:
     """
     Convert a device_id to an entity_id.
     """
@@ -185,7 +186,7 @@ def from_device_ids_to_entity_ids(
             return resolved_entity_ids
 
 
-def get_device_info_from_entity_id(entity_id: str, hass) -> DeviceEntry:
+def get_device_info_from_entity_id(entity_id: str, hass) -> DeviceEntry | None:
     """
     Fetch the device info from the device registry based on entity_id.
     """
@@ -217,7 +218,7 @@ def get_entity_id(
     return vacuum_entity_id
 
 
-def compose_obstacle_links(vacuum_host_ip: str, obstacles: list) -> list:
+def compose_obstacle_links(vacuum_host_ip: str, obstacles: list) -> list | None:
     """
     Compose JSON with obstacle details including the image link.
     """

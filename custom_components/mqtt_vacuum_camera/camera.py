@@ -26,7 +26,7 @@ from homeassistant.helpers.entity import DeviceInfo as Entity_Info
 from homeassistant.helpers.storage import STORAGE_DIR
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from psutil_home_assistant import PsutilWrapper as ProcInspector
-from valetudo_map_parser.config.types import SnapshotStore, TrimsData
+from valetudo_map_parser.config.types import SnapshotStore
 from valetudo_map_parser.config.utils import ResizeParams, async_resize_image
 
 from .common import get_vacuum_unique_id_from_mqtt_topic
@@ -116,7 +116,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         self._cpu_percent = None
         self._init_clear_www_folder()
         self._last_image = None
-        self._update_time = None
+        self.auth_update_time = None
         self._rrm_data = False  # Check for rrm data
         # get the colours used in the maps.
         self._colours = ColorsManagement(self._shared)

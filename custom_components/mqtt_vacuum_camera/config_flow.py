@@ -104,6 +104,7 @@ VACUUM_SCHEMA = vol.Schema(
 
 class MQTTCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Camera Configration Flow Handler"""
+
     VERSION = 3.2
 
     def __init__(self):
@@ -150,9 +151,13 @@ class MQTTCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 try:
                     os.mkdir(storage_path)
                 except FileExistsError as e:
-                    LOGGER.error("Error %s can not find path %s", e, storage_path, exc_info=True)
+                    LOGGER.error(
+                        "Error %s can not find path %s", e, storage_path, exc_info=True
+                    )
                 except OSError as e:
-                    LOGGER.error("Error %s creating the path %s", e, storage_path, exc_info=True)
+                    LOGGER.error(
+                        "Error %s creating the path %s", e, storage_path, exc_info=True
+                    )
             else:
                 LOGGER.debug("Storage %s path found.", storage_path)
             # Finally set up the entry.
@@ -878,7 +883,9 @@ class OptionsFlowHandler(OptionsFlow):
         """
         Save the options in a sorted way. It stores all the options.
         """
-        LOGGER.info("Storing Updated Camera (%s) Options.", self.camera_config.unique_id)
+        LOGGER.info(
+            "Storing Updated Camera (%s) Options.", self.camera_config.unique_id
+        )
         try:
             _, vacuum_device = get_vacuum_device_info(
                 self.camera_config.data.get(CONF_VACUUM_CONFIG_ENTRY_ID), self.hass

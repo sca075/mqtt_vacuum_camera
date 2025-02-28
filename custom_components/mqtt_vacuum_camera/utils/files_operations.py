@@ -80,18 +80,18 @@ def remove_room_data_files(directory: str) -> None:
             LOGGER.debug("Error removing file %s: %r", file, e, exc_info=True)
 
 
-def is_auth_updated(self) -> bool:
+def is_auth_updated(self) -> bool | None:
     """Check if the auth file has been updated."""
     file_path = self.hass.config.path(STORAGE_DIR, "auth")
     # Get the last modified time of the file
     last_modified_time = os.path.getmtime(file_path)
-    if self._update_time is None:
-        self._update_time = last_modified_time
+    if self.auth_update_time is None:
+        self.auth_update_time = last_modified_time
         return True
-    elif self._update_time == last_modified_time:
+    elif self.auth_update_time == last_modified_time:
         return False
-    elif self._update_time < last_modified_time:
-        self._update_time = last_modified_time
+    elif self.auth_update_time < last_modified_time:
+        self.auth_update_time = last_modified_time
         return True
 
 
@@ -216,7 +216,10 @@ async def async_populate_user_languages(hass: HomeAssistant):
                     )
                 except json.JSONDecodeError as json_error:
                     LOGGER.error(
-                        "JSON decode error for user ID: %s: %r", user_id, json_error, exc_info=True
+                        "JSON decode error for user ID: %s: %r",
+                        user_id,
+                        json_error,
+                        exc_info=True,
                     )
             else:
                 LOGGER.info("User ID: %s, skipping...", user_id)
@@ -266,7 +269,8 @@ async def async_rename_room_description(hass: HomeAssistant, vacuum_id: str) -> 
 
     if not room_data:
         LOGGER.warning(
-            "Vacuum ID: %s does not support Rooms! Aborting room name addition.", vacuum_id
+            "Vacuum ID: %s does not support Rooms! Aborting room name addition.",
+            vacuum_id,
         )
         return False
 
@@ -280,7 +284,8 @@ async def async_rename_room_description(hass: HomeAssistant, vacuum_id: str) -> 
     data_list = await async_load_translations_json(hass, language)
     if None in data_list:
         LOGGER.warning(
-            "Translation for %s not found. Please report the missing translation to the author.", language
+            "Translation for %s not found. Please report the missing translation to the author.",
+            language,
         )
         data_list = await async_load_translations_json(hass, ["en"])
 
@@ -340,7 +345,8 @@ async def async_rename_room_description(hass: HomeAssistant, vacuum_id: str) -> 
                 os.path.join(edit_path, f"{lang}.json"), data
             )
             LOGGER.info(
-                "Room names added to the room descriptions in the %s translations.", lang
+                "Room names added to the room descriptions in the %s translations.",
+                lang,
             )
     return True
 
