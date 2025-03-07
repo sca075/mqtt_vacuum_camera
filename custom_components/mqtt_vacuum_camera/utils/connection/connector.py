@@ -112,7 +112,9 @@ class ValetudoConnector:
         # Create a queue for decompression tasks
         self._decompression_queue = asyncio.Queue()
         # Start the background worker
-        self._decompression_worker_task = asyncio.create_task(self._process_decompression_queue())
+        self._decompression_worker_task = asyncio.create_task(
+            self._process_decompression_queue()
+        )
 
     async def _process_decompression_queue(self):
         """

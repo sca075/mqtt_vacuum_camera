@@ -27,7 +27,7 @@ SCAN_INTERVAL = timedelta(seconds=2)
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 
-@dataclass
+@dataclass(frozen = True)
 class VacuumSensorDescription(SensorEntityDescription):
     """A class that describes vacuum sensor entities."""
 
