@@ -1,6 +1,6 @@
 """
 Multiprocessing module
-Version: 2025.3.0b0
+Version: 2025.3.0b1
 This module provide the image multiprocessing in order to
 avoid the overload of the main_thread of Home Assistant.
 """
@@ -21,12 +21,11 @@ from valetudo_map_parser.config.types import Color, JsonType, PilPNG
 from valetudo_map_parser.hypfer_handler import HypferMapImageHandler
 from valetudo_map_parser.rand25_handler import ReImageHandler
 
-from custom_components.mqtt_vacuum_camera.const import NOT_STREAMING_STATES, LOGGER
+from custom_components.mqtt_vacuum_camera.const import LOGGER, NOT_STREAMING_STATES
 from custom_components.mqtt_vacuum_camera.utils.files_operations import (
     async_get_active_user_language,
 )
 from custom_components.mqtt_vacuum_camera.utils.status_text import StatusText
-
 
 LOGGER.propagate = True
 

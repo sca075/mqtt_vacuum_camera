@@ -22,15 +22,24 @@
       "init": {
         "title": "خيارات كاميرا MQTT",
         "description": "### _الخيارات القياسية_:",
-        "data": {
-          "camera_config_action": "الإجراء"
+        "menu_options": {
+          "image_opt": "خيارات الصورة",
+          "base_colours": "الألوان العامة",
+          "floor_only": "لون الأرضية",
+          "rooms_colours_1": "ألوان الغرف 1 إلى 8",
+          "rooms_colours_2": "ألوان الغرف 9 إلى 16",
+          "advanced": "خيارات متقدمة"
         }
       },
       "advanced": {
         "title": "خيارات كاميرا MQTT",
         "description": "### _الخيارات المتقدمة_:",
-        "data": {
-          "camera_config_action": "الإجراء"
+        "menu_options": {
+          "image_offset": "إزاحة الصورة",
+          "status_text": "نص الحالة",
+          "download_logs": "تحميل السجلات",
+          "rename_translations": "إعادة تسمية الترجمات",
+          "reset_map_trims": "إعادة تعيين تقليم الخريطة"
         }
       },
       "download_logs": {
@@ -224,24 +233,6 @@
     }
   },
   "selector": {
-    "camera_config_action": {
-      "options": {
-        "opt_1": "تكوين الصورة",
-        "opt_2": "تكوين الألوان العامة",
-        "opt_3": "ألوان الغرف من 1 إلى 8",
-        "opt_4": "ألوان الغرف من 9 إلى 16",
-        "opt_5": "الخيارات المتقدمة"
-      }
-    },
-    "camera_config_advanced": {
-      "options": {
-        "opt_1": "تكوين إزاحة الصورة",
-        "opt_2": "تكوين نص الحالة",
-        "opt_3": "نسخ سجلات الكاميرا إلى www",
-        "opt_4": "إعادة تسمية خيارات الألوان",
-        "opt_5": "إعادة تعيين تقليم الخريطة"
-      }
-    },
     "camera_logs_progres": {
       "options": {
         "opt_1": "نسخ السجلات إلى www",
@@ -256,7 +247,7 @@
         "cleaning": "ينظف",
         "docked": "موصول",
         "idle": "خامل",
-        "paused": "متوقف مؤقتاً",
+        "paused": "متوقف مؤقت",
         "returning": "يعود"
       }
     }
