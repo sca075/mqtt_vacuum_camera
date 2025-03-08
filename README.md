@@ -1,12 +1,14 @@
 [releases_shield]: https://img.shields.io/github/release/sca075/mqtt_vacuum_camera.svg?style=popout
 [latest_release]: https://github.com/sca075/mqtt_vacuum_camera/releases/latest
+[releases]: https://github.com/sca075/mqtt_vacuum_camera/releases
+[downloads_total_shield]: https://img.shields.io/github/downloads/sca075/mqtt_vacuum_camera/total
 
 # MQTT Vacuum's Camera
 <p align="center">
   <img width="256" alt="logo@2x" src="https://github.com/sca075/mqtt_vacuum_camera/assets/82227818/0c623494-2844-4ed9-a246-0ad27f32503e">
 </p>
 
-## Current Release: [![GitHub Latest Release][releases_shield]][latest_release]
+## Current Release: [![GitHub Latest Release][releases_shield]][latest_release] [![GitHub All Releases][downloads_total_shield]][releases]
 
 ![Screenshot 2023-12-27 at 13 37 57](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/4f1f76ee-b507-4fde-b1bd-32e6980873cb)
 
