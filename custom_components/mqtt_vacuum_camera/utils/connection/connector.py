@@ -1,22 +1,24 @@
 """
-Version: 2025.3.0b0 - Consolidated ValetudoConnector with grouped data.
+Version: 2025.3.0b1 - Consolidated ValetudoConnector with grouped data.
 """
 
 import asyncio
-import json
 from dataclasses import dataclass, field
+import json
 from typing import Any, Dict, List
+
 from homeassistant.components import mqtt
 from homeassistant.core import EventOrigin, HomeAssistant, callback
 from isal import igzip, isal_zlib  # pylint: disable=I1101
 from valetudo_map_parser.config.rand25_parser import RRMapParser
 from valetudo_map_parser.config.types import RoomStore
+
 from custom_components.mqtt_vacuum_camera.common import build_full_topic_set
 from custom_components.mqtt_vacuum_camera.const import (
     DECODED_TOPICS,
+    LOGGER,
     NON_DECODED_TOPICS,
     CameraModes,
-    LOGGER,
 )
 
 _QOS = 0

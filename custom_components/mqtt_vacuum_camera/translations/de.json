@@ -22,15 +22,24 @@
       "init": {
         "title": "MQTT Kamera Optionen",
         "description": "### _Standardoptionen_:",
-        "data": {
-          "camera_config_action": "Aktion"
+        "menu_options": {
+          "image_opt": "Bildoptionen",
+          "base_colours": "Allgemeine Farben",
+          "floor_only": "Bodenfarbe",
+          "rooms_colours_1": "Raumfarben 1 bis 8",
+          "rooms_colours_2": "Raumfarben 9 bis 16",
+          "advanced": "Erweiterte Optionen"
         }
       },
       "advanced": {
         "title": "MQTT Kamera Optionen",
         "description": "### _Erweiterte Optionen_:",
-        "data": {
-          "camera_config_action": "Aktion"
+        "menu_options": {
+          "image_offset": "Bildversatz",
+          "status_text": "Statustext",
+          "download_logs": "Protokolle herunterladen",
+          "rename_translations": "Übersetzungen umbenennen",
+          "reset_map_trims": "Kartenzuschnitte zurücksetzen"
         }
       },
       "download_logs": {
@@ -224,24 +233,6 @@
     }
   },
   "selector": {
-    "camera_config_action": {
-      "options": {
-        "opt_1": "Bild konfigurieren",
-        "opt_2": "Allgemeine Farben konfigurieren",
-        "opt_3": "Farben für Räume 1 bis 8",
-        "opt_4": "Farben für Räume 9 bis 16",
-        "opt_5": "Erweiterte Optionen"
-      }
-    },
-    "camera_config_advanced": {
-      "options": {
-        "opt_1": "Bildversatz konfigurieren",
-        "opt_2": "Status-Text konfigurieren",
-        "opt_3": "Kameraprotokolle in www kopieren",
-        "opt_4": "Farben umbenennen",
-        "opt_5": "Kartenzuschnitte zurücksetzen"
-      }
-    },
     "camera_logs_progres": {
       "options": {
         "opt_1": "Protokolle in www kopieren",

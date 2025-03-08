@@ -22,15 +22,24 @@
          "init": {
             "title": "MQTT Kameraalternativ",
             "description": "### _Standardalternativ_:",
-            "data": {
-               "camera_config_action": "Åtgärd"
+            "menu_options": {
+               "image_opt": "Bildalternativ",
+               "base_colours": "Allmänna färger",
+               "floor_only": "Golvfärg",
+               "rooms_colours_1": "Rumsfärger 1 till 8",
+               "rooms_colours_2": "Rumsfärger 9 till 16",
+               "advanced": "Avancerade alternativ"
             }
          },
          "advanced": {
             "title": "MQTT Kameraalternativ",
             "description": "### _Avancerade alternativ_:",
-            "data": {
-               "camera_config_action": "Åtgärd"
+            "menu_options": {
+               "image_offset": "Bildförskjutning",
+               "status_text": "Statustext",
+               "download_logs": "Ladda ner loggar",
+               "rename_translations": "Byt namn på översättningar",
+               "reset_map_trims": "Återställ kartbeskärningar"
             }
          },
          "download_logs": {
@@ -224,24 +233,6 @@
       }
    },
    "selector": {
-      "camera_config_action": {
-         "options": {
-            "opt_1": "Konfigurera bild",
-            "opt_2": "Konfigurera allmänna färger",
-            "opt_3": "Färger för rum 1 till 8",
-            "opt_4": "Färger för rum 9 till 16",
-            "opt_5": "Avancerade alternativ"
-         }
-      },
-      "camera_config_advanced": {
-         "options": {
-            "opt_1": "Konfigurera bildoffset",
-            "opt_2": "Konfigurera statustext",
-            "opt_3": "Kopiera kamerajournaler till www",
-            "opt_4": "Döp om färgalternativ",
-            "opt_5": "Återställ karttrimningar"
-         }
-      },
       "camera_logs_progres": {
          "options": {
             "opt_1": "Kopiera journaler till www",

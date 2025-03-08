@@ -22,15 +22,24 @@
       "init": {
         "title": "MQTT相機選項",
         "description": "### _標準選項_:",
-        "data": {
-          "camera_config_action": "操作"
+        "menu_options": {
+          "image_opt": "圖像選項",
+          "base_colours": "基本顏色",
+          "floor_only": "地板顏色",
+          "rooms_colours_1": "房間1至8顏色",
+          "rooms_colours_2": "房間9至15顏色",
+          "advanced": "進階選項"
         }
       },
       "advanced": {
         "title": "MQTT相機選項",
-        "description": "### _高級選項_:",
-        "data": {
-          "camera_config_action": "操作"
+        "description": "### _進階選項_:",
+        "menu_options": {
+          "image_offset": "圖像偏移",
+          "status_text": "狀態文字",
+          "download_logs": "下載日誌",
+          "rename_translations": "重命名翻譯",
+          "reset_map_trims": "重置地圖裁剪"
         }
       },
       "download_logs": {
@@ -224,24 +233,6 @@
     }
   },
   "selector": {
-    "camera_config_action": {
-      "options": {
-        "opt_1": "配置圖像",
-        "opt_2": "配置一般顏色",
-        "opt_3": "配置房間1至8的顏色",
-        "opt_4": "配置房間9至16的顏色",
-        "opt_5": "高級選項"
-      }
-    },
-    "camera_config_advanced": {
-      "options": {
-        "opt_1": "配置圖像偏移",
-        "opt_2": "配置狀態文字",
-        "opt_3": "將相機日誌複製到www",
-        "opt_4": "重新命名顏色選項",
-        "opt_5": "重置地圖修剪"
-      }
-    },
     "camera_logs_progres": {
       "options": {
         "opt_1": "將日誌複製到www",

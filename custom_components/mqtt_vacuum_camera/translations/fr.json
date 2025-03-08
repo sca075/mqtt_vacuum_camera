@@ -20,17 +20,26 @@
   "options": {
     "step": {
       "init": {
-        "title": "Options de la caméra MQTT",
-        "description": "### _Options standards_ :",
-        "data": {
-          "camera_config_action": "Action"
+        "title": "Options de la Caméra MQTT",
+        "description": "### _Options Standard_:",
+        "menu_options": {
+          "image_opt": "Options d'Image",
+          "base_colours": "Couleurs Générales",
+          "floor_only": "Couleur du Sol",
+          "rooms_colours_1": "Couleurs Pièces 1 à 8",
+          "rooms_colours_2": "Couleurs Pièces 9 à 15",
+          "advanced": "Options Avancées"
         }
       },
       "advanced": {
-        "title": "Options de la caméra MQTT",
-        "description": "### _Options avancées_ :",
-        "data": {
-          "camera_config_action": "Action"
+        "title": "Options de la Caméra MQTT",
+        "description": "### _Options Avancées_:",
+        "menu_options": {
+          "image_offset": "Décalage d'Image",
+          "status_text": "Texte d'État",
+          "download_logs": "Télécharger les Journaux",
+          "rename_translations": "Renommer les Traductions",
+          "reset_map_trims": "Réinitialiser les Découpes"
         }
       },
       "download_logs": {
@@ -224,24 +233,6 @@
     }
   },
   "selector": {
-    "camera_config_action": {
-      "options": {
-        "opt_1": "Configurer l'image",
-        "opt_2": "Configurer les couleurs générales",
-        "opt_3": "Couleurs des pièces de 1 à 8",
-        "opt_4": "Couleurs des pièces de 9 à 16",
-        "opt_5": "Options avancées"
-      }
-    },
-    "camera_config_advanced": {
-      "options": {
-        "opt_1": "Configurer le décalage de l'image",
-        "opt_2": "Configurer le texte d'état",
-        "opt_3": "Copier les journaux de la caméra vers www",
-        "opt_4": "Renommer les options de couleur",
-        "opt_5": "Réinitialiser les découpes de la carte"
-      }
-    },
     "camera_logs_progres": {
       "options": {
         "opt_1": "Copier les journaux vers www",

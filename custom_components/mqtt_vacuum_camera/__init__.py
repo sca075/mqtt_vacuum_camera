@@ -1,5 +1,7 @@
-"""MQTT Vacuum Camera.
-Version: 2025.2.2"""
+"""
+MQTT Vacuum Camera.
+Version: 2025.2.2
+"""
 
 from functools import partial
 import os
@@ -17,7 +19,12 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.reload import async_register_admin_service
 from homeassistant.helpers.storage import STORAGE_DIR
 
-from .common import get_vacuum_device_info, get_vacuum_mqtt_topic, update_options
+from .common import (
+    RedactIPFilter,
+    get_vacuum_device_info,
+    get_vacuum_mqtt_topic,
+    update_options,
+)
 from .const import (
     CAMERA_STORAGE,
     CONF_VACUUM_CONFIG_ENTRY_ID,
@@ -27,7 +34,6 @@ from .const import (
     LOGGER,
 )
 from .coordinator import MQTTVacuumCoordinator
-from .common import RedactIPFilter
 from .utils.camera.camera_services import (
     obstacle_view,
     reload_camera_config,

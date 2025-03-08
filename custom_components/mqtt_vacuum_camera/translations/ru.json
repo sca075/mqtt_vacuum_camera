@@ -22,15 +22,24 @@
       "init": {
         "title": "Опции камеры MQTT",
         "description": "### _Стандартные опции_:",
-        "data": {
-          "camera_config_action": "Действие"
+        "menu_options": {
+          "image_opt": "Настройки изображения",
+          "base_colours": "Общие цвета",
+          "floor_only": "Цвет пола",
+          "rooms_colours_1": "Цвета комнат 1-8",
+          "rooms_colours_2": "Цвета комнат 9-16",
+          "advanced": "Расширенные опции"
         }
       },
       "advanced": {
         "title": "Опции камеры MQTT",
         "description": "### _Расширенные опции_:",
-        "data": {
-          "camera_config_action": "Действие"
+        "menu_options": {
+          "image_offset": "Смещение изображения",
+          "status_text": "Текст статуса",
+          "download_logs": "Скачать журналы",
+          "rename_translations": "Переименовать переводы",
+          "reset_map_trims": "Сбросить обрезку карты"
         }
       },
       "download_logs": {
@@ -224,24 +233,6 @@
     }
   },
   "selector": {
-    "camera_config_action": {
-      "options": {
-        "opt_1": "Настроить изображение",
-        "opt_2": "Настроить Общие Цвета",
-        "opt_3": "Цвета Комнат 1 до 8",
-        "opt_4": "Цвета Комнат 9 до 16",
-        "opt_5": "Расширенные Опции"
-      }
-    },
-    "camera_config_advanced": {
-      "options": {
-        "opt_1": "Настроить Смещение Изображения",
-        "opt_2": "Настроить Текст Статуса",
-        "opt_3": "Копировать Журналы Камеры на www",
-        "opt_4": "Переименовать Опции Цветов",
-        "opt_5": "Сбросить обрезки карты"
-      }
-    },
     "camera_logs_progres": {
       "options": {
         "opt_1": "Копировать Журналы на www",

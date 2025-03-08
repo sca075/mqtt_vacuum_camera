@@ -22,15 +22,24 @@
       "init": {
         "title": "MQTTカメラオプション",
         "description": "### _標準オプション_:",
-        "data": {
-          "camera_config_action": "アクション"
+        "menu_options": {
+          "image_opt": "画像オプション",
+          "base_colours": "基本色",
+          "floor_only": "フロアの色",
+          "rooms_colours_1": "部屋1～8の色",
+          "rooms_colours_2": "部屋9～15の色",
+          "advanced": "詳細設定"
         }
       },
       "advanced": {
         "title": "MQTTカメラオプション",
-        "description": "### _アドバンスドオプション_:",
-        "data": {
-          "camera_config_action": "アクション"
+        "description": "### _詳細オプション_:",
+        "menu_options": {
+          "image_offset": "画像オフセット",
+          "status_text": "ステータステキスト",
+          "download_logs": "ログのダウンロード",
+          "rename_translations": "翻訳の名前変更",
+          "reset_map_trims": "地図トリムのリセット"
         }
       },
       "download_logs": {
@@ -224,24 +233,6 @@
     }
   },
   "selector": {
-    "camera_config_action": {
-      "options": {
-        "opt_1": "画像設定",
-        "opt_2": "一般色設定",
-        "opt_3": "部屋1から8の色設定",
-        "opt_4": "部屋9から16の色設定",
-        "opt_5": "アドバンスドオプション"
-      }
-    },
-    "camera_config_advanced": {
-      "options": {
-        "opt_1": "画像オフセット設定",
-        "opt_2": "ステータステキスト設定",
-        "opt_3": "カメラログをwwwにコピー",
-        "opt_4": "色オプションの名前変更",
-        "opt_5": "マップトリムをリセット"
-      }
-    },
     "camera_logs_progres": {
       "options": {
         "opt_1": "ログをwwwにコピー",

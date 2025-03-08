@@ -22,15 +22,24 @@
       "init": {
         "title": "MQTT Kameraindstillinger",
         "description": "### _Standardindstillinger_:",
-        "data": {
-          "camera_config_action": "Handling"
+        "menu_options": {
+          "image_opt": "Billedindstillinger",
+          "base_colours": "Generelle farver",
+          "floor_only": "Gulvfarve",
+          "rooms_colours_1": "Rumfarver 1 til 8",
+          "rooms_colours_2": "Rumfarver 9 til 16",
+          "advanced": "Avancerede indstillinger"
         }
       },
       "advanced": {
         "title": "MQTT Kameraindstillinger",
         "description": "### _Avancerede indstillinger_:",
-        "data": {
-          "camera_config_action": "Handling"
+        "menu_options": {
+          "image_offset": "Billedforskydning",
+          "status_text": "Statustekst",
+          "download_logs": "Download logfiler",
+          "rename_translations": "Omdøb oversættelser",
+          "reset_map_trims": "Nulstil kortbeskæringer"
         }
       },
       "download_logs": {
@@ -224,24 +233,6 @@
     }
   },
   "selector": {
-    "camera_config_action": {
-      "options": {
-        "opt_1": "Konfigurer billede",
-        "opt_2": "Konfigurer generelle farver",
-        "opt_3": "Farver Rum 1 til 8",
-        "opt_4": "Farver Rum 9 til 16",
-        "opt_5": "Avancerede indstillinger"
-      }
-    },
-    "camera_config_advanced": {
-      "options": {
-        "opt_1": "Konfigurer billedeoffset",
-        "opt_2": "Konfigurer statustekst",
-        "opt_3": "Kopier kameralogs til www",
-        "opt_4": "Omdøb farvevalg",
-        "opt_5": "Nulstil kortjusteringer"
-      }
-    },
     "camera_logs_progres": {
       "options": {
         "opt_1": "Kopier logfiler til www",

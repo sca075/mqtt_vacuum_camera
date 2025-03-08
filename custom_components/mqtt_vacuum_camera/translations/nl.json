@@ -22,15 +22,24 @@
       "init": {
         "title": "MQTT Camera Opties",
         "description": "### _Standaardopties_:",
-        "data": {
-          "camera_config_action": "Actie"
+        "menu_options": {
+          "image_opt": "Afbeeldingsopties",
+          "base_colours": "Algemene Kleuren",
+          "floor_only": "Vloerkleur",
+          "rooms_colours_1": "Kamerkleuren 1 tot 8",
+          "rooms_colours_2": "Kamerkleuren 9 tot 15",
+          "advanced": "Geavanceerde Opties"
         }
       },
       "advanced": {
         "title": "MQTT Camera Opties",
-        "description": "### _Geavanceerde opties_:",
-        "data": {
-          "camera_config_action": "Actie"
+        "description": "### _Geavanceerde Opties_:",
+        "menu_options": {
+          "image_offset": "Afbeeldingsverschuiving",
+          "status_text": "Statustekst",
+          "download_logs": "Logboeken Downloaden",
+          "rename_translations": "Vertalingen Hernoemen",
+          "reset_map_trims": "Kaartuitsneden Resetten"
         }
       },
       "download_logs": {
@@ -224,24 +233,6 @@
     }
   },
   "selector": {
-    "camera_config_action": {
-      "options": {
-        "opt_1": "Beeld instellen",
-        "opt_2": "Algemene Kleuren instellen",
-        "opt_3": "Kleuren Kamers 1 tot 8 instellen",
-        "opt_4": "Kleuren Kamers 9 tot 16 instellen",
-        "opt_5": "Geavanceerde Opties"
-      }
-    },
-    "camera_config_advanced": {
-      "options": {
-        "opt_1": "Beeld offset instellen",
-        "opt_2": "Status Tekst instellen",
-        "opt_3": "Kopieer Camera Logs naar www",
-        "opt_4": "Kleur Opties hernoemen",
-        "opt_5": "Kaartbijsnijdingen resetten"
-      }
-    },
     "camera_logs_progres": {
       "options": {
         "opt_1": "Logs naar www kopiëren",

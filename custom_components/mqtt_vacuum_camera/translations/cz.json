@@ -22,15 +22,24 @@
       "init": {
         "title": "Možnosti kamery MQTT",
         "description": "### _Standardní možnosti_:",
-        "data": {
-          "camera_config_action": "Akce"
+        "menu_options": {
+          "image_opt": "Možnosti obrázku",
+          "base_colours": "Obecné barvy",
+          "floor_only": "Barva podlahy",
+          "rooms_colours_1": "Barvy pokojů 1 až 8",
+          "rooms_colours_2": "Barvy pokojů 9 až 16",
+          "advanced": "Pokročilé možnosti"
         }
       },
       "advanced": {
         "title": "Možnosti kamery MQTT",
         "description": "### _Pokročilé možnosti_:",
-        "data": {
-          "camera_config_action": "Akce"
+        "menu_options": {
+          "image_offset": "Posunutí obrázku",
+          "status_text": "Text stavu",
+          "download_logs": "Stáhnout protokoly",
+          "rename_translations": "Přejmenovat překlady",
+          "reset_map_trims": "Obnovit ořezy mapy"
         }
       },
       "download_logs": {
@@ -224,24 +233,6 @@
     }
   },
   "selector": {
-    "camera_config_action": {
-      "options": {
-        "opt_1": "Nastavit obrázek",
-        "opt_2": "Nastavit obecné barvy",
-        "opt_3": "Barvy pokojů od 1 do 8",
-        "opt_4": "Barvy pokojů od 9 do 16",
-        "opt_5": "Pokročilé možnosti"
-      }
-    },
-    "camera_config_advanced": {
-      "options": {
-        "opt_1": "Nastavit posunutí obrázku",
-        "opt_2": "Nastavit text stavu",
-        "opt_3": "Kopírovat protokoly kamery do www",
-        "opt_4": "Přejmenovat možnosti barev",
-        "opt_5": "Obnovit oříznutí mapy"
-      }
-    },
     "camera_logs_progres": {
       "options": {
         "opt_1": "Kopírovat protokoly do www",

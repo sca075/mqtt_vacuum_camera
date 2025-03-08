@@ -21,16 +21,25 @@
     "step": {
       "init": {
         "title": "Opzioni Fotocamera MQTT",
-        "description": "### _Opzioni Standard_ :",
-        "data": {
-          "camera_config_action": "Azione"
+        "description": "### _Opzioni Standard_:",
+        "menu_options": {
+          "image_opt": "Opzioni Immagine",
+          "base_colours": "Colori Generali",
+          "floor_only": "Colore Pavimento",
+          "rooms_colours_1": "Colori Stanze 1 a 8",
+          "rooms_colours_2": "Colori Stanze 9 a 16",
+          "advanced": "Opzioni Avanzate"
         }
       },
       "advanced": {
         "title": "Opzioni Fotocamera MQTT",
-        "description": "### _Opzioni Avanzate_ :",
-        "data": {
-          "camera_config_action": "Azione"
+        "description": "### _Opzioni Avanzate_:",
+        "menu_options": {
+          "image_offset": "Offset Immagine",
+          "status_text": "Testo Stato",
+          "download_logs": "Scarica Log",
+          "rename_translations": "Rinomina Traduzioni",
+          "reset_map_trims": "Reimposta Ritagli Mappa"
         }
       },
       "download_logs": {
@@ -224,24 +233,6 @@
     }
   },
   "selector": {
-    "camera_config_action": {
-      "options": {
-        "opt_1": "Configura Immagine",
-        "opt_2": "Configura Colori Generali",
-        "opt_3": "Colori delle Stanze da 1 a 8",
-        "opt_4": "Colori delle Stanze da 9 a 16",
-        "opt_5": "Opzioni Avanzate"
-      }
-    },
-    "camera_config_advanced": {
-      "options": {
-        "opt_1": "Configura Spostamento Immagine",
-        "opt_2": "Configura Testo di Stato",
-        "opt_3": "Copia i Log della Fotocamera su www",
-        "opt_4": "Rinomina Opzioni di Colore",
-        "opt_5": "Reimposta trims della mappa"
-      }
-    },
     "camera_logs_progres": {
       "options": {
         "opt_1": "Copia Log su www",

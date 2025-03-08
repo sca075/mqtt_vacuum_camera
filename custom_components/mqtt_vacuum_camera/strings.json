@@ -22,15 +22,24 @@
       "init": {
         "title": "MQTT Camera Options",
         "description": "### _Standard Options_:",
-        "data": {
-          "camera_config_action": "Action"
+        "menu_options": {
+          "advanced": "Advanced Options",
+          "image_opt": "Image Options",
+          "base_colours": "General Colours",
+          "floor_only": "Floor Colour",
+          "rooms_colours_1": "Rooms 1 to 8 Colours",
+          "rooms_colours_2": "Rooms 9 to 15 Colours"
         }
       },
       "advanced": {
         "title": "MQTT Camera Options",
         "description": "### _Advanced Options_:",
-        "data": {
-          "camera_config_action": "Action"
+        "menu_options": {
+          "image_offset": "Image Offset",
+          "status_text": "Status Text",
+          "download_logs": "Download Logs",
+          "rename_translations": "Rename Translations",
+          "reset_map_trims": "Reset Map Trims"
         }
       },
       "download_logs": {
@@ -224,24 +233,6 @@
     }
   },
   "selector": {
-    "camera_config_action": {
-      "options": {
-        "opt_1": "Configure Image",
-        "opt_2": "Configure General Colours",
-        "opt_3": "Colours Rooms 1 to 8",
-        "opt_4": "Colours Rooms 9 to 16",
-        "opt_5": "Advanced Options"
-      }
-    },
-    "camera_config_advanced": {
-      "options": {
-        "opt_1": "Configure Offset Image",
-        "opt_2": "Configure Status Text",
-        "opt_3": "Copy Camera Logs to www",
-        "opt_4": "Rename Colour Options",
-        "opt_5": "Reset Map Trims"
-      }
-    },
     "camera_logs_progres": {
       "options": {
         "opt_1": "Copy Logs to www",

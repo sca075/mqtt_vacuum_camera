@@ -20,17 +20,26 @@
   "options": {
     "step": {
       "init": {
-        "title": "Opcje kamery MQTT",
-        "description": "### _Standardowe opcje_:",
-        "data": {
-          "camera_config_action": "Dzia\u0142anie"
+        "title": "Opcje Kamery MQTT",
+        "description": "### _Opcje Standardowe_:",
+        "menu_options": {
+          "image_opt": "Opcje Obrazu",
+          "base_colours": "Kolory Ogólne",
+          "floor_only": "Kolor Podłogi",
+          "rooms_colours_1": "Kolory Pokoi 1 do 8",
+          "rooms_colours_2": "Kolory Pokoi 9 do 16",
+          "advanced": "Opcje Zaawansowane"
         }
       },
       "advanced": {
-        "title": "Opcje kamery MQTT",
-        "description": "### _Zaawansowane opcje_:",
-        "data": {
-          "camera_config_action": "Dzia\u0142anie"
+        "title": "Opcje Kamery MQTT",
+        "description": "### _Opcje Zaawansowane_:",
+        "menu_options": {
+          "image_offset": "Przesunięcie Obrazu",
+          "status_text": "Tekst Statusu",
+          "download_logs": "Pobierz Logi",
+          "rename_translations": "Zmień Nazwy Tłumaczeń",
+          "reset_map_trims": "Resetuj Przycięcia Mapy"
         }
       },
       "download_logs": {
@@ -224,24 +233,6 @@
     }
   },
   "selector": {
-    "camera_config_action": {
-      "options": {
-        "opt_1": "Skonfiguruj obraz",
-        "opt_2": "Skonfiguruj Og\u00f3lne Kolory",
-        "opt_3": "Kolory Pokoje 1 do 8",
-        "opt_4": "Kolory Pokoje 9 do 16",
-        "opt_5": "Zaawansowane Opcje"
-      }
-    },
-    "camera_config_advanced": {
-      "options": {
-        "opt_1": "Skonfiguruj Przesuni\u0119cie Obrazu",
-        "opt_2": "Skonfiguruj Tekst Statusu",
-        "opt_3": "Kopiuj Dzienniki Kamery do www",
-        "opt_4": "Zmie\u0144 Nazwy Opcji Kolor\u00f3w",
-        "opt_5": "Zresetuj przycięcia mapy"
-      }
-    },
     "camera_logs_progres": {
       "options": {
         "opt_1": "Kopiuj Dzienniki do www",

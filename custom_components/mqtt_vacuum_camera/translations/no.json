@@ -22,15 +22,24 @@
       "init": {
         "title": "MQTT Kameraalternativer",
         "description": "### _Standardalternativer_:",
-        "data": {
-          "camera_config_action": "Handling"
+        "menu_options": {
+          "image_opt": "Bildealternativer",
+          "base_colours": "Generelle Farger",
+          "floor_only": "Gulvfarge",
+          "rooms_colours_1": "Romfarger 1 til 8",
+          "rooms_colours_2": "Romfarger 9 til 15",
+          "advanced": "Avanserte Alternativer"
         }
       },
       "advanced": {
         "title": "MQTT Kameraalternativer",
-        "description": "### _Avanserte alternativer_:",
-        "data": {
-          "camera_config_action": "Handling"
+        "description": "### _Avanserte Alternativer_:",
+        "menu_options": {
+          "image_offset": "Bildeforskyvning",
+          "status_text": "Statustekst",
+          "download_logs": "Last Ned Logger",
+          "rename_translations": "Gi Nytt Navn til Oversettelser",
+          "reset_map_trims": "Tilbakestill Kartbeskjæringer"
         }
       },
       "download_logs": {
@@ -224,24 +233,6 @@
     }
   },
   "selector": {
-    "camera_config_action": {
-      "options": {
-        "opt_1": "Konfigurer Bilde",
-        "opt_2": "Konfigurer Generelle Farger",
-        "opt_3": "Farger Rom 1 til 8",
-        "opt_4": "Farger Rom 9 til 16",
-        "opt_5": "Avanserte Alternativer"
-      }
-    },
-    "camera_config_advanced": {
-      "options": {
-        "opt_1": "Konfigurer Bilde Offset",
-        "opt_2": "Konfigurer Status Tekst",
-        "opt_3": "Kopier Kamera Logger til www",
-        "opt_4": "Gi nytt navn til Fargealternativer",
-        "opt_5": "Tilbakestill karttrim"
-      }
-    },
     "camera_logs_progres": {
       "options": {
         "opt_1": "Kopier Logger til www",
