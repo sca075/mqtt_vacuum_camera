@@ -1,11 +1,12 @@
 """Constants for the mqtt_vacuum_camera integration.
-Version 2025.2.2"""
+Version 2025.3.0"""
 
 import logging
+from typing import Final
+
 from homeassistant.components.camera import DOMAIN as CAMERA_DOMAIN
 from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
 from homeassistant.components.vacuum import DOMAIN as VACUUM_DOMAIN
-from typing import Final
 
 """Required in Config_Flow"""
 DOMAIN: Final = "mqtt_vacuum_camera"

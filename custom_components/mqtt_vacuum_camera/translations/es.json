@@ -20,17 +20,26 @@
   "options": {
     "step": {
       "init": {
-        "title": "Opciones de la Cámara MQTT",
+        "title": "Opciones de Cámara MQTT",
         "description": "### _Opciones Estándar_:",
-        "data": {
-          "camera_config_action": "Acción"
+        "menu_options": {
+          "image_opt": "Opciones de Imagen",
+          "base_colours": "Colores Generales",
+          "floor_only": "Color del Suelo",
+          "rooms_colours_1": "Colores Habitaciones 1 a 8",
+          "rooms_colours_2": "Colores Habitaciones 9 a 16",
+          "advanced": "Opciones Avanzadas"
         }
       },
       "advanced": {
-        "title": "Opciones de la Cámara MQTT",
+        "title": "Opciones de Cámara MQTT",
         "description": "### _Opciones Avanzadas_:",
-        "data": {
-          "camera_config_action": "Acción"
+        "menu_options": {
+          "image_offset": "Desplazamiento de Imagen",
+          "status_text": "Texto de Estado",
+          "download_logs": "Descargar Registros",
+          "rename_translations": "Renombrar Traducciones",
+          "reset_map_trims": "Restablecer Recortes del Mapa"
         }
       },
       "download_logs": {
@@ -224,24 +233,6 @@
     }
   },
   "selector": {
-    "camera_config_action": {
-      "options": {
-        "opt_1": "Configurar Imagen",
-        "opt_2": "Configurar Colores Generales",
-        "opt_3": "Colores de Habitaciones 1 a 8",
-        "opt_4": "Colores de Habitaciones 9 a 16",
-        "opt_5": "Opciones Avanzadas"
-      }
-    },
-    "camera_config_advanced": {
-      "options": {
-        "opt_1": "Configurar Desplazamiento de Imagen",
-        "opt_2": "Configurar Texto de Estado",
-        "opt_3": "Copiar Registros de la Cámara a www",
-        "opt_4": "Renombrar Opciones de Colores",
-        "opt_5": "Restablecer recortes del mapa"
-      }
-    },
     "camera_logs_progres": {
       "options": {
         "opt_1": "Copiar Registros a www",

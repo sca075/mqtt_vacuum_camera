@@ -1,5 +1,5 @@
 """
-Version: 2025.3.0b0
+Version: 2025.3.0b10
 Status text of the vacuum cleaners.
 Clas to handle the status text of the vacuum cleaners.
 """
@@ -11,7 +11,6 @@ import json
 from valetudo_map_parser.config.types import JsonType, PilPNG
 
 from ..const import DOMAIN, LOGGER
-
 
 LOGGER.propagate = True
 
