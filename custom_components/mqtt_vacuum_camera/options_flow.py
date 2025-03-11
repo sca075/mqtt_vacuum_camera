@@ -82,12 +82,12 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         self.camera_config = config_entry
         self.unique_id = self.camera_config.unique_id
         self.camera_options = {}
-        self.bk_options = deepcopy(dict(self.camera_config.options))
+        self.backup_options = deepcopy(dict(self.camera_config.options))
         self.file_name = extract_file_name(self.unique_id)
-        self._check_alpha = False
+        self.is_alpha_enabled = False
         self.number_of_rooms = DEFAULT_ROOMS
         LOGGER.debug(
-            "Options edit in progress.. options before edit: %s", dict(self.bk_options)
+            "Options edit in progress.. options before edit: %s", dict(self.backup_options)
         )
         options_values = list(self.camera_config.options.values())
         if len(options_values) > 0:
@@ -105,7 +105,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                 options=RATIO_VALUES,
                 mode=SelectSelectorMode.DROPDOWN,
             )
-            self.IMG_SCHEMA = vol.Schema(
+            self.image_schema = vol.Schema(
                 {
                     vol.Required(
                         ATTR_ROTATE, default=config_entry.options.get("rotate_image")
@@ -202,7 +202,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                         COLOR_NO_GO, default=config_entry.options.get("color_no_go")
                     ): ColorRGBSelector(),
                     vol.Optional(
-                        IS_ALPHA, default=self._check_alpha
+                        IS_ALPHA, default=self.is_alpha_enabled
                     ): BooleanSelector(),
                 }
             )
@@ -311,7 +311,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
 
         return self.async_show_form(
             step_id="image_opt",
-            data_schema=self.IMG_SCHEMA,
+            data_schema=self.image_schema,
             description_placeholders=self.camera_options,
         )
 
@@ -382,9 +382,9 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                     "color_background": user_input.get(COLOR_BACKGROUND),
                 }
             )
-            self._check_alpha = user_input.get(IS_ALPHA)
-            if self._check_alpha:
-                self._check_alpha = False
+            self.is_alpha_enabled = user_input.get(IS_ALPHA)
+            if self.is_alpha_enabled:
+                self.is_alpha_enabled = False
                 return await self.async_step_alpha_1()
             return await self.async_step_opt_save()
 
@@ -428,8 +428,8 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         if user_input is not None:
             # Update options based on user input
             self.camera_options.update({"color_room_0": user_input.get(COLOR_ROOM_0)})
-            self._check_alpha = user_input.get(IS_ALPHA_R1, False)
-            if self._check_alpha:
+            self.is_alpha_enabled = user_input.get(IS_ALPHA_R1, False)
+            if self.is_alpha_enabled:
                 return await self.async_step_alpha_floor()
             return await self.async_step_opt_save()
 
@@ -437,7 +437,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
             vol.Optional(
                 COLOR_ROOM_0, default=self.camera_config.options.get("color_room_0")
             ): ColorRGBSelector(),
-            vol.Optional(IS_ALPHA_R1, default=self._check_alpha): BooleanSelector(),
+            vol.Optional(IS_ALPHA_R1, default=self.is_alpha_enabled): BooleanSelector(),
         }
 
         return self.async_show_form(
@@ -463,9 +463,9 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                 room_key = f"color_room_{i}"
                 self.camera_options.update({room_key: user_input.get(room_key)})
 
-            self._check_alpha = user_input.get(IS_ALPHA_R1, False)
+            self.is_alpha_enabled = user_input.get(IS_ALPHA_R1, False)
 
-            if self._check_alpha:
+            if self.is_alpha_enabled:
                 return await self.async_step_alpha_2()
             return await self.async_step_opt_save()
 
@@ -479,7 +479,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                 )
             ] = ColorRGBSelector()
 
-        fields[vol.Optional(IS_ALPHA_R1, default=self._check_alpha)] = BooleanSelector()
+        fields[vol.Optional(IS_ALPHA_R1, default=self.is_alpha_enabled)] = BooleanSelector()
 
         return self.async_show_form(
             step_id="rooms_colours_1",
@@ -498,9 +498,9 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                 room_key = f"color_room_{i}"
                 self.camera_options.update({room_key: user_input.get(room_key)})
 
-            self._check_alpha = user_input.get(IS_ALPHA_R2, False)
+            self.is_alpha_enabled = user_input.get(IS_ALPHA_R2, False)
 
-            if self._check_alpha:
+            if self.is_alpha_enabled:
                 return await self.async_step_alpha_3()
             return await self.async_step_opt_save()
 
@@ -514,7 +514,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                 )
             ] = ColorRGBSelector()
 
-        fields[vol.Optional(IS_ALPHA_R2, default=self._check_alpha)] = BooleanSelector()
+        fields[vol.Optional(IS_ALPHA_R2, default=self.is_alpha_enabled)] = BooleanSelector()
 
         return self.async_show_form(
             step_id="rooms_colours_2",
@@ -613,7 +613,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
             run_async_save_logs(self.hass, self.file_name)
         )
 
-        self.camera_options = self.bk_options
+        self.camera_options = self.backup_options
         return await self.async_step_opt_save()
 
     async def async_step_logs_remove(self):
@@ -623,7 +623,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         ha_dir = self.hass.config.path()
         destination_path = f"{ha_dir}/www/{self.file_name}.zip"
         await async_del_file(destination_path)
-        self.camera_options = self.bk_options
+        self.camera_options = self.backup_options
         return await self.async_step_opt_save()
 
     async def async_step_download_logs(self, user_input=None):
@@ -662,10 +662,10 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         """
         LOGGER.debug("Renaming the translations.")
         hass = self.hass
-        if (user_input is None) and self.bk_options:
+        if (user_input is None) and self.backup_options:
             if self.hass:
                 await async_rename_room_description(hass, self.file_name)
-                self.camera_options = self.bk_options
+                self.camera_options = self.backup_options
             return await self.async_step_opt_save()
 
         return self.async_show_form(step_id="rename_translations")
@@ -688,7 +688,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         config_options = self.camera_config.as_dict().get("options", {})
         config_trims = config_options.get("trims_data", {})
         LOGGER.debug("Current config trims_data: %s", config_trims)
-        if (user_input is None) and self.bk_options:
+        if (user_input is None) and self.backup_options:
             # Decide whether to update (store) or reset (clear) the trims
             if all(
                 config_trims.get(key, 0) == 0
@@ -722,7 +722,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
             _, vacuum_device = get_vacuum_device_info(
                 self.camera_config.data.get(CONF_VACUUM_CONFIG_ENTRY_ID), self.hass
             )
-            opt_update = await update_options(self.bk_options, self.camera_options)
+            opt_update = await update_options(self.backup_options, self.camera_options)
             LOGGER.debug("updated options:%s", dict(opt_update))
             return self.async_create_entry(
                 title="",
