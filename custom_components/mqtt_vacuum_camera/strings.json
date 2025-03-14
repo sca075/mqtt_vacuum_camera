@@ -21,35 +21,61 @@
     "step": {
       "init": {
         "title": "MQTT Camera Options",
-        "description": "### _Standard Options_:",
+        "description": "Configure camera options",
         "menu_options": {
-          "advanced": "Advanced Options",
-          "image_opt": "Image Options",
-          "base_colours": "General Colours",
-          "floor_only": "Floor Colour",
-          "rooms_colours_1": "Rooms 1 to 8 Colours",
-          "rooms_colours_2": "Rooms 9 to 15 Colours"
+          "image_opt": "Image Settings",
+          "colours": "Colours Configuration",
+          "advanced": "Advanced Options"
+        }
+      },
+      "image_opt": {
+        "title": "Image Settings",
+        "description": "Configure image display settings",
+        "menu_options": {
+          "image_basic_opt": "Basic Settings",
+          "image_offset": "Image Offset",
+          "status_text": "Status Text"
+        }
+      },
+      "colours": {
+        "title": "Colours Configuration",
+        "description": "Configure map colours",
+        "menu_options": {
+          "base_colours": "Base Colours",
+          "rooms_colours_1": "Rooms 1-8",
+          "rooms_colours_2": "Rooms 9-16",
+          "floor_only": "Floor Only",
+          "transparency": "Transparency Settings",
+          "rename_translations": "Rename Rooms"
+        }
+      },
+      "transparency": {
+        "title": "Transparency Settings",
+        "description": "Configure transparency levels",
+        "menu_options": {
+          "base_transparency": "Base Transparency",
+          "rooms_transparency_1": "Rooms 1-8 Transparency",
+          "rooms_transparency_2": "Rooms 9-16 Transparency",
+          "floor_transparency": "Floor Transparency"
         }
       },
       "advanced": {
-        "title": "MQTT Camera Options",
-        "description": "### _Advanced Options_:",
+        "title": "Advanced Options",
+        "description": "Advanced configuration options",
         "menu_options": {
-          "image_offset": "Image Offset",
-          "status_text": "Status Text",
           "download_logs": "Download Logs",
-          "rename_translations": "Rename Translations",
           "reset_map_trims": "Reset Map Trims"
         }
       },
       "download_logs": {
-        "title": "MQTT Camera Log File",
-        "description": "### _Logs File Copy_:",
-        "data": {
-          "camera_logs_progres": "What to do?"
+        "title": "Download Logs",
+        "description": "Manage log files",
+        "menu_options": {
+          "logs_move": "Copy Logs to WWW",
+          "logs_remove": "Remove Logs from WWW"
         }
       },
-      "image_opt": {
+      "image_basic_opt": {
         "data": {
           "rotate_image": "Rotate",
           "margins": "Image Margins.",
@@ -67,20 +93,32 @@
         "title": "Image Options"
       },
       "image_offset": {
+        "title": "Image Offset & Trims Settings",
+        "description": "Configure image offsets and floor trim values",
         "data": {
-          "offset_top": "Offset Top",
-          "offset_bottom": "Offset Bottom",
-          "offset_left": "Offset Left",
-          "offset_right": "Offset Right"
+          "offset_top": "Top Offset",
+          "offset_bottom": "Bottom Offset",
+          "offset_left": "Left Offset",
+          "offset_right": "Right Offset",
+          "floor_name": "Floor Name",
+          "trim_up": "Upper Trim",
+          "trim_down": "Lower Trim",
+          "trim_left": "Left Trim",
+          "trim_right": "Right Trim",
+          "trim_action": "Trim Action"
         },
         "data_description": {
-          "offset_top": "Offset Top rotation 0 in pixels.",
-          "offset_bottom": "Offset Bottom rotation 0 in pixels.",
-          "offset_left": "Offset Left rotation 0 in pixels.",
-          "offset_right": "Offset Right rotation 0 in pixels."
-        },
-        "description": "Camera Image Offset",
-        "title": "Image Offset"
+          "offset_top": "Pixels to offset from top (0-1000)",
+          "offset_bottom": "Pixels to offset from bottom (0-1000)",
+          "offset_left": "Pixels to offset from left (0-1000)",
+          "offset_right": "Pixels to offset from right (0-1000)",
+          "floor_name": "Name of the current floor plan",
+          "trim_up": "Upper trim value (0-10000)",
+          "trim_down": "Lower trim value (0-10000)",
+          "trim_left": "Left trim value (0-10000)",
+          "trim_right": "Right trim value (0-10000)",
+          "trim_action": "Action to perform on trim values"
+        }
       },
       "status_text": {
         "data": {
@@ -233,10 +271,11 @@
     }
   },
   "selector": {
-    "camera_logs_progres": {
+    "trim_actions": {
       "options": {
-        "opt_1": "Copy Logs to www",
-        "opt_2": "Remove Logs from www"
+        "save": "Save Changes",
+        "reset": "Reset to Detected Values",
+        "delete": "Delete All Trims"
       }
     },
     "vacuum_status": {

@@ -21,14 +21,42 @@
     "step": {
       "init": {
         "title": "MQTT Kamera Optionen",
-        "description": "### _Standardoptionen_:",
+        "description": "Kamera-Optionen konfigurieren",
         "menu_options": {
-          "image_opt": "Bildoptionen",
-          "base_colours": "Allgemeine Farben",
-          "floor_only": "Bodenfarbe",
-          "rooms_colours_1": "Raumfarben 1 bis 8",
-          "rooms_colours_2": "Raumfarben 9 bis 16",
+          "image_opt": "Bildeinstellungen",
+          "colours": "Farbkonfiguration",
           "advanced": "Erweiterte Optionen"
+        }
+      },
+      "image_opt": {
+        "title": "Bildeinstellungen",
+        "description": "Bildanzeigeeinstellungen konfigurieren",
+        "menu_options": {
+          "image_basic_opt": "Grundeinstellungen",
+          "image_offset": "Bildversatz",
+          "status_text": "Statustext"
+        }
+      },
+      "colours": {
+        "title": "Farbkonfiguration",
+        "description": "Kartenfarben konfigurieren",
+        "menu_options": {
+          "base_colours": "Basisfarben",
+          "rooms_colours_1": "Räume 1-8",
+          "rooms_colours_2": "Räume 9-16",
+          "floor_only": "Nur Boden",
+          "transparency": "Transparenzeinstellungen",
+          "rename_translations": "Räume umbenennen"
+        }
+      },
+      "transparency": {
+        "title": "Transparenzeinstellungen",
+        "description": "Transparenzstufen konfigurieren",
+        "menu_options": {
+          "base_transparency": "Basis-Transparenz",
+          "rooms_transparency_1": "Räume 1-8 Transparenz",
+          "rooms_transparency_2": "Räume 9-16 Transparenz",
+          "floor_transparency": "Boden-Transparenz"
         }
       },
       "advanced": {
@@ -49,7 +77,7 @@
           "camera_logs_progres": "Was soll gemacht werden?"
         }
       },
-      "image_opt": {
+      "image_basic_opt": {
         "data": {
           "rotate_image": "Drehen",
           "margins": "Bildränder",
@@ -67,20 +95,32 @@
         "title": "Bildoptionen"
       },
       "image_offset": {
+        "title": "Bild-Offset & Zuschnitt-Einstellungen",
+        "description": "Konfigurieren Sie Bildversatz und Etagenzuschnitt-Werte",
         "data": {
           "offset_top": "Oberer Versatz",
           "offset_bottom": "Unterer Versatz",
           "offset_left": "Linker Versatz",
-          "offset_right": "Rechter Versatz"
+          "offset_right": "Rechter Versatz",
+          "floor_name": "Etagenname",
+          "trim_up": "Oben Zuschneiden",
+          "trim_down": "Unten Zuschneiden",
+          "trim_left": "Links Zuschneiden",
+          "trim_right": "Rechts Zuschneiden",
+          "trim_action": "Zuschnitt-Aktion"
         },
         "data_description": {
-          "offset_top": "Oberer Versatz bei 0 Grad in Pixel.",
-          "offset_bottom": "Unterer Versatz bei 0 Grad in Pixel.",
-          "offset_left": "Linker Versatz bei 0 Grad in Pixel.",
-          "offset_right": "Rechter Versatz bei 0 Grad in Pixel."
-        },
-        "description": "Kamera-Bildversatz",
-        "title": "Bildversatz"
+          "offset_top": "Pixel von oben versetzen (0-1000)",
+          "offset_bottom": "Pixel von unten versetzen (0-1000)",
+          "offset_left": "Pixel von links versetzen (0-1000)",
+          "offset_right": "Pixel von rechts versetzen (0-1000)",
+          "floor_name": "Name des aktuellen Grundrisses",
+          "trim_up": "Oberer Zuschnitt-Wert (0-10000)",
+          "trim_down": "Unterer Zuschnitt-Wert (0-10000)",
+          "trim_left": "Linker Zuschnitt-Wert (0-10000)",
+          "trim_right": "Rechter Zuschnitt-Wert (0-10000)",
+          "trim_action": "Aktion für Zuschnitt-Werte"
+        }
       },
       "status_text": {
         "data": {
@@ -249,6 +289,13 @@
         "idle": "Leerlauf",
         "paused": "Pausiert",
         "returning": "Zurückkehren"
+      }
+    },
+    "trim_actions": {
+      "options": {
+        "save": "Änderungen Speichern",
+        "reset": "Auf Erkannte Werte Zurücksetzen",
+        "delete": "Alle Zuschnitte Löschen"
       }
     }
   },

@@ -24,32 +24,58 @@
         "description": "### _Options Standard_:",
         "menu_options": {
           "image_opt": "Options d'Image",
-          "base_colours": "Couleurs Générales",
-          "floor_only": "Couleur du Sol",
-          "rooms_colours_1": "Couleurs Pièces 1 à 8",
-          "rooms_colours_2": "Couleurs Pièces 9 à 15",
+          "colours": "Configuration des Couleurs",
           "advanced": "Options Avancées"
         }
       },
-      "advanced": {
-        "title": "Options de la Caméra MQTT",
-        "description": "### _Options Avancées_:",
+      "image_opt": {
+        "title": "Options d'Image",
+        "description": "Configurer les options d'affichage",
         "menu_options": {
+          "image_basic_opt": "Configuration de Base",
           "image_offset": "Décalage d'Image",
-          "status_text": "Texte d'État",
+          "status_text": "Texte d'État"
+        }
+      },
+      "colours": {
+        "title": "Configuration des Couleurs",
+        "description": "Configurer les couleurs de la carte",
+        "menu_options": {
+          "base_colours": "Couleurs de Base",
+          "rooms_colours_1": "Pièces 1-8",
+          "rooms_colours_2": "Pièces 9-16",
+          "floor_only": "Couleur du Sol",
+          "transparency": "Options de Transparence",
+          "rename_translations": "Renommer les Pièces"
+        }
+      },
+      "transparency": {
+        "title": "Options de Transparence",
+        "description": "Configuration des niveaux de transparence",
+        "menu_options": {
+          "base_transparency": "Transparence de Base",
+          "rooms_transparency_1": "Transparence Pièces 1-8",
+          "rooms_transparency_2": "Transparence Pièces 9-16",
+          "floor_transparency": "Transparence du Sol"
+        }
+      },
+      "advanced": {
+        "title": "Options Avancées",
+        "description": "Options de configuration avancées",
+        "menu_options": {
           "download_logs": "Télécharger les Journaux",
-          "rename_translations": "Renommer les Traductions",
           "reset_map_trims": "Réinitialiser les Découpes"
         }
       },
       "download_logs": {
-        "title": "Fichier journal de la caméra MQTT",
-        "description": "### _Copie du fichier journal_ :",
-        "data": {
-          "camera_logs_progres": "Que faire ?"
+        "title": "Téléchargement des Journaux",
+        "description": "Gestion des fichiers journaux",
+        "menu_options": {
+          "logs_move": "Copier les journaux vers WWW",
+          "logs_remove": "Supprimer les journaux de WWW"
         }
       },
-      "image_opt": {
+      "image_basic_opt": {
         "data": {
           "rotate_image": "Rotation",
           "margins": "Marges de l'image.",
@@ -67,20 +93,32 @@
         "title": "Options d'image"
       },
       "image_offset": {
+        "title": "Paramètres de Décalage et de Rognage d'Image",
+        "description": "Configurer les décalages d'image et les valeurs de rognage d'étage",
         "data": {
-          "offset_top": "Décalage vers le haut",
-          "offset_bottom": "Décalage vers le bas",
-          "offset_left": "Décalage vers la gauche",
-          "offset_right": "Décalage vers la droite"
+          "offset_top": "Décalage Supérieur",
+          "offset_bottom": "Décalage Inférieur",
+          "offset_left": "Décalage Gauche",
+          "offset_right": "Décalage Droit",
+          "floor_name": "Nom de l'Étage",
+          "trim_up": "Rognage Supérieur",
+          "trim_down": "Rognage Inférieur",
+          "trim_left": "Rognage Gauche",
+          "trim_right": "Rognage Droit",
+          "trim_action": "Action de Rognage"
         },
         "data_description": {
-          "offset_top": "Décalage vers le haut rotation 0 en pixels.",
-          "offset_bottom": "Décalage vers le bas rotation 0 en pixels.",
-          "offset_left": "Décalage vers la gauche rotation 0 en pixels.",
-          "offset_right": "Décalage vers la droite rotation 0 en pixels."
-        },
-        "description": "Décalage de l'image de la caméra",
-        "title": "Décalage de l'image"
+          "offset_top": "Pixels à décaler depuis le haut (0-1000)",
+          "offset_bottom": "Pixels à décaler depuis le bas (0-1000)",
+          "offset_left": "Pixels à décaler depuis la gauche (0-1000)",
+          "offset_right": "Pixels à décaler depuis la droite (0-1000)",
+          "floor_name": "Nom du plan d'étage actuel",
+          "trim_up": "Valeur de rognage supérieur (0-10000)",
+          "trim_down": "Valeur de rognage inférieur (0-10000)",
+          "trim_left": "Valeur de rognage gauche (0-10000)",
+          "trim_right": "Valeur de rognage droit (0-10000)",
+          "trim_action": "Action à effectuer sur les valeurs de rognage"
+        }
       },
       "status_text": {
         "data": {
@@ -249,6 +287,13 @@
         "idle": "Inactif",
         "paused": "En pause",
         "returning": "En retour"
+      }
+    },
+    "trim_actions": {
+      "options": {
+        "save": "Enregistrer les Modifications",
+        "reset": "Réinitialiser aux Valeurs Détectées",
+        "delete": "Supprimer Tous les Rognages"
       }
     }
   },

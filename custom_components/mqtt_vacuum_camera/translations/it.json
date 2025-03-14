@@ -24,32 +24,58 @@
         "description": "### _Opzioni Standard_:",
         "menu_options": {
           "image_opt": "Opzioni Immagine",
-          "base_colours": "Colori Generali",
-          "floor_only": "Colore Pavimento",
-          "rooms_colours_1": "Colori Stanze 1 a 8",
-          "rooms_colours_2": "Colori Stanze 9 a 16",
+          "colours": "Configurazione Colori",
           "advanced": "Opzioni Avanzate"
         }
       },
-      "advanced": {
-        "title": "Opzioni Fotocamera MQTT",
-        "description": "### _Opzioni Avanzate_:",
+      "image_opt": {
+        "title": "Opzioni Immagine",
+        "description": "Configura opzioni di visualizzazione",
         "menu_options": {
+          "image_basic_opt": "Configurazione Base",
           "image_offset": "Offset Immagine",
-          "status_text": "Testo Stato",
+          "status_text": "Testo Stato"
+        }
+      },
+      "colours": {
+        "title": "Configurazione Colori",
+        "description": "Configura colori della mappa",
+        "menu_options": {
+          "base_colours": "Colori Base",
+          "rooms_colours_1": "Stanze 1-8",
+          "rooms_colours_2": "Stanze 9-16",
+          "floor_only": "Colore Pavimento",
+          "transparency": "Opzioni Trasparenza",
+          "rename_translations": "Rinomina Stanze"
+        }
+      },
+      "transparency": {
+        "title": "Opzioni Trasparenza",
+        "description": "Configura livelli di trasparenza",
+        "menu_options": {
+          "base_transparency": "Trasparenza Base",
+          "rooms_transparency_1": "Trasparenza Stanze 1-8",
+          "rooms_transparency_2": "Trasparenza Stanze 9-16",
+          "floor_transparency": "Trasparenza Pavimento"
+        }
+      },
+      "advanced": {
+        "title": "Opzioni Avanzate",
+        "description": "Opzioni di configurazione avanzate",
+        "menu_options": {
           "download_logs": "Scarica Log",
-          "rename_translations": "Rinomina Traduzioni",
           "reset_map_trims": "Reimposta Ritagli Mappa"
         }
       },
       "download_logs": {
-        "title": "File di Registro Fotocamera MQTT",
-        "description": "### _Copia del File di Registro_ :",
-        "data": {
-          "camera_logs_progres": "Cosa fare?"
+        "title": "Scaricamento Log",
+        "description": "Gestione file di log",
+        "menu_options": {
+          "logs_move": "Copia log su WWW",
+          "logs_remove": "Rimuovi log da WWW"
         }
       },
-      "image_opt": {
+      "image_basic_opt": {
         "data": {
           "rotate_image": "Ruota",
           "margins": "Margini Immagine.",
@@ -249,6 +275,13 @@
         "idle": "Inattivo",
         "paused": "In Pausa",
         "returning": "In Ritorno"
+      }
+    },
+    "trim_actions": {
+      "options": {
+        "save": "Salva Modifiche",
+        "reset": "Ripristina ai Valori Rilevati",
+        "delete": "Elimina Tutti i Ritagli"
       }
     }
   },

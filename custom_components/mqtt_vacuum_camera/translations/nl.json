@@ -21,35 +21,61 @@
     "step": {
       "init": {
         "title": "MQTT Camera Opties",
-        "description": "### _Standaardopties_:",
+        "description": "### _Standaard Opties_:",
         "menu_options": {
           "image_opt": "Afbeeldingsopties",
-          "base_colours": "Algemene Kleuren",
-          "floor_only": "Vloerkleur",
-          "rooms_colours_1": "Kamerkleuren 1 tot 8",
-          "rooms_colours_2": "Kamerkleuren 9 tot 15",
+          "colours": "Kleurinstellingen",
           "advanced": "Geavanceerde Opties"
         }
       },
-      "advanced": {
-        "title": "MQTT Camera Opties",
-        "description": "### _Geavanceerde Opties_:",
+      "image_opt": {
+        "title": "Afbeeldingsopties",
+        "description": "Configureer weergave-opties",
         "menu_options": {
+          "image_basic_opt": "Basis Instellingen",
           "image_offset": "Afbeeldingsverschuiving",
-          "status_text": "Statustekst",
-          "download_logs": "Logboeken Downloaden",
-          "rename_translations": "Vertalingen Hernoemen",
-          "reset_map_trims": "Kaartuitsneden Resetten"
+          "status_text": "Statustekst"
+        }
+      },
+      "colours": {
+        "title": "Kleurinstellingen",
+        "description": "Configureer kaartkleuren",
+        "menu_options": {
+          "base_colours": "Basiskleuren",
+          "rooms_colours_1": "Kamers 1-8",
+          "rooms_colours_2": "Kamers 9-16",
+          "floor_only": "Vloerkleur",
+          "transparency": "Transparantie-opties",
+          "rename_translations": "Kamers Hernoemen"
+        }
+      },
+      "transparency": {
+        "title": "Transparantie-opties",
+        "description": "Configureer transparantieniveaus",
+        "menu_options": {
+          "base_transparency": "Basistransparantie",
+          "rooms_transparency_1": "Transparantie Kamers 1-8",
+          "rooms_transparency_2": "Transparantie Kamers 9-16",
+          "floor_transparency": "Vloertransparantie"
+        }
+      },
+      "advanced": {
+        "title": "Geavanceerde Opties",
+        "description": "Geavanceerde configuratie-opties",
+        "menu_options": {
+          "download_logs": "Logbestanden Downloaden",
+          "reset_map_trims": "Kaartbijsnijdingen Resetten"
         }
       },
       "download_logs": {
-        "title": "MQTT Camera Logbestand",
-        "description": "### _Logbestand Kopiëren_:",
-        "data": {
-          "camera_logs_progres": "Wat te doen?"
+        "title": "Logbestanden Downloaden",
+        "description": "Logbestanden beheren",
+        "menu_options": {
+          "logs_move": "Kopieer logs naar WWW",
+          "logs_remove": "Verwijder logs van WWW"
         }
       },
-      "image_opt": {
+      "image_basic_opt": {
         "data": {
           "rotate_image": "Roteer",
           "margins": "Afbeeldingsmarges.",
@@ -67,20 +93,32 @@
         "title": "Afbeeldingsopties"
       },
       "image_offset": {
+        "title": "Afbeelding Verschuiving & Bijsnij-instellingen",
+        "description": "Configureer afbeeldingsverschuivingen en verdiepingsbijsnijwaarden",
         "data": {
-          "offset_top": "Bovenste offset",
-          "offset_bottom": "Onderste offset",
-          "offset_left": "Linker offset",
-          "offset_right": "Rechter offset"
+          "offset_top": "Bovenkant Verschuiving",
+          "offset_bottom": "Onderkant Verschuiving",
+          "offset_left": "Linkerkant Verschuiving",
+          "offset_right": "Rechterkant Verschuiving",
+          "floor_name": "Verdiepingsnaam",
+          "trim_up": "Boven Bijsnijden",
+          "trim_down": "Onder Bijsnijden",
+          "trim_left": "Links Bijsnijden",
+          "trim_right": "Rechts Bijsnijden",
+          "trim_action": "Bijsnij-actie"
         },
         "data_description": {
-          "offset_top": "Bovenste offset rotatie 0 in pixels.",
-          "offset_bottom": "Onderste offset rotatie 0 in pixels.",
-          "offset_left": "Linker offset rotatie 0 in pixels.",
-          "offset_right": "Rechter offset rotatie 0 in pixels."
-        },
-        "description": "Camera Afbeelding Offset",
-        "title": "Afbeeldingsoffset"
+          "offset_top": "Pixels om vanaf bovenkant te verschuiven (0-1000)",
+          "offset_bottom": "Pixels om vanaf onderkant te verschuiven (0-1000)",
+          "offset_left": "Pixels om vanaf linkerkant te verschuiven (0-1000)",
+          "offset_right": "Pixels om vanaf rechterkant te verschuiven (0-1000)",
+          "floor_name": "Naam van huidige verdiepingsplattegrond",
+          "trim_up": "Bovenste bijsnijwaarde (0-10000)",
+          "trim_down": "Onderste bijsnijwaarde (0-10000)",
+          "trim_left": "Linker bijsnijwaarde (0-10000)",
+          "trim_right": "Rechter bijsnijwaarde (0-10000)",
+          "trim_action": "Actie uit te voeren op bijsnijwaarden"
+        }
       },
       "status_text": {
         "data": {
@@ -249,6 +287,13 @@
         "idle": "Inactief",
         "paused": "Gepauzeerd",
         "returning": "Terugkerend"
+      }
+    },
+    "trim_actions": {
+      "options": {
+        "save": "Wijzigingen Opslaan",
+        "reset": "Herstellen naar Gedetecteerde Waarden",
+        "delete": "Alle Bijsnijdingen Verwijderen"
       }
     }
   },

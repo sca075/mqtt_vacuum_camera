@@ -21,35 +21,61 @@
     "step": {
       "init": {
         "title": "MQTT相機選項",
-        "description": "### _標準選項_:",
+        "description": "配置相機選項",
         "menu_options": {
-          "image_opt": "圖像選項",
-          "base_colours": "基本顏色",
-          "floor_only": "地板顏色",
-          "rooms_colours_1": "房間1至8顏色",
-          "rooms_colours_2": "房間9至15顏色",
+          "image_opt": "圖像設置",
+          "colours": "顏色配置",
           "advanced": "進階選項"
         }
       },
-      "advanced": {
-        "title": "MQTT相機選項",
-        "description": "### _進階選項_:",
+      "image_opt": {
+        "title": "圖像設置",
+        "description": "配置圖像顯示設置",
         "menu_options": {
+          "image_basic_opt": "基本設置",
           "image_offset": "圖像偏移",
-          "status_text": "狀態文字",
+          "status_text": "狀態文字"
+        }
+      },
+      "colours": {
+        "title": "顏色配置",
+        "description": "配置地圖顏色",
+        "menu_options": {
+          "base_colours": "基本顏色",
+          "rooms_colours_1": "房間 1-8",
+          "rooms_colours_2": "房間 9-16",
+          "floor_only": "僅地板",
+          "transparency": "透明度設置",
+          "rename_translations": "重命名房間"
+        }
+      },
+      "transparency": {
+        "title": "透明度設置",
+        "description": "配置透明度級別",
+        "menu_options": {
+          "base_transparency": "基本透明度",
+          "rooms_transparency_1": "房間 1-8 透明度",
+          "rooms_transparency_2": "房間 9-16 透明度",
+          "floor_transparency": "地板透明度"
+        }
+      },
+      "advanced": {
+        "title": "進階選項",
+        "description": "進階配置選項",
+        "menu_options": {
           "download_logs": "下載日誌",
-          "rename_translations": "重命名翻譯",
           "reset_map_trims": "重置地圖裁剪"
         }
       },
       "download_logs": {
-        "title": "MQTT相機日誌文件",
-        "description": "### _日誌文件拷貝_:",
-        "data": {
-          "camera_logs_progres": "應執行何種操作？"
+        "title": "下載日誌",
+        "description": "管理日誌文件",
+        "menu_options": {
+          "logs_move": "將日誌複製到WWW",
+          "logs_remove": "從WWW刪除日誌"
         }
       },
-      "image_opt": {
+      "image_basic_opt": {
         "data": {
           "rotate_image": "旋轉",
           "margins": "圖像邊距。",
@@ -67,20 +93,32 @@
         "title": "圖像選項"
       },
       "image_offset": {
+        "title": "圖像偏移和裁剪設定",
+        "description": "配置圖像偏移和樓層裁剪值",
         "data": {
           "offset_top": "頂部偏移",
           "offset_bottom": "底部偏移",
-          "offset_left": "左偏移",
-          "offset_right": "右偏移"
+          "offset_left": "左側偏移",
+          "offset_right": "右側偏移",
+          "floor_name": "樓層名稱",
+          "trim_up": "頂部裁剪",
+          "trim_down": "底部裁剪",
+          "trim_left": "左側裁剪",
+          "trim_right": "右側裁剪",
+          "trim_action": "裁剪動作"
         },
         "data_description": {
-          "offset_top": "頂部偏移量（0度旋轉時，以像素為單位）。",
-          "offset_bottom": "底部偏移量（0度旋轉時，以像素為單位）。",
-          "offset_left": "左偏移量（0度旋轉時，以像素為單位）。",
-          "offset_right": "右偏移量（0度旋轉時，以像素為單位）。"
-        },
-        "description": "相機圖像偏移",
-        "title": "圖像偏移"
+          "offset_top": "從頂部偏移的像素 (0-1000)",
+          "offset_bottom": "從底部偏移的像素 (0-1000)",
+          "offset_left": "從左側偏移的像素 (0-1000)",
+          "offset_right": "從右側偏移的像素 (0-1000)",
+          "floor_name": "當前樓層平面圖名稱",
+          "trim_up": "頂部裁剪值 (0-10000)",
+          "trim_down": "底部裁剪值 (0-10000)",
+          "trim_left": "左側裁剪值 (0-10000)",
+          "trim_right": "右側裁剪值 (0-10000)",
+          "trim_action": "對裁剪值執行的動作"
+        }
       },
       "status_text": {
         "data": {
@@ -249,6 +287,13 @@
         "idle": "空閒",
         "paused": "已暫停",
         "returning": "返回中"
+      }
+    },
+    "trim_actions": {
+      "options": {
+        "save": "儲存變更",
+        "reset": "重設為偵測到的值",
+        "delete": "刪除所有裁剪"
       }
     }
   },

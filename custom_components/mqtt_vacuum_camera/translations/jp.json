@@ -21,32 +21,58 @@
     "step": {
       "init": {
         "title": "MQTTカメラオプション",
-        "description": "### _標準オプション_:",
+        "description": "カメラオプションの設定",
         "menu_options": {
-          "image_opt": "画像オプション",
-          "base_colours": "基本色",
-          "floor_only": "フロアの色",
-          "rooms_colours_1": "部屋1～8の色",
-          "rooms_colours_2": "部屋9～15の色",
+          "image_opt": "画像設定",
+          "colours": "色設定",
           "advanced": "詳細設定"
         }
       },
-      "advanced": {
-        "title": "MQTTカメラオプション",
-        "description": "### _詳細オプション_:",
+      "image_opt": {
+        "title": "画像設定",
+        "description": "画像表示設定の構成",
         "menu_options": {
+          "image_basic_opt": "基本設定",
           "image_offset": "画像オフセット",
-          "status_text": "ステータステキスト",
+          "status_text": "ステータステキスト"
+        }
+      },
+      "colours": {
+        "title": "色設定",
+        "description": "マップの色を設定",
+        "menu_options": {
+          "base_colours": "基本色",
+          "rooms_colours_1": "部屋1-8",
+          "rooms_colours_2": "部屋9-16",
+          "floor_only": "床のみ",
+          "transparency": "透明度設定",
+          "rename_translations": "部屋名の変更"
+        }
+      },
+      "transparency": {
+        "title": "透明度設定",
+        "description": "透明度レベルの設定",
+        "menu_options": {
+          "base_transparency": "基本透明度",
+          "rooms_transparency_1": "部屋1-8の透明度",
+          "rooms_transparency_2": "部屋9-16の透明度",
+          "floor_transparency": "床の透明度"
+        }
+      },
+      "advanced": {
+        "title": "詳細設定",
+        "description": "詳細設定オプション",
+        "menu_options": {
           "download_logs": "ログのダウンロード",
-          "rename_translations": "翻訳の名前変更",
-          "reset_map_trims": "地図トリムのリセット"
+          "reset_map_trims": "マップトリムのリセット"
         }
       },
       "download_logs": {
-        "title": "MQTTカメラログファイル",
-        "description": "### _ログファイルコピー_:",
-        "data": {
-          "camera_logs_progres": "どうする？"
+        "title": "ログのダウンロード",
+        "description": "ログファイルの管理",
+        "menu_options": {
+          "logs_move": "ログをWWWにコピー",
+          "logs_remove": "WWWからログを削除"
         }
       },
       "image_opt": {
@@ -67,20 +93,32 @@
         "title": "画像オプション"
       },
       "image_offset": {
+        "title": "画像オフセットとトリム設定",
+        "description": "画像オフセットとフロアトリム値を設定",
         "data": {
-          "offset_top": "上へのオフセット",
-          "offset_bottom": "下へのオフセット",
-          "offset_left": "左へのオフセット",
-          "offset_right": "右へのオフセット"
+          "offset_top": "上部オフセット",
+          "offset_bottom": "下部オフセット",
+          "offset_left": "左側オフセット",
+          "offset_right": "右側オフセット",
+          "floor_name": "フロア名",
+          "trim_up": "上部トリム",
+          "trim_down": "下部トリム",
+          "trim_left": "左側トリム",
+          "trim_right": "右側トリム",
+          "trim_action": "トリム操作"
         },
         "data_description": {
-          "offset_top": "0度回転での上へのオフセット（ピクセル）",
-          "offset_bottom": "0度回転での下へのオフセット（ピクセル）",
-          "offset_left": "0度回転での左へのオフセット（ピクセル）",
-          "offset_right": "0度回転での右へのオフセット（ピクセル）"
-        },
-        "description": "カメラ画像のオフセット",
-        "title": "画像オフセット"
+          "offset_top": "上からのピクセルオフセット (0-1000)",
+          "offset_bottom": "下からのピクセルオフセット (0-1000)",
+          "offset_left": "左からのピクセルオフセット (0-1000)",
+          "offset_right": "右からのピクセルオフセット (0-1000)",
+          "floor_name": "現在のフロアプラン名",
+          "trim_up": "上部トリム値 (0-10000)",
+          "trim_down": "下部トリム値 (0-10000)",
+          "trim_left": "左側トリム値 (0-10000)",
+          "trim_right": "右側トリム値 (0-10000)",
+          "trim_action": "トリム値に対する操作"
+        }
       },
       "status_text": {
         "data": {
@@ -249,6 +287,13 @@
         "idle": "アイドル",
         "paused": "一時停止中",
         "returning": "帰還中"
+      }
+    },
+    "trim_actions": {
+      "options": {
+        "save": "変更を保存",
+        "reset": "検出値にリセット",
+        "delete": "すべてのトリムを削除"
       }
     }
   },

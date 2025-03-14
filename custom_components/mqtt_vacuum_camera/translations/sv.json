@@ -24,32 +24,58 @@
             "description": "### _Standardalternativ_:",
             "menu_options": {
                "image_opt": "Bildalternativ",
-               "base_colours": "Allmänna färger",
-               "floor_only": "Golvfärg",
-               "rooms_colours_1": "Rumsfärger 1 till 8",
-               "rooms_colours_2": "Rumsfärger 9 till 16",
+               "colours": "Färginställningar",
                "advanced": "Avancerade alternativ"
             }
          },
-         "advanced": {
-            "title": "MQTT Kameraalternativ",
-            "description": "### _Avancerade alternativ_:",
+         "image_opt": {
+            "title": "Bildalternativ",
+            "description": "Konfigurera visningsalternativ",
             "menu_options": {
+               "image_basic_opt": "Grundinställningar",
                "image_offset": "Bildförskjutning",
-               "status_text": "Statustext",
+               "status_text": "Statustext"
+            }
+         },
+         "colours": {
+            "title": "Färginställningar",
+            "description": "Konfigurera kartfärger",
+            "menu_options": {
+               "base_colours": "Grundfärger",
+               "rooms_colours_1": "Rum 1-8",
+               "rooms_colours_2": "Rum 9-16",
+               "floor_only": "Golvfärg",
+               "transparency": "Transparensalternativ",
+               "rename_translations": "Byt namn på rum"
+            }
+         },
+         "transparency": {
+            "title": "Transparensalternativ",
+            "description": "Konfigurera transparensnivåer",
+            "menu_options": {
+               "base_transparency": "Grundtransparens",
+               "rooms_transparency_1": "Transparens Rum 1-8",
+               "rooms_transparency_2": "Transparens Rum 9-16",
+               "floor_transparency": "Golvtransparens"
+            }
+         },
+         "advanced": {
+            "title": "Avancerade Alternativ",
+            "description": "Avancerade konfigurationsalternativ",
+            "menu_options": {
                "download_logs": "Ladda ner loggar",
-               "rename_translations": "Byt namn på översättningar",
                "reset_map_trims": "Återställ kartbeskärningar"
             }
          },
          "download_logs": {
-            "title": "MQTT Kamerloggfil",
-            "description": "### _Kopiera loggfil_:",
-            "data": {
-               "camera_logs_progres": "Vad ska göras?"
+            "title": "Nedladdning av loggar",
+            "description": "Hantera loggfiler",
+            "menu_options": {
+               "logs_move": "Kopiera loggar till WWW",
+               "logs_remove": "Ta bort loggar från WWW"
             }
          },
-         "image_opt": {
+         "image_basic_opt": {
             "data": {
                "rotate_image": "Rotera",
                "margins": "Bildmarginaler",
@@ -67,20 +93,32 @@
             "title": "Bildalternativ"
          },
          "image_offset": {
+            "title": "Bildens Förskjutning & Beskärningsinställningar",
+            "description": "Konfigurera bildförskjutningar och våningsplanets beskärningsvärden",
             "data": {
-               "offset_top": "Övre förskjutning",
-               "offset_bottom": "Nedre förskjutning",
-               "offset_left": "Vänster förskjutning",
-               "offset_right": "Höger förskjutning"
+               "offset_top": "Övre Förskjutning",
+               "offset_bottom": "Nedre Förskjutning",
+               "offset_left": "Vänster Förskjutning",
+               "offset_right": "Höger Förskjutning",
+               "floor_name": "Våningsnamn",
+               "trim_up": "Övre Beskärning",
+               "trim_down": "Nedre Beskärning",
+               "trim_left": "Vänster Beskärning",
+               "trim_right": "Höger Beskärning",
+               "trim_action": "Beskärningsåtgärd"
             },
             "data_description": {
-               "offset_top": "Övre förskjutning vid rotation 0 i pixlar",
-               "offset_bottom": "Nedre förskjutning vid rotation 0 i pixlar",
-               "offset_left": "Vänster förskjutning vid rotation 0 i pixlar",
-               "offset_right": "Höger förskjutning vid rotation 0 i pixlar"
-            },
-            "description": "Kamera bildförskjutning",
-            "title": "Bildförskjutning"
+               "offset_top": "Pixlar att förskjuta från toppen (0-1000)",
+               "offset_bottom": "Pixlar att förskjuta från botten (0-1000)",
+               "offset_left": "Pixlar att förskjuta från vänster (0-1000)",
+               "offset_right": "Pixlar att förskjuta från höger (0-1000)",
+               "floor_name": "Namn på aktuell våningsplan",
+               "trim_up": "Övre beskärningsvärde (0-10000)",
+               "trim_down": "Nedre beskärningsvärde (0-10000)",
+               "trim_left": "Vänster beskärningsvärde (0-10000)",
+               "trim_right": "Höger beskärningsvärde (0-10000)",
+               "trim_action": "Åtgärd att utföra på beskärningsvärden"
+            }
          },
          "status_text": {
             "data": {
@@ -249,6 +287,13 @@
             "idle": "Viloläge",
             "paused": "Pausad",
             "returning": "Återvänder"
+         }
+      },
+      "trim_actions": {
+         "options": {
+            "save": "Spara Ändringar",
+            "reset": "Återställ till Upptäckta Värden",
+            "delete": "Ta Bort Alla Beskärningar"
          }
       }
    },

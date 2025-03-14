@@ -21,35 +21,61 @@
     "step": {
       "init": {
         "title": "Opciones de Cámara MQTT",
-        "description": "### _Opciones Estándar_:",
+        "description": "Configurar opciones de cámara",
         "menu_options": {
-          "image_opt": "Opciones de Imagen",
-          "base_colours": "Colores Generales",
-          "floor_only": "Color del Suelo",
-          "rooms_colours_1": "Colores Habitaciones 1 a 8",
-          "rooms_colours_2": "Colores Habitaciones 9 a 16",
+          "image_opt": "Ajustes de Imagen",
+          "colours": "Configuración de Colores",
           "advanced": "Opciones Avanzadas"
         }
       },
-      "advanced": {
-        "title": "Opciones de Cámara MQTT",
-        "description": "### _Opciones Avanzadas_:",
+      "image_opt": {
+        "title": "Ajustes de Imagen",
+        "description": "Configurar ajustes de visualización",
         "menu_options": {
+          "image_basic_opt": "Ajustes Básicos",
           "image_offset": "Desplazamiento de Imagen",
-          "status_text": "Texto de Estado",
+          "status_text": "Texto de Estado"
+        }
+      },
+      "colours": {
+        "title": "Configuración de Colores",
+        "description": "Configurar colores del mapa",
+        "menu_options": {
+          "base_colours": "Colores Base",
+          "rooms_colours_1": "Habitaciones 1-8",
+          "rooms_colours_2": "Habitaciones 9-16",
+          "floor_only": "Solo Suelo",
+          "transparency": "Ajustes de Transparencia",
+          "rename_translations": "Renombrar Habitaciones"
+        }
+      },
+      "transparency": {
+        "title": "Ajustes de Transparencia",
+        "description": "Configurar niveles de transparencia",
+        "menu_options": {
+          "base_transparency": "Transparencia Base",
+          "rooms_transparency_1": "Transparencia Habitaciones 1-8",
+          "rooms_transparency_2": "Transparencia Habitaciones 9-16",
+          "floor_transparency": "Transparencia del Suelo"
+        }
+      },
+      "advanced": {
+        "title": "Opciones Avanzadas",
+        "description": "Opciones de configuración avanzadas",
+        "menu_options": {
           "download_logs": "Descargar Registros",
-          "rename_translations": "Renombrar Traducciones",
           "reset_map_trims": "Restablecer Recortes del Mapa"
         }
       },
       "download_logs": {
-        "title": "Archivo de Registro de la Cámara MQTT",
-        "description": "### _Copia del Archivo de Registro_:",
-        "data": {
-          "camera_logs_progres": "¿Qué hacer?"
+        "title": "Descargar Registros",
+        "description": "Gestionar archivos de registro",
+        "menu_options": {
+          "logs_move": "Copiar Registros a WWW",
+          "logs_remove": "Eliminar Registros de WWW"
         }
       },
-      "image_opt": {
+      "image_basic_opt": {
         "data": {
           "rotate_image": "Rotar",
           "margins": "Márgenes de la Imagen.",
@@ -67,20 +93,32 @@
         "title": "Opciones de Imagen"
       },
       "image_offset": {
+        "title": "Ajustes de Desplazamiento y Recorte de Imagen",
+        "description": "Configurar desplazamientos de imagen y valores de recorte del piso",
         "data": {
           "offset_top": "Desplazamiento Superior",
           "offset_bottom": "Desplazamiento Inferior",
           "offset_left": "Desplazamiento Izquierdo",
-          "offset_right": "Desplazamiento Derecho"
+          "offset_right": "Desplazamiento Derecho",
+          "floor_name": "Nombre del Piso",
+          "trim_up": "Recorte Superior",
+          "trim_down": "Recorte Inferior",
+          "trim_left": "Recorte Izquierdo",
+          "trim_right": "Recorte Derecho",
+          "trim_action": "Acción de Recorte"
         },
         "data_description": {
-          "offset_top": "Desplazamiento Superior a 0 grados en píxeles.",
-          "offset_bottom": "Desplazamiento Inferior a 0 grados en píxeles.",
-          "offset_left": "Desplazamiento Izquierdo a 0 grados en píxeles.",
-          "offset_right": "Desplazamiento Derecho a 0 grados en píxeles."
-        },
-        "description": "Desplazamiento de la Imagen de la Cámara",
-        "title": "Desplazamiento de Imagen"
+          "offset_top": "Píxeles a desplazar desde arriba (0-1000)",
+          "offset_bottom": "Píxeles a desplazar desde abajo (0-1000)",
+          "offset_left": "Píxeles a desplazar desde la izquierda (0-1000)",
+          "offset_right": "Píxeles a desplazar desde la derecha (0-1000)",
+          "floor_name": "Nombre del plano de piso actual",
+          "trim_up": "Valor de recorte superior (0-10000)",
+          "trim_down": "Valor de recorte inferior (0-10000)",
+          "trim_left": "Valor de recorte izquierdo (0-10000)",
+          "trim_right": "Valor de recorte derecho (0-10000)",
+          "trim_action": "Acción a realizar en los valores de recorte"
+        }
       },
       "status_text": {
         "data": {
@@ -249,6 +287,13 @@
         "idle": "Inactivo",
         "paused": "Pausado",
         "returning": "Regresando"
+      }
+    },
+    "trim_actions": {
+      "options": {
+        "save": "Guardar Cambios",
+        "reset": "Restablecer a Valores Detectados",
+        "delete": "Eliminar Todos los Recortes"
       }
     }
   },

@@ -21,14 +21,42 @@
     "step": {
       "init": {
         "title": "خيارات كاميرا MQTT",
-        "description": "### _الخيارات القياسية_:",
+        "description": "تكوين خيارات الكاميرا",
         "menu_options": {
-          "image_opt": "خيارات الصورة",
-          "base_colours": "الألوان العامة",
-          "floor_only": "لون الأرضية",
-          "rooms_colours_1": "ألوان الغرف 1 إلى 8",
-          "rooms_colours_2": "ألوان الغرف 9 إلى 16",
+          "image_opt": "إعدادات الصورة",
+          "colours": "تكوين الألوان",
           "advanced": "خيارات متقدمة"
+        }
+      },
+      "image_opt": {
+        "title": "إعدادات الصورة",
+        "description": "تكوين إعدادات عرض الصورة",
+        "menu_options": {
+          "image_basic_opt": "الإعدادات الأساسية",
+          "image_offset": "إزاحة الصورة",
+          "status_text": "نص الحالة"
+        }
+      },
+      "colours": {
+        "title": "تكوين الألوان",
+        "description": "تكوين ألوان الخريطة",
+        "menu_options": {
+          "base_colours": "الألوان الأساسية",
+          "rooms_colours_1": "الغرف 1-8",
+          "rooms_colours_2": "الغرف 9-16",
+          "floor_only": "الأرضية فقط",
+          "transparency": "إعدادات الشفافية",
+          "rename_translations": "إعادة تسمية الغرف"
+        }
+      },
+      "transparency": {
+        "title": "إعدادات الشفافية",
+        "description": "تكوين مستويات الشفافية",
+        "menu_options": {
+          "base_transparency": "الشفافية الأساسية",
+          "rooms_transparency_1": "شفافية الغرف 1-8",
+          "rooms_transparency_2": "شفافية الغرف 9-16",
+          "floor_transparency": "شفافية الأرضية"
         }
       },
       "advanced": {
@@ -49,7 +77,7 @@
           "camera_logs_progres": "ماذا تفعل؟"
         }
       },
-      "image_opt": {
+      "image_basic_opt": {
         "data": {
           "rotate_image": "تدوير",
           "margins": "هوامش الصورة",
@@ -67,20 +95,32 @@
         "title": "خيارات الصورة"
       },
       "image_offset": {
+        "title": "إعدادات إزاحة الصورة والتقليم",
+        "description": "تكوين قيم الإزاحة والتقليم للطابق",
         "data": {
-          "offset_top": "الإزاحة للأعلى",
-          "offset_bottom": "الإزاحة للأسفل",
-          "offset_left": "الإزاحة لليسار",
-          "offset_right": "الإزاحة لليمين"
+          "offset_top": "الإزاحة العلوية",
+          "offset_bottom": "الإزاحة السفلية",
+          "offset_left": "الإزاحة اليسرى",
+          "offset_right": "الإزاحة اليمنى",
+          "floor_name": "اسم الطابق",
+          "trim_up": "التقليم العلوي",
+          "trim_down": "التقليم السفلي",
+          "trim_left": "التقليم الأيسر",
+          "trim_right": "التقليم الأيمن",
+          "trim_action": "إجراء التقليم"
         },
         "data_description": {
-          "offset_top": "إزاحة الأعلى بدوران 0 بالبكسل",
-          "offset_bottom": "إزاحة الأسفل بدوران 0 بالبكسل",
-          "offset_left": "إزاحة اليسار بدوران 0 بالبكسل",
-          "offset_right": "إزاحة اليمين بدوران 0 بالبكسل"
-        },
-        "description": "إزاحة صورة الكاميرا",
-        "title": "إزاحة الصورة"
+          "offset_top": "البكسلات للإزاحة من الأعلى (0-1000)",
+          "offset_bottom": "البكسلات للإزاحة من الأسفل (0-1000)",
+          "offset_left": "البكسلات للإزاحة من اليسار (0-1000)",
+          "offset_right": "البكسلات للإزاحة من اليمين (0-1000)",
+          "floor_name": "اسم مخطط الطابق الحالي",
+          "trim_up": "قيمة التقليم العلوي (0-10000)",
+          "trim_down": "قيمة التقليم السفلي (0-10000)",
+          "trim_left": "قيمة التقليم الأيسر (0-10000)",
+          "trim_right": "قيمة التقليم الأيمن (0-10000)",
+          "trim_action": "الإجراء المطلوب تنفيذه على قيم التقليم"
+        }
       },
       "status_text": {
         "data": {
@@ -249,6 +289,13 @@
         "idle": "خامل",
         "paused": "متوقف مؤقت",
         "returning": "يعود"
+      }
+    },
+    "trim_actions": {
+      "options": {
+        "save": "حفظ التغييرات",
+        "reset": "إعادة تعيين إلى القيم المكتشفة",
+        "delete": "حذف كل التقليمات"
       }
     }
   },

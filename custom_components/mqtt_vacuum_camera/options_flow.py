@@ -7,13 +7,14 @@ from copy import deepcopy
 from typing import Any, Dict, Optional
 
 from homeassistant.config_entries import ConfigEntry, ConfigFlowResult, OptionsFlow
-from homeassistant.exceptions import ConfigEntryError
+from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.selector import (
     BooleanSelector,
     ColorRGBSelector,
     NumberSelector,
     NumberSelectorConfig,
+    TextSelector,
     SelectSelector,
     SelectSelectorConfig,
     SelectSelectorMode,
@@ -21,7 +22,7 @@ from homeassistant.helpers.selector import (
 from valetudo_map_parser.config.types import RoomStore
 import voluptuous as vol
 
-from .common import extract_file_name, get_vacuum_device_info, update_options
+from .common import extract_file_name, update_options
 from .const import (
     ALPHA_BACKGROUND,
     ALPHA_CHARGER,
@@ -57,7 +58,6 @@ from .const import (
     CONF_VAC_STAT_FONT,
     CONF_VAC_STAT_POS,
     CONF_VAC_STAT_SIZE,
-    CONF_VACUUM_CONFIG_ENTRY_ID,
     CONF_ZOOM_LOCK_RATIO,
     DEFAULT_ROOMS,
     DOMAIN,
@@ -75,6 +75,8 @@ from .utils.files_operations import async_del_file, async_rename_room_descriptio
 
 
 class MQTTCameraOptionsFlowHandler(OptionsFlow):
+    """Options flow handler for MQTT Vacuum Camera integration."""
+
     def __init__(self, config_entry: ConfigEntry):
         """Initialize options flow."""
         if not config_entry:
@@ -87,7 +89,8 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         self.is_alpha_enabled = False
         self.number_of_rooms = DEFAULT_ROOMS
         LOGGER.debug(
-            "Options edit in progress.. options before edit: %s", dict(self.backup_options)
+            "Options edit in progress.. options before edit: %s",
+            dict(self.backup_options),
         )
         options_values = list(self.camera_config.options.values())
         if len(options_values) > 0:
@@ -118,12 +121,12 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                         default=config_entry.options.get("aspect_ratio"),
                     ): SelectSelector(aspec_ratio_selector),
                     vol.Optional(
-                        CONF_AUTO_ZOOM,
-                        default=config_entry.options.get("auto_zoom"),
-                    ): BooleanSelector(),
-                    vol.Optional(
                         CONF_ZOOM_LOCK_RATIO,
                         default=config_entry.options.get("zoom_lock_ratio"),
+                    ): BooleanSelector(),
+                    vol.Optional(
+                        CONF_AUTO_ZOOM,
+                        default=config_entry.options.get("auto_zoom"),
                     ): BooleanSelector(),
                     vol.Optional(
                         CONF_SNAPSHOTS_ENABLE,
@@ -131,7 +134,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                     ): BooleanSelector(),
                 }
             )
-            self.IMG_SCHEMA_2 = vol.Schema(
+            self.image_schema_2 = vol.Schema(
                 {
                     vol.Optional(
                         CONF_OFFSET_TOP, default=config_entry.options.get("offset_top")
@@ -150,7 +153,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                     ): cv.positive_int,
                 }
             )
-            self.TEXT_OPTIONS_SCHEMA = vol.Schema(
+            self.status_text_options = vol.Schema(
                 {
                     vol.Optional(
                         CONF_VAC_STAT,
@@ -173,7 +176,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                     ): ColorRGBSelector(),
                 }
             )
-            self.COLOR_BASE_SCHEMA = vol.Schema(
+            self.colors_base_schema = vol.Schema(
                 {
                     vol.Optional(
                         COLOR_BACKGROUND,
@@ -206,7 +209,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                     ): BooleanSelector(),
                 }
             )
-            self.ALPHA_1_SCHEMA = vol.Schema(
+            self.colors_alpha_1_schema = vol.Schema(
                 {
                     vol.Optional(
                         ALPHA_BACKGROUND,
@@ -240,6 +243,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                 }
             )
 
+    # pylint: disable=unused-argument
     async def async_step_init(self, user_input=None) -> ConfigFlowResult:
         """Start the options menu configuration."""
         LOGGER.info("%s: Options Configuration Started.", self.camera_config.unique_id)
@@ -256,61 +260,100 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
             LOGGER.error("No rooms found in the configuration. Aborting.")
             return self.async_abort(reason="no_rooms")
 
-        if self.number_of_rooms > 8:
-            return self.async_show_menu(
-                step_id="init",
-                menu_options=[
-                    "image_opt",
-                    "base_colours",
-                    "rooms_colours_1",
-                    "rooms_colours_2",
-                    "advanced",
-                ],
-            )
-        elif self.number_of_rooms == 1:
-            return self.async_show_menu(
-                step_id="init",
-                menu_options=["image_opt", "base_colours", "floor_only", "advanced"],
-            )
         return self.async_show_menu(
             step_id="init",
-            menu_options=["image_opt", "base_colours", "rooms_colours_1", "advanced"],
+            menu_options=["image_opt", "colours", "advanced"],
         )
 
-    async def async_step_advanced(self, user_input=None):
+    # pylint: disable=unused-argument
+    async def async_step_image_opt(self, user_input=None) -> ConfigFlowResult:
+        """Handle image options menu."""
+        return self.async_show_menu(
+            step_id="image_opt",
+            menu_options=["image_basic_opt", "image_offset", "status_text"],
+        )
+
+    # pylint: disable=unused-argument
+    async def async_step_colours(self, user_input=None) -> ConfigFlowResult:
+        """Handle colours menu."""
+        menu_options = ["base_colours"]
+
+        match self.number_of_rooms:
+            case 1:
+                menu_options.append("floor_only")
+            case n if 1 < n <= 8:
+                menu_options.extend(["rooms_colours_1", "rename_translations"])
+            case _:
+                menu_options.extend(
+                    ["rooms_colours_1", "rooms_colours_2", "rename_translations"]
+                )
+
+        if self.is_alpha_enabled:
+            menu_options.append("transparency")
+
+        return self.async_show_menu(
+            step_id="colours",
+            menu_options=menu_options,
+        )
+
+    async def async_step_transparency(self, user_input=None) -> ConfigFlowResult:
+        """Handle transparency menu"""
+
+        menu_options = ["base_transparency"]
+
+        if self.number_of_rooms == 1:
+            menu_options.append("floor_transparency")
+        elif self.number_of_rooms <= 8:
+            menu_options.append("rooms_transparency_1")
+        else:
+            menu_options.extend(["rooms_transparency_1", "rooms_transparency_2"])
+
+        return self.async_show_menu(
+            step_id="transparency",
+            menu_options=menu_options,
+        )
+
+    async def async_step_advanced(self, user_input=None) -> ConfigFlowResult:
         """Handle advanced options menu."""
         return self.async_show_menu(
             step_id="advanced",
             menu_options=[
-                "image_offset",
-                "status_text",
                 "download_logs",
-                "rename_translations",
                 "reset_map_trims",
             ],
         )
 
-    async def async_step_image_opt(self, user_input: Optional[Dict[str, Any]] = None):
-        """
-        Images Options Configuration
-        """
-        # "get_svg_file": user_input.get(CONF_EXPORT_SVG),
+    # pylint: disable=unused-argument
+    async def async_step_download_logs(self, user_input=None) -> ConfigFlowResult:
+        """Handle logs menu."""
+        return self.async_show_menu(
+            step_id="download_logs",
+            menu_options=[
+                "logs_move",
+                "logs_remove",
+            ],
+        )
+
+    # Image Settings Steps
+    async def async_step_image_basic_opt(
+        self, user_input: Optional[Dict[str, Any]] = None
+    ):
+        """Handle basic image settings."""
         if user_input is not None:
             self.camera_options.update(
                 {
                     "rotate_image": user_input.get(ATTR_ROTATE),
                     "margins": user_input.get(ATTR_MARGINS),
                     "aspect_ratio": user_input.get(CONF_ASPECT_RATIO),
-                    "auto_zoom": user_input.get(CONF_AUTO_ZOOM),
                     "zoom_lock_ratio": user_input.get(CONF_ZOOM_LOCK_RATIO),
+                    "auto_zoom": user_input.get(CONF_AUTO_ZOOM),
                     "enable_www_snapshots": user_input.get(CONF_SNAPSHOTS_ENABLE),
                 }
             )
-
             return await self.async_step_opt_save()
 
         return self.async_show_form(
-            step_id="image_opt",
+            step_id="image_basic_opt",
             data_schema=self.image_schema,
             description_placeholders=self.camera_options,
         )
@@ -318,31 +361,115 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
     async def async_step_image_offset(
         self, user_input: Optional[Dict[str, Any]] = None
     ):
-        """
-        Images Offset Configuration
-        """
+        """Handle image offset and trims settings."""
+        entry = self.camera_config.entry_id
+        coordinator = self.hass.data[DOMAIN][entry]["coordinator"]
+        config_options = self.camera_config.as_dict().get("options", {})
+        config_trims = config_options.get(
+            "trims_data",
+            {
+                "floor": "",
+                "trim_up": 0,
+                "trim_down": 0,
+                "trim_left": 0,
+                "trim_right": 0,
+            },
+        )
+
         if user_input is not None:
-            self.camera_options.update(
-                {
-                    "offset_top": user_input.get(CONF_OFFSET_TOP),
-                    "offset_bottom": user_input.get(CONF_OFFSET_BOTTOM),
-                    "offset_left": user_input.get(CONF_OFFSET_LEFT),
-                    "offset_right": user_input.get(CONF_OFFSET_RIGHT),
-                }
-            )
+            # Handle offset updates
+            offset_updates = {
+                "offset_top": user_input.get(CONF_OFFSET_TOP),
+                "offset_bottom": user_input.get(CONF_OFFSET_BOTTOM),
+                "offset_left": user_input.get(CONF_OFFSET_LEFT),
+                "offset_right": user_input.get(CONF_OFFSET_RIGHT),
+            }
+
+            # Handle trims data updates
+            trims_updates = {
+                "floor": user_input.get("floor_name", config_trims.get("floor", "")),
+                "trim_up": int(
+                    user_input.get("trim_up", config_trims.get("trim_up", 0))
+                ),
+                "trim_down": int(
+                    user_input.get("trim_down", config_trims.get("trim_down", 0))
+                ),
+                "trim_left": int(
+                    user_input.get("trim_left", config_trims.get("trim_left", 0))
+                ),
+                "trim_right": int(
+                    user_input.get("trim_right", config_trims.get("trim_right", 0))
+                ),
+            }
+
+            action = user_input.get("trim_action", "save")
+
+            match action:
+                case "reset":
+                    # Get fresh trims from coordinator
+                    trims_updates = coordinator.shared.trims.to_dict()
+                case "delete":
+                    # Clear all trims
+                    trims_updates = coordinator.shared.trims.clear()
+                    offset_updates = {
+                        "offset_top": 0,
+                        "offset_bottom": 0,
+                        "offset_left": 0,
+                        "offset_right": 0,
+                    }
+
+            self.camera_options.update({**offset_updates, "trims_data": trims_updates})
 
             return await self.async_step_opt_save()
 
+        # Build the form schema
+        offset_schema = {
+            vol.Optional(
+                CONF_OFFSET_TOP, default=config_options.get("offset_top", 0)
+            ): NumberSelector({"min": 0, "max": 1000, "step": 1}),
+            vol.Optional(
+                CONF_OFFSET_BOTTOM, default=config_options.get("offset_bottom", 0)
+            ): NumberSelector({"min": 0, "max": 1000, "step": 1}),
+            vol.Optional(
+                CONF_OFFSET_LEFT, default=config_options.get("offset_left", 0)
+            ): NumberSelector({"min": 0, "max": 1000, "step": 1}),
+            vol.Optional(
+                CONF_OFFSET_RIGHT, default=config_options.get("offset_right", 0)
+            ): NumberSelector({"min": 0, "max": 1000, "step": 1}),
+            vol.Optional(
+                "floor_name", default=config_trims.get("floor", "")
+            ): TextSelector(),
+            vol.Optional(
+                "trim_up", default=config_trims.get("trim_up", 0)
+            ): NumberSelector({"min": 0, "max": 10000, "step": 1, "mode": "box"}),
+            vol.Optional(
+                "trim_down", default=config_trims.get("trim_down", 0)
+            ): NumberSelector({"min": 0, "max": 10000, "step": 1, "mode": "box"}),
+            vol.Optional(
+                "trim_left", default=config_trims.get("trim_left", 0)
+            ): NumberSelector({"min": 0, "max": 10000, "step": 1, "mode": "box"}),
+            vol.Optional(
+                "trim_right", default=config_trims.get("trim_right", 0)
+            ): NumberSelector({"min": 0, "max": 10000, "step": 1, "mode": "box"}),
+            vol.Optional("trim_action", default="save"): SelectSelector(
+                {
+                    "options": ["save", "reset", "delete"],
+                    "translation_key": "trim_actions",
+                }
+            ),
+        }
+
         return self.async_show_form(
             step_id="image_offset",
-            data_schema=self.IMG_SCHEMA_2,
-            description_placeholders=self.camera_options,
+            data_schema=vol.Schema(offset_schema),
+            description_placeholders={
+                **self.camera_options,
+                "current_floor": config_trims.get("floor", ""),
+            },
         )
 
     async def async_step_status_text(self, user_input: Optional[Dict[str, Any]] = None):
-        """
-        Images Status Text Configuration
-        """
+        """Handle status text settings."""
         if user_input is not None:
             self.camera_options.update(
                 {
@@ -353,12 +480,11 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                     "color_text": user_input.get(COLOR_TEXT),
                 }
             )
-
             return await self.async_step_opt_save()
 
         return self.async_show_form(
             step_id="status_text",
-            data_schema=self.TEXT_OPTIONS_SCHEMA,
+            data_schema=self.status_text_options,
             description_placeholders=self.camera_options,
         )
 
@@ -390,7 +516,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
 
         return self.async_show_form(
             step_id="base_colours",
-            data_schema=self.COLOR_BASE_SCHEMA,
+            data_schema=self.colors_base_schema,
             description_placeholders=self.camera_options,
         )
 
@@ -417,7 +543,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
 
         return self.async_show_form(
             step_id="alpha_1",
-            data_schema=self.ALPHA_1_SCHEMA,
+            data_schema=self.colors_alpha_1_schema,
             description_placeholders=self.camera_options,
         )
 
@@ -479,7 +605,9 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                 )
             ] = ColorRGBSelector()
 
-        fields[vol.Optional(IS_ALPHA_R1, default=self.is_alpha_enabled)] = BooleanSelector()
+        fields[vol.Optional(IS_ALPHA_R1, default=self.is_alpha_enabled)] = (
+            BooleanSelector()
+        )
 
         return self.async_show_form(
             step_id="rooms_colours_1",
@@ -514,7 +642,9 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                 )
             ] = ColorRGBSelector()
 
-        fields[vol.Optional(IS_ALPHA_R2, default=self.is_alpha_enabled)] = BooleanSelector()
+        fields[vol.Optional(IS_ALPHA_R2, default=self.is_alpha_enabled)] = (
+            BooleanSelector()
+        )
 
         return self.async_show_form(
             step_id="rooms_colours_2",
@@ -603,105 +733,55 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
             description_placeholders=self.camera_options,
         )
 
-    async def async_step_logs_move(self):
-        """
-        Move the logs from www config folder to .storage.
-        """
-
+    # pylint: disable=unused-argument
+    async def async_step_logs_move(self, user_input=None):
+        """Move logs to storage."""
         LOGGER.debug("Generating and Moving the logs.")
         await self.hass.async_create_task(
             run_async_save_logs(self.hass, self.file_name)
         )
-
         self.camera_options = self.backup_options
         return await self.async_step_opt_save()
 
-    async def async_step_logs_remove(self):
-        """
-        Remove the logs from www config folder.
-        """
+    # pylint: disable=unused-argument
+    async def async_step_logs_remove(self, user_input=None):
+        """Remove logs from www folder."""
         ha_dir = self.hass.config.path()
         destination_path = f"{ha_dir}/www/{self.file_name}.zip"
         await async_del_file(destination_path)
         self.camera_options = self.backup_options
         return await self.async_step_opt_save()
 
-    async def async_step_download_logs(self, user_input=None):
-        """
-        Copy the logs from .storage to www config folder.
-        """
-        errors = {}
-        if user_input is not None and "camera_logs_progres" in user_input:
-            next_action = user_input["camera_logs_progres"]
-            if next_action == "opt_1":
-                return await self.async_step_logs_move()
-            if next_action == "opt_2":
-                return await self.async_step_logs_remove()
-            if next_action == "no_action":
-                ...  # do nothing
-            else:
-                errors["base"] = "incorrect_options_action"
-        copy_options = SelectSelectorConfig(
-            options=[
-                {"label": "copy_the_logs_to_www", "value": "opt_1"},
-                {"label": "delete_logs_from_www", "value": "opt_2"},
-            ],
-            translation_key="camera_logs_progres",
-            mode=SelectSelectorMode.LIST,
-        )
-        data_schema = {"camera_logs_progres": SelectSelector(copy_options)}
-        return self.async_show_form(
-            step_id="download_logs",
-            data_schema=vol.Schema(data_schema),
-            errors=errors,
-        )
-
+    # Other Advanced Steps
+    # pylint: disable=unused-argument
     async def async_step_rename_translations(self, user_input=None):
-        """
-        Copy the logs from .storage to www config folder.
-        """
+        """Handle translation renaming."""
         LOGGER.debug("Renaming the translations.")
-        hass = self.hass
-        if (user_input is None) and self.backup_options:
+        if self.backup_options:
             if self.hass:
-                await async_rename_room_description(hass, self.file_name)
+                await async_rename_room_description(self.hass, self.file_name)
                 self.camera_options = self.backup_options
             return await self.async_step_opt_save()
-
         return self.async_show_form(step_id="rename_translations")
 
+    # pylint: disable=unused-argument
     async def async_step_reset_map_trims(self, user_input=None):
-        """
-        Update the map trims based on the camera configuration.
-
-        If the stored trims (from camera_config.to_dict()) are all 0,
-        then we update them with the current trims from the coordinator.
-        Otherwise, we clear the trims (reset them to 0).
-        """
+        """Handle map trims reset."""
         entry = self.camera_config.entry_id
         LOGGER.debug("Updating the map trims for %s", entry)
-
-        # Retrieve the coordinator from hass.data
         coordinator = self.hass.data[DOMAIN][entry]["coordinator"]
-
-        # Retrieve the stored trims from the camera_config
         config_options = self.camera_config.as_dict().get("options", {})
         config_trims = config_options.get("trims_data", {})
-        LOGGER.debug("Current config trims_data: %s", config_trims)
-        if (user_input is None) and self.backup_options:
-            # Decide whether to update (store) or reset (clear) the trims
+
+        if self.backup_options:
             if all(
                 config_trims.get(key, 0) == 0
                 for key in ("trim_down", "trim_left", "trim_right", "trim_up")
             ):
-                # If all stored values are 0, then update them with the current trims.
                 new_trims = coordinator.shared.trims.to_dict()
-                LOGGER.debug("Storing new trims: %s", new_trims)
                 self.camera_options = {"trims_data": new_trims}
             else:
-                # If the stored values are not all zero, reset the trims.
                 reset_trims = coordinator.shared.trims.clear()
-                LOGGER.debug("Resetting trims and offsets to defaults: %s", reset_trims)
                 self.camera_options = {
                     "offset_bottom": 0,
                     "offset_left": 0,
@@ -715,19 +795,21 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         """
         Save the options in a sorted way. It stores all the options.
         """
-        LOGGER.info(
+        LOGGER.debug(
             "Storing Updated Camera (%s) Options.", self.camera_config.unique_id
         )
         try:
-            _, vacuum_device = get_vacuum_device_info(
-                self.camera_config.data.get(CONF_VACUUM_CONFIG_ENTRY_ID), self.hass
-            )
             opt_update = await update_options(self.backup_options, self.camera_options)
             LOGGER.debug("updated options:%s", dict(opt_update))
             return self.async_create_entry(
                 title="",
                 data=opt_update,
             )
-        except Exception as e:
-            LOGGER.error("Error in storing the options: %s", e, exc_info=True)
-            return self.async_abort(reason="error")
+        except ConfigEntryError as e:
+            LOGGER.error(
+                "Configuration error while storing options: %s", e, exc_info=True
+            )
+            return self.async_abort(reason="config_error")
+        except ConfigEntryNotReady as e:
+            LOGGER.error("System not ready while storing options: %s", e, exc_info=True)
+            return self.async_abort(reason="not_ready")

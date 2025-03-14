@@ -20,36 +20,62 @@
   "options": {
     "step": {
       "init": {
-        "title": "Možnosti kamery MQTT",
-        "description": "### _Standardní možnosti_:",
+        "title": "Možnosti MQTT Kamery",
+        "description": "Konfigurace možností kamery",
         "menu_options": {
-          "image_opt": "Možnosti obrázku",
-          "base_colours": "Obecné barvy",
-          "floor_only": "Barva podlahy",
-          "rooms_colours_1": "Barvy pokojů 1 až 8",
-          "rooms_colours_2": "Barvy pokojů 9 až 16",
-          "advanced": "Pokročilé možnosti"
-        }
-      },
-      "advanced": {
-        "title": "Možnosti kamery MQTT",
-        "description": "### _Pokročilé možnosti_:",
-        "menu_options": {
-          "image_offset": "Posunutí obrázku",
-          "status_text": "Text stavu",
-          "download_logs": "Stáhnout protokoly",
-          "rename_translations": "Přejmenovat překlady",
-          "reset_map_trims": "Obnovit ořezy mapy"
-        }
-      },
-      "download_logs": {
-        "title": "Soubor protokolu kamery MQTT",
-        "description": "### _Kopírování souboru protokolu_:",
-        "data": {
-          "camera_logs_progres": "Co chcete udělat?"
+          "image_opt": "Nastavení Obrazu",
+          "colours": "Nastavení Barev",
+          "advanced": "Pokročilé Nastavení"
         }
       },
       "image_opt": {
+        "title": "Nastavení Obrazu",
+        "description": "Konfigurace možností zobrazení",
+        "menu_options": {
+          "image_basic_opt": "Základní Nastavení",
+          "image_offset": "Posun Obrazu",
+          "status_text": "Stavový Text"
+        }
+      },
+      "colours": {
+        "title": "Nastavení Barev",
+        "description": "Konfigurace barev mapy",
+        "menu_options": {
+          "base_colours": "Základní Barvy",
+          "rooms_colours_1": "Místnosti 1-8",
+          "rooms_colours_2": "Místnosti 9-16",
+          "floor_only": "Barva Podlahy",
+          "transparency": "Nastavení Průhlednosti",
+          "rename_translations": "Přejmenovat Místnosti"
+        }
+      },
+      "transparency": {
+        "title": "Nastavení Průhlednosti",
+        "description": "Konfigurace úrovní průhlednosti",
+        "menu_options": {
+          "base_transparency": "Základní Průhlednost",
+          "rooms_transparency_1": "Průhlednost Místností 1-8",
+          "rooms_transparency_2": "Průhlednost Místností 9-16",
+          "floor_transparency": "Průhlednost Podlahy"
+        }
+      },
+      "advanced": {
+        "title": "Pokročilé Nastavení",
+        "description": "Pokročilé možnosti konfigurace",
+        "menu_options": {
+          "download_logs": "Stáhnout Logy",
+          "reset_map_trims": "Resetovat Ořezy Mapy"
+        }
+      },
+      "download_logs": {
+        "title": "Stažení Logů",
+        "description": "Správa souborů logů",
+        "menu_options": {
+          "logs_move": "Kopírovat logy do WWW",
+          "logs_remove": "Odstranit logy z WWW"
+        }
+      },
+      "image_basic_opt": {
         "data": {
           "rotate_image": "Otočit",
           "margins": "Okraje obrázku.",
@@ -67,20 +93,32 @@
         "title": "Možnosti obrázku"
       },
       "image_offset": {
+        "title": "Nastavení odsazení a ořezu obrázku",
+        "description": "Konfigurace odsazení obrázku a hodnot ořezu podlaží",
         "data": {
-          "offset_top": "Horní posun",
-          "offset_bottom": "Dolní posun",
-          "offset_left": "Levá posun",
-          "offset_right": "Pravá posun"
+          "offset_top": "Horní odsazení",
+          "offset_bottom": "Dolní odsazení",
+          "offset_left": "Levé odsazení",
+          "offset_right": "Pravé odsazení",
+          "floor_name": "Název podlaží",
+          "trim_up": "Horní ořez",
+          "trim_down": "Dolní ořez",
+          "trim_left": "Levý ořez",
+          "trim_right": "Pravý ořez",
+          "trim_action": "Akce ořezu"
         },
         "data_description": {
-          "offset_top": "Horní posun při otočení o 0 stupňů v pixelech.",
-          "offset_bottom": "Dolní posun při otočení o 0 stupňů v pixelech.",
-          "offset_left": "Levá posun při otočení o 0 stupňů v pixelech.",
-          "offset_right": "Pravá posun při otočení o 0 stupňů v pixelech."
-        },
-        "description": "Posunutí obrázku kamery",
-        "title": "Posunutí obrázku"
+          "offset_top": "Pixely pro odsazení shora (0-1000)",
+          "offset_bottom": "Pixely pro odsazení zdola (0-1000)",
+          "offset_left": "Pixely pro odsazení zleva (0-1000)",
+          "offset_right": "Pixely pro odsazení zprava (0-1000)",
+          "floor_name": "Název aktuálního plánu podlaží",
+          "trim_up": "Hodnota horního ořezu (0-10000)",
+          "trim_down": "Hodnota dolního ořezu (0-10000)",
+          "trim_left": "Hodnota levého ořezu (0-10000)",
+          "trim_right": "Hodnota pravého ořezu (0-10000)",
+          "trim_action": "Akce k provedení na hodnotách ořezu"
+        }
       },
       "status_text": {
         "data": {
@@ -249,6 +287,13 @@
         "idle": "Nečinný",
         "paused": "Pozastaveno",
         "returning": "Návrat"
+      }
+    },
+    "trim_actions": {
+      "options": {
+        "save": "Uložit změny",
+        "reset": "Obnovit na zjištěné hodnoty",
+        "delete": "Smazat všechny ořezy"
       }
     }
   },

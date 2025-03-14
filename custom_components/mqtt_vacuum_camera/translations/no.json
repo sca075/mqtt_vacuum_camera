@@ -20,15 +20,34 @@
   "options": {
     "step": {
       "init": {
-        "title": "MQTT Kameraalternativer",
-        "description": "### _Standardalternativer_:",
+        "title": "MQTT Kamera Alternativer",
+        "description": "Konfigurer kamera alternativer",
         "menu_options": {
-          "image_opt": "Bildealternativer",
-          "base_colours": "Generelle Farger",
-          "floor_only": "Gulvfarge",
-          "rooms_colours_1": "Romfarger 1 til 8",
-          "rooms_colours_2": "Romfarger 9 til 15",
-          "advanced": "Avanserte Alternativer"
+          "image_opt": "Bildeinnstillinger",
+          "colours": "Fargekonfigurasjon",
+          "advanced": "Avanserte alternativer"
+        }
+      },
+      "colours": {
+        "title": "Fargekonfigurasjon",
+        "description": "Konfigurer kartfarger",
+        "menu_options": {
+          "base_colours": "Basisfarger",
+          "rooms_colours_1": "Rom 1-8",
+          "rooms_colours_2": "Rom 9-16",
+          "floor_only": "Kun gulv",
+          "transparency": "Gjennomsiktighetsinnstillinger",
+          "rename_translations": "Gi nytt navn til rom"
+        }
+      },
+      "transparency": {
+        "title": "Gjennomsiktighetsinnstillinger",
+        "description": "Konfigurer gjennomsiktighetsnivåer",
+        "menu_options": {
+          "base_transparency": "Basis gjennomsiktighet",
+          "rooms_transparency_1": "Rom 1-8 gjennomsiktighet",
+          "rooms_transparency_2": "Rom 9-16 gjennomsiktighet",
+          "floor_transparency": "Gulv gjennomsiktighet"
         }
       },
       "advanced": {
@@ -67,20 +86,32 @@
         "title": "Bildealternativer"
       },
       "image_offset": {
+        "title": "Bilde Forskyvning & Beskjæringsinnstillinger",
+        "description": "Konfigurer bildeforskyvninger og etasjebeskjæringsverdier",
         "data": {
-          "offset_top": "Toppoffset",
-          "offset_bottom": "Bunnen offset",
-          "offset_left": "Venstre offset",
-          "offset_right": "Høyre offset"
+          "offset_top": "Øvre Forskyvning",
+          "offset_bottom": "Nedre Forskyvning",
+          "offset_left": "Venstre Forskyvning",
+          "offset_right": "Høyre Forskyvning",
+          "floor_name": "Etasjenavn",
+          "trim_up": "Øvre Beskjæring",
+          "trim_down": "Nedre Beskjæring",
+          "trim_left": "Venstre Beskjæring",
+          "trim_right": "Høyre Beskjæring",
+          "trim_action": "Beskjæringshandling"
         },
         "data_description": {
-          "offset_top": "Toppoffset rotasjon 0 i piksler.",
-          "offset_bottom": "Bunnen offset rotasjon 0 i piksler.",
-          "offset_left": "Venstre offset rotasjon 0 i piksler.",
-          "offset_right": "Høyre offset rotasjon 0 i piksler."
-        },
-        "description": "Kamera Bilde Offset",
-        "title": "Bildeoffset"
+          "offset_top": "Piksler å forskyve fra toppen (0-1000)",
+          "offset_bottom": "Piksler å forskyve fra bunnen (0-1000)",
+          "offset_left": "Piksler å forskyve fra venstre (0-1000)",
+          "offset_right": "Piksler å forskyve fra høyre (0-1000)",
+          "floor_name": "Navn på gjeldende etasjeplan",
+          "trim_up": "Øvre beskjæringsverdi (0-10000)",
+          "trim_down": "Nedre beskjæringsverdi (0-10000)",
+          "trim_left": "Venstre beskjæringsverdi (0-10000)",
+          "trim_right": "Høyre beskjæringsverdi (0-10000)",
+          "trim_action": "Handling å utføre på beskjæringsverdier"
+        }
       },
       "status_text": {
         "data": {
@@ -249,6 +280,13 @@
         "idle": "Inaktiv",
         "paused": "Pauset",
         "returning": "Vender tilbake"
+      }
+    },
+    "trim_actions": {
+      "options": {
+        "save": "Lagre Endringer",
+        "reset": "Tilbakestill til Oppdagede Verdier",
+        "delete": "Slett Alle Beskjæringer"
       }
     }
   },

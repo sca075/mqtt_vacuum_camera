@@ -42,7 +42,18 @@ CONF_EXPORT_SVG = "get_svg_file"
 CONF_AUTO_ZOOM = "auto_zoom"
 CONF_ZOOM_LOCK_RATIO = "zoom_lock_ratio"
 CONF_TRIMS_SAVE = "save_trims"
+CONF_TRIMS_DATA = "trims_data"
+CONF_FLOOR_NAME = "floor_name"
+CONF_TRIM_UP = "trim_up"
+CONF_TRIM_DOWN = "trim_down"
+CONF_TRIM_LEFT = "trim_left"
+CONF_TRIM_RIGHT = "trim_right"
+CONF_TRIM_ACTION = "trim_action"
 
+# Trim Actions
+TRIM_ACTION_SAVE = "save"
+TRIM_ACTION_RESET = "reset"
+TRIM_ACTION_DELETE = "delete"
 
 LOGGER = logging.getLogger(__package__)
 
