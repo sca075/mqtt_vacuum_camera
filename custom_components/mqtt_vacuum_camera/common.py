@@ -1,12 +1,12 @@
 """
 Common functions for the MQTT Vacuum Camera integration.
-Version: 2025.3.0b0
+Version: 2025.3.0b1
 """
 
 from __future__ import annotations
 
-import re
 import logging
+import re
 from typing import Any
 
 from homeassistant.components.mqtt import DOMAIN as MQTT_DOMAIN

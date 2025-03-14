@@ -1,5 +1,5 @@
 """Sensors for Rand256.
-Version: 2025.3.0b0
+Version: 2025.3.0b10
 """
 
 from __future__ import annotations
@@ -20,14 +20,14 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import CONF_VACUUM_IDENTIFIERS, DOMAIN, SENSOR_NO_DATA, LOGGER
+from .const import CONF_VACUUM_IDENTIFIERS, DOMAIN, LOGGER, SENSOR_NO_DATA
 from .coordinator import MQTTVacuumCoordinator
 
 SCAN_INTERVAL = timedelta(seconds=2)
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 
-@dataclass
+@dataclass(frozen=True)
 class VacuumSensorDescription(SensorEntityDescription):
     """A class that describes vacuum sensor entities."""
 
