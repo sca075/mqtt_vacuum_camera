@@ -270,11 +270,18 @@ class ValetudoConnector:
                 "%s: Received Hypfer image data from MQTT",
                 self.connector_data.file_name,
             )
+            LOGGER.debug("test: %r", msg.payload[-2:])
+            if len(msg.payload) < 4 or not msg.payload.startswith(b'\x78\x9c'):
+                LOGGER.warning("%s Ignoring invalid map payload: %r",
+                               self.connector_data.file_name,
+                               msg.payload[:10])
+                self.connector_data.data_in = False
+                return
             self.mqtt_data.img_payload = msg.payload
             self.connector_data.data_in = True
 
     async def _hypfer_handle_status_payload(self, state) -> None:
-        """Handle Hypfer status payload."""
+        """Handle Hypfer sltatus payload."""
         if state:
             self.mqtt_data.mqtt_vac_stat = state
             if self.mqtt_data.mqtt_vac_stat != "docked":
