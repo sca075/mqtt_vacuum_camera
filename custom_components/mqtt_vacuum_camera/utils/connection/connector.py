@@ -1,5 +1,6 @@
 """
-Version: 2025.3.0b1 - Consolidated ValetudoConnector with grouped data.
+Consolidated ValetudoConnector with grouped data.
+Last Updated on version: 2025.3.0b2
 """
 
 import asyncio
@@ -270,17 +271,38 @@ class ValetudoConnector:
                 "%s: Received Hypfer image data from MQTT",
                 self.connector_data.file_name,
             )
-            # check if it is a valid image payload.
-            if len(msg.payload) < 4 or not msg.payload.startswith(b"\x78\x9c"):
-                LOGGER.warning(
-                    "%s Ignoring invalid map payload: %r",
+            # Validate zlib compressed data
+            try:
+                if (len(msg.payload) < 4 or 
+                    not msg.payload.startswith(b"\x78\x9c")):
+                    LOGGER.warning(
+                        "%s Ignoring invalid map payload: %r",
+                        self.connector_data.file_name,
+                        msg.payload[:10],
+                    )
+                    self.connector_data.data_in = False
+                    return
+                
+                # Try to validate zlib header checksum
+                if (msg.payload[0] * 256 + msg.payload[1]) % 31 != 0:
+                    LOGGER.warning(
+                        "%s Invalid zlib header checksum",
+                        self.connector_data.file_name
+                    )
+                    self.connector_data.data_in = False
+                    return
+                    
+                self.mqtt_data.img_payload = msg.payload
+                self.connector_data.data_in = True
+                
+            except Exception as e:
+                LOGGER.error(
+                    "%s Error validating map payload: %s",
                     self.connector_data.file_name,
-                    msg.payload[:10],
+                    str(e)
                 )
                 self.connector_data.data_in = False
                 return
-            self.mqtt_data.img_payload = msg.payload
-            self.connector_data.data_in = True
 
     async def _hypfer_handle_status_payload(self, state) -> None:
         """Handle Hypfer sltatus payload."""
