@@ -67,11 +67,9 @@ If user exposed functionality or configuration variables are added/changed:
 
 - [ ] Documentation added/updated.
 
-If the code communicates with devices, web services, or third-party tools:
+If the code communicates uses new third-party tools or libraries:
 
-- [ ] The [manifest file][manifest-docs] has all fields filled out correctly.  
-      Updated and included derived files by running: `python3 -m script.hassfest`.
-- [ ] New or updated dependencies have been added to `requirements_all.txt`.  
+- [ ] New or updated dependencies have been added to `manifest.json`.  
 - [ ] For the updated dependencies - a link to the changelog, or at minimum a diff between library versions is added to the PR description.
 
 <!--
