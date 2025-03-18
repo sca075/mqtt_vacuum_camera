@@ -1,5 +1,5 @@
 """Collection of services for the vacuums and camera components.
-Version: 2025.3.0b0
+Last Updated on version: 2025.3.0b1
 Autor: @sca075"""
 
 from functools import partial

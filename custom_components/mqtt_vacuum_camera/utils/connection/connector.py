@@ -1,22 +1,28 @@
 """
-Version: 2025.3.0b0 - Consolidated ValetudoConnector with grouped data.
+Consolidated ValetudoConnector with grouped data.
+Last Updated on version: 2025.3.0b2
 """
 
 import asyncio
-import json
 from dataclasses import dataclass, field
+import json
 from typing import Any, Dict, List
+
 from homeassistant.components import mqtt
 from homeassistant.core import EventOrigin, HomeAssistant, callback
 from isal import igzip, isal_zlib  # pylint: disable=I1101
 from valetudo_map_parser.config.rand25_parser import RRMapParser
 from valetudo_map_parser.config.types import RoomStore
-from custom_components.mqtt_vacuum_camera.common import build_full_topic_set
+
+from custom_components.mqtt_vacuum_camera.common import (
+    build_full_topic_set,
+    redact_ip_filter,
+)
 from custom_components.mqtt_vacuum_camera.const import (
     DECODED_TOPICS,
+    LOGGER,
     NON_DECODED_TOPICS,
     CameraModes,
-    LOGGER,
 )
 
 _QOS = 0
@@ -112,7 +118,9 @@ class ValetudoConnector:
         # Create a queue for decompression tasks
         self._decompression_queue = asyncio.Queue()
         # Start the background worker
-        self._decompression_worker_task = asyncio.create_task(self._process_decompression_queue())
+        self._decompression_worker_task = asyncio.create_task(
+            self._process_decompression_queue()
+        )
 
     async def _process_decompression_queue(self):
         """
@@ -266,11 +274,39 @@ class ValetudoConnector:
                 "%s: Received Hypfer image data from MQTT",
                 self.connector_data.file_name,
             )
-            self.mqtt_data.img_payload = msg.payload
-            self.connector_data.data_in = True
+            # Validate zlib compressed data
+            try:
+                if len(msg.payload) < 4 or not msg.payload.startswith(b"\x78\x9c"):
+                    LOGGER.warning(
+                        "%s Ignoring invalid map payload: %r",
+                        self.connector_data.file_name,
+                        msg.payload[:10],
+                    )
+                    self.connector_data.data_in = False
+                    return
+
+                # Try to validate zlib header checksum
+                if (msg.payload[0] * 256 + msg.payload[1]) % 31 != 0:
+                    LOGGER.warning(
+                        "%s Invalid zlib header checksum", self.connector_data.file_name
+                    )
+                    self.connector_data.data_in = False
+                    return
+
+                self.mqtt_data.img_payload = msg.payload
+                self.connector_data.data_in = True
+
+            except Exception as e:
+                LOGGER.error(
+                    "%s Error validating map payload: %s",
+                    self.connector_data.file_name,
+                    str(e),
+                )
+                self.connector_data.data_in = False
+                return
 
     async def _hypfer_handle_status_payload(self, state) -> None:
-        """Handle Hypfer status payload."""
+        """Handle Hypfer sltatus payload."""
         if state:
             self.mqtt_data.mqtt_vac_stat = state
             if self.mqtt_data.mqtt_vac_stat != "docked":
@@ -476,6 +512,11 @@ class ValetudoConnector:
         for unsubscribe in self.connector_data.unsubscribe_handlers:
             unsubscribe()
 
+    @redact_ip_filter
+    def _log_vacuum_ips(self, ips: str) -> str:
+        """Log vacuum IPs with redaction"""
+        return f"{self.connector_data.file_name}: Vacuum IPs: {ips}"
+
     @callback
     async def async_message_received(self, msg) -> None:
         """
@@ -549,8 +590,4 @@ class ValetudoConnector:
                     if len(vacuum_host_ip.split(",")) > 1
                     else vacuum_host_ip
                 )
-                LOGGER.debug(
-                    "%s: Vacuum IPs: %r",
-                    self.connector_data.file_name,
-                    self.config.shared.vacuum_ips,
-                )
+                LOGGER.debug(self._log_vacuum_ips(self.config.shared.vacuum_ips))

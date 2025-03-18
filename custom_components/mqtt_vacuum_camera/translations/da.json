@@ -22,25 +22,60 @@
       "init": {
         "title": "MQTT Kameraindstillinger",
         "description": "### _Standardindstillinger_:",
-        "data": {
-          "camera_config_action": "Handling"
-        }
-      },
-      "advanced": {
-        "title": "MQTT Kameraindstillinger",
-        "description": "### _Avancerede indstillinger_:",
-        "data": {
-          "camera_config_action": "Handling"
-        }
-      },
-      "download_logs": {
-        "title": "MQTT Kamera Log Fil",
-        "description": "### _Kopier logfiler_:",
-        "data": {
-          "camera_logs_progres": "Hvad skal gøres?"
+        "menu_options": {
+          "image_opt": "Billedindstillinger",
+          "colours": "Farveindstillinger",
+          "advanced": "Avancerede Indstillinger"
         }
       },
       "image_opt": {
+        "title": "Billedindstillinger",
+        "description": "Konfigurer visningsindstillinger",
+        "menu_options": {
+          "image_basic_opt": "Grundlæggende Indstillinger",
+          "image_offset": "Billedforskydning",
+          "status_text": "Statustekst"
+        }
+      },
+      "colours": {
+        "title": "Farveindstillinger",
+        "description": "Konfigurer kortets farver",
+        "menu_options": {
+          "base_colours": "Grundfarver",
+          "rooms_colours_1": "Rum 1-8",
+          "rooms_colours_2": "Rum 9-16",
+          "floor_only": "Gulvfarve",
+          "transparency": "Gennemsigtighedsindstillinger",
+          "rename_translations": "Omdøb Rum"
+        }
+      },
+      "transparency": {
+        "title": "Gennemsigtighedsindstillinger",
+        "description": "Konfigurer gennemsigtighedsniveauer",
+        "menu_options": {
+          "base_transparency": "Grundlæggende Gennemsigtighed",
+          "rooms_transparency_1": "Gennemsigtighed Rum 1-8",
+          "rooms_transparency_2": "Gennemsigtighed Rum 9-16",
+          "floor_transparency": "Gulvgennemsigtighed"
+        }
+      },
+      "advanced": {
+        "title": "Avancerede Indstillinger",
+        "description": "Avancerede konfigurationsindstillinger",
+        "menu_options": {
+          "download_logs": "Download Logfiler",
+          "reset_map_trims": "Nulstil Kortbeskæringer"
+        }
+      },
+      "download_logs": {
+        "title": "Download af Logfiler",
+        "description": "Håndter logfiler",
+        "menu_options": {
+          "logs_move": "Kopiér logfiler til WWW",
+          "logs_remove": "Fjern logfiler fra WWW"
+        }
+      },
+      "image_basic_opt": {
         "data": {
           "rotate_image": "Roter",
           "margins": "Billedemargener.",
@@ -58,20 +93,32 @@
         "title": "Billedeindstillinger"
       },
       "image_offset": {
+        "title": "Billedforskydning & Beskæringsindstillinger",
+        "description": "Konfigurer billedforskydninger og etagebeskæringsværdier",
         "data": {
-          "offset_top": "Offset Top",
-          "offset_bottom": "Offset Bund",
-          "offset_left": "Offset Venstre",
-          "offset_right": "Offset Højre"
+          "offset_top": "Top Forskydning",
+          "offset_bottom": "Bund Forskydning",
+          "offset_left": "Venstre Forskydning",
+          "offset_right": "Højre Forskydning",
+          "floor_name": "Etagenavn",
+          "trim_up": "Øvre Beskæring",
+          "trim_down": "Nedre Beskæring",
+          "trim_left": "Venstre Beskæring",
+          "trim_right": "Højre Beskæring",
+          "trim_action": "Beskæringshandling"
         },
         "data_description": {
-          "offset_top": "Offset Top rotation 0 i pixels.",
-          "offset_bottom": "Offset Bund rotation 0 i pixels.",
-          "offset_left": "Offset Venste rotation 0 i pixels.",
-          "offset_right": "Offset Højre rotation 0 i pixels."
-        },
-        "description": "Kamerabillede Offset",
-        "title": "Billedeoffset"
+          "offset_top": "Pixels til forskydning fra top (0-1000)",
+          "offset_bottom": "Pixels til forskydning fra bund (0-1000)",
+          "offset_left": "Pixels til forskydning fra venstre (0-1000)",
+          "offset_right": "Pixels til forskydning fra højre (0-1000)",
+          "floor_name": "Navn på den aktuelle etageplan",
+          "trim_up": "Øvre beskæringsværdi (0-10000)",
+          "trim_down": "Nedre beskæringsværdi (0-10000)",
+          "trim_left": "Venstre beskæringsværdi (0-10000)",
+          "trim_right": "Højre beskæringsværdi (0-10000)",
+          "trim_action": "Handling at udføre på beskæringsværdier"
+        }
       },
       "status_text": {
         "data": {
@@ -224,24 +271,6 @@
     }
   },
   "selector": {
-    "camera_config_action": {
-      "options": {
-        "opt_1": "Konfigurer billede",
-        "opt_2": "Konfigurer generelle farver",
-        "opt_3": "Farver Rum 1 til 8",
-        "opt_4": "Farver Rum 9 til 16",
-        "opt_5": "Avancerede indstillinger"
-      }
-    },
-    "camera_config_advanced": {
-      "options": {
-        "opt_1": "Konfigurer billedeoffset",
-        "opt_2": "Konfigurer statustekst",
-        "opt_3": "Kopier kameralogs til www",
-        "opt_4": "Omdøb farvevalg",
-        "opt_5": "Nulstil kortjusteringer"
-      }
-    },
     "camera_logs_progres": {
       "options": {
         "opt_1": "Kopier logfiler til www",
@@ -258,6 +287,13 @@
         "idle": "Inaktiv",
         "paused": "Pause",
         "returning": "Returnerer"
+      }
+    },
+    "trim_actions": {
+      "options": {
+        "save": "Gem Ændringer",
+        "reset": "Nulstil til Registrerede Værdier",
+        "delete": "Slet Alle Beskæringer"
       }
     }
   },
