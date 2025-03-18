@@ -5,7 +5,6 @@ Version: 2025.3.0b0
 
 import asyncio
 from datetime import timedelta
-import logging
 from typing import Optional
 
 import async_timeout
@@ -17,10 +16,8 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from valetudo_map_parser.config.shared import CameraShared, CameraSharedManager
 
 from .common import get_camera_device_info
-from .const import DEFAULT_NAME, SENSOR_NO_DATA
+from .const import DEFAULT_NAME, SENSOR_NO_DATA, LOGGER
 from .utils.connection.connector import ValetudoConnector
-
-_LOGGER = logging.getLogger(__name__)
 
 
 class MQTTVacuumCoordinator(DataUpdateCoordinator):
@@ -37,7 +34,7 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         """Initialize the coordinator."""
         super().__init__(
             hass,
-            _LOGGER,
+            LOGGER,
             name=DEFAULT_NAME,
             update_interval=polling_interval,
         )
@@ -82,7 +79,7 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
                         return self.sensor_data
                     return self.sensor_data
             except Exception as err:
-                _LOGGER.error(
+                LOGGER.error(
                     "Exception raised fetching sensor data: %s", err, exc_info=True
                 )
                 raise UpdateFailed(f"Error fetching sensor data: {err}") from err
@@ -102,7 +99,7 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
             file_name = mqtt_listen_topic.split("/")[1].lower()
             self.shared_manager = CameraSharedManager(file_name, self.device_info)
             shared = self.shared_manager.get_instance()
-            _LOGGER.debug("Camera %s Starting up..", file_name)
+            LOGGER.debug("Camera %s Starting up..", file_name)
 
         return shared, file_name
 
@@ -131,7 +128,7 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
                 # Fetch and process maps data from the MQTT connector
                 return await self.connector.update_data(process)
         except Exception as err:
-            _LOGGER.error(
+            LOGGER.error(
                 "Error communicating with MQTT or processing data: %s",
                 err,
                 exc_info=True,
@@ -139,48 +136,51 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
             raise UpdateFailed(f"Error communicating with MQTT: {err}") from err
 
     async def async_update_sensor_data(self, sensor_data):
-        """
-        Update the sensor data format before sending to the sensors.
-        """
+        """Update the sensor data format before sending to the sensors."""
         try:
-            if sensor_data:
-                # Assume sensor_data is a dictionary or transform it into the expected format
+            if not sensor_data:
+                return SENSOR_NO_DATA
+
+            try:
                 battery_level = await self.connector.get_battery_level()
                 vacuum_state = await self.connector.get_vacuum_status()
-                vacuum_room = self.shared.current_room
-                last_run_stats = sensor_data.get("last_run_stats", {})
-                last_loaded_map = sensor_data.get(
-                    "last_loaded_map", {"name": "Default"}
-                )
+            except (AttributeError, ConnectionError) as err:
+                LOGGER.warning("Failed to get vacuum status: %s", err, exc_info=True)
+                return SENSOR_NO_DATA
 
-                if not vacuum_room:
-                    vacuum_room = {"in_room": "Unsupported"}
-                if not last_loaded_map:
-                    last_loaded_map = {"name": "Default"}
+            vacuum_room = self.shared.current_room or {"in_room": "Unsupported"}
+            last_run_stats = sensor_data.get("last_run_stats", {})
+            last_loaded_map = sensor_data.get("last_loaded_map", {"name": "Default"})
 
-                formatted_data = {
-                    "mainBrush": sensor_data.get("mainBrush", 0),
-                    "sideBrush": sensor_data.get("sideBrush", 0),
-                    "filter": sensor_data.get("filter", 0),
-                    "sensor": sensor_data.get("sensor", 0),
-                    "currentCleanTime": sensor_data.get("currentCleanTime", 0),
-                    "currentCleanArea": sensor_data.get("currentCleanArea", 0),
-                    "cleanTime": sensor_data.get("cleanTime", 0),
-                    "cleanArea": sensor_data.get("cleanArea", 0),
-                    "cleanCount": sensor_data.get("cleanCount", 0),
-                    "battery": battery_level,
-                    "state": vacuum_state,
-                    "last_run_start": last_run_stats.get("startTime", 0),
-                    "last_run_end": last_run_stats.get("endTime", 0),
-                    "last_run_duration": last_run_stats.get("duration", 0),
-                    "last_run_area": last_run_stats.get("area", 0),
-                    "last_bin_out": sensor_data.get("last_bin_out", 0),
-                    "last_bin_full": sensor_data.get("last_bin_full", 0),
-                    "last_loaded_map": last_loaded_map.get("name", "Default"),
-                    "robot_in_room": vacuum_room.get("in_room"),
-                }
-                return formatted_data
+            formatted_data = {
+                "mainBrush": sensor_data.get("mainBrush", 0),
+                "sideBrush": sensor_data.get("sideBrush", 0),
+                "filter": sensor_data.get("filter", 0),
+                "sensor": sensor_data.get("sensor", 0),
+                "currentCleanTime": sensor_data.get("currentCleanTime", 0),
+                "currentCleanArea": sensor_data.get("currentCleanArea", 0),
+                "cleanTime": sensor_data.get("cleanTime", 0),
+                "cleanArea": sensor_data.get("cleanArea", 0),
+                "cleanCount": sensor_data.get("cleanCount", 0),
+                "battery": battery_level,
+                "state": vacuum_state,
+                "last_run_start": last_run_stats.get("startTime", 0),
+                "last_run_end": last_run_stats.get("endTime", 0),
+                "last_run_duration": last_run_stats.get("duration", 0),
+                "last_run_area": last_run_stats.get("area", 0),
+                "last_bin_out": sensor_data.get("last_bin_out", 0),
+                "last_bin_full": sensor_data.get("last_bin_full", 0),
+                "last_loaded_map": last_loaded_map.get("name", "Default"),
+                "robot_in_room": vacuum_room.get("in_room"),
+            }
+            return formatted_data
+
+        except AttributeError as err:
+            LOGGER.warning("Missing required attribute: %s", err, exc_info=True)
             return SENSOR_NO_DATA
-        except Exception as err:
-            _LOGGER.warning("Error processing sensor data: %s", err, exc_info=True)
+        except KeyError as err:
+            LOGGER.warning("Missing required key in sensor data: %s", err, exc_info=True)
+            return SENSOR_NO_DATA
+        except TypeError as err:
+            LOGGER.warning("Invalid data type in sensor data: %s", err, exc_info=True)
             return SENSOR_NO_DATA
