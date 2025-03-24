@@ -1,6 +1,6 @@
 """
 Colors RGBA
-Version: 2025.3.0b0
+Last Updated on version: 2025.3.0b0
 """
 
 from ..const import (

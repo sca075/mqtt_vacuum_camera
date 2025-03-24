@@ -1,22 +1,28 @@
 """
-Version: 2025.3.0b0 - Consolidated ValetudoConnector with grouped data.
+Consolidated ValetudoConnector with grouped data.
+Last Updated on version: 2025.3.0b2
 """
 
 import asyncio
-import json
 from dataclasses import dataclass, field
+import json
 from typing import Any, Dict, List
+
 from homeassistant.components import mqtt
 from homeassistant.core import EventOrigin, HomeAssistant, callback
 from isal import igzip, isal_zlib  # pylint: disable=I1101
 from valetudo_map_parser.config.rand25_parser import RRMapParser
 from valetudo_map_parser.config.types import RoomStore
-from custom_components.mqtt_vacuum_camera.common import build_full_topic_set
+
+from custom_components.mqtt_vacuum_camera.common import (
+    build_full_topic_set,
+    redact_ip_filter,
+)
 from custom_components.mqtt_vacuum_camera.const import (
     DECODED_TOPICS,
+    LOGGER,
     NON_DECODED_TOPICS,
     CameraModes,
-    LOGGER,
 )
 
 _QOS = 0
@@ -87,7 +93,13 @@ class ValetudoConnector:
     Valetudo Camera MQTT Connector.
     """
 
-    def __init__(self, mqtt_topic: str, hass: HomeAssistant, camera_shared: Any):
+    def __init__(
+        self,
+        mqtt_topic: str,
+        hass: HomeAssistant,
+        camera_shared: Any,
+        is_rand256: bool = False,
+    ):
         vacuum_identifier = mqtt_topic.split("/")[-1]
         command_topic = f"{mqtt_topic}/hass/{vacuum_identifier}_vacuum/command"
         mqtt_hass_vacuum = (
@@ -106,13 +118,16 @@ class ValetudoConnector:
             file_name=camera_shared.file_name,
             room_store=RoomStore(camera_shared.file_name),
         )
+        self.is_rand256 = is_rand256
         self.mqtt_data = MQTTData()
         self.rrm_data = RRMData(rrm_command=f"{mqtt_topic}/command")
         self.pkohelrs_data = PkohelrsData()
         # Create a queue for decompression tasks
         self._decompression_queue = asyncio.Queue()
         # Start the background worker
-        self._decompression_worker_task = asyncio.create_task(self._process_decompression_queue())
+        self._decompression_worker_task = asyncio.create_task(
+            self._process_decompression_queue()
+        )
 
     async def _process_decompression_queue(self):
         """
@@ -152,11 +167,10 @@ class ValetudoConnector:
         Unzips the data and returns the JSON based on the data type.
         """
         payload = (
-            self.mqtt_data.img_payload
-            if self.mqtt_data.img_payload
-            else self.rrm_data.rrm_payload
+            self.rrm_data.rrm_payload if self.is_rand256 else self.mqtt_data.img_payload
         )
-        data_type = "Hypfer" if self.mqtt_data.img_payload else "Rand256"
+        data_type = "Rand256" if self.is_rand256 else "Hypfer"
+
         if payload and process:
             LOGGER.debug(
                 "%s: Queuing %s data from MQTT for processing.",
@@ -259,6 +273,61 @@ class ValetudoConnector:
             await self.async_fire_event_restart_camera(data=str(msg.payload))
         self.pkohelrs_data.state = new_state
 
+    async def _validate_compressed_header(self, payload: bytes, compression_type: str) -> bool:
+        """
+        Validate compressed data headers and checksums.
+        Args:
+            payload: The compressed payload
+            compression_type: Either "isal-zlib" or "gzip"
+        Returns:
+            bool: True if valid, False otherwise
+        """
+        try:
+            if len(payload) < 4:
+                LOGGER.warning(
+                    "%s Payload too short: %r",
+                    self.connector_data.file_name,
+                    payload[:10],
+                )
+                return False
+
+            if compression_type == "isal-zlib":
+                # isal-zlib header magic bytes: 0x78 0x9c
+                if not payload.startswith(b"\x78\x9c"):
+                    LOGGER.warning(
+                        "%s Invalid isal-zlib header: %r",
+                        self.connector_data.file_name,
+                        payload[:10],
+                    )
+                    return False
+                # Validate zlib header checksum
+                if (payload[0] * 256 + payload[1]) % 31 != 0:
+                    LOGGER.warning(
+                        "%s Invalid isal-zlib header checksum",
+                        self.connector_data.file_name,
+                    )
+                    return False
+            elif compression_type == "gzip":
+                # gzip header magic bytes: 0x1f 0x8b
+                if not payload.startswith(b"\x1f\x8b"):
+                    LOGGER.warning(
+                        "%s Invalid gzip header: %r",
+                        self.connector_data.file_name,
+                        payload[:10],
+                    )
+                    return False
+
+            return True
+
+        except Exception as e:
+            LOGGER.error(
+                "%s Error validating %s payload: %s",
+                self.connector_data.file_name,
+                compression_type,
+                str(e),
+            )
+            return False
+
     async def _hypfer_handle_image_data(self, msg) -> None:
         """Handle new Hypfer image data."""
         if not self.connector_data.data_in:
@@ -266,8 +335,11 @@ class ValetudoConnector:
                 "%s: Received Hypfer image data from MQTT",
                 self.connector_data.file_name,
             )
-            self.mqtt_data.img_payload = msg.payload
-            self.connector_data.data_in = True
+            if await self._validate_compressed_header(msg.payload, "isal-zlib"):
+                self.mqtt_data.img_payload = msg.payload
+                self.connector_data.data_in = True
+            else:
+                self.connector_data.data_in = False
 
     async def _hypfer_handle_status_payload(self, state) -> None:
         """Handle Hypfer status payload."""
@@ -320,19 +392,23 @@ class ValetudoConnector:
     async def _rand256_handle_image_payload(self, msg) -> None:
         """Handle Rand256 image payload."""
         LOGGER.info(
-            "%s: Received Rand256 image data from MQTT", self.connector_data.file_name
+            "%s: Received Rand256 image data from MQTT",
+            self.connector_data.file_name,
         )
-        self.rrm_data.rrm_payload = msg.payload
-        if self.mqtt_data.mqtt_vac_connect_state == "disconnected":
-            self.mqtt_data.mqtt_vac_connect_state = "ready"
-        self.connector_data.data_in = True
-        self.connector_data.ignore_data = False
-        if self.config.do_it_once:
-            await self.publish_to_broker(
-                f"{self.config.mqtt_topic}/custom_command",
-                {"command": "get_destinations"},
-            )
-            self.config.do_it_once = False
+        if await self._validate_compressed_header(msg.payload, "gzip"):
+            self.rrm_data.rrm_payload = msg.payload
+            if self.mqtt_data.mqtt_vac_connect_state == "disconnected":
+                self.mqtt_data.mqtt_vac_connect_state = "ready"
+            self.connector_data.data_in = True
+            self.connector_data.ignore_data = False
+            if self.config.do_it_once:
+                await self.publish_to_broker(
+                    f"{self.config.mqtt_topic}/custom_command",
+                    {"command": "get_destinations"},
+                )
+                self.config.do_it_once = False
+        else:
+            self.connector_data.data_in = False
 
     async def rand256_handle_statuses(self, msg) -> None:
         """Handle Rand256 statuses."""
@@ -476,6 +552,11 @@ class ValetudoConnector:
         for unsubscribe in self.connector_data.unsubscribe_handlers:
             unsubscribe()
 
+    @redact_ip_filter
+    def _log_vacuum_ips(self, ips: str) -> str:
+        """Log vacuum IPs with redaction"""
+        return f"{self.connector_data.file_name}: Vacuum IPs: {ips}"
+
     @callback
     async def async_message_received(self, msg) -> None:
         """
@@ -549,8 +630,4 @@ class ValetudoConnector:
                     if len(vacuum_host_ip.split(",")) > 1
                     else vacuum_host_ip
                 )
-                LOGGER.debug(
-                    "%s: Vacuum IPs: %r",
-                    self.connector_data.file_name,
-                    self.config.shared.vacuum_ips,
-                )
+                LOGGER.debug(self._log_vacuum_ips(self.config.shared.vacuum_ips))

@@ -20,27 +20,62 @@
   "options": {
     "step": {
       "init": {
-        "title": "Opcje kamery MQTT",
-        "description": "### _Standardowe opcje_:",
-        "data": {
-          "camera_config_action": "Dzia\u0142anie"
-        }
-      },
-      "advanced": {
-        "title": "Opcje kamery MQTT",
-        "description": "### _Zaawansowane opcje_:",
-        "data": {
-          "camera_config_action": "Dzia\u0142anie"
-        }
-      },
-      "download_logs": {
-        "title": "Plik dziennika kamery MQTT",
-        "description": "### _Kopiowanie plik\u00f3w dziennika_:",
-        "data": {
-          "camera_logs_progres": "Co zrobi\u0107?"
+        "title": "Opcje Kamery MQTT",
+        "description": "Konfiguracja opcji kamery",
+        "menu_options": {
+          "image_opt": "Opcje Obrazu",
+          "colours": "Opcje Kolorów",
+          "advanced": "Opcje Zaawansowane"
         }
       },
       "image_opt": {
+        "title": "Opcje Obrazu",
+        "description": "Konfiguracja opcji wyświetlania",
+        "menu_options": {
+          "image_basic_opt": "Opcje Podstawowe",
+          "image_offset": "Przesunięcie Obrazu",
+          "status_text": "Tekst Statusu"
+        }
+      },
+      "colours": {
+        "title": "Opcje Kolorów",
+        "description": "Konfiguracja kolorów mapy",
+        "menu_options": {
+          "base_colours": "Kolory Podstawowe",
+          "rooms_colours_1": "Pokoje 1-8",
+          "rooms_colours_2": "Pokoje 9-16",
+          "floor_only": "Kolor Podłogi",
+          "transparency": "Opcje Przezroczystości",
+          "rename_translations": "Zmień Nazwy Pokoi"
+        }
+      },
+      "transparency": {
+        "title": "Opcje Przezroczystości",
+        "description": "Konfiguracja poziomów przezroczystości",
+        "menu_options": {
+          "base_transparency": "Przezroczystość Podstawowa",
+          "rooms_transparency_1": "Przezroczystość Pokoi 1-8",
+          "rooms_transparency_2": "Przezroczystość Pokoi 9-16",
+          "floor_transparency": "Przezroczystość Podłogi"
+        }
+      },
+      "advanced": {
+        "title": "Opcje Zaawansowane",
+        "description": "Zaawansowane opcje konfiguracji",
+        "menu_options": {
+          "download_logs": "Pobierz Logi",
+          "reset_map_trims": "Resetuj Przycięcia Mapy"
+        }
+      },
+      "download_logs": {
+        "title": "Pobieranie Logów",
+        "description": "Zarządzanie plikami logów",
+        "menu_options": {
+          "logs_move": "Kopiuj logi do WWW",
+          "logs_remove": "Usuń logi z WWW"
+        }
+      },
+      "image_basic_opt": {
         "data": {
           "rotate_image": "Obr\u00f3\u0107",
           "margins": "Marginesy obrazu.",
@@ -58,20 +93,32 @@
         "title": "Opcje obrazu"
       },
       "image_offset": {
+        "title": "Ustawienia Przesunięcia i Przycinania Obrazu",
+        "description": "Skonfiguruj przesunięcia obrazu i wartości przycinania piętra",
         "data": {
-          "offset_top": "G\u00f3rny offset",
-          "offset_bottom": "Dolny offset",
-          "offset_left": "Lewy offset",
-          "offset_right": "Prawy offset"
+          "offset_top": "Przesunięcie Górne",
+          "offset_bottom": "Przesunięcie Dolne",
+          "offset_left": "Przesunięcie Lewe",
+          "offset_right": "Przesunięcie Prawe",
+          "floor_name": "Nazwa Piętra",
+          "trim_up": "Przycinanie Górne",
+          "trim_down": "Przycinanie Dolne",
+          "trim_left": "Przycinanie Lewe",
+          "trim_right": "Przycinanie Prawe",
+          "trim_action": "Akcja Przycinania"
         },
         "data_description": {
-          "offset_top": "G\u00f3rny offset obr\u00f3t 0 w pikselach.",
-          "offset_bottom": "Dolny offset obr\u00f3t 0 w pikselach.",
-          "offset_left": "Lewy offset obr\u00f3t 0 w pikselach.",
-          "offset_right": "Prawy offset obr\u00f3t 0 w pikselach."
-        },
-        "description": "Przesuni\u0119cie obrazu kamery",
-        "title": "Przesuni\u0119cie obrazu"
+          "offset_top": "Piksele do przesunięcia od góry (0-1000)",
+          "offset_bottom": "Piksele do przesunięcia od dołu (0-1000)",
+          "offset_left": "Piksele do przesunięcia od lewej (0-1000)",
+          "offset_right": "Piksele do przesunięcia od prawej (0-1000)",
+          "floor_name": "Nazwa bieżącego planu piętra",
+          "trim_up": "Wartość przycinania górnego (0-10000)",
+          "trim_down": "Wartość przycinania dolnego (0-10000)",
+          "trim_left": "Wartość przycinania lewego (0-10000)",
+          "trim_right": "Wartość przycinania prawego (0-10000)",
+          "trim_action": "Akcja do wykonania na wartościach przycinania"
+        }
       },
       "status_text": {
         "data": {
@@ -224,24 +271,6 @@
     }
   },
   "selector": {
-    "camera_config_action": {
-      "options": {
-        "opt_1": "Skonfiguruj obraz",
-        "opt_2": "Skonfiguruj Og\u00f3lne Kolory",
-        "opt_3": "Kolory Pokoje 1 do 8",
-        "opt_4": "Kolory Pokoje 9 do 16",
-        "opt_5": "Zaawansowane Opcje"
-      }
-    },
-    "camera_config_advanced": {
-      "options": {
-        "opt_1": "Skonfiguruj Przesuni\u0119cie Obrazu",
-        "opt_2": "Skonfiguruj Tekst Statusu",
-        "opt_3": "Kopiuj Dzienniki Kamery do www",
-        "opt_4": "Zmie\u0144 Nazwy Opcji Kolor\u00f3w",
-        "opt_5": "Zresetuj przycięcia mapy"
-      }
-    },
     "camera_logs_progres": {
       "options": {
         "opt_1": "Kopiuj Dzienniki do www",
@@ -258,6 +287,13 @@
         "idle": "Bezczynny",
         "paused": "Wstrzymany",
         "returning": "Powracanie"
+      }
+    },
+    "trim_actions": {
+      "options": {
+        "save": "Zapisz Zmiany",
+        "reset": "Przywróć Wykryte Wartości",
+        "delete": "Usuń Wszystkie Przycięcia"
       }
     }
   },
