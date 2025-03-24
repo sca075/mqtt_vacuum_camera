@@ -110,7 +110,9 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         """
         Initialize the MQTT Connector.
         """
-        self.connector = ValetudoConnector(self.vacuum_topic, self.hass, self.shared)
+        self.connector = ValetudoConnector(
+            self.vacuum_topic, self.hass, self.shared, self.is_rand256
+        )
         return self.connector
 
     def update_shared_data(self, dev_info: DeviceInfo) -> tuple[CameraShared, str]:

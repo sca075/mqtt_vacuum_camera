@@ -89,7 +89,13 @@ class ValetudoConnector:
     Valetudo Camera MQTT Connector.
     """
 
-    def __init__(self, mqtt_topic: str, hass: HomeAssistant, camera_shared: Any):
+    def __init__(
+        self,
+        mqtt_topic: str,
+        hass: HomeAssistant,
+        camera_shared: Any,
+        is_rand256: bool = False,
+    ):
         vacuum_identifier = mqtt_topic.split("/")[-1]
         command_topic = f"{mqtt_topic}/hass/{vacuum_identifier}_vacuum/command"
         mqtt_hass_vacuum = (
@@ -108,6 +114,7 @@ class ValetudoConnector:
             file_name=camera_shared.file_name,
             room_store=RoomStore(camera_shared.file_name),
         )
+        self.is_rand256 = is_rand256
         self.mqtt_data = MQTTData()
         self.rrm_data = RRMData(rrm_command=f"{mqtt_topic}/command")
         self.pkohelrs_data = PkohelrsData()
@@ -156,11 +163,10 @@ class ValetudoConnector:
         Unzips the data and returns the JSON based on the data type.
         """
         payload = (
-            self.mqtt_data.img_payload
-            if self.mqtt_data.img_payload
-            else self.rrm_data.rrm_payload
+            self.rrm_data.rrm_payload if self.is_rand256 else self.mqtt_data.img_payload
         )
-        data_type = "Hypfer" if self.mqtt_data.img_payload else "Rand256"
+        data_type = "Rand256" if self.is_rand256 else "Hypfer"
+
         if payload and process:
             LOGGER.debug(
                 "%s: Queuing %s data from MQTT for processing.",
@@ -335,6 +341,14 @@ class ValetudoConnector:
         LOGGER.info(
             "%s: Received Rand256 image data from MQTT", self.connector_data.file_name
         )
+        if len(msg.payload) < 4 or not msg.payload.startswith(b"\x1f\x8b"):
+            LOGGER.warning(
+                "%s Ignoring invalid map payload: %r",
+                self.connector_data.file_name,
+                msg.payload[:10],
+            )
+            self.connector_data.data_in = False
+            return
         self.rrm_data.rrm_payload = msg.payload
         if self.mqtt_data.mqtt_vac_connect_state == "disconnected":
             self.mqtt_data.mqtt_vac_connect_state = "ready"
