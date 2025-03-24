@@ -273,6 +273,61 @@ class ValetudoConnector:
             await self.async_fire_event_restart_camera(data=str(msg.payload))
         self.pkohelrs_data.state = new_state
 
+    async def _validate_compressed_header(self, payload: bytes, compression_type: str) -> bool:
+        """
+        Validate compressed data headers and checksums.
+        Args:
+            payload: The compressed payload
+            compression_type: Either "isal-zlib" or "gzip"
+        Returns:
+            bool: True if valid, False otherwise
+        """
+        try:
+            if len(payload) < 4:
+                LOGGER.warning(
+                    "%s Payload too short: %r",
+                    self.connector_data.file_name,
+                    payload[:10],
+                )
+                return False
+
+            if compression_type == "isal-zlib":
+                # isal-zlib header magic bytes: 0x78 0x9c
+                if not payload.startswith(b"\x78\x9c"):
+                    LOGGER.warning(
+                        "%s Invalid isal-zlib header: %r",
+                        self.connector_data.file_name,
+                        payload[:10],
+                    )
+                    return False
+                # Validate zlib header checksum
+                if (payload[0] * 256 + payload[1]) % 31 != 0:
+                    LOGGER.warning(
+                        "%s Invalid isal-zlib header checksum",
+                        self.connector_data.file_name,
+                    )
+                    return False
+            elif compression_type == "gzip":
+                # gzip header magic bytes: 0x1f 0x8b
+                if not payload.startswith(b"\x1f\x8b"):
+                    LOGGER.warning(
+                        "%s Invalid gzip header: %r",
+                        self.connector_data.file_name,
+                        payload[:10],
+                    )
+                    return False
+
+            return True
+
+        except Exception as e:
+            LOGGER.error(
+                "%s Error validating %s payload: %s",
+                self.connector_data.file_name,
+                compression_type,
+                str(e),
+            )
+            return False
+
     async def _hypfer_handle_image_data(self, msg) -> None:
         """Handle new Hypfer image data."""
         if not self.connector_data.data_in:
@@ -280,39 +335,14 @@ class ValetudoConnector:
                 "%s: Received Hypfer image data from MQTT",
                 self.connector_data.file_name,
             )
-            # Validate zlib compressed data
-            try:
-                if len(msg.payload) < 4 or not msg.payload.startswith(b"\x78\x9c"):
-                    LOGGER.warning(
-                        "%s Ignoring invalid map payload: %r",
-                        self.connector_data.file_name,
-                        msg.payload[:10],
-                    )
-                    self.connector_data.data_in = False
-                    return
-
-                # Try to validate zlib header checksum
-                if (msg.payload[0] * 256 + msg.payload[1]) % 31 != 0:
-                    LOGGER.warning(
-                        "%s Invalid zlib header checksum", self.connector_data.file_name
-                    )
-                    self.connector_data.data_in = False
-                    return
-
+            if await self._validate_compressed_header(msg.payload, "isal-zlib"):
                 self.mqtt_data.img_payload = msg.payload
                 self.connector_data.data_in = True
-
-            except Exception as e:
-                LOGGER.error(
-                    "%s Error validating map payload: %s",
-                    self.connector_data.file_name,
-                    str(e),
-                )
+            else:
                 self.connector_data.data_in = False
-                return
 
     async def _hypfer_handle_status_payload(self, state) -> None:
-        """Handle Hypfer sltatus payload."""
+        """Handle Hypfer status payload."""
         if state:
             self.mqtt_data.mqtt_vac_stat = state
             if self.mqtt_data.mqtt_vac_stat != "docked":
@@ -362,27 +392,23 @@ class ValetudoConnector:
     async def _rand256_handle_image_payload(self, msg) -> None:
         """Handle Rand256 image payload."""
         LOGGER.info(
-            "%s: Received Rand256 image data from MQTT", self.connector_data.file_name
+            "%s: Received Rand256 image data from MQTT",
+            self.connector_data.file_name,
         )
-        if len(msg.payload) < 4 or not msg.payload.startswith(b"\x1f\x8b"):
-            LOGGER.warning(
-                "%s Ignoring invalid map payload: %r",
-                self.connector_data.file_name,
-                msg.payload[:10],
-            )
+        if await self._validate_compressed_header(msg.payload, "gzip"):
+            self.rrm_data.rrm_payload = msg.payload
+            if self.mqtt_data.mqtt_vac_connect_state == "disconnected":
+                self.mqtt_data.mqtt_vac_connect_state = "ready"
+            self.connector_data.data_in = True
+            self.connector_data.ignore_data = False
+            if self.config.do_it_once:
+                await self.publish_to_broker(
+                    f"{self.config.mqtt_topic}/custom_command",
+                    {"command": "get_destinations"},
+                )
+                self.config.do_it_once = False
+        else:
             self.connector_data.data_in = False
-            return
-        self.rrm_data.rrm_payload = msg.payload
-        if self.mqtt_data.mqtt_vac_connect_state == "disconnected":
-            self.mqtt_data.mqtt_vac_connect_state = "ready"
-        self.connector_data.data_in = True
-        self.connector_data.ignore_data = False
-        if self.config.do_it_once:
-            await self.publish_to_broker(
-                f"{self.config.mqtt_topic}/custom_command",
-                {"command": "get_destinations"},
-            )
-            self.config.do_it_once = False
 
     async def rand256_handle_statuses(self, msg) -> None:
         """Handle Rand256 statuses."""
