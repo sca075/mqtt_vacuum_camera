@@ -26,6 +26,9 @@ This custom component is simple to install and setup, decode and render the vacu
 When you want also to control your vacuum you will need to also install the:
 [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card) from HACS as well.
 
+### 🔗 Related Repositories
+- [Valeudo Map Extractor (library for extracting the maps)](https://github.com/sca075/valetudo_map_parser)
+
 ### Goal of this project.
 The goal of this project is to deliver an out-of-the-box solution for integrating MQTT-based vacuums into the Home Assistant ecosystem. 
 This includes real-time map extraction, sensor data (when not provided), and control services (not available by default)
@@ -124,6 +127,6 @@ For further details on how the camera operates and how you can contribute, refer
 - [@Skeletorjus](https://github.com/Skeletorjus) that using this integration gave us several ideas to improve it.
 - [@rohankapoorcom](https://github.com/rohankapoorcom) autor of the v1.4.0 that make really easy to set up this integration.
 - [@gunjambi](https://github.com/gunjambi) that found a solution to re-draw the robot and also implemented the snapshots png to be enabled or disabled from the options.
-- [@T0ytoy](https://github.com/T0ytoy) for the amazing cooperation in testing our Camera that improved [using the threading](https://github.com/sca075/valetudo_vacuum_camera/discussions/71).
-- [@borgqueenx](https://github.com/borgqueenx) for the amazing cooperation in testing our Camera and helping us to improve it, [see more here](https://github.com/sca075/mqtt_vacuum_camera/discussions/296#:~:text=Edit-,borgqueenx,-2%20weeks%20ago)
+- [@T0ytoy](https://github.com/T0ytoy) for the superb cooperation in testing our Camera that improved [using the threading](https://github.com/sca075/valetudo_vacuum_camera/discussions/71).
+- [@borgqueenx](https://github.com/borgqueenx) for the great cooperation in testing our Camera and helping us to improve it, [see more here](https://github.com/sca075/mqtt_vacuum_camera/discussions/296#:~:text=Edit-,borgqueenx,-2%20weeks%20ago)
 - And to all of you using this integration and reporting any issues, improvements and vacuums used with it.

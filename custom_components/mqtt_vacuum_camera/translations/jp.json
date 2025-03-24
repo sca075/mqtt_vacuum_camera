@@ -75,7 +75,7 @@
           "logs_remove": "WWWからログを削除"
         }
       },
-      "image_opt": {
+      "image_basic_opt": {
         "data": {
           "rotate_image": "回転",
           "margins": "画像のマージン",

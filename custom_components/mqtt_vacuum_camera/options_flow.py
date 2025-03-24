@@ -270,8 +270,8 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         """Handle image options menu."""
         return self.async_show_menu(
             step_id="image_opt",
-            menu_options=["image_basic_opt", "image_offset", "status_text"],
-        )
+            menu_options=["image_basic_opt", "status_text"],
+        ) # "image_offset"
 
     # pylint: disable=unused-argument
     async def async_step_colours(self, user_input=None) -> ConfigFlowResult:
