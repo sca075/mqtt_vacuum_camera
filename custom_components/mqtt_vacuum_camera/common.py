@@ -5,8 +5,8 @@ Version: 2025.3.0b1
 
 from __future__ import annotations
 
-import logging
 import re
+import functools
 from typing import Any
 
 from homeassistant.components.mqtt import DOMAIN as MQTT_DOMAIN
@@ -225,8 +225,7 @@ def compose_obstacle_links(vacuum_host_ip: str, obstacles: list) -> list | None:
     obstacle_links = []
     if not obstacles or not vacuum_host_ip:
         LOGGER.debug(
-            f"Obstacle links: no obstacles: "
-            f"{obstacles} and / or ip: {vacuum_host_ip} to link."
+            "No obstacles or vacuum_host_ip provided."
         )
         return None
 
@@ -240,7 +239,8 @@ def compose_obstacle_links(vacuum_host_ip: str, obstacles: list) -> list | None:
             # Append formatted obstacle data
             if image_id != "None":
                 # Compose the link
-                image_link = f"http://{vacuum_host_ip}/api/v2/robot/capabilities/ObstacleImagesCapability/img/{image_id}"
+                image_link = (f"http://{vacuum_host_ip}"
+                              f"/api/v2/robot/capabilities/ObstacleImagesCapability/img/{image_id}")
                 obstacle_links.append(
                     {
                         "point": points,
@@ -261,12 +261,15 @@ def compose_obstacle_links(vacuum_host_ip: str, obstacles: list) -> list | None:
     return obstacle_links
 
 
-class RedactIPFilter(logging.Filter):
-    """Remove from the logs IP address"""
+def redact_ip_filter(func):
+    """Decorator to remove IP addresses from function output"""
 
-    def filter(self, record):
-        """Regex to match IP addresses"""
-        ip_pattern = r"\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b"
-        if record.msg:
-            record.msg = re.sub(ip_pattern, "[Redacted IP]", record.msg)
-        return True
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        if isinstance(result, str):
+            ip_pattern = r"'?\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b'?"
+            return re.sub(ip_pattern, "'[Redacted IP]'", result)
+        return result
+
+    return wrapper

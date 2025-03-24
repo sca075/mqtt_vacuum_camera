@@ -1,5 +1,6 @@
 """Constants for the mqtt_vacuum_camera integration.
-Version 2025.3.0"""
+Last Updated on version: 2025.3.0b2
+"""
 
 import logging
 from typing import Final

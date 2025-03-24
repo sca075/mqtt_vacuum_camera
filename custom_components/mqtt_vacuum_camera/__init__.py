@@ -20,7 +20,6 @@ from homeassistant.helpers.reload import async_register_admin_service
 from homeassistant.helpers.storage import STORAGE_DIR
 
 from .common import (
-    RedactIPFilter,
     get_vacuum_device_info,
     get_vacuum_mqtt_topic,
     update_options,
@@ -50,7 +49,6 @@ from .utils.vacuum.mqtt_vacuum_services import (
 )
 
 PLATFORMS = [Platform.CAMERA, Platform.SENSOR]
-LOGGER.addFilter(RedactIPFilter())
 
 
 async def options_update_listener(hass: core.HomeAssistant, config_entry: ConfigEntry):

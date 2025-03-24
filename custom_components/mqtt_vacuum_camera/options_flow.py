@@ -1,6 +1,6 @@
 """
 Options flow handler for MQTT Vacuum Camera integration.
-Version: 2025.3.0b1
+Last Updated on version: 2025.3.0b2
 """
 
 from copy import deepcopy
