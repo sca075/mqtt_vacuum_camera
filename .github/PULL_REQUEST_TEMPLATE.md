@@ -71,6 +71,7 @@ If the code communicates uses new third-party tools or libraries:
 
 - [ ] New or updated dependencies have been added to `manifest.json`.  
 - [ ] For the updated dependencies - a link to the changelog, or at minimum a diff between library versions is added to the PR description.
+- [ ] Ensure your pull request is based on the `dev` branch, not `main`.
 
 <!--
   This project quite active and we have a small turnover of pull requests.
