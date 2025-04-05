@@ -43,15 +43,18 @@ We can now see the Obstacles Images when available, and somehow we start to orga
 The camera is stable and updated to all requirements of Home Assistant.
 Will be also time to take a brake and work in the background, so I do not expect unless required releases in January.
 
-#### 2025.2.0 - **Refactoring and some add**
+#### 2025.5.0 - **Refactoring and some add**
 - **Changes**
-  - Exporting libraries to PyPi to reduce the code lines.
   - Refactoring the code to make it more readable and easy to maintain.
+  - Remove files operations (not for logging export).
+- **Features / Improvements :**
+  - Load and save maps via services, fully integrate [MapLoader](https://github.com/pkoehlers/maploader).
+  - Possibility to select elements to display on the map.
+  - Add to the options Areas and Floor management.
+- **Possibly fix:**
+  - Fix the issues no map = camera not working.
+  - Fix alpha colours of the elements.
   - Fully Coordinated implementation of the cameras and sensors.
-  - Remove files operations (not for logging).
-- **Features:**
-  - Added on 2024.11.0 the Actions for Rand256 to load and save maps fully integrate [MapLoader](https://github.com/pkoehlers/maploader).
-
 </details>
 
 
