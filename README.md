@@ -27,7 +27,7 @@ When you want also to control your vacuum you will need to also install the:
 [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card) from HACS as well.
 
 ### 🔗 Related Repositories
-- [Valeudo Map Extractor (library for extracting the maps)](https://github.com/sca075/valetudo_map_parser)
+- [Valeudo Map Extractor (library for extracting the maps)](https://github.com/sca075/Python-package-valetudo-map-parser)
 
 ### Goal of this project.
 The goal of this project is to deliver an out-of-the-box solution for integrating MQTT-based vacuums into the Home Assistant ecosystem. 
