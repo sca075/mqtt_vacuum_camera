@@ -154,6 +154,11 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
             last_run_stats = sensor_data.get("last_run_stats", {})
             last_loaded_map = sensor_data.get("last_loaded_map", {"name": "Default"})
 
+            if last_run_stats is None:
+                last_run_stats = {}
+            if not last_loaded_map:
+                last_loaded_map = {"name": "Default"}
+
             formatted_data = {
                 "mainBrush": sensor_data.get("mainBrush", 0),
                 "sideBrush": sensor_data.get("sideBrush", 0),
