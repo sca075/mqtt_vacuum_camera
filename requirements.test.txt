@@ -1,5 +1,5 @@
 # From our manifest.json for our custom component
-pillow<=11.1.0
+pillow<=11.2.1
 numpy
 isal==1.7.2
 psutil-home-assistant==0.0.1
