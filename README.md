@@ -27,6 +27,7 @@ When you want also to control your vacuum you will need to also install the:
 [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card) from HACS as well.
 
 ### 🔗 Related Repositories
+
 - [Valetudo Map Extractor (library for extracting the maps)](https://github.com/sca075/Python-package-valetudo-map-parser)
 
 ### Goal of this project.
