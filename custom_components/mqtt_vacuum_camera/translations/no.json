@@ -56,6 +56,7 @@
         "menu_options": {
           "image_offset": "Bildeforskyvning",
           "status_text": "Statustekst",
+          "draw_elements": "Objektsynlighet",
           "download_logs": "Last Ned Logger",
           "rename_translations": "Gi Nytt Navn til Oversettelser",
           "reset_map_trims": "Tilbakestill Kartbeskjæringer"
@@ -69,6 +70,15 @@
         }
       },
       "image_opt": {
+        "title": "Bildeinnstillinger",
+        "description": "Konfigurer bildevisningsinnstillinger",
+        "menu_options": {
+          "image_basic_opt": "Grunnleggende Innstillinger",
+          "image_offset": "Bildeforskyvning",
+          "status_text": "Statustekst",
+          "draw_elements": "Objektsynlighet",
+          "segments_visibility": "Segmentsynlighet"
+        },
         "data": {
           "rotate_image": "Roter",
           "margins": "Bildemarginer.",
@@ -128,6 +138,74 @@
         },
         "description": "Bildealternativer",
         "title": "Status Tekstalternativer"
+      },
+      "draw_elements": {
+        "title": "Objektsynlighet",
+        "description": "Konfigurer hvilke elementer som er synlige på kartet",
+        "data": {
+          "disable_floor": "Skjul gulv",
+          "disable_wall": "Skjul vegger",
+          "disable_robot": "Skjul robot",
+          "disable_charger": "Skjul lader",
+          "disable_virtual_walls": "Skjul virtuelle vegger",
+          "disable_restricted_areas": "Skjul begrensede områder",
+          "disable_no_mop_areas": "Skjul no-mopp områder",
+          "disable_obstacles": "Skjul hindringer",
+          "disable_path": "Skjul sti",
+          "disable_predicted_path": "Skjul forventet sti",
+          "disable_go_to_target": "Skjul gå-til mål"
+        },
+        "data_description": {
+          "disable_floor": "Når aktivert, vil gulvet ikke bli vist på kartet",
+          "disable_wall": "Når aktivert, vil vegger ikke bli vist på kartet",
+          "disable_robot": "Når aktivert, vil roboten ikke bli vist på kartet",
+          "disable_charger": "Når aktivert, vil laderen ikke bli vist på kartet",
+          "disable_virtual_walls": "Når aktivert, vil virtuelle vegger ikke bli vist på kartet",
+          "disable_restricted_areas": "Når aktivert, vil begrensede områder ikke bli vist på kartet",
+          "disable_no_mop_areas": "Når aktivert, vil no-mopp områder ikke bli vist på kartet",
+          "disable_obstacles": "Når aktivert, vil hindringer ikke bli vist på kartet",
+          "disable_path": "Når aktivert, vil rengjøringsstien ikke bli vist på kartet",
+          "disable_predicted_path": "Når aktivert, vil den forventede stien ikke bli vist på kartet",
+          "disable_go_to_target": "Når aktivert, vil gå-til mål ikke bli vist på kartet"
+        }
+      },
+      "segments_visibility": {
+        "title": "Segmentsynlighet",
+        "description": "Konfigurer hvilke romsegmenter som er synlige på kartet",
+        "data": {
+          "disable_room_1": "Skjul rom 1",
+          "disable_room_2": "Skjul rom 2",
+          "disable_room_3": "Skjul rom 3",
+          "disable_room_4": "Skjul rom 4",
+          "disable_room_5": "Skjul rom 5",
+          "disable_room_6": "Skjul rom 6",
+          "disable_room_7": "Skjul rom 7",
+          "disable_room_8": "Skjul rom 8",
+          "disable_room_9": "Skjul rom 9",
+          "disable_room_10": "Skjul rom 10",
+          "disable_room_11": "Skjul rom 11",
+          "disable_room_12": "Skjul rom 12",
+          "disable_room_13": "Skjul rom 13",
+          "disable_room_14": "Skjul rom 14",
+          "disable_room_15": "Skjul rom 15"
+        },
+        "data_description": {
+          "disable_room_1": "Når aktivert, vil rom 1 ikke bli vist på kartet",
+          "disable_room_2": "Når aktivert, vil rom 2 ikke bli vist på kartet",
+          "disable_room_3": "Når aktivert, vil rom 3 ikke bli vist på kartet",
+          "disable_room_4": "Når aktivert, vil rom 4 ikke bli vist på kartet",
+          "disable_room_5": "Når aktivert, vil rom 5 ikke bli vist på kartet",
+          "disable_room_6": "Når aktivert, vil rom 6 ikke bli vist på kartet",
+          "disable_room_7": "Når aktivert, vil rom 7 ikke bli vist på kartet",
+          "disable_room_8": "Når aktivert, vil rom 8 ikke bli vist på kartet",
+          "disable_room_9": "Når aktivert, vil rom 9 ikke bli vist på kartet",
+          "disable_room_10": "Når aktivert, vil rom 10 ikke bli vist på kartet",
+          "disable_room_11": "Når aktivert, vil rom 11 ikke bli vist på kartet",
+          "disable_room_12": "Når aktivert, vil rom 12 ikke bli vist på kartet",
+          "disable_room_13": "Når aktivert, vil rom 13 ikke bli vist på kartet",
+          "disable_room_14": "Når aktivert, vil rom 14 ikke bli vist på kartet",
+          "disable_room_15": "Når aktivert, vil rom 15 ikke bli vist på kartet"
+        }
       },
       "base_colours": {
         "data": {

@@ -34,7 +34,9 @@
         "menu_options": {
           "image_basic_opt": "Configurazione Base",
           "image_offset": "Offset Immagine",
-          "status_text": "Testo Stato"
+          "status_text": "Testo Stato",
+          "draw_elements": "Visibilità Oggetti",
+          "segments_visibility": "Visibilità Segmenti"
         }
       },
       "colours": {
@@ -123,6 +125,74 @@
         },
         "description": "Opzioni Immagine",
         "title": "Opzioni Testo di Stato"
+      },
+      "draw_elements": {
+        "title": "Visibilità Oggetti",
+        "description": "Configura quali elementi sono visibili sulla mappa",
+        "data": {
+          "disable_floor": "Nascondi Pavimento",
+          "disable_wall": "Nascondi Pareti",
+          "disable_robot": "Nascondi Robot",
+          "disable_charger": "Nascondi Caricatore",
+          "disable_virtual_walls": "Nascondi Pareti Virtuali",
+          "disable_restricted_areas": "Nascondi Aree Ristrette",
+          "disable_no_mop_areas": "Nascondi Aree No-Mop",
+          "disable_obstacles": "Nascondi Ostacoli",
+          "disable_path": "Nascondi Percorso",
+          "disable_predicted_path": "Nascondi Percorso Previsto",
+          "disable_go_to_target": "Nascondi Destinazione"
+        },
+        "data_description": {
+          "disable_floor": "Quando abilitato, il pavimento non sarà mostrato sulla mappa",
+          "disable_wall": "Quando abilitato, le pareti non saranno mostrate sulla mappa",
+          "disable_robot": "Quando abilitato, il robot non sarà mostrato sulla mappa",
+          "disable_charger": "Quando abilitato, il caricatore non sarà mostrato sulla mappa",
+          "disable_virtual_walls": "Quando abilitato, le pareti virtuali non saranno mostrate sulla mappa",
+          "disable_restricted_areas": "Quando abilitato, le aree ristrette non saranno mostrate sulla mappa",
+          "disable_no_mop_areas": "Quando abilitato, le aree no-mop non saranno mostrate sulla mappa",
+          "disable_obstacles": "Quando abilitato, gli ostacoli non saranno mostrati sulla mappa",
+          "disable_path": "Quando abilitato, il percorso di pulizia non sarà mostrato sulla mappa",
+          "disable_predicted_path": "Quando abilitato, il percorso previsto non sarà mostrato sulla mappa",
+          "disable_go_to_target": "Quando abilitato, le destinazioni non saranno mostrate sulla mappa"
+        }
+      },
+      "segments_visibility": {
+        "title": "Visibilità Segmenti",
+        "description": "Configura quali segmenti di stanza sono visibili sulla mappa",
+        "data": {
+          "disable_room_1": "Nascondi Stanza 1",
+          "disable_room_2": "Nascondi Stanza 2",
+          "disable_room_3": "Nascondi Stanza 3",
+          "disable_room_4": "Nascondi Stanza 4",
+          "disable_room_5": "Nascondi Stanza 5",
+          "disable_room_6": "Nascondi Stanza 6",
+          "disable_room_7": "Nascondi Stanza 7",
+          "disable_room_8": "Nascondi Stanza 8",
+          "disable_room_9": "Nascondi Stanza 9",
+          "disable_room_10": "Nascondi Stanza 10",
+          "disable_room_11": "Nascondi Stanza 11",
+          "disable_room_12": "Nascondi Stanza 12",
+          "disable_room_13": "Nascondi Stanza 13",
+          "disable_room_14": "Nascondi Stanza 14",
+          "disable_room_15": "Nascondi Stanza 15"
+        },
+        "data_description": {
+          "disable_room_1": "Quando abilitato, la stanza 1 non sarà mostrata sulla mappa",
+          "disable_room_2": "Quando abilitato, la stanza 2 non sarà mostrata sulla mappa",
+          "disable_room_3": "Quando abilitato, la stanza 3 non sarà mostrata sulla mappa",
+          "disable_room_4": "Quando abilitato, la stanza 4 non sarà mostrata sulla mappa",
+          "disable_room_5": "Quando abilitato, la stanza 5 non sarà mostrata sulla mappa",
+          "disable_room_6": "Quando abilitato, la stanza 6 non sarà mostrata sulla mappa",
+          "disable_room_7": "Quando abilitato, la stanza 7 non sarà mostrata sulla mappa",
+          "disable_room_8": "Quando abilitato, la stanza 8 non sarà mostrata sulla mappa",
+          "disable_room_9": "Quando abilitato, la stanza 9 non sarà mostrata sulla mappa",
+          "disable_room_10": "Quando abilitato, la stanza 10 non sarà mostrata sulla mappa",
+          "disable_room_11": "Quando abilitato, la stanza 11 non sarà mostrata sulla mappa",
+          "disable_room_12": "Quando abilitato, la stanza 12 non sarà mostrata sulla mappa",
+          "disable_room_13": "Quando abilitato, la stanza 13 non sarà mostrata sulla mappa",
+          "disable_room_14": "Quando abilitato, la stanza 14 non sarà mostrata sulla mappa",
+          "disable_room_15": "Quando abilitato, la stanza 15 non sarà mostrata sulla mappa"
+        }
       },
       "base_colours": {
         "data": {

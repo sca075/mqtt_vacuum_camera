@@ -224,9 +224,7 @@ def compose_obstacle_links(vacuum_host_ip: str, obstacles: list) -> list | None:
     """
     obstacle_links = []
     if not obstacles or not vacuum_host_ip:
-        LOGGER.debug(
-            "No obstacles or vacuum_host_ip provided."
-        )
+        LOGGER.debug("No obstacles or vacuum_host_ip provided.")
         return None
 
     for obstacle in obstacles:
@@ -239,8 +237,10 @@ def compose_obstacle_links(vacuum_host_ip: str, obstacles: list) -> list | None:
             # Append formatted obstacle data
             if image_id != "None":
                 # Compose the link
-                image_link = (f"http://{vacuum_host_ip}"
-                              f"/api/v2/robot/capabilities/ObstacleImagesCapability/img/{image_id}")
+                image_link = (
+                    f"http://{vacuum_host_ip}"
+                    f"/api/v2/robot/capabilities/ObstacleImagesCapability/img/{image_id}"
+                )
                 obstacle_links.append(
                     {
                         "point": points,

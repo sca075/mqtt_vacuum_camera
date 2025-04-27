@@ -34,7 +34,9 @@
         "menu_options": {
           "image_basic_opt": "Základní Nastavení",
           "image_offset": "Posun Obrazu",
-          "status_text": "Stavový Text"
+          "status_text": "Stavový Text",
+          "draw_elements": "Viditelnost Objektů",
+          "segments_visibility": "Viditelnost Segmentů"
         }
       },
       "colours": {
@@ -135,6 +137,74 @@
         },
         "description": "Možnosti obrázku",
         "title": "Možnosti textu stavu"
+      },
+      "draw_elements": {
+        "title": "Viditelnost Objektů",
+        "description": "Konfigurace viditelnosti prvků na mapě",
+        "data": {
+          "disable_floor": "Skrýt podlahu",
+          "disable_wall": "Skrýt zdi",
+          "disable_robot": "Skrýt robota",
+          "disable_charger": "Skrýt nabíjecí stanici",
+          "disable_virtual_walls": "Skrýt virtuální zdi",
+          "disable_restricted_areas": "Skrýt zakázané oblasti",
+          "disable_no_mop_areas": "Skrýt oblasti bez mopování",
+          "disable_obstacles": "Skrýt překážky",
+          "disable_path": "Skrýt cestu",
+          "disable_predicted_path": "Skrýt předpokládanou cestu",
+          "disable_go_to_target": "Skrýt cíl přesunu"
+        },
+        "data_description": {
+          "disable_floor": "Při povolení nebude podlaha zobrazena na mapě",
+          "disable_wall": "Při povolení nebudou zdi zobrazeny na mapě",
+          "disable_robot": "Při povolení nebude robot zobrazen na mapě",
+          "disable_charger": "Při povolení nebude nabíjecí stanice zobrazena na mapě",
+          "disable_virtual_walls": "Při povolení nebudou virtuální zdi zobrazeny na mapě",
+          "disable_restricted_areas": "Při povolení nebudou zakázané oblasti zobrazeny na mapě",
+          "disable_no_mop_areas": "Při povolení nebudou oblasti bez mopování zobrazeny na mapě",
+          "disable_obstacles": "Při povolení nebudou překážky zobrazeny na mapě",
+          "disable_path": "Při povolení nebude cesta čištění zobrazena na mapě",
+          "disable_predicted_path": "Při povolení nebude předpokládaná cesta zobrazena na mapě",
+          "disable_go_to_target": "Při povolení nebudou cíle přesunu zobrazeny na mapě"
+        }
+      },
+      "segments_visibility": {
+        "title": "Viditelnost Segmentů",
+        "description": "Konfigurace viditelnosti segmentů místností na mapě",
+        "data": {
+          "disable_room_1": "Skrýt místnost 1",
+          "disable_room_2": "Skrýt místnost 2",
+          "disable_room_3": "Skrýt místnost 3",
+          "disable_room_4": "Skrýt místnost 4",
+          "disable_room_5": "Skrýt místnost 5",
+          "disable_room_6": "Skrýt místnost 6",
+          "disable_room_7": "Skrýt místnost 7",
+          "disable_room_8": "Skrýt místnost 8",
+          "disable_room_9": "Skrýt místnost 9",
+          "disable_room_10": "Skrýt místnost 10",
+          "disable_room_11": "Skrýt místnost 11",
+          "disable_room_12": "Skrýt místnost 12",
+          "disable_room_13": "Skrýt místnost 13",
+          "disable_room_14": "Skrýt místnost 14",
+          "disable_room_15": "Skrýt místnost 15"
+        },
+        "data_description": {
+          "disable_room_1": "Při povolení nebude místnost 1 zobrazena na mapě",
+          "disable_room_2": "Při povolení nebude místnost 2 zobrazena na mapě",
+          "disable_room_3": "Při povolení nebude místnost 3 zobrazena na mapě",
+          "disable_room_4": "Při povolení nebude místnost 4 zobrazena na mapě",
+          "disable_room_5": "Při povolení nebude místnost 5 zobrazena na mapě",
+          "disable_room_6": "Při povolení nebude místnost 6 zobrazena na mapě",
+          "disable_room_7": "Při povolení nebude místnost 7 zobrazena na mapě",
+          "disable_room_8": "Při povolení nebude místnost 8 zobrazena na mapě",
+          "disable_room_9": "Při povolení nebude místnost 9 zobrazena na mapě",
+          "disable_room_10": "Při povolení nebude místnost 10 zobrazena na mapě",
+          "disable_room_11": "Při povolení nebude místnost 11 zobrazena na mapě",
+          "disable_room_12": "Při povolení nebude místnost 12 zobrazena na mapě",
+          "disable_room_13": "Při povolení nebude místnost 13 zobrazena na mapě",
+          "disable_room_14": "Při povolení nebude místnost 14 zobrazena na mapě",
+          "disable_room_15": "Při povolení nebude místnost 15 zobrazena na mapě"
+        }
       },
       "base_colours": {
         "data": {

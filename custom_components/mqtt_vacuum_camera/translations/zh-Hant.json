@@ -34,7 +34,9 @@
         "menu_options": {
           "image_basic_opt": "基本設置",
           "image_offset": "圖像偏移",
-          "status_text": "狀態文字"
+          "status_text": "狀態文字",
+          "draw_elements": "物件可見度",
+          "segments_visibility": "區域可見度"
         }
       },
       "colours": {
@@ -135,6 +137,74 @@
         },
         "description": "圖像選項",
         "title": "狀態文字選項"
+      },
+      "draw_elements": {
+        "title": "物件可見度",
+        "description": "設定地圖上顯示的元素",
+        "data": {
+          "disable_floor": "隱藏地板",
+          "disable_wall": "隱藏牆壁",
+          "disable_robot": "隱藏機器人",
+          "disable_charger": "隱藏充電器",
+          "disable_virtual_walls": "隱藏虛擬牆",
+          "disable_restricted_areas": "隱藏受限區域",
+          "disable_no_mop_areas": "隱藏禁止拖地區域",
+          "disable_obstacles": "隱藏障礙物",
+          "disable_path": "隱藏路徑",
+          "disable_predicted_path": "隱藏預測路徑",
+          "disable_go_to_target": "隱藏前往目標"
+        },
+        "data_description": {
+          "disable_floor": "啟用時，地板將不會在地圖上顯示",
+          "disable_wall": "啟用時，牆壁將不會在地圖上顯示",
+          "disable_robot": "啟用時，機器人將不會在地圖上顯示",
+          "disable_charger": "啟用時，充電器將不會在地圖上顯示",
+          "disable_virtual_walls": "啟用時，虛擬牆將不會在地圖上顯示",
+          "disable_restricted_areas": "啟用時，受限區域將不會在地圖上顯示",
+          "disable_no_mop_areas": "啟用時，禁止拖地區域將不會在地圖上顯示",
+          "disable_obstacles": "啟用時，障礙物將不會在地圖上顯示",
+          "disable_path": "啟用時，清掃路徑將不會在地圖上顯示",
+          "disable_predicted_path": "啟用時，預測路徑將不會在地圖上顯示",
+          "disable_go_to_target": "啟用時，前往目標將不會在地圖上顯示"
+        }
+      },
+      "segments_visibility": {
+        "title": "區域可見度",
+        "description": "設定地圖上顯示的房間區域",
+        "data": {
+          "disable_room_1": "隱藏房間 1",
+          "disable_room_2": "隱藏房間 2",
+          "disable_room_3": "隱藏房間 3",
+          "disable_room_4": "隱藏房間 4",
+          "disable_room_5": "隱藏房間 5",
+          "disable_room_6": "隱藏房間 6",
+          "disable_room_7": "隱藏房間 7",
+          "disable_room_8": "隱藏房間 8",
+          "disable_room_9": "隱藏房間 9",
+          "disable_room_10": "隱藏房間 10",
+          "disable_room_11": "隱藏房間 11",
+          "disable_room_12": "隱藏房間 12",
+          "disable_room_13": "隱藏房間 13",
+          "disable_room_14": "隱藏房間 14",
+          "disable_room_15": "隱藏房間 15"
+        },
+        "data_description": {
+          "disable_room_1": "啟用時，房間 1 將不會在地圖上顯示",
+          "disable_room_2": "啟用時，房間 2 將不會在地圖上顯示",
+          "disable_room_3": "啟用時，房間 3 將不會在地圖上顯示",
+          "disable_room_4": "啟用時，房間 4 將不會在地圖上顯示",
+          "disable_room_5": "啟用時，房間 5 將不會在地圖上顯示",
+          "disable_room_6": "啟用時，房間 6 將不會在地圖上顯示",
+          "disable_room_7": "啟用時，房間 7 將不會在地圖上顯示",
+          "disable_room_8": "啟用時，房間 8 將不會在地圖上顯示",
+          "disable_room_9": "啟用時，房間 9 將不會在地圖上顯示",
+          "disable_room_10": "啟用時，房間 10 將不會在地圖上顯示",
+          "disable_room_11": "啟用時，房間 11 將不會在地圖上顯示",
+          "disable_room_12": "啟用時，房間 12 將不會在地圖上顯示",
+          "disable_room_13": "啟用時，房間 13 將不會在地圖上顯示",
+          "disable_room_14": "啟用時，房間 14 將不會在地圖上顯示",
+          "disable_room_15": "啟用時，房間 15 將不會在地圖上顯示"
+        }
       },
       "base_colours": {
         "data": {

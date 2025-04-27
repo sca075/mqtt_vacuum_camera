@@ -56,6 +56,36 @@ TRIM_ACTION_SAVE = "save"
 TRIM_ACTION_RESET = "reset"
 TRIM_ACTION_DELETE = "delete"
 
+# Object visibility options
+CONF_DISABLE_FLOOR = "disable_floor"
+CONF_DISABLE_WALL = "disable_wall"
+CONF_DISABLE_ROBOT = "disable_robot"
+CONF_DISABLE_CHARGER = "disable_charger"
+CONF_DISABLE_VIRTUAL_WALLS = "disable_virtual_walls"
+CONF_DISABLE_RESTRICTED_AREAS = "disable_restricted_areas"
+CONF_DISABLE_NO_MOP_AREAS = "disable_no_mop_areas"
+CONF_DISABLE_OBSTACLES = "disable_obstacles"
+CONF_DISABLE_PATH = "disable_path"
+CONF_DISABLE_PREDICTED_PATH = "disable_predicted_path"
+CONF_DISABLE_GO_TO_TARGET = "disable_go_to_target"
+
+# Room/Segment visibility options
+CONF_DISABLE_ROOM_1 = "disable_room_1"
+CONF_DISABLE_ROOM_2 = "disable_room_2"
+CONF_DISABLE_ROOM_3 = "disable_room_3"
+CONF_DISABLE_ROOM_4 = "disable_room_4"
+CONF_DISABLE_ROOM_5 = "disable_room_5"
+CONF_DISABLE_ROOM_6 = "disable_room_6"
+CONF_DISABLE_ROOM_7 = "disable_room_7"
+CONF_DISABLE_ROOM_8 = "disable_room_8"
+CONF_DISABLE_ROOM_9 = "disable_room_9"
+CONF_DISABLE_ROOM_10 = "disable_room_10"
+CONF_DISABLE_ROOM_11 = "disable_room_11"
+CONF_DISABLE_ROOM_12 = "disable_room_12"
+CONF_DISABLE_ROOM_13 = "disable_room_13"
+CONF_DISABLE_ROOM_14 = "disable_room_14"
+CONF_DISABLE_ROOM_15 = "disable_room_15"
+
 LOGGER = logging.getLogger(__package__)
 
 
@@ -117,6 +147,32 @@ DEFAULT_VALUES = {
     "save_trims": True,
     "trims_data": {"trim_left": 0, "trim_up": 0, "trim_right": 0, "trim_down": 0},
     "enable_www_snapshots": False,
+    "disable_floor": False,
+    "disable_wall": False,
+    "disable_robot": False,
+    "disable_charger": False,
+    "disable_virtual_walls": False,
+    "disable_restricted_areas": False,
+    "disable_no_mop_areas": False,
+    "disable_obstacles": False,
+    "disable_path": False,
+    "disable_predicted_path": False,
+    "disable_go_to_target": False,
+    "disable_room_1": False,
+    "disable_room_2": False,
+    "disable_room_3": False,
+    "disable_room_4": False,
+    "disable_room_5": False,
+    "disable_room_6": False,
+    "disable_room_7": False,
+    "disable_room_8": False,
+    "disable_room_9": False,
+    "disable_room_10": False,
+    "disable_room_11": False,
+    "disable_room_12": False,
+    "disable_room_13": False,
+    "disable_room_14": False,
+    "disable_room_15": False,
     "color_charger": [255, 128, 0],
     "color_move": [238, 247, 255],
     "color_wall": [255, 255, 0],
@@ -186,6 +242,32 @@ KEYS_TO_UPDATE = [
     "vac_status_font",
     "get_svg_file",
     "enable_www_snapshots",
+    "disable_floor",
+    "disable_wall",
+    "disable_robot",
+    "disable_charger",
+    "disable_virtual_walls",
+    "disable_restricted_areas",
+    "disable_no_mop_areas",
+    "disable_obstacles",
+    "disable_path",
+    "disable_predicted_path",
+    "disable_go_to_target",
+    "disable_room_1",
+    "disable_room_2",
+    "disable_room_3",
+    "disable_room_4",
+    "disable_room_5",
+    "disable_room_6",
+    "disable_room_7",
+    "disable_room_8",
+    "disable_room_9",
+    "disable_room_10",
+    "disable_room_11",
+    "disable_room_12",
+    "disable_room_13",
+    "disable_room_14",
+    "disable_room_15",
     "color_charger",
     "color_move",
     "color_wall",

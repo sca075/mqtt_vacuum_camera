@@ -34,7 +34,9 @@
         "menu_options": {
           "image_basic_opt": "Ajustes Básicos",
           "image_offset": "Desplazamiento de Imagen",
-          "status_text": "Texto de Estado"
+          "status_text": "Texto de Estado",
+          "draw_elements": "Visibilidad de Objetos",
+          "segments_visibility": "Visibilidad de Segmentos"
         }
       },
       "colours": {
@@ -135,6 +137,74 @@
         },
         "description": "Opciones de Imagen",
         "title": "Opciones de Texto de Estado"
+      },
+      "draw_elements": {
+        "title": "Visibilidad de Objetos",
+        "description": "Configurar qué elementos son visibles en el mapa",
+        "data": {
+          "disable_floor": "Ocultar Suelo",
+          "disable_wall": "Ocultar Paredes",
+          "disable_robot": "Ocultar Robot",
+          "disable_charger": "Ocultar Cargador",
+          "disable_virtual_walls": "Ocultar Paredes Virtuales",
+          "disable_restricted_areas": "Ocultar Áreas Restringidas",
+          "disable_no_mop_areas": "Ocultar Áreas Sin Fregado",
+          "disable_obstacles": "Ocultar Obstáculos",
+          "disable_path": "Ocultar Ruta",
+          "disable_predicted_path": "Ocultar Ruta Prevista",
+          "disable_go_to_target": "Ocultar Destino"
+        },
+        "data_description": {
+          "disable_floor": "Cuando está activado, el suelo no se mostrará en el mapa",
+          "disable_wall": "Cuando está activado, las paredes no se mostrarán en el mapa",
+          "disable_robot": "Cuando está activado, el robot no se mostrará en el mapa",
+          "disable_charger": "Cuando está activado, el cargador no se mostrará en el mapa",
+          "disable_virtual_walls": "Cuando está activado, las paredes virtuales no se mostrarán en el mapa",
+          "disable_restricted_areas": "Cuando está activado, las áreas restringidas no se mostrarán en el mapa",
+          "disable_no_mop_areas": "Cuando está activado, las áreas sin fregado no se mostrarán en el mapa",
+          "disable_obstacles": "Cuando está activado, los obstáculos no se mostrarán en el mapa",
+          "disable_path": "Cuando está activado, la ruta de limpieza no se mostrará en el mapa",
+          "disable_predicted_path": "Cuando está activado, la ruta prevista no se mostrará en el mapa",
+          "disable_go_to_target": "Cuando está activado, los destinos no se mostrarán en el mapa"
+        }
+      },
+      "segments_visibility": {
+        "title": "Visibilidad de Segmentos",
+        "description": "Configurar qué segmentos de habitación son visibles en el mapa",
+        "data": {
+          "disable_room_1": "Ocultar Habitación 1",
+          "disable_room_2": "Ocultar Habitación 2",
+          "disable_room_3": "Ocultar Habitación 3",
+          "disable_room_4": "Ocultar Habitación 4",
+          "disable_room_5": "Ocultar Habitación 5",
+          "disable_room_6": "Ocultar Habitación 6",
+          "disable_room_7": "Ocultar Habitación 7",
+          "disable_room_8": "Ocultar Habitación 8",
+          "disable_room_9": "Ocultar Habitación 9",
+          "disable_room_10": "Ocultar Habitación 10",
+          "disable_room_11": "Ocultar Habitación 11",
+          "disable_room_12": "Ocultar Habitación 12",
+          "disable_room_13": "Ocultar Habitación 13",
+          "disable_room_14": "Ocultar Habitación 14",
+          "disable_room_15": "Ocultar Habitación 15"
+        },
+        "data_description": {
+          "disable_room_1": "Cuando está activado, la habitación 1 no se mostrará en el mapa",
+          "disable_room_2": "Cuando está activado, la habitación 2 no se mostrará en el mapa",
+          "disable_room_3": "Cuando está activado, la habitación 3 no se mostrará en el mapa",
+          "disable_room_4": "Cuando está activado, la habitación 4 no se mostrará en el mapa",
+          "disable_room_5": "Cuando está activado, la habitación 5 no se mostrará en el mapa",
+          "disable_room_6": "Cuando está activado, la habitación 6 no se mostrará en el mapa",
+          "disable_room_7": "Cuando está activado, la habitación 7 no se mostrará en el mapa",
+          "disable_room_8": "Cuando está activado, la habitación 8 no se mostrará en el mapa",
+          "disable_room_9": "Cuando está activado, la habitación 9 no se mostrará en el mapa",
+          "disable_room_10": "Cuando está activado, la habitación 10 no se mostrará en el mapa",
+          "disable_room_11": "Cuando está activado, la habitación 11 no se mostrará en el mapa",
+          "disable_room_12": "Cuando está activado, la habitación 12 no se mostrará en el mapa",
+          "disable_room_13": "Cuando está activado, la habitación 13 no se mostrará en el mapa",
+          "disable_room_14": "Cuando está activado, la habitación 14 no se mostrará en el mapa",
+          "disable_room_15": "Cuando está activado, la habitación 15 no se mostrará en el mapa"
+        }
       },
       "base_colours": {
         "data": {

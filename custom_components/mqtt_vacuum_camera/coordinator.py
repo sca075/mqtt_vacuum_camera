@@ -181,7 +181,9 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
             LOGGER.warning("Missing required attribute: %s", err, exc_info=True)
             return SENSOR_NO_DATA
         except KeyError as err:
-            LOGGER.warning("Missing required key in sensor data: %s", err, exc_info=True)
+            LOGGER.warning(
+                "Missing required key in sensor data: %s", err, exc_info=True
+            )
             return SENSOR_NO_DATA
         except TypeError as err:
             LOGGER.warning("Invalid data type in sensor data: %s", err, exc_info=True)

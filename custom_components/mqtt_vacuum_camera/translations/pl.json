@@ -34,7 +34,9 @@
         "menu_options": {
           "image_basic_opt": "Opcje Podstawowe",
           "image_offset": "Przesunięcie Obrazu",
-          "status_text": "Tekst Statusu"
+          "status_text": "Tekst Statusu",
+          "draw_elements": "Widoczność Obiektów",
+          "segments_visibility": "Widoczność Segmentów"
         }
       },
       "colours": {
@@ -135,6 +137,74 @@
         },
         "description": "Opcje obrazu",
         "title": "Opcje tekstu statusu"
+      },
+      "draw_elements": {
+        "title": "Widoczno\u015b\u0107 Obiekt\u00f3w",
+        "description": "Konfiguracja element\u00f3w widocznych na mapie",
+        "data": {
+          "disable_floor": "Ukryj pod\u0142og\u0119",
+          "disable_wall": "Ukryj \u015bciany",
+          "disable_robot": "Ukryj robota",
+          "disable_charger": "Ukryj \u0142adowark\u0119",
+          "disable_virtual_walls": "Ukryj wirtualne \u015bciany",
+          "disable_restricted_areas": "Ukryj obszary ograniczone",
+          "disable_no_mop_areas": "Ukryj obszary bez mopowania",
+          "disable_obstacles": "Ukryj przeszkody",
+          "disable_path": "Ukryj \u015bcie\u017ck\u0119",
+          "disable_predicted_path": "Ukryj przewidywan\u0105 \u015bcie\u017ck\u0119",
+          "disable_go_to_target": "Ukryj cel"
+        },
+        "data_description": {
+          "disable_floor": "Po w\u0142\u0105czeniu, pod\u0142oga nie b\u0119dzie wy\u015bwietlana na mapie",
+          "disable_wall": "Po w\u0142\u0105czeniu, \u015bciany nie b\u0119d\u0105 wy\u015bwietlane na mapie",
+          "disable_robot": "Po w\u0142\u0105czeniu, robot nie b\u0119dzie wy\u015bwietlany na mapie",
+          "disable_charger": "Po w\u0142\u0105czeniu, \u0142adowarka nie b\u0119dzie wy\u015bwietlana na mapie",
+          "disable_virtual_walls": "Po w\u0142\u0105czeniu, wirtualne \u015bciany nie b\u0119d\u0105 wy\u015bwietlane na mapie",
+          "disable_restricted_areas": "Po w\u0142\u0105czeniu, obszary ograniczone nie b\u0119d\u0105 wy\u015bwietlane na mapie",
+          "disable_no_mop_areas": "Po w\u0142\u0105czeniu, obszary bez mopowania nie b\u0119d\u0105 wy\u015bwietlane na mapie",
+          "disable_obstacles": "Po w\u0142\u0105czeniu, przeszkody nie b\u0119d\u0105 wy\u015bwietlane na mapie",
+          "disable_path": "Po w\u0142\u0105czeniu, \u015bcie\u017cka czyszczenia nie b\u0119dzie wy\u015bwietlana na mapie",
+          "disable_predicted_path": "Po w\u0142\u0105czeniu, przewidywana \u015bcie\u017cka nie b\u0119dzie wy\u015bwietlana na mapie",
+          "disable_go_to_target": "Po w\u0142\u0105czeniu, cele nie b\u0119d\u0105 wy\u015bwietlane na mapie"
+        }
+      },
+      "segments_visibility": {
+        "title": "Widoczność Segmentów",
+        "description": "Konfiguracja segmentów pomieszczeń widocznych na mapie",
+        "data": {
+          "disable_room_1": "Ukryj pomieszczenie 1",
+          "disable_room_2": "Ukryj pomieszczenie 2",
+          "disable_room_3": "Ukryj pomieszczenie 3",
+          "disable_room_4": "Ukryj pomieszczenie 4",
+          "disable_room_5": "Ukryj pomieszczenie 5",
+          "disable_room_6": "Ukryj pomieszczenie 6",
+          "disable_room_7": "Ukryj pomieszczenie 7",
+          "disable_room_8": "Ukryj pomieszczenie 8",
+          "disable_room_9": "Ukryj pomieszczenie 9",
+          "disable_room_10": "Ukryj pomieszczenie 10",
+          "disable_room_11": "Ukryj pomieszczenie 11",
+          "disable_room_12": "Ukryj pomieszczenie 12",
+          "disable_room_13": "Ukryj pomieszczenie 13",
+          "disable_room_14": "Ukryj pomieszczenie 14",
+          "disable_room_15": "Ukryj pomieszczenie 15"
+        },
+        "data_description": {
+          "disable_room_1": "Po włączeniu, pomieszczenie 1 nie będzie wyświetlane na mapie",
+          "disable_room_2": "Po włączeniu, pomieszczenie 2 nie będzie wyświetlane na mapie",
+          "disable_room_3": "Po włączeniu, pomieszczenie 3 nie będzie wyświetlane na mapie",
+          "disable_room_4": "Po włączeniu, pomieszczenie 4 nie będzie wyświetlane na mapie",
+          "disable_room_5": "Po włączeniu, pomieszczenie 5 nie będzie wyświetlane na mapie",
+          "disable_room_6": "Po włączeniu, pomieszczenie 6 nie będzie wyświetlane na mapie",
+          "disable_room_7": "Po włączeniu, pomieszczenie 7 nie będzie wyświetlane na mapie",
+          "disable_room_8": "Po włączeniu, pomieszczenie 8 nie będzie wyświetlane na mapie",
+          "disable_room_9": "Po włączeniu, pomieszczenie 9 nie będzie wyświetlane na mapie",
+          "disable_room_10": "Po włączeniu, pomieszczenie 10 nie będzie wyświetlane na mapie",
+          "disable_room_11": "Po włączeniu, pomieszczenie 11 nie będzie wyświetlane na mapie",
+          "disable_room_12": "Po włączeniu, pomieszczenie 12 nie będzie wyświetlane na mapie",
+          "disable_room_13": "Po włączeniu, pomieszczenie 13 nie będzie wyświetlane na mapie",
+          "disable_room_14": "Po włączeniu, pomieszczenie 14 nie będzie wyświetlane na mapie",
+          "disable_room_15": "Po włączeniu, pomieszczenie 15 nie będzie wyświetlane na mapie"
+        }
       },
       "base_colours": {
         "data": {

@@ -34,7 +34,9 @@
             "menu_options": {
                "image_basic_opt": "Grundinställningar",
                "image_offset": "Bildförskjutning",
-               "status_text": "Statustext"
+               "status_text": "Statustext",
+               "draw_elements": "Objektsynlighet",
+               "segments_visibility": "Segmentsynlighet"
             }
          },
          "colours": {
@@ -135,6 +137,74 @@
             },
             "description": "Status textalternativ för bild",
             "title": "Status textalternativ"
+         },
+         "draw_elements": {
+            "title": "Objektsynlighet",
+            "description": "Konfigurera vilka element som är synliga på kartan",
+            "data": {
+               "disable_floor": "Dölj golv",
+               "disable_wall": "Dölj väggar",
+               "disable_robot": "Dölj robot",
+               "disable_charger": "Dölj laddare",
+               "disable_virtual_walls": "Dölj virtuella väggar",
+               "disable_restricted_areas": "Dölj begränsade områden",
+               "disable_no_mop_areas": "Dölj områden utan mopp",
+               "disable_obstacles": "Dölj hinder",
+               "disable_path": "Dölj väg",
+               "disable_predicted_path": "Dölj förväntad väg",
+               "disable_go_to_target": "Dölj gå-till mål"
+            },
+            "data_description": {
+               "disable_floor": "När aktiverad kommer golvet inte att visas på kartan",
+               "disable_wall": "När aktiverad kommer väggar inte att visas på kartan",
+               "disable_robot": "När aktiverad kommer roboten inte att visas på kartan",
+               "disable_charger": "När aktiverad kommer laddaren inte att visas på kartan",
+               "disable_virtual_walls": "När aktiverad kommer virtuella väggar inte att visas på kartan",
+               "disable_restricted_areas": "När aktiverad kommer begränsade områden inte att visas på kartan",
+               "disable_no_mop_areas": "När aktiverad kommer områden utan mopp inte att visas på kartan",
+               "disable_obstacles": "När aktiverad kommer hinder inte att visas på kartan",
+               "disable_path": "När aktiverad kommer städningsvägen inte att visas på kartan",
+               "disable_predicted_path": "När aktiverad kommer den förväntade vägen inte att visas på kartan",
+               "disable_go_to_target": "När aktiverad kommer gå-till mål inte att visas på kartan"
+            }
+         },
+         "segments_visibility": {
+            "title": "Segmentsynlighet",
+            "description": "Konfigurera vilka rumssegment som är synliga på kartan",
+            "data": {
+               "disable_room_1": "Dölj rum 1",
+               "disable_room_2": "Dölj rum 2",
+               "disable_room_3": "Dölj rum 3",
+               "disable_room_4": "Dölj rum 4",
+               "disable_room_5": "Dölj rum 5",
+               "disable_room_6": "Dölj rum 6",
+               "disable_room_7": "Dölj rum 7",
+               "disable_room_8": "Dölj rum 8",
+               "disable_room_9": "Dölj rum 9",
+               "disable_room_10": "Dölj rum 10",
+               "disable_room_11": "Dölj rum 11",
+               "disable_room_12": "Dölj rum 12",
+               "disable_room_13": "Dölj rum 13",
+               "disable_room_14": "Dölj rum 14",
+               "disable_room_15": "Dölj rum 15"
+            },
+            "data_description": {
+               "disable_room_1": "När aktiverad kommer rum 1 inte att visas på kartan",
+               "disable_room_2": "När aktiverad kommer rum 2 inte att visas på kartan",
+               "disable_room_3": "När aktiverad kommer rum 3 inte att visas på kartan",
+               "disable_room_4": "När aktiverad kommer rum 4 inte att visas på kartan",
+               "disable_room_5": "När aktiverad kommer rum 5 inte att visas på kartan",
+               "disable_room_6": "När aktiverad kommer rum 6 inte att visas på kartan",
+               "disable_room_7": "När aktiverad kommer rum 7 inte att visas på kartan",
+               "disable_room_8": "När aktiverad kommer rum 8 inte att visas på kartan",
+               "disable_room_9": "När aktiverad kommer rum 9 inte att visas på kartan",
+               "disable_room_10": "När aktiverad kommer rum 10 inte att visas på kartan",
+               "disable_room_11": "När aktiverad kommer rum 11 inte att visas på kartan",
+               "disable_room_12": "När aktiverad kommer rum 12 inte att visas på kartan",
+               "disable_room_13": "När aktiverad kommer rum 13 inte att visas på kartan",
+               "disable_room_14": "När aktiverad kommer rum 14 inte att visas på kartan",
+               "disable_room_15": "När aktiverad kommer rum 15 inte att visas på kartan"
+            }
          },
          "base_colours": {
             "data": {

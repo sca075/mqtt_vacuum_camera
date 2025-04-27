@@ -273,7 +273,9 @@ class ValetudoConnector:
             await self.async_fire_event_restart_camera(data=str(msg.payload))
         self.pkohelrs_data.state = new_state
 
-    async def _validate_compressed_header(self, payload: bytes, compression_type: str) -> bool:
+    async def _validate_compressed_header(
+        self, payload: bytes, compression_type: str
+    ) -> bool:
         """
         Validate compressed data headers and checksums.
         Args:

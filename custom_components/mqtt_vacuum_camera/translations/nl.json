@@ -34,7 +34,9 @@
         "menu_options": {
           "image_basic_opt": "Basis Instellingen",
           "image_offset": "Afbeeldingsverschuiving",
-          "status_text": "Statustekst"
+          "status_text": "Statustekst",
+          "draw_elements": "Objectzichtbaarheid",
+          "segments_visibility": "Segmentzichtbaarheid"
         }
       },
       "colours": {
@@ -135,6 +137,74 @@
         },
         "description": "Afbeeldingsopties",
         "title": "Status Tekst Opties"
+      },
+      "draw_elements": {
+        "title": "Objectzichtbaarheid",
+        "description": "Configureer welke elementen zichtbaar zijn op de kaart",
+        "data": {
+          "disable_floor": "Verberg Vloer",
+          "disable_wall": "Verberg Muren",
+          "disable_robot": "Verberg Robot",
+          "disable_charger": "Verberg Oplader",
+          "disable_virtual_walls": "Verberg Virtuele Muren",
+          "disable_restricted_areas": "Verberg Beperkte Gebieden",
+          "disable_no_mop_areas": "Verberg Geen-Dweil Gebieden",
+          "disable_obstacles": "Verberg Obstakels",
+          "disable_path": "Verberg Pad",
+          "disable_predicted_path": "Verberg Voorspeld Pad",
+          "disable_go_to_target": "Verberg Ga-Naar Doel"
+        },
+        "data_description": {
+          "disable_floor": "Indien ingeschakeld, wordt de vloer niet op de kaart weergegeven",
+          "disable_wall": "Indien ingeschakeld, worden muren niet op de kaart weergegeven",
+          "disable_robot": "Indien ingeschakeld, wordt de robot niet op de kaart weergegeven",
+          "disable_charger": "Indien ingeschakeld, wordt de oplader niet op de kaart weergegeven",
+          "disable_virtual_walls": "Indien ingeschakeld, worden virtuele muren niet op de kaart weergegeven",
+          "disable_restricted_areas": "Indien ingeschakeld, worden beperkte gebieden niet op de kaart weergegeven",
+          "disable_no_mop_areas": "Indien ingeschakeld, worden geen-dweil gebieden niet op de kaart weergegeven",
+          "disable_obstacles": "Indien ingeschakeld, worden obstakels niet op de kaart weergegeven",
+          "disable_path": "Indien ingeschakeld, wordt het schoonmaakpad niet op de kaart weergegeven",
+          "disable_predicted_path": "Indien ingeschakeld, wordt het voorspelde pad niet op de kaart weergegeven",
+          "disable_go_to_target": "Indien ingeschakeld, worden ga-naar doelen niet op de kaart weergegeven"
+        }
+      },
+      "segments_visibility": {
+        "title": "Segmentzichtbaarheid",
+        "description": "Configureer welke kamersegmenten zichtbaar zijn op de kaart",
+        "data": {
+          "disable_room_1": "Verberg Kamer 1",
+          "disable_room_2": "Verberg Kamer 2",
+          "disable_room_3": "Verberg Kamer 3",
+          "disable_room_4": "Verberg Kamer 4",
+          "disable_room_5": "Verberg Kamer 5",
+          "disable_room_6": "Verberg Kamer 6",
+          "disable_room_7": "Verberg Kamer 7",
+          "disable_room_8": "Verberg Kamer 8",
+          "disable_room_9": "Verberg Kamer 9",
+          "disable_room_10": "Verberg Kamer 10",
+          "disable_room_11": "Verberg Kamer 11",
+          "disable_room_12": "Verberg Kamer 12",
+          "disable_room_13": "Verberg Kamer 13",
+          "disable_room_14": "Verberg Kamer 14",
+          "disable_room_15": "Verberg Kamer 15"
+        },
+        "data_description": {
+          "disable_room_1": "Indien ingeschakeld, wordt kamer 1 niet op de kaart weergegeven",
+          "disable_room_2": "Indien ingeschakeld, wordt kamer 2 niet op de kaart weergegeven",
+          "disable_room_3": "Indien ingeschakeld, wordt kamer 3 niet op de kaart weergegeven",
+          "disable_room_4": "Indien ingeschakeld, wordt kamer 4 niet op de kaart weergegeven",
+          "disable_room_5": "Indien ingeschakeld, wordt kamer 5 niet op de kaart weergegeven",
+          "disable_room_6": "Indien ingeschakeld, wordt kamer 6 niet op de kaart weergegeven",
+          "disable_room_7": "Indien ingeschakeld, wordt kamer 7 niet op de kaart weergegeven",
+          "disable_room_8": "Indien ingeschakeld, wordt kamer 8 niet op de kaart weergegeven",
+          "disable_room_9": "Indien ingeschakeld, wordt kamer 9 niet op de kaart weergegeven",
+          "disable_room_10": "Indien ingeschakeld, wordt kamer 10 niet op de kaart weergegeven",
+          "disable_room_11": "Indien ingeschakeld, wordt kamer 11 niet op de kaart weergegeven",
+          "disable_room_12": "Indien ingeschakeld, wordt kamer 12 niet op de kaart weergegeven",
+          "disable_room_13": "Indien ingeschakeld, wordt kamer 13 niet op de kaart weergegeven",
+          "disable_room_14": "Indien ingeschakeld, wordt kamer 14 niet op de kaart weergegeven",
+          "disable_room_15": "Indien ingeschakeld, wordt kamer 15 niet op de kaart weergegeven"
+        }
       },
       "base_colours": {
         "data": {

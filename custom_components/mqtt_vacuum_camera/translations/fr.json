@@ -34,7 +34,9 @@
         "menu_options": {
           "image_basic_opt": "Configuration de Base",
           "image_offset": "Décalage d'Image",
-          "status_text": "Texte d'État"
+          "status_text": "Texte d'État",
+          "draw_elements": "Visibilité des Objets",
+          "segments_visibility": "Visibilité des Segments"
         }
       },
       "colours": {
@@ -135,6 +137,74 @@
         },
         "description": "Options d'image",
         "title": "Options de texte d'état"
+      },
+      "draw_elements": {
+        "title": "Visibilité des Objets",
+        "description": "Configurer quels éléments sont visibles sur la carte",
+        "data": {
+          "disable_floor": "Masquer le sol",
+          "disable_wall": "Masquer les murs",
+          "disable_robot": "Masquer le robot",
+          "disable_charger": "Masquer le chargeur",
+          "disable_virtual_walls": "Masquer les murs virtuels",
+          "disable_restricted_areas": "Masquer les zones restreintes",
+          "disable_no_mop_areas": "Masquer les zones sans serpillère",
+          "disable_obstacles": "Masquer les obstacles",
+          "disable_path": "Masquer le chemin",
+          "disable_predicted_path": "Masquer le chemin prévu",
+          "disable_go_to_target": "Masquer la cible de déplacement"
+        },
+        "data_description": {
+          "disable_floor": "Lorsque activé, le sol ne sera pas affiché sur la carte",
+          "disable_wall": "Lorsque activé, les murs ne seront pas affichés sur la carte",
+          "disable_robot": "Lorsque activé, le robot ne sera pas affiché sur la carte",
+          "disable_charger": "Lorsque activé, le chargeur ne sera pas affiché sur la carte",
+          "disable_virtual_walls": "Lorsque activé, les murs virtuels ne seront pas affichés sur la carte",
+          "disable_restricted_areas": "Lorsque activé, les zones restreintes ne seront pas affichées sur la carte",
+          "disable_no_mop_areas": "Lorsque activé, les zones sans serpillère ne seront pas affichées sur la carte",
+          "disable_obstacles": "Lorsque activé, les obstacles ne seront pas affichés sur la carte",
+          "disable_path": "Lorsque activé, le chemin de nettoyage ne sera pas affiché sur la carte",
+          "disable_predicted_path": "Lorsque activé, le chemin prévu ne sera pas affiché sur la carte",
+          "disable_go_to_target": "Lorsque activé, les cibles de déplacement ne seront pas affichées sur la carte"
+        }
+      },
+      "segments_visibility": {
+        "title": "Visibilité des Segments",
+        "description": "Configurer quels segments de pièce sont visibles sur la carte",
+        "data": {
+          "disable_room_1": "Masquer la pièce 1",
+          "disable_room_2": "Masquer la pièce 2",
+          "disable_room_3": "Masquer la pièce 3",
+          "disable_room_4": "Masquer la pièce 4",
+          "disable_room_5": "Masquer la pièce 5",
+          "disable_room_6": "Masquer la pièce 6",
+          "disable_room_7": "Masquer la pièce 7",
+          "disable_room_8": "Masquer la pièce 8",
+          "disable_room_9": "Masquer la pièce 9",
+          "disable_room_10": "Masquer la pièce 10",
+          "disable_room_11": "Masquer la pièce 11",
+          "disable_room_12": "Masquer la pièce 12",
+          "disable_room_13": "Masquer la pièce 13",
+          "disable_room_14": "Masquer la pièce 14",
+          "disable_room_15": "Masquer la pièce 15"
+        },
+        "data_description": {
+          "disable_room_1": "Lorsque activé, la pièce 1 ne sera pas affichée sur la carte",
+          "disable_room_2": "Lorsque activé, la pièce 2 ne sera pas affichée sur la carte",
+          "disable_room_3": "Lorsque activé, la pièce 3 ne sera pas affichée sur la carte",
+          "disable_room_4": "Lorsque activé, la pièce 4 ne sera pas affichée sur la carte",
+          "disable_room_5": "Lorsque activé, la pièce 5 ne sera pas affichée sur la carte",
+          "disable_room_6": "Lorsque activé, la pièce 6 ne sera pas affichée sur la carte",
+          "disable_room_7": "Lorsque activé, la pièce 7 ne sera pas affichée sur la carte",
+          "disable_room_8": "Lorsque activé, la pièce 8 ne sera pas affichée sur la carte",
+          "disable_room_9": "Lorsque activé, la pièce 9 ne sera pas affichée sur la carte",
+          "disable_room_10": "Lorsque activé, la pièce 10 ne sera pas affichée sur la carte",
+          "disable_room_11": "Lorsque activé, la pièce 11 ne sera pas affichée sur la carte",
+          "disable_room_12": "Lorsque activé, la pièce 12 ne sera pas affichée sur la carte",
+          "disable_room_13": "Lorsque activé, la pièce 13 ne sera pas affichée sur la carte",
+          "disable_room_14": "Lorsque activé, la pièce 14 ne sera pas affichée sur la carte",
+          "disable_room_15": "Lorsque activé, la pièce 15 ne sera pas affichée sur la carte"
+        }
       },
       "base_colours": {
         "data": {

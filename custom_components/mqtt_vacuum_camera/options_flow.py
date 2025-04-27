@@ -49,6 +49,32 @@ from .const import (
     COLOR_ZONE_CLEAN,
     CONF_ASPECT_RATIO,
     CONF_AUTO_ZOOM,
+    CONF_DISABLE_CHARGER,
+    CONF_DISABLE_FLOOR,
+    CONF_DISABLE_GO_TO_TARGET,
+    CONF_DISABLE_NO_MOP_AREAS,
+    CONF_DISABLE_OBSTACLES,
+    CONF_DISABLE_PATH,
+    CONF_DISABLE_PREDICTED_PATH,
+    CONF_DISABLE_RESTRICTED_AREAS,
+    CONF_DISABLE_ROBOT,
+    CONF_DISABLE_VIRTUAL_WALLS,
+    CONF_DISABLE_WALL,
+    CONF_DISABLE_ROOM_1,
+    CONF_DISABLE_ROOM_2,
+    CONF_DISABLE_ROOM_3,
+    CONF_DISABLE_ROOM_4,
+    CONF_DISABLE_ROOM_5,
+    CONF_DISABLE_ROOM_6,
+    CONF_DISABLE_ROOM_7,
+    CONF_DISABLE_ROOM_8,
+    CONF_DISABLE_ROOM_9,
+    CONF_DISABLE_ROOM_10,
+    CONF_DISABLE_ROOM_11,
+    CONF_DISABLE_ROOM_12,
+    CONF_DISABLE_ROOM_13,
+    CONF_DISABLE_ROOM_14,
+    CONF_DISABLE_ROOM_15,
     CONF_OFFSET_BOTTOM,
     CONF_OFFSET_LEFT,
     CONF_OFFSET_RIGHT,
@@ -270,8 +296,13 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         """Handle image options menu."""
         return self.async_show_menu(
             step_id="image_opt",
-            menu_options=["image_basic_opt", "status_text"],
-        ) # "image_offset"
+            menu_options=[
+                "image_basic_opt",
+                "status_text",
+                "draw_elements",
+                "segments_visibility",
+            ],
+        )  # "image_offset"
 
     # pylint: disable=unused-argument
     async def async_step_colours(self, user_input=None) -> ConfigFlowResult:
@@ -485,6 +516,163 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         return self.async_show_form(
             step_id="status_text",
             data_schema=self.status_text_options,
+            description_placeholders=self.camera_options,
+        )
+
+    async def async_step_draw_elements(
+        self, user_input: Optional[Dict[str, Any]] = None
+    ):
+        """Handle draw elements configuration."""
+        LOGGER.info("Draw Elements Configuration Started.")
+
+        if user_input is not None:
+            # Update options based on user input
+            self.camera_options.update(
+                {
+                    "disable_floor": user_input.get(CONF_DISABLE_FLOOR, False),
+                    "disable_wall": user_input.get(CONF_DISABLE_WALL, False),
+                    "disable_robot": user_input.get(CONF_DISABLE_ROBOT, False),
+                    "disable_charger": user_input.get(CONF_DISABLE_CHARGER, False),
+                    "disable_virtual_walls": user_input.get(
+                        CONF_DISABLE_VIRTUAL_WALLS, False
+                    ),
+                    "disable_restricted_areas": user_input.get(
+                        CONF_DISABLE_RESTRICTED_AREAS, False
+                    ),
+                    "disable_no_mop_areas": user_input.get(
+                        CONF_DISABLE_NO_MOP_AREAS, False
+                    ),
+                    "disable_obstacles": user_input.get(CONF_DISABLE_OBSTACLES, False),
+                    "disable_path": user_input.get(CONF_DISABLE_PATH, False),
+                    "disable_predicted_path": user_input.get(
+                        CONF_DISABLE_PREDICTED_PATH, False
+                    ),
+                    "disable_go_to_target": user_input.get(
+                        CONF_DISABLE_GO_TO_TARGET, False
+                    ),
+                }
+            )
+            return await self.async_step_opt_save()
+
+        # Create schema for the form
+        fields = {
+            vol.Optional(
+                CONF_DISABLE_FLOOR,
+                default=self.camera_config.options.get("disable_floor", False),
+            ): BooleanSelector(),
+            vol.Optional(
+                CONF_DISABLE_WALL,
+                default=self.camera_config.options.get("disable_wall", False),
+            ): BooleanSelector(),
+            vol.Optional(
+                CONF_DISABLE_ROBOT,
+                default=self.camera_config.options.get("disable_robot", False),
+            ): BooleanSelector(),
+            vol.Optional(
+                CONF_DISABLE_CHARGER,
+                default=self.camera_config.options.get("disable_charger", False),
+            ): BooleanSelector(),
+            vol.Optional(
+                CONF_DISABLE_VIRTUAL_WALLS,
+                default=self.camera_config.options.get("disable_virtual_walls", False),
+            ): BooleanSelector(),
+            vol.Optional(
+                CONF_DISABLE_RESTRICTED_AREAS,
+                default=self.camera_config.options.get(
+                    "disable_restricted_areas", False
+                ),
+            ): BooleanSelector(),
+            vol.Optional(
+                CONF_DISABLE_NO_MOP_AREAS,
+                default=self.camera_config.options.get("disable_no_mop_areas", False),
+            ): BooleanSelector(),
+            vol.Optional(
+                CONF_DISABLE_OBSTACLES,
+                default=self.camera_config.options.get("disable_obstacles", False),
+            ): BooleanSelector(),
+            vol.Optional(
+                CONF_DISABLE_PATH,
+                default=self.camera_config.options.get("disable_path", False),
+            ): BooleanSelector(),
+            vol.Optional(
+                CONF_DISABLE_PREDICTED_PATH,
+                default=self.camera_config.options.get("disable_predicted_path", False),
+            ): BooleanSelector(),
+            vol.Optional(
+                CONF_DISABLE_GO_TO_TARGET,
+                default=self.camera_config.options.get("disable_go_to_target", False),
+            ): BooleanSelector(),
+        }
+
+        return self.async_show_form(
+            step_id="draw_elements",
+            data_schema=vol.Schema(fields),
+            description_placeholders=self.camera_options,
+        )
+
+    async def async_step_segments_visibility(
+        self, user_input: Optional[Dict[str, Any]] = None
+    ):
+        """Handle segments (rooms) visibility configuration."""
+        LOGGER.info("Segments Visibility Configuration Started.")
+
+        if user_input is not None:
+            # Update options based on user input
+            self.camera_options.update(
+                {
+                    "disable_room_1": user_input.get(CONF_DISABLE_ROOM_1, False),
+                    "disable_room_2": user_input.get(CONF_DISABLE_ROOM_2, False),
+                    "disable_room_3": user_input.get(CONF_DISABLE_ROOM_3, False),
+                    "disable_room_4": user_input.get(CONF_DISABLE_ROOM_4, False),
+                    "disable_room_5": user_input.get(CONF_DISABLE_ROOM_5, False),
+                    "disable_room_6": user_input.get(CONF_DISABLE_ROOM_6, False),
+                    "disable_room_7": user_input.get(CONF_DISABLE_ROOM_7, False),
+                    "disable_room_8": user_input.get(CONF_DISABLE_ROOM_8, False),
+                    "disable_room_9": user_input.get(CONF_DISABLE_ROOM_9, False),
+                    "disable_room_10": user_input.get(CONF_DISABLE_ROOM_10, False),
+                    "disable_room_11": user_input.get(CONF_DISABLE_ROOM_11, False),
+                    "disable_room_12": user_input.get(CONF_DISABLE_ROOM_12, False),
+                    "disable_room_13": user_input.get(CONF_DISABLE_ROOM_13, False),
+                    "disable_room_14": user_input.get(CONF_DISABLE_ROOM_14, False),
+                    "disable_room_15": user_input.get(CONF_DISABLE_ROOM_15, False),
+                }
+            )
+            return await self.async_step_opt_save()
+
+        # Create schema for the form - only show fields for rooms that exist
+        fields = {}
+
+        # Only show room options up to the number of rooms that exist
+        room_constants = [
+            CONF_DISABLE_ROOM_1,
+            CONF_DISABLE_ROOM_2,
+            CONF_DISABLE_ROOM_3,
+            CONF_DISABLE_ROOM_4,
+            CONF_DISABLE_ROOM_5,
+            CONF_DISABLE_ROOM_6,
+            CONF_DISABLE_ROOM_7,
+            CONF_DISABLE_ROOM_8,
+            CONF_DISABLE_ROOM_9,
+            CONF_DISABLE_ROOM_10,
+            CONF_DISABLE_ROOM_11,
+            CONF_DISABLE_ROOM_12,
+            CONF_DISABLE_ROOM_13,
+            CONF_DISABLE_ROOM_14,
+            CONF_DISABLE_ROOM_15,
+        ]
+
+        for i in range(min(self.number_of_rooms, 15)):
+            room_key = f"disable_room_{i + 1}"
+            fields[
+                vol.Optional(
+                    room_constants[i],
+                    default=self.camera_config.options.get(room_key, False),
+                )
+            ] = BooleanSelector()
+
+        return self.async_show_form(
+            step_id="segments_visibility",
+            data_schema=vol.Schema(fields),
             description_placeholders=self.camera_options,
         )
 
