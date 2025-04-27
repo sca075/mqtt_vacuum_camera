@@ -27,7 +27,8 @@ When you want also to control your vacuum you will need to also install the:
 [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card) from HACS as well.
 
 ### 🔗 Related Repositories
-- [Valeudo Map Extractor (library for extracting the maps)](https://github.com/sca075/Python-package-valetudo-map-parser)
+
+- [Valetudo Map Extractor (library for extracting the maps)](https://github.com/sca075/Python-package-valetudo-map-parser)
 
 ### Goal of this project.
 The goal of this project is to deliver an out-of-the-box solution for integrating MQTT-based vacuums into the Home Assistant ecosystem. 
@@ -43,18 +44,18 @@ We can now see the Obstacles Images when available, and somehow we start to orga
 The camera is stable and updated to all requirements of Home Assistant.
 Will be also time to take a brake and work in the background, so I do not expect unless required releases in January.
 
-#### 2025.5.0 - **Refactoring and some add**
+#### 2025.5.0 - **Refactoring and New Additions**
 - **Changes**
-  - Refactoring the code to make it more readable and easy to maintain.
-  - Remove files operations (not for logging export).
+  - Refactored the code to improve readability and maintainability.
+  - Remove file operation routines not required for logging export.
 - **Features / Improvements :**
-  - Load and save maps via services, fully integrate [MapLoader](https://github.com/pkoehlers/maploader).
-  - Possibility to select elements to display on the map.
-  - Add to the options Areas and Floor management.
-- **Possibly fix:**
-  - Fix the issues no map = camera not working.
-  - Fix alpha colours of the elements.
-  - Fully Coordinated implementation of the cameras and sensors.
+  - Enable loading and saving of maps via services by fully integrating with  [MapLoader](https://github.com/pkoehlers/maploader).
+  - Enable selection of specific elements to display on the map..
+  - Add options for Area and Floor management.
+- **Potential Fixes:**
+  - Fix the issue where the absence of a map causes the camera to malfunction.
+  - Fix the alpha colours of the elements.
+  - Implement a fully coordinated integration of the cameras and sensors.
 </details>
 
 
