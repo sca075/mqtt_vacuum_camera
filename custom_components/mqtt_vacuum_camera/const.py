@@ -3,6 +3,7 @@ Last Updated on version: 2025.3.0b2
 """
 
 import logging
+from enum import Enum
 from typing import Final
 
 from homeassistant.components.camera import DOMAIN as CAMERA_DOMAIN
@@ -493,7 +494,7 @@ ATTR_OBSTACLES = "obstacles"
 ATTR_CAMERA_MODE = "camera_mode"
 
 
-class CameraModes:
+class CameraModes(str, Enum):
     """Constants for the camera modes"""
 
     MAP_VIEW = "map_view"
