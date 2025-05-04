@@ -654,7 +654,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
             self._shared.obstacles_data
             and self._shared.camera_mode == CameraModes.MAP_VIEW
         ):
-            if event.data.get("entity_id") not in self.entity_id:
+            if event.data.get("entity_id") != self.entity_id:
                 return _set_camera_mode(CameraModes.MAP_VIEW, "Entity ID mismatch")
             await _set_camera_mode(CameraModes.OBSTACLE_SEARCH, "Obstacle View Requested")
             coordinates = event.data.get("coordinates", None)
