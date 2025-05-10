@@ -34,7 +34,9 @@
         "menu_options": {
           "image_basic_opt": "基本設定",
           "image_offset": "画像オフセット",
-          "status_text": "ステータステキスト"
+          "status_text": "ステータステキスト",
+          "draw_elements": "オブジェクト表示",
+          "segments_visibility": "セグメント表示"
         }
       },
       "colours": {
@@ -135,6 +137,74 @@
         },
         "description": "画像オプション",
         "title": "ステータステキストオプション"
+      },
+      "draw_elements": {
+        "title": "オブジェクト表示",
+        "description": "マップ上に表示される要素を設定",
+        "data": {
+          "disable_floor": "床を非表示",
+          "disable_wall": "壁を非表示",
+          "disable_robot": "ロボットを非表示",
+          "disable_charger": "充電器を非表示",
+          "disable_virtual_walls": "仮想壁を非表示",
+          "disable_restricted_areas": "制限エリアを非表示",
+          "disable_no_mop_areas": "モップ禁止エリアを非表示",
+          "disable_obstacles": "障害物を非表示",
+          "disable_path": "経路を非表示",
+          "disable_predicted_path": "予測経路を非表示",
+          "disable_go_to_target": "移動先を非表示"
+        },
+        "data_description": {
+          "disable_floor": "有効にすると、床がマップ上に表示されません",
+          "disable_wall": "有効にすると、壁がマップ上に表示されません",
+          "disable_robot": "有効にすると、ロボットがマップ上に表示されません",
+          "disable_charger": "有効にすると、充電器がマップ上に表示されません",
+          "disable_virtual_walls": "有効にすると、仮想壁がマップ上に表示されません",
+          "disable_restricted_areas": "有効にすると、制限エリアがマップ上に表示されません",
+          "disable_no_mop_areas": "有効にすると、モップ禁止エリアがマップ上に表示されません",
+          "disable_obstacles": "有効にすると、障害物がマップ上に表示されません",
+          "disable_path": "有効にすると、掃除経路がマップ上に表示されません",
+          "disable_predicted_path": "有効にすると、予測経路がマップ上に表示されません",
+          "disable_go_to_target": "有効にすると、移動先がマップ上に表示されません"
+        }
+      },
+      "segments_visibility": {
+        "title": "セグメント表示",
+        "description": "マップ上に表示される部屋セグメントを設定",
+        "data": {
+          "disable_room_1": "部屋1を非表示",
+          "disable_room_2": "部屋2を非表示",
+          "disable_room_3": "部屋3を非表示",
+          "disable_room_4": "部屋4を非表示",
+          "disable_room_5": "部屋5を非表示",
+          "disable_room_6": "部屋6を非表示",
+          "disable_room_7": "部屋7を非表示",
+          "disable_room_8": "部屋8を非表示",
+          "disable_room_9": "部屋9を非表示",
+          "disable_room_10": "部屋10を非表示",
+          "disable_room_11": "部屋11を非表示",
+          "disable_room_12": "部屋12を非表示",
+          "disable_room_13": "部屋13を非表示",
+          "disable_room_14": "部屋14を非表示",
+          "disable_room_15": "部屋15を非表示"
+        },
+        "data_description": {
+          "disable_room_1": "有効にすると、部屋1がマップ上に表示されません",
+          "disable_room_2": "有効にすると、部屋2がマップ上に表示されません",
+          "disable_room_3": "有効にすると、部屋3がマップ上に表示されません",
+          "disable_room_4": "有効にすると、部屋4がマップ上に表示されません",
+          "disable_room_5": "有効にすると、部屋5がマップ上に表示されません",
+          "disable_room_6": "有効にすると、部屋6がマップ上に表示されません",
+          "disable_room_7": "有効にすると、部屋7がマップ上に表示されません",
+          "disable_room_8": "有効にすると、部屋8がマップ上に表示されません",
+          "disable_room_9": "有効にすると、部屋9がマップ上に表示されません",
+          "disable_room_10": "有効にすると、部屋10がマップ上に表示されません",
+          "disable_room_11": "有効にすると、部屋11がマップ上に表示されません",
+          "disable_room_12": "有効にすると、部屋12がマップ上に表示されません",
+          "disable_room_13": "有効にすると、部屋13がマップ上に表示されません",
+          "disable_room_14": "有効にすると、部屋14がマップ上に表示されません",
+          "disable_room_15": "有効にすると、部屋15がマップ上に表示されません"
+        }
       },
       "base_colours": {
         "data": {

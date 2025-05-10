@@ -118,6 +118,8 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         """
         self.shared_manager.update_shared_data(dev_info)
         self.shared = self.shared_manager.get_instance()
+        self.shared.file_name = self.file_name
+        self.shared.device_info = dev_info
         self.in_sync_with_camera = True
         return self.shared, self.file_name
 
@@ -181,7 +183,9 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
             LOGGER.warning("Missing required attribute: %s", err, exc_info=True)
             return SENSOR_NO_DATA
         except KeyError as err:
-            LOGGER.warning("Missing required key in sensor data: %s", err, exc_info=True)
+            LOGGER.warning(
+                "Missing required key in sensor data: %s", err, exc_info=True
+            )
             return SENSOR_NO_DATA
         except TypeError as err:
             LOGGER.warning("Invalid data type in sensor data: %s", err, exc_info=True)

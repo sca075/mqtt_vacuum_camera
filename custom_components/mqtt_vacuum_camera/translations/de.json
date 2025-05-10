@@ -34,7 +34,9 @@
         "menu_options": {
           "image_basic_opt": "Grundeinstellungen",
           "image_offset": "Bildversatz",
-          "status_text": "Statustext"
+          "status_text": "Statustext",
+          "draw_elements": "Objektsichtbarkeit",
+          "segments_visibility": "Segmentsichtbarkeit"
         }
       },
       "colours": {
@@ -137,6 +139,74 @@
         },
         "description": "Bildoptionen",
         "title": "Status-Textoptionen"
+      },
+      "draw_elements": {
+        "title": "Objektsichtbarkeit",
+        "description": "Konfigurieren, welche Elemente auf der Karte sichtbar sind",
+        "data": {
+          "disable_floor": "Boden ausblenden",
+          "disable_wall": "Wände ausblenden",
+          "disable_robot": "Roboter ausblenden",
+          "disable_charger": "Ladestation ausblenden",
+          "disable_virtual_walls": "Virtuelle Wände ausblenden",
+          "disable_restricted_areas": "Gesperrte Bereiche ausblenden",
+          "disable_no_mop_areas": "Wischfreie Bereiche ausblenden",
+          "disable_obstacles": "Hindernisse ausblenden",
+          "disable_path": "Pfad ausblenden",
+          "disable_predicted_path": "Vorhergesagten Pfad ausblenden",
+          "disable_go_to_target": "Ziel ausblenden"
+        },
+        "data_description": {
+          "disable_floor": "Wenn aktiviert, wird der Boden nicht auf der Karte angezeigt",
+          "disable_wall": "Wenn aktiviert, werden Wände nicht auf der Karte angezeigt",
+          "disable_robot": "Wenn aktiviert, wird der Roboter nicht auf der Karte angezeigt",
+          "disable_charger": "Wenn aktiviert, wird die Ladestation nicht auf der Karte angezeigt",
+          "disable_virtual_walls": "Wenn aktiviert, werden virtuelle Wände nicht auf der Karte angezeigt",
+          "disable_restricted_areas": "Wenn aktiviert, werden gesperrte Bereiche nicht auf der Karte angezeigt",
+          "disable_no_mop_areas": "Wenn aktiviert, werden wischfreie Bereiche nicht auf der Karte angezeigt",
+          "disable_obstacles": "Wenn aktiviert, werden Hindernisse nicht auf der Karte angezeigt",
+          "disable_path": "Wenn aktiviert, wird der Reinigungspfad nicht auf der Karte angezeigt",
+          "disable_predicted_path": "Wenn aktiviert, wird der vorhergesagte Pfad nicht auf der Karte angezeigt",
+          "disable_go_to_target": "Wenn aktiviert, werden Ziele nicht auf der Karte angezeigt"
+        }
+      },
+      "segments_visibility": {
+        "title": "Segmentsichtbarkeit",
+        "description": "Konfigurieren, welche Raumsegmente auf der Karte sichtbar sind",
+        "data": {
+          "disable_room_1": "Raum 1 ausblenden",
+          "disable_room_2": "Raum 2 ausblenden",
+          "disable_room_3": "Raum 3 ausblenden",
+          "disable_room_4": "Raum 4 ausblenden",
+          "disable_room_5": "Raum 5 ausblenden",
+          "disable_room_6": "Raum 6 ausblenden",
+          "disable_room_7": "Raum 7 ausblenden",
+          "disable_room_8": "Raum 8 ausblenden",
+          "disable_room_9": "Raum 9 ausblenden",
+          "disable_room_10": "Raum 10 ausblenden",
+          "disable_room_11": "Raum 11 ausblenden",
+          "disable_room_12": "Raum 12 ausblenden",
+          "disable_room_13": "Raum 13 ausblenden",
+          "disable_room_14": "Raum 14 ausblenden",
+          "disable_room_15": "Raum 15 ausblenden"
+        },
+        "data_description": {
+          "disable_room_1": "Wenn aktiviert, wird Raum 1 nicht auf der Karte angezeigt",
+          "disable_room_2": "Wenn aktiviert, wird Raum 2 nicht auf der Karte angezeigt",
+          "disable_room_3": "Wenn aktiviert, wird Raum 3 nicht auf der Karte angezeigt",
+          "disable_room_4": "Wenn aktiviert, wird Raum 4 nicht auf der Karte angezeigt",
+          "disable_room_5": "Wenn aktiviert, wird Raum 5 nicht auf der Karte angezeigt",
+          "disable_room_6": "Wenn aktiviert, wird Raum 6 nicht auf der Karte angezeigt",
+          "disable_room_7": "Wenn aktiviert, wird Raum 7 nicht auf der Karte angezeigt",
+          "disable_room_8": "Wenn aktiviert, wird Raum 8 nicht auf der Karte angezeigt",
+          "disable_room_9": "Wenn aktiviert, wird Raum 9 nicht auf der Karte angezeigt",
+          "disable_room_10": "Wenn aktiviert, wird Raum 10 nicht auf der Karte angezeigt",
+          "disable_room_11": "Wenn aktiviert, wird Raum 11 nicht auf der Karte angezeigt",
+          "disable_room_12": "Wenn aktiviert, wird Raum 12 nicht auf der Karte angezeigt",
+          "disable_room_13": "Wenn aktiviert, wird Raum 13 nicht auf der Karte angezeigt",
+          "disable_room_14": "Wenn aktiviert, wird Raum 14 nicht auf der Karte angezeigt",
+          "disable_room_15": "Wenn aktiviert, wird Raum 15 nicht auf der Karte angezeigt"
+        }
       },
       "base_colours": {
         "data": {

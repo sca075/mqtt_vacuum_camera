@@ -34,7 +34,9 @@
         "menu_options": {
           "image_basic_opt": "Basic Settings",
           "image_offset": "Image Offset",
-          "status_text": "Status Text"
+          "status_text": "Status Text",
+          "draw_elements": "Object Visibility",
+          "segments_visibility": "Segments Visibility"
         }
       },
       "colours": {
@@ -135,6 +137,74 @@
         },
         "description": "Image Options",
         "title": "Status Text Options"
+      },
+      "draw_elements": {
+        "title": "Object Visibility",
+        "description": "Configure which elements are visible on the map",
+        "data": {
+          "disable_floor": "Hide Floor",
+          "disable_wall": "Hide Walls",
+          "disable_robot": "Hide Robot",
+          "disable_charger": "Hide Charger",
+          "disable_virtual_walls": "Hide Virtual Walls",
+          "disable_restricted_areas": "Hide Restricted Areas",
+          "disable_no_mop_areas": "Hide No-Mop Areas",
+          "disable_obstacles": "Hide Obstacles",
+          "disable_path": "Hide Path",
+          "disable_predicted_path": "Hide Predicted Path",
+          "disable_go_to_target": "Hide Go-To Target"
+        },
+        "data_description": {
+          "disable_floor": "When enabled, the floor will not be shown on the map",
+          "disable_wall": "When enabled, walls will not be shown on the map",
+          "disable_robot": "When enabled, the robot will not be shown on the map",
+          "disable_charger": "When enabled, the charger will not be shown on the map",
+          "disable_virtual_walls": "When enabled, virtual walls will not be shown on the map",
+          "disable_restricted_areas": "When enabled, restricted areas will not be shown on the map",
+          "disable_no_mop_areas": "When enabled, no-mop areas will not be shown on the map",
+          "disable_obstacles": "When enabled, obstacles will not be shown on the map",
+          "disable_path": "When enabled, the cleaning path will not be shown on the map",
+          "disable_predicted_path": "When enabled, the predicted path will not be shown on the map",
+          "disable_go_to_target": "When enabled, go-to targets will not be shown on the map"
+        }
+      },
+      "segments_visibility": {
+        "title": "Segments Visibility",
+        "description": "Configure which room segments are visible on the map",
+        "data": {
+          "disable_room_1": "Hide Room 1",
+          "disable_room_2": "Hide Room 2",
+          "disable_room_3": "Hide Room 3",
+          "disable_room_4": "Hide Room 4",
+          "disable_room_5": "Hide Room 5",
+          "disable_room_6": "Hide Room 6",
+          "disable_room_7": "Hide Room 7",
+          "disable_room_8": "Hide Room 8",
+          "disable_room_9": "Hide Room 9",
+          "disable_room_10": "Hide Room 10",
+          "disable_room_11": "Hide Room 11",
+          "disable_room_12": "Hide Room 12",
+          "disable_room_13": "Hide Room 13",
+          "disable_room_14": "Hide Room 14",
+          "disable_room_15": "Hide Room 15"
+        },
+        "data_description": {
+          "disable_room_1": "When enabled, Room 1 will not be shown on the map",
+          "disable_room_2": "When enabled, Room 2 will not be shown on the map",
+          "disable_room_3": "When enabled, Room 3 will not be shown on the map",
+          "disable_room_4": "When enabled, Room 4 will not be shown on the map",
+          "disable_room_5": "When enabled, Room 5 will not be shown on the map",
+          "disable_room_6": "When enabled, Room 6 will not be shown on the map",
+          "disable_room_7": "When enabled, Room 7 will not be shown on the map",
+          "disable_room_8": "When enabled, Room 8 will not be shown on the map",
+          "disable_room_9": "When enabled, Room 9 will not be shown on the map",
+          "disable_room_10": "When enabled, Room 10 will not be shown on the map",
+          "disable_room_11": "When enabled, Room 11 will not be shown on the map",
+          "disable_room_12": "When enabled, Room 12 will not be shown on the map",
+          "disable_room_13": "When enabled, Room 13 will not be shown on the map",
+          "disable_room_14": "When enabled, Room 14 will not be shown on the map",
+          "disable_room_15": "When enabled, Room 15 will not be shown on the map"
+        }
       },
       "base_colours": {
         "data": {

@@ -142,14 +142,17 @@ def confirm_storage_path(hass) -> str:
 
 
 def process_logs(hass: HomeAssistant, file_name: str):
-    """Async function to thread the snapshot process."""
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
+    """Process logs for snapshot.
+
+    This is a synchronous wrapper around the async logs storage function,
+    designed to be called from a thread pool.
+    """
+    # Use asyncio.run which properly manages the event loop lifecycle
     try:
-        result = loop.run_until_complete(async_logs_store(hass, file_name))
-    finally:
-        loop.close()
-    return result
+        return asyncio.run(async_logs_store(hass, file_name))
+    except Exception as e:
+        _LOGGER.error("Error in process_logs: %s", str(e), exc_info=True)
+        return None
 
 
 async def run_async_save_logs(hass: HomeAssistant, file_name: str) -> None:
