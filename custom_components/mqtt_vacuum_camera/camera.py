@@ -6,8 +6,6 @@ Last Updated on version: 2025.5.0b1
 from __future__ import annotations
 
 import asyncio
-from asyncio import gather, get_event_loop
-from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
 from io import BytesIO
 import math
@@ -47,10 +45,10 @@ from .snapshots.snapshot import Snapshots
 from .utils.camera.camera_processing import CameraProcessor
 # from .utils.colors_man import ColorsManagement
 from .utils.files_operations import (
-    async_get_active_user_language,
     async_load_file,
     is_auth_updated,
 )
+from .utils.language_cache import LanguageCache
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -321,8 +319,9 @@ class MQTTCamera(CoordinatorEntity, Camera):
 
         # Map View Processing
         if is_auth_updated(self):
-            # Get the active user language
-            self._shared.user_language = await async_get_active_user_language(self.hass)
+            # Get the active user language using the language cache
+            language_cache = LanguageCache.get_instance()
+            self._shared.user_language = await language_cache.get_active_user_language(self.hass)
         if not self._mqtt:
             LOGGER.debug("%s: No MQTT data available.", self._file_name)
             # return last/empty image if no MQTT or CPU usage too high.
@@ -553,28 +552,23 @@ class MQTTCamera(CoordinatorEntity, Camera):
         return result
 
     async def run_async_pil_to_bytes(self, pil_img, image_id: str = None):
-        """Thread function to process the image data from the Vacuum Json data."""
-        num_processes = 1
-        pil_img_list = [pil_img for _ in range(num_processes)]
-        loop = get_event_loop()
+        """Thread function to process the image data using persistent thread pool."""
+        try:
+            # Import ThreadPoolManager here to avoid circular imports
+            from .utils.thread_pool import ThreadPoolManager
 
-        with ThreadPoolExecutor(
-            max_workers=1, thread_name_prefix=f"{self._file_name}_camera"
-        ) as executor:
-            tasks = [
-                loop.run_in_executor(
-                    executor, self.process_pil_to_bytes, pil_img, image_id
-                )
-                for pil_img in pil_img_list
-            ]
-            images = await gather(*tasks)
-
-        if isinstance(images, list) and len(images) > 0:
-            result = images[0]
-        else:
-            result = None
-
-        return result
+            # Use the persistent thread pool
+            thread_pool = ThreadPoolManager.get_instance()
+            result = await thread_pool.run_in_executor(
+                f"{self._file_name}_camera",
+                self.process_pil_to_bytes,
+                pil_img,
+                image_id
+            )
+            return result
+        except Exception as e:
+            LOGGER.error("Error converting image to bytes: %s", str(e), exc_info=True)
+            return None
 
     async def handle_vacuum_start(self, event):
         """Handle the event_vacuum_start event."""

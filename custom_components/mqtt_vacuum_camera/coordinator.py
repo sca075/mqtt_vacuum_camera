@@ -118,6 +118,8 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         """
         self.shared_manager.update_shared_data(dev_info)
         self.shared = self.shared_manager.get_instance()
+        self.shared.file_name = self.file_name
+        self.shared.device_info = dev_info
         self.in_sync_with_camera = True
         return self.shared, self.file_name
 

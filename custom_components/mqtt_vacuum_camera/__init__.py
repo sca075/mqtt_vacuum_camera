@@ -41,7 +41,10 @@ from .utils.camera.camera_services import (
 from .utils.files_operations import (
     async_get_translations_vacuum_id,
     async_rename_room_description,
+    async_populate_user_languages,
 )
+from .utils.language_cache import LanguageCache
+from .utils.thread_pool import ThreadPoolManager
 from .utils.vacuum.mqtt_vacuum_services import (
     async_register_vacuums_services,
     async_remove_vacuums_services,
@@ -61,6 +64,11 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
 
     hass.data.setdefault(DOMAIN, {})
     hass_data = dict(entry.data)
+
+    # Initialize language cache and thread pool
+    language_cache = LanguageCache.get_instance()
+    await language_cache.initialize(hass)
+    LOGGER.debug("Language cache initialized")
 
     vacuum_entity_id, vacuum_device = get_vacuum_device_info(
         hass_data[CONF_VACUUM_CONFIG_ENTRY_ID], hass
@@ -130,6 +138,13 @@ async def async_unload_entry(
         # Remove config entry from domain.
         entry_data = hass.data[DOMAIN].pop(entry.entry_id)
         entry_data["unsub_options_update_listener"]()
+
+        # Shutdown thread pool for this entry
+        thread_pool = ThreadPoolManager.get_instance()
+        await thread_pool.shutdown(f"{entry.entry_id}_camera")
+        await thread_pool.shutdown(f"{entry.entry_id}_camera_text")
+        LOGGER.debug("Thread pools for %s shut down", entry.entry_id)
+
         # Remove services
         if not hass.data[DOMAIN]:
             hass.services.async_remove(DOMAIN, "reset_trims")
@@ -142,6 +157,11 @@ async def async_unload_entry(
 # noinspection PyCallingNonCallable
 async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
     """Set up the MQTT Camera Custom component from yaml configuration."""
+
+    # Initialize language cache
+    language_cache = LanguageCache.get_instance()
+    await language_cache.initialize(hass)
+    LOGGER.debug("Language cache initialized in setup")
 
     async def handle_homeassistant_stop(event):
         """Handle Home Assistant stop event."""
@@ -156,6 +176,12 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
             return False
         LOGGER.debug("Writing down the rooms data for %s.", vacuum_entity_id)
         await async_rename_room_description(hass, vacuum_entity_id)
+
+        # Shutdown all thread pools
+        thread_pool = ThreadPoolManager.get_instance()
+        await thread_pool.shutdown()
+        LOGGER.debug("All thread pools shut down")
+
         await hass.async_block_till_done()
         return True
 

@@ -49,6 +49,9 @@ from .const import (
     COLOR_ZONE_CLEAN,
     CONF_ASPECT_RATIO,
     CONF_AUTO_ZOOM,
+    TRIM_ACTION_DELETE,
+    TRIM_ACTION_RESET,
+    TRIM_ACTION_SAVE,
     CONF_DISABLE_CHARGER,
     CONF_DISABLE_FLOOR,
     CONF_DISABLE_GO_TO_TARGET,
@@ -301,8 +304,9 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                 "status_text",
                 "draw_elements",
                 "segments_visibility",
+                "image_offset",
             ],
-        )  # "image_offset"
+        )  #
 
     # pylint: disable=unused-argument
     async def async_step_colours(self, user_input=None) -> ConfigFlowResult:
@@ -433,10 +437,10 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                 ),
             }
 
-            action = user_input.get("trim_action", "save")
+            action = user_input.get("trim_action", TRIM_ACTION_SAVE)
 
             match action:
-                case "reset":
+                case "save":
                     # Get fresh trims from coordinator
                     trims_updates = coordinator.shared.trims.to_dict()
                 case "delete":
@@ -482,7 +486,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
             vol.Optional(
                 "trim_right", default=config_trims.get("trim_right", 0)
             ): NumberSelector({"min": 0, "max": 10000, "step": 1, "mode": "box"}),
-            vol.Optional("trim_action", default="save"): SelectSelector(
+            vol.Optional("trim_action", default=TRIM_ACTION_SAVE): SelectSelector(
                 {
                     "options": ["save", "reset", "delete"],
                     "translation_key": "trim_actions",

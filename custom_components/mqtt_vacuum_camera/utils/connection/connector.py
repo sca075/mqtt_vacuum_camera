@@ -106,6 +106,7 @@ class ValetudoConnector:
             f"homeassistant/vacuum/{vacuum_identifier}"
             f"/{vacuum_identifier}_vacuum/config"
         )
+
         self.config = ConfigData(
             mqtt_topic=mqtt_topic,
             command_topic=command_topic,
@@ -220,8 +221,9 @@ class ValetudoConnector:
             return "error"
         if self.mqtt_data.mqtt_vac_stat:
             return str(self.mqtt_data.mqtt_vac_stat)
-        if self.rrm_data.mqtt_vac_re_stat:
+        elif self.rrm_data.mqtt_vac_re_stat:
             return str(self.rrm_data.mqtt_vac_re_stat)
+        return None
 
     async def get_vacuum_error(self) -> str:
         """Return the vacuum error."""
