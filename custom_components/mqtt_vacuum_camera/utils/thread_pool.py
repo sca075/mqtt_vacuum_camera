@@ -14,14 +14,16 @@ from typing import Any, Callable, Dict, Optional, TypeVar
 
 _LOGGER = logging.getLogger(__name__)
 
-T = TypeVar('T')
-R = TypeVar('R')
+T = TypeVar("T")
+R = TypeVar("R")
+
 
 class ThreadPoolManager:
     """
     A singleton class that manages thread pools for different components.
     This avoids creating and destroying thread pools for each operation.
     """
+
     _instance: Optional[ThreadPoolManager] = None
     _pools: Dict[str, concurrent.futures.ThreadPoolExecutor] = {}
 
@@ -31,7 +33,9 @@ class ThreadPoolManager:
             cls._instance._pools = {}
         return cls._instance
 
-    def get_executor(self, name: str, max_workers: int = 1) -> concurrent.futures.ThreadPoolExecutor:
+    def get_executor(
+        self, name: str, max_workers: int = 1
+    ) -> concurrent.futures.ThreadPoolExecutor:
         """
         Get or create a thread pool executor for a specific component.
 
@@ -43,10 +47,11 @@ class ThreadPoolManager:
             A ThreadPoolExecutor instance
         """
         if name not in self._pools or self._pools[name]._shutdown:
-            _LOGGER.debug("Creating new thread pool for %s with %d workers", name, max_workers)
+            _LOGGER.debug(
+                "Creating new thread pool for %s with %d workers", name, max_workers
+            )
             self._pools[name] = concurrent.futures.ThreadPoolExecutor(
-                max_workers=max_workers,
-                thread_name_prefix=f"{name}_pool"
+                max_workers=max_workers, thread_name_prefix=f"{name}_pool"
             )
         return self._pools[name]
 

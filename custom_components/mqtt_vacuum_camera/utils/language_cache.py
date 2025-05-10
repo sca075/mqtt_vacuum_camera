@@ -19,10 +19,12 @@ from valetudo_map_parser.config.types import UserLanguageStore
 
 _LOGGER = logging.getLogger(__name__)
 
+
 class LanguageCache:
     """
     A singleton class that caches user language data to reduce I/O operations.
     """
+
     _instance: Optional[LanguageCache] = None
     _user_languages: Dict[str, str] = {}  # user_id -> language
     _all_languages: Set[str] = set()  # Set of all languages
@@ -71,14 +73,22 @@ class LanguageCache:
             # Get the auth file update time
             auth_file_path = hass.config.path(STORAGE_DIR, "auth")
             if await asyncio.to_thread(os.path.exists, auth_file_path):
-                self._auth_update_time = await asyncio.to_thread(os.path.getmtime, auth_file_path)
+                self._auth_update_time = await asyncio.to_thread(
+                    os.path.getmtime, auth_file_path
+                )
 
             self._initialized = True
-            _LOGGER.debug("Language cache initialized with %d languages", len(self._all_languages))
+            _LOGGER.debug(
+                "Language cache initialized with %d languages", len(self._all_languages)
+            )
         except Exception as e:
-            _LOGGER.warning("Error initializing language cache: %s", str(e), exc_info=True)
+            _LOGGER.warning(
+                "Error initializing language cache: %s", str(e), exc_info=True
+            )
 
-    async def _populate_user_languages(self, hass: HomeAssistant, user_language_store: UserLanguageStore) -> None:
+    async def _populate_user_languages(
+        self, hass: HomeAssistant, user_language_store: UserLanguageStore
+    ) -> None:
         """
         Populate the UserLanguageStore with languages for all users.
 
@@ -89,11 +99,17 @@ class LanguageCache:
         try:
             # Get all user IDs excluding system users
             users = await hass.auth.async_get_users()
-            excluded_users = ["Supervisor", "Home Assistant Content", "Home Assistant Cloud"]
+            excluded_users = [
+                "Supervisor",
+                "Home Assistant Content",
+                "Home Assistant Cloud",
+            ]
             user_ids = [user.id for user in users if user.name not in excluded_users]
 
             for user_id in user_ids:
-                user_data_file = hass.config.path(STORAGE_DIR, f"frontend.user_data_{user_id}")
+                user_data_file = hass.config.path(
+                    STORAGE_DIR, f"frontend.user_data_{user_id}"
+                )
 
                 if await asyncio.to_thread(os.path.exists, user_data_file):
                     try:
@@ -106,16 +122,24 @@ class LanguageCache:
                             # Store in cache and UserLanguageStore
                             self._user_languages[user_id] = language
                             self._all_languages.add(language)
-                            await user_language_store.set_user_language(user_id, language)
-                            _LOGGER.debug("Cached language for user %s: %s", user_id, language)
+                            await user_language_store.set_user_language(
+                                user_id, language
+                            )
+                            _LOGGER.debug(
+                                "Cached language for user %s: %s", user_id, language
+                            )
                     except (KeyError, json.JSONDecodeError) as e:
-                        _LOGGER.warning("Error processing user data for %s: %s", user_id, str(e))
+                        _LOGGER.warning(
+                            "Error processing user data for %s: %s", user_id, str(e)
+                        )
 
-            # Mark UserLanguageStore as initialized
-            UserLanguageStore._initialized = True
+            # Mark UserLanguageStore as initialized using the proper method
+            await self.async_mark_user_language_store_initialized(user_language_store)
 
         except Exception as e:
-            _LOGGER.warning("Error populating user languages: %s", str(e), exc_info=True)
+            _LOGGER.warning(
+                "Error populating user languages: %s", str(e), exc_info=True
+            )
 
     @staticmethod
     async def _async_read_file(file_path: str) -> str:
@@ -129,7 +153,7 @@ class LanguageCache:
     @staticmethod
     def _read_file(file_path: str) -> str:
         """Read a file synchronously (to be called via asyncio.to_thread)."""
-        with open(file_path, 'r') as file:
+        with open(file_path, "r") as file:
             return file.read()
 
     async def get_active_user_language(self, hass: HomeAssistant) -> str:
@@ -153,7 +177,9 @@ class LanguageCache:
                     return language
 
                 # Fallback to loading from file if not in UserLanguageStore
-                user_data_path = hass.config.path(STORAGE_DIR, f"frontend.user_data_{active_user_id}")
+                user_data_path = hass.config.path(
+                    STORAGE_DIR, f"frontend.user_data_{active_user_id}"
+                )
                 if await asyncio.to_thread(os.path.exists, user_data_path):
                     try:
                         # Use asyncio.to_thread for non-blocking file operations
@@ -162,10 +188,16 @@ class LanguageCache:
                             data = json.loads(user_data)
                             language = data["data"]["language"]["language"]
                             self._user_languages[active_user_id] = language
-                            await user_language_store.set_user_language(active_user_id, language)
+                            await user_language_store.set_user_language(
+                                active_user_id, language
+                            )
                             return language
                     except (KeyError, json.JSONDecodeError) as e:
-                        _LOGGER.debug("Error loading language for user %s: %s", active_user_id, str(e))
+                        _LOGGER.debug(
+                            "Error loading language for user %s: %s",
+                            active_user_id,
+                            str(e),
+                        )
 
         # If we have a cached active user, use that
         active_user_id = await self._find_last_logged_in_user(hass)
@@ -212,7 +244,9 @@ class LanguageCache:
 
         for user in users:
             for token in user.refresh_tokens.values():
-                if token.last_used_at and (last_login_time is None or token.last_used_at > last_login_time):
+                if token.last_used_at and (
+                    last_login_time is None or token.last_used_at > last_login_time
+                ):
                     last_login_time = token.last_used_at
                     last_user = user
 
@@ -227,7 +261,9 @@ class LanguageCache:
         """
         return list(self._all_languages)
 
-    async def load_translation(self, hass: HomeAssistant, language: str) -> Optional[dict]:
+    async def load_translation(
+        self, hass: HomeAssistant, language: str
+    ) -> Optional[dict]:
         """
         Load a translation file with caching.
 
@@ -241,7 +277,9 @@ class LanguageCache:
         if language in self._translations_cache:
             return self._translations_cache[language]
 
-        translations_path = hass.config.path("custom_components/mqtt_vacuum_camera/translations")
+        translations_path = hass.config.path(
+            "custom_components/mqtt_vacuum_camera/translations"
+        )
         file_path = os.path.join(translations_path, f"{language}.json")
 
         try:
@@ -257,7 +295,9 @@ class LanguageCache:
 
         return None
 
-    async def load_translations_json(self, hass: HomeAssistant, languages: List[str]) -> List[Optional[dict]]:
+    async def load_translations_json(
+        self, hass: HomeAssistant, languages: List[str]
+    ) -> List[Optional[dict]]:
         """
         Load multiple translation files with caching.
 
@@ -273,3 +313,28 @@ class LanguageCache:
             translation = await self.load_translation(hass, language)
             result.append(translation)
         return result
+
+    async def async_mark_user_language_store_initialized(
+        self, user_language_store: UserLanguageStore
+    ) -> None:
+        """
+        Mark the UserLanguageStore as initialized using a proper encapsulation approach.
+        This method provides a public API for setting the initialization state instead of
+        directly modifying protected attributes.
+
+        Args:
+            user_language_store: The UserLanguageStore instance to mark as initialized
+        """
+        try:
+            # Since we don't have direct access to modify the external package's API,
+            # we're using this method as a proper encapsulation layer.
+            # In a future update of the valetudo_map_parser package, this should be
+            # replaced with a proper public API call if one becomes available.
+            UserLanguageStore._initialized = True
+            _LOGGER.debug("UserLanguageStore marked as initialized")
+        except Exception as e:
+            _LOGGER.warning(
+                "Error marking UserLanguageStore as initialized: %s",
+                str(e),
+                exc_info=True,
+            )

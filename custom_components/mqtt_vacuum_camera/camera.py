@@ -43,7 +43,6 @@ from .const import (
 )
 from .snapshots.snapshot import Snapshots
 from .utils.camera.camera_processing import CameraProcessor
-# from .utils.colors_man import ColorsManagement
 from .utils.files_operations import (
     async_load_file,
     is_auth_updated,
@@ -321,7 +320,9 @@ class MQTTCamera(CoordinatorEntity, Camera):
         if is_auth_updated(self):
             # Get the active user language using the language cache
             language_cache = LanguageCache.get_instance()
-            self._shared.user_language = await language_cache.get_active_user_language(self.hass)
+            self._shared.user_language = await language_cache.get_active_user_language(
+                self.hass
+            )
         if not self._mqtt:
             LOGGER.debug("%s: No MQTT data available.", self._file_name)
             # return last/empty image if no MQTT or CPU usage too high.
@@ -542,14 +543,17 @@ class MQTTCamera(CoordinatorEntity, Camera):
                 pil_img.close()
 
     def process_pil_to_bytes(self, pil_img, image_id: str = None):
-        """Async function to process the image data from the Vacuum Json data."""
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
+        """Process the PIL image to bytes.
+
+        This is a synchronous wrapper around the async conversion function,
+        designed to be called from a thread pool.
+        """
+        # Use asyncio.run which properly manages the event loop lifecycle
         try:
-            result = loop.run_until_complete(self.async_pil_to_bytes(pil_img, image_id))
-        finally:
-            loop.close()
-        return result
+            return asyncio.run(self.async_pil_to_bytes(pil_img, image_id))
+        except Exception as e:
+            LOGGER.error("Error in process_pil_to_bytes: %s", str(e), exc_info=True)
+            return None
 
     async def run_async_pil_to_bytes(self, pil_img, image_id: str = None):
         """Thread function to process the image data using persistent thread pool."""
@@ -563,7 +567,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
                 f"{self._file_name}_camera",
                 self.process_pil_to_bytes,
                 pil_img,
-                image_id
+                image_id,
             )
             return result
         except Exception as e:
@@ -650,7 +654,9 @@ class MQTTCamera(CoordinatorEntity, Camera):
         ):
             if event.data.get("entity_id") != self.entity_id:
                 return _set_camera_mode(CameraModes.MAP_VIEW, "Entity ID mismatch")
-            await _set_camera_mode(CameraModes.OBSTACLE_SEARCH, "Obstacle View Requested")
+            await _set_camera_mode(
+                CameraModes.OBSTACLE_SEARCH, "Obstacle View Requested"
+            )
             coordinates = event.data.get("coordinates", None)
             if coordinates:
                 obstacles = self._shared.obstacles_data
@@ -674,9 +680,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
                         )
 
                         temp_image = await asyncio.wait_for(
-                            fut=self.processor.download_image(
-                                nearest_obstacle["link"]
-                            ),
+                            fut=self.processor.download_image(nearest_obstacle["link"]),
                             timeout=10,
                         )
                     else:

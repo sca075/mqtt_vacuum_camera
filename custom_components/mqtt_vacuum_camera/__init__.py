@@ -158,11 +158,6 @@ async def async_unload_entry(
 async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
     """Set up the MQTT Camera Custom component from yaml configuration."""
 
-    # Initialize language cache
-    language_cache = LanguageCache.get_instance()
-    await language_cache.initialize(hass)
-    LOGGER.debug("Language cache initialized in setup")
-
     async def handle_homeassistant_stop(event):
         """Handle Home Assistant stop event."""
         LOGGER.info("Home Assistant is stopping. Writing down the rooms data.")

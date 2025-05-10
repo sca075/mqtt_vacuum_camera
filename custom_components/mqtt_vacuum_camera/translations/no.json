@@ -78,7 +78,11 @@
           "status_text": "Statustekst",
           "draw_elements": "Objektsynlighet",
           "segments_visibility": "Segmentsynlighet"
-        },
+        }
+      },
+      "image_basic_opt": {
+        "title": "Bildealternativer",
+        "description": "Kamera Bildealternativer",
         "data": {
           "rotate_image": "Roter",
           "margins": "Bildemarginer.",
@@ -91,9 +95,7 @@
           "rotate_image": "Grader 0, 90, 180, 270",
           "margins": "Automatisk beskjæringsmarginer i piksler.",
           "aspect_ratio": "Bilde Sideforhold."
-        },
-        "description": "Kamera Bildealternativer",
-        "title": "Bildealternativer"
+        }
       },
       "image_offset": {
         "title": "Bilde Forskyvning & Beskjæringsinnstillinger",
