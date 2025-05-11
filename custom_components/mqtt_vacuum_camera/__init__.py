@@ -41,7 +41,6 @@ from .utils.camera.camera_services import (
 from .utils.files_operations import (
     async_get_translations_vacuum_id,
     async_rename_room_description,
-    async_populate_user_languages,
 )
 from .utils.language_cache import LanguageCache
 from .utils.thread_pool import ThreadPoolManager
