@@ -47,8 +47,6 @@ from .const import (
     COLOR_WALL,
     COLOR_ZONE_CLEAN,
     CONF_ASPECT_RATIO,
-    DRAW_FLAGS,
-    ROOM_FLAGS,
     CONF_AUTO_ZOOM,
     CONF_OFFSET_BOTTOM,
     CONF_OFFSET_LEFT,
@@ -62,12 +60,14 @@ from .const import (
     CONF_ZOOM_LOCK_RATIO,
     DEFAULT_ROOMS,
     DOMAIN,
+    DRAW_FLAGS,
     FONTS_AVAILABLE,
     IS_ALPHA,
     IS_ALPHA_R1,
     IS_ALPHA_R2,
     LOGGER,
     RATIO_VALUES,
+    ROOM_FLAGS,
     ROTATION_VALUES,
     TEXT_SIZE_VALUES,
 )
@@ -509,7 +509,9 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
 
         if user_input is not None:
             # Update options based on user input using ROOM_FLAGS
-            options_update = self._update_boolean_options(user_input, ROOM_FLAGS, room_limit)
+            options_update = self._update_boolean_options(
+                user_input, ROOM_FLAGS, room_limit
+            )
             self.camera_options.update(options_update)
             return await self.async_step_opt_save()
 

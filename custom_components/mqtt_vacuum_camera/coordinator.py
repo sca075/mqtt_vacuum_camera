@@ -16,7 +16,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from valetudo_map_parser.config.shared import CameraShared, CameraSharedManager
 
 from .common import get_camera_device_info
-from .const import DEFAULT_NAME, SENSOR_NO_DATA, LOGGER
+from .const import DEFAULT_NAME, LOGGER, SENSOR_NO_DATA
 from .utils.connection.connector import ValetudoConnector
 
 

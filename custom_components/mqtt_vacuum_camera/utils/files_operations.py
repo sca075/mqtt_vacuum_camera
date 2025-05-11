@@ -15,7 +15,7 @@ import glob
 import json
 import os
 import re
-from typing import Any, Optional, List
+from typing import Any, List, Optional
 
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ServiceValidationError
@@ -140,7 +140,10 @@ async def async_get_active_user_language(hass: HomeAssistant) -> str:
 
     # Initialize the cache if needed
     # Use a property or method to check initialization status instead of accessing protected member
-    if not hasattr(language_cache, "is_initialized") or not language_cache.is_initialized():
+    if (
+        not hasattr(language_cache, "is_initialized")
+        or not language_cache.is_initialized()
+    ):
         await language_cache.initialize(hass)
 
     # Get the language from the cache

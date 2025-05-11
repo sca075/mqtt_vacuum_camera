@@ -15,19 +15,19 @@ import time
 from typing import Any, Optional
 
 from PIL import Image
-from homeassistant.exceptions import HomeAssistantError
 from homeassistant import config_entries, core
 from homeassistant.components.camera import Camera, CameraEntityFeature
 from homeassistant.const import CONF_UNIQUE_ID, MATCH_ALL
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.device_registry import DeviceInfo as Dev_Info
 from homeassistant.helpers.entity import DeviceInfo as Entity_Info
 from homeassistant.helpers.storage import STORAGE_DIR
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from psutil_home_assistant import PsutilWrapper as ProcInspector
+from valetudo_map_parser.config.colors import ColorsManagement
 from valetudo_map_parser.config.types import SnapshotStore
 from valetudo_map_parser.config.utils import ResizeParams, async_resize_image
-from valetudo_map_parser.config.colors import ColorsManagement
 
 from .common import get_vacuum_unique_id_from_mqtt_topic
 from .const import (
@@ -44,11 +44,8 @@ from .const import (
 )
 from .snapshots.snapshot import Snapshots
 from .utils.camera.camera_processing import CameraProcessor
-from .utils.files_operations import (
-    async_load_file,
-)
+from .utils.files_operations import async_load_file
 from .utils.thread_pool import ThreadPoolManager
-
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -677,10 +674,20 @@ class MQTTCamera(CoordinatorEntity, Camera):
                             reason=f"Downloading image: {nearest_obstacle['link']}",
                         )
 
-                        temp_image = await asyncio.wait_for(
-                            fut=self.processor.download_image(nearest_obstacle["link"]),
-                            timeout=10,
-                        )
+                        try:
+                            temp_image = await asyncio.wait_for(
+                                fut=self.processor.download_image(
+                                    nearest_obstacle["link"]
+                                ),
+                                timeout=10,
+                            )
+                        except asyncio.TimeoutError:
+                            LOGGER.warning(
+                                "%s: Image download timed out.", self._file_name
+                            )
+                            return await _set_map_view_mode(
+                                "Obstacle image download timed out."
+                            )
                     else:
                         return await _set_map_view_mode(
                             "No link found for the obstacle image."

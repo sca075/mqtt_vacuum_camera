@@ -5,8 +5,8 @@ Version: 2025.3.0b1
 
 from __future__ import annotations
 
-import re
 import functools
+import re
 from typing import Any
 
 from homeassistant.components.mqtt import DOMAIN as MQTT_DOMAIN

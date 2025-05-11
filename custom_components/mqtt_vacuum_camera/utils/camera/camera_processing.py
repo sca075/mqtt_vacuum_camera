@@ -20,7 +20,6 @@ from valetudo_map_parser.hypfer_handler import HypferMapImageHandler
 from valetudo_map_parser.rand25_handler import ReImageHandler
 
 from custom_components.mqtt_vacuum_camera.const import LOGGER, NOT_STREAMING_STATES
-
 from custom_components.mqtt_vacuum_camera.utils.language_cache import LanguageCache
 from custom_components.mqtt_vacuum_camera.utils.status_text import StatusText
 from custom_components.mqtt_vacuum_camera.utils.thread_pool import ThreadPoolManager
