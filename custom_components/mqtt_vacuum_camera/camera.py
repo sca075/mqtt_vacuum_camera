@@ -661,44 +661,42 @@ class MQTTCamera(CoordinatorEntity, Camera):
                 nearest_obstacle = await _async_find_nearest_obstacle(
                     coordinates_x, coordinates_y, obstacles
                 )
-
                 if nearest_obstacle:
                     LOGGER.debug(
                         "%s: Nearest obstacle found: %r",
                         self._file_name,
                         nearest_obstacle,
                     )
-                    if nearest_obstacle["link"]:
-                        await _set_camera_mode(
-                            mode_of_camera=CameraModes.OBSTACLE_DOWNLOAD,
-                            reason=f"Downloading image: {nearest_obstacle['link']}",
-                        )
-
-                        try:
-                            temp_image = await asyncio.wait_for(
-                                fut=self.processor.download_image(
-                                    nearest_obstacle["link"]
-                                ),
-                                timeout=10,
-                            )
-                        except asyncio.TimeoutError:
-                            LOGGER.warning(
-                                "%s: Image download timed out.", self._file_name
-                            )
-                            return await _set_map_view_mode(
-                                "Obstacle image download timed out."
-                            )
-                    else:
+                    if not nearest_obstacle["link"]:
                         return await _set_map_view_mode(
                             "No link found for the obstacle image."
                         )
-                    if temp_image is not None:
+
+                    await _set_camera_mode(
+                        mode_of_camera=CameraModes.OBSTACLE_DOWNLOAD,
+                        reason=f"Downloading image: {nearest_obstacle['link']}",
+                    )
+
+                    # Download the image
+                    try:
+                        image_data = await asyncio.wait_for(
+                            fut=self.processor.download_image(nearest_obstacle["link"]),
+                            timeout=10,
+                        )
+                    except asyncio.TimeoutError:
+                        LOGGER.warning("%s: Image download timed out.", self._file_name)
+                        return await _set_map_view_mode(
+                            "Obstacle image download timed out."
+                        )
+
+                    # Process the image if download was successful
+                    if image_data is not None:
                         await _set_camera_mode(CameraModes.OBSTACLE_VIEW)
                         try:
                             start_time = time.perf_counter()
                             # Open the downloaded image with PIL
                             pil_img = await self.hass.async_create_task(
-                                self.processor.async_open_image(temp_image)
+                                self.processor.async_open_image(image_data)
                             )
                             # Resize the image if resize_to is provided
                             width = self._shared.image_ref_width
@@ -727,6 +725,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
                                 self._file_name,
                                 end_time - start_time,
                             )
+                            return self.Image
                         except HomeAssistantError as e:
                             LOGGER.warning(
                                 "%s: Unexpected Error processing image: %r",
@@ -735,7 +734,8 @@ class MQTTCamera(CoordinatorEntity, Camera):
                                 exc_info=True,
                             )
                             return await _set_map_view_mode()
-                    return await _set_map_view_mode("No image downloaded.")
+                    else:
+                        return await _set_map_view_mode("No image downloaded.")
                 return await _set_map_view_mode("No nearby obstacle found.")
             return await _set_map_view_mode("No coordinates provided.")
         else:
