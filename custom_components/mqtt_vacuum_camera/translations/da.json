@@ -21,7 +21,7 @@
     "step": {
       "init": {
         "title": "MQTT Kameraindstillinger",
-        "description": "### _Standardindstillinger_:",
+        "description": "Konfigurer kameraindstillinger",
         "menu_options": {
           "image_opt": "Billedindstillinger",
           "colours": "Farveindstillinger",
@@ -33,7 +33,6 @@
         "description": "Konfigurer visningsindstillinger",
         "menu_options": {
           "image_basic_opt": "Grundlæggende Indstillinger",
-          "image_offset": "Billedforskydning",
           "status_text": "Statustekst",
           "draw_elements": "Objektsynlighed",
           "segments_visibility": "Segmentsynlighed"
@@ -66,7 +65,15 @@
         "description": "Avancerede konfigurationsindstillinger",
         "menu_options": {
           "download_logs": "Download Logfiler",
-          "reset_map_trims": "Nulstil Kortbeskæringer"
+          "map_trims": "Kortbeskæringer"
+        }
+      },
+      "map_trims": {
+        "title": "Kortbeskæringsindstillinger",
+        "description": "Administrer kortbeskæringsindstillinger",
+        "menu_options": {
+          "reset_map_trims": "Nulstil Kortbeskæringer",
+          "save_map_trims": "Gem Kortbeskæringer"
         }
       },
       "download_logs": {
@@ -95,31 +102,19 @@
         "title": "Billedeindstillinger"
       },
       "image_offset": {
-        "title": "Billedforskydning & Beskæringsindstillinger",
-        "description": "Konfigurer billedforskydninger og etagebeskæringsværdier",
+        "title": "Billedforskydningsindstillinger",
+        "description": "Konfigurer billedforskydningsværdier",
         "data": {
           "offset_top": "Top Forskydning",
           "offset_bottom": "Bund Forskydning",
           "offset_left": "Venstre Forskydning",
-          "offset_right": "Højre Forskydning",
-          "floor_name": "Etagenavn",
-          "trim_up": "Øvre Beskæring",
-          "trim_down": "Nedre Beskæring",
-          "trim_left": "Venstre Beskæring",
-          "trim_right": "Højre Beskæring",
-          "trim_action": "Beskæringshandling"
+          "offset_right": "Højre Forskydning"
         },
         "data_description": {
           "offset_top": "Pixels til forskydning fra top (0-1000)",
           "offset_bottom": "Pixels til forskydning fra bund (0-1000)",
           "offset_left": "Pixels til forskydning fra venstre (0-1000)",
-          "offset_right": "Pixels til forskydning fra højre (0-1000)",
-          "floor_name": "Navn på den aktuelle etageplan",
-          "trim_up": "Øvre beskæringsværdi (0-10000)",
-          "trim_down": "Nedre beskæringsværdi (0-10000)",
-          "trim_left": "Venstre beskæringsværdi (0-10000)",
-          "trim_right": "Højre beskæringsværdi (0-10000)",
-          "trim_action": "Handling at udføre på beskæringsværdier"
+          "offset_right": "Pixels til forskydning fra højre (0-1000)"
         }
       },
       "status_text": {
@@ -341,10 +336,11 @@
     }
   },
   "selector": {
-    "camera_logs_progres": {
+    "trim_actions": {
       "options": {
-        "opt_1": "Kopier logfiler til www",
-        "opt_2": "Fjern logfiler fra www"
+        "save": "Gem Ændringer",
+        "reset": "Nulstil til Registrerede Værdier",
+        "delete": "Slet Alle Beskæringer"
       }
     },
     "vacuum_status": {
@@ -357,13 +353,6 @@
         "idle": "Inaktiv",
         "paused": "Pause",
         "returning": "Returnerer"
-      }
-    },
-    "trim_actions": {
-      "options": {
-        "save": "Gem Ændringer",
-        "reset": "Nulstil til Registrerede Værdier",
-        "delete": "Slet Alle Beskæringer"
       }
     }
   },
@@ -398,6 +387,18 @@
   "exceptions": {
     "no_entity_id_provided": {
       "message": "Mangler entity_id i konfigurationen."
+    },
+    "missing_zone_or_zone_ids": {
+      "message": "Enten 'zone' eller 'zone_ids' skal angives."
+    },
+    "zone_must_be_list": {
+      "message": "Parameteren 'Zone' skal være en liste."
+    },
+    "zoneid_must_be_list": {
+      "message": "Parameteren 'Zone_Ids' skal være en liste."
+    },
+    "zone_list_length": {
+      "message": "'Zone' skal have mindst 1 element, der indeholder en liste med 4 heltal."
     }
   }
 }

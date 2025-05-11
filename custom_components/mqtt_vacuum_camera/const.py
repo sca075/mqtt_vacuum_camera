@@ -123,24 +123,6 @@ ROOM_FLAGS = [
 
 LOGGER = logging.getLogger(__package__)
 
-
-DEFAULT_IMAGE_SIZE = {
-    "x": 5120,
-    "y": 5120,
-    "centre": [(5120 // 2), (5120 // 2)],
-}
-
-COLORS = [
-    "wall",
-    "zone_clean",
-    "robot",
-    "background",
-    "move",
-    "charger",
-    "no_go",
-    "go_to",
-]
-
 SENSOR_NO_DATA = {
     "mainBrush": 0,
     "sideBrush": 0,
@@ -161,8 +143,6 @@ SENSOR_NO_DATA = {
     "last_loaded_map": "NoMap",
     "robot_in_room": "Unsupported",
 }
-
-DEFAULT_PIXEL_SIZE = 5
 
 DEFAULT_VALUES = {
     "rotate_image": "0",
@@ -526,7 +506,6 @@ ATTR_ZONES = "zones"
 ATTR_POINTS = "points"
 ATTR_OBSTACLES = "obstacles"
 ATTR_CAMERA_MODE = "camera_mode"
-
 
 class CameraModes(str, Enum):
     """Constants for the camera modes"""

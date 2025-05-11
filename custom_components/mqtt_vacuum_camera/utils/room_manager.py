@@ -103,6 +103,11 @@ class RoomManager:
         # Save the vacuum_id to a JSON file
         await self.write_vacuum_id(vacuum_id)
 
+        # Initialize the language cache if needed - only during room renaming
+        if not self.language_cache.is_initialized():
+            await self.language_cache.initialize(self.hass)
+            _LOGGER.info("Language cache initialized for room renaming")
+
         # Get the languages to modify
         languages = await self.language_cache.get_all_languages()
         if not languages:

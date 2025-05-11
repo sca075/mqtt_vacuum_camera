@@ -3,17 +3,17 @@
     "step": {
       "user": {
         "data": {
-          "vacuum_entity": "ID zařízení vysavače",
-          "vacuum_config_entry": "Konfigurační data vysavače",
-          "vacuum_map": "Téma vysavače",
-          "vacuum_identifiers": "ID MQTT vysavače",
+          "vacuum_entity": "ID Entity Vysavače",
+          "vacuum_config_entry": "Data Konfigurace Vysavače",
+          "vacuum_map": "Téma Vysavače",
+          "vacuum_identifiers": "MQTT ID Vysavače",
           "unique_id": ""
         },
         "data_description": {
-          "vacuum_entity": "ID zařízení vysavače"
+          "vacuum_entity": "ID Entity Vysavače"
         },
-        "description": "Nastavení kamery.",
-        "title": "Nastavení kamery MQTT"
+        "description": "Nastavení Kamery.",
+        "title": "Nastavení MQTT Kamery"
       }
     }
   },
@@ -24,29 +24,28 @@
         "description": "Konfigurace možností kamery",
         "menu_options": {
           "image_opt": "Nastavení Obrazu",
-          "colours": "Nastavení Barev",
+          "colours": "Konfigurace Barev",
           "advanced": "Pokročilé Nastavení"
         }
       },
       "image_opt": {
         "title": "Nastavení Obrazu",
-        "description": "Konfigurace možností zobrazení",
+        "description": "Konfigurace nastavení zobrazení obrazu",
         "menu_options": {
           "image_basic_opt": "Základní Nastavení",
-          "image_offset": "Posun Obrazu",
           "status_text": "Stavový Text",
           "draw_elements": "Viditelnost Objektů",
           "segments_visibility": "Viditelnost Segmentů"
         }
       },
       "colours": {
-        "title": "Nastavení Barev",
+        "title": "Konfigurace Barev",
         "description": "Konfigurace barev mapy",
         "menu_options": {
           "base_colours": "Základní Barvy",
           "rooms_colours_1": "Místnosti 1-8",
           "rooms_colours_2": "Místnosti 9-16",
-          "floor_only": "Barva Podlahy",
+          "floor_only": "Pouze Podlaha",
           "transparency": "Nastavení Průhlednosti",
           "rename_translations": "Přejmenovat Místnosti"
         }
@@ -66,7 +65,15 @@
         "description": "Pokročilé možnosti konfigurace",
         "menu_options": {
           "download_logs": "Stáhnout Logy",
-          "reset_map_trims": "Resetovat Ořezy Mapy"
+          "map_trims": "Ořezy Mapy"
+        }
+      },
+      "map_trims": {
+        "title": "Možnosti Ořezů Mapy",
+        "description": "Správa nastavení ořezů mapy",
+        "menu_options": {
+          "reset_map_trims": "Resetovat Ořezy Mapy",
+          "save_map_trims": "Uložit Ořezy Mapy"
         }
       },
       "download_logs": {
@@ -80,130 +87,118 @@
       "image_basic_opt": {
         "data": {
           "rotate_image": "Otočit",
-          "margins": "Okraje obrázku.",
-          "auto_zoom": "Povolit automatické přiblížení",
-          "zoom_lock_ratio": "Uzamknout poměr stran.",
-          "aspect_ratio": "Poměr stran obrázku.",
-          "enable_www_snapshots": "Exportovat snímky PNG."
+          "margins": "Okraje Obrazu.",
+          "auto_zoom": "Povolit Automatický Zoom",
+          "zoom_lock_ratio": "Zamknout Poměr Stran.",
+          "aspect_ratio": "Poměr Stran Obrazu.",
+          "enable_www_snapshots": "Exportovat PNG snímky."
         },
         "data_description": {
           "rotate_image": "Stupeň 0, 90, 180, 270",
-          "margins": "Automaticky oříznout okraje v pixelech.",
-          "aspect_ratio": "Poměr stran obrázku."
+          "margins": "Automatické ořezání okrajů v pixelech.",
+          "aspect_ratio": "Poměr Stran Obrazu."
         },
-        "description": "Možnosti obrázku kamery",
-        "title": "Možnosti obrázku"
+        "description": "Možnosti Obrazu Kamery",
+        "title": "Možnosti Obrazu"
       },
       "image_offset": {
-        "title": "Nastavení odsazení a ořezu obrázku",
-        "description": "Konfigurace odsazení obrázku a hodnot ořezu podlaží",
+        "title": "Nastavení Odsazení Obrazu",
+        "description": "Konfigurace hodnot odsazení obrazu",
         "data": {
-          "offset_top": "Horní odsazení",
-          "offset_bottom": "Dolní odsazení",
-          "offset_left": "Levé odsazení",
-          "offset_right": "Pravé odsazení",
-          "floor_name": "Název podlaží",
-          "trim_up": "Horní ořez",
-          "trim_down": "Dolní ořez",
-          "trim_left": "Levý ořez",
-          "trim_right": "Pravý ořez",
-          "trim_action": "Akce ořezu"
+          "offset_top": "Horní Odsazení",
+          "offset_bottom": "Dolní Odsazení",
+          "offset_left": "Levé Odsazení",
+          "offset_right": "Pravé Odsazení"
         },
         "data_description": {
           "offset_top": "Pixely pro odsazení shora (0-1000)",
           "offset_bottom": "Pixely pro odsazení zdola (0-1000)",
           "offset_left": "Pixely pro odsazení zleva (0-1000)",
-          "offset_right": "Pixely pro odsazení zprava (0-1000)",
-          "floor_name": "Název aktuálního plánu podlaží",
-          "trim_up": "Hodnota horního ořezu (0-10000)",
-          "trim_down": "Hodnota dolního ořezu (0-10000)",
-          "trim_left": "Hodnota levého ořezu (0-10000)",
-          "trim_right": "Hodnota pravého ořezu (0-10000)",
-          "trim_action": "Akce k provedení na hodnotách ořezu"
+          "offset_right": "Pixely pro odsazení zprava (0-1000)"
         }
       },
       "status_text": {
         "data": {
-          "show_vac_status": "Zobrazit stav vysavače.",
+          "show_vac_status": "Zobrazit Stav Vysavače.",
           "vac_status_font": "Fira Sans",
-          "vac_status_size": "Velikost textu",
-          "vac_status_position": "Pozice textu: Spodní (OFF)",
+          "vac_status_size": "Velikost Textu",
+          "vac_status_position": "Pozice Textu: Dole(VYP)",
           "color_text": "[255, 255, 255]"
         },
         "data_description": {
-          "vac_status_font": "Výchozí písmo textu Fira Serif.",
+          "vac_status_font": "Výchozí font textu Fira Serif.",
           "vac_status_size": "Výchozí velikost textu 50.",
           "color_text": "Barva textu stavu vysavače."
         },
-        "description": "Možnosti obrázku",
-        "title": "Možnosti textu stavu"
+        "description": "Možnosti Obrazu",
+        "title": "Možnosti Stavového Textu"
       },
       "draw_elements": {
         "title": "Viditelnost Objektů",
         "description": "Konfigurace viditelnosti prvků na mapě",
         "data": {
-          "disable_floor": "Skrýt podlahu",
-          "disable_wall": "Skrýt zdi",
-          "disable_robot": "Skrýt robota",
-          "disable_charger": "Skrýt nabíjecí stanici",
-          "disable_virtual_walls": "Skrýt virtuální zdi",
-          "disable_restricted_areas": "Skrýt zakázané oblasti",
-          "disable_no_mop_areas": "Skrýt oblasti bez mopování",
-          "disable_obstacles": "Skrýt překážky",
-          "disable_path": "Skrýt cestu",
-          "disable_predicted_path": "Skrýt předpokládanou cestu",
-          "disable_go_to_target": "Skrýt cíl přesunu"
+          "disable_floor": "Skrýt Podlahu",
+          "disable_wall": "Skrýt Stěny",
+          "disable_robot": "Skrýt Robota",
+          "disable_charger": "Skrýt Nabíječku",
+          "disable_virtual_walls": "Skrýt Virtuální Stěny",
+          "disable_restricted_areas": "Skrýt Zakázané Oblasti",
+          "disable_no_mop_areas": "Skrýt Oblasti Bez Mopu",
+          "disable_obstacles": "Skrýt Překážky",
+          "disable_path": "Skrýt Cestu",
+          "disable_predicted_path": "Skrýt Předpokládanou Cestu",
+          "disable_go_to_target": "Skrýt Cíl Přesunu"
         },
         "data_description": {
-          "disable_floor": "Při povolení nebude podlaha zobrazena na mapě",
-          "disable_wall": "Při povolení nebudou zdi zobrazeny na mapě",
-          "disable_robot": "Při povolení nebude robot zobrazen na mapě",
-          "disable_charger": "Při povolení nebude nabíjecí stanice zobrazena na mapě",
-          "disable_virtual_walls": "Při povolení nebudou virtuální zdi zobrazeny na mapě",
-          "disable_restricted_areas": "Při povolení nebudou zakázané oblasti zobrazeny na mapě",
-          "disable_no_mop_areas": "Při povolení nebudou oblasti bez mopování zobrazeny na mapě",
-          "disable_obstacles": "Při povolení nebudou překážky zobrazeny na mapě",
-          "disable_path": "Při povolení nebude cesta čištění zobrazena na mapě",
-          "disable_predicted_path": "Při povolení nebude předpokládaná cesta zobrazena na mapě",
-          "disable_go_to_target": "Při povolení nebudou cíle přesunu zobrazeny na mapě"
+          "disable_floor": "Když je povoleno, podlaha nebude zobrazena na mapě",
+          "disable_wall": "Když je povoleno, stěny nebudou zobrazeny na mapě",
+          "disable_robot": "Když je povoleno, robot nebude zobrazen na mapě",
+          "disable_charger": "Když je povoleno, nabíječka nebude zobrazena na mapě",
+          "disable_virtual_walls": "Když je povoleno, virtuální stěny nebudou zobrazeny na mapě",
+          "disable_restricted_areas": "Když je povoleno, zakázané oblasti nebudou zobrazeny na mapě",
+          "disable_no_mop_areas": "Když je povoleno, oblasti bez mopu nebudou zobrazeny na mapě",
+          "disable_obstacles": "Když je povoleno, překážky nebudou zobrazeny na mapě",
+          "disable_path": "Když je povoleno, cesta čištění nebude zobrazena na mapě",
+          "disable_predicted_path": "Když je povoleno, předpokládaná cesta nebude zobrazena na mapě",
+          "disable_go_to_target": "Když je povoleno, cíle přesunu nebudou zobrazeny na mapě"
         }
       },
       "segments_visibility": {
         "title": "Viditelnost Segmentů",
         "description": "Konfigurace viditelnosti segmentů místností na mapě",
         "data": {
-          "disable_room_1": "Skrýt místnost 1",
-          "disable_room_2": "Skrýt místnost 2",
-          "disable_room_3": "Skrýt místnost 3",
-          "disable_room_4": "Skrýt místnost 4",
-          "disable_room_5": "Skrýt místnost 5",
-          "disable_room_6": "Skrýt místnost 6",
-          "disable_room_7": "Skrýt místnost 7",
-          "disable_room_8": "Skrýt místnost 8",
-          "disable_room_9": "Skrýt místnost 9",
-          "disable_room_10": "Skrýt místnost 10",
-          "disable_room_11": "Skrýt místnost 11",
-          "disable_room_12": "Skrýt místnost 12",
-          "disable_room_13": "Skrýt místnost 13",
-          "disable_room_14": "Skrýt místnost 14",
-          "disable_room_15": "Skrýt místnost 15"
+          "disable_room_1": "Skrýt Místnost 1",
+          "disable_room_2": "Skrýt Místnost 2",
+          "disable_room_3": "Skrýt Místnost 3",
+          "disable_room_4": "Skrýt Místnost 4",
+          "disable_room_5": "Skrýt Místnost 5",
+          "disable_room_6": "Skrýt Místnost 6",
+          "disable_room_7": "Skrýt Místnost 7",
+          "disable_room_8": "Skrýt Místnost 8",
+          "disable_room_9": "Skrýt Místnost 9",
+          "disable_room_10": "Skrýt Místnost 10",
+          "disable_room_11": "Skrýt Místnost 11",
+          "disable_room_12": "Skrýt Místnost 12",
+          "disable_room_13": "Skrýt Místnost 13",
+          "disable_room_14": "Skrýt Místnost 14",
+          "disable_room_15": "Skrýt Místnost 15"
         },
         "data_description": {
-          "disable_room_1": "Při povolení nebude místnost 1 zobrazena na mapě",
-          "disable_room_2": "Při povolení nebude místnost 2 zobrazena na mapě",
-          "disable_room_3": "Při povolení nebude místnost 3 zobrazena na mapě",
-          "disable_room_4": "Při povolení nebude místnost 4 zobrazena na mapě",
-          "disable_room_5": "Při povolení nebude místnost 5 zobrazena na mapě",
-          "disable_room_6": "Při povolení nebude místnost 6 zobrazena na mapě",
-          "disable_room_7": "Při povolení nebude místnost 7 zobrazena na mapě",
-          "disable_room_8": "Při povolení nebude místnost 8 zobrazena na mapě",
-          "disable_room_9": "Při povolení nebude místnost 9 zobrazena na mapě",
-          "disable_room_10": "Při povolení nebude místnost 10 zobrazena na mapě",
-          "disable_room_11": "Při povolení nebude místnost 11 zobrazena na mapě",
-          "disable_room_12": "Při povolení nebude místnost 12 zobrazena na mapě",
-          "disable_room_13": "Při povolení nebude místnost 13 zobrazena na mapě",
-          "disable_room_14": "Při povolení nebude místnost 14 zobrazena na mapě",
-          "disable_room_15": "Při povolení nebude místnost 15 zobrazena na mapě"
+          "disable_room_1": "Když je povoleno, Místnost 1 nebude zobrazena na mapě",
+          "disable_room_2": "Když je povoleno, Místnost 2 nebude zobrazena na mapě",
+          "disable_room_3": "Když je povoleno, Místnost 3 nebude zobrazena na mapě",
+          "disable_room_4": "Když je povoleno, Místnost 4 nebude zobrazena na mapě",
+          "disable_room_5": "Když je povoleno, Místnost 5 nebude zobrazena na mapě",
+          "disable_room_6": "Když je povoleno, Místnost 6 nebude zobrazena na mapě",
+          "disable_room_7": "Když je povoleno, Místnost 7 nebude zobrazena na mapě",
+          "disable_room_8": "Když je povoleno, Místnost 8 nebude zobrazena na mapě",
+          "disable_room_9": "Když je povoleno, Místnost 9 nebude zobrazena na mapě",
+          "disable_room_10": "Když je povoleno, Místnost 10 nebude zobrazena na mapě",
+          "disable_room_11": "Když je povoleno, Místnost 11 nebude zobrazena na mapě",
+          "disable_room_12": "Když je povoleno, Místnost 12 nebude zobrazena na mapě",
+          "disable_room_13": "Když je povoleno, Místnost 13 nebude zobrazena na mapě",
+          "disable_room_14": "Když je povoleno, Místnost 14 nebude zobrazena na mapě",
+          "disable_room_15": "Když je povoleno, Místnost 15 nebude zobrazena na mapě"
         }
       },
       "base_colours": {
@@ -216,43 +211,43 @@
           "color_no_go": "[255, 0, 0]",
           "color_zone_clean": "[255, 255, 255]",
           "color_background": "[0, 125, 255]",
-          "add_base_alpha": "Nastavit průhlednost:"
+          "add_base_alpha": "Konfigurace Průhlednosti:"
         },
         "data_description": {
           "color_charger": "Barva nabíječky.",
           "color_move": "Barva pohybu.",
-          "color_wall": "Barva zdi.",
+          "color_wall": "Barva stěny.",
           "color_robot": "Barva robota.",
-          "color_go_to": "Barva jít na.",
-          "color_no_go": "Barva nechodit na.",
+          "color_go_to": "Barva přesunu.",
+          "color_no_go": "Barva zakázané oblasti.",
           "color_zone_clean": "Barva zóny čištění.",
           "color_background": "Barva pozadí."
         },
-        "description": "Možnosti barev kamery.",
-        "title": "Nastavení základních barev"
+        "description": "Možnosti Barev Kamery.",
+        "title": "Nastavení Základních Barev"
       },
       "alpha_1": {
         "data": {
-          "alpha_charger": "Průhlednost nabíječky",
-          "alpha_move": "Průhlednost pohybu",
-          "alpha_wall": "Průhlednost zdi",
-          "alpha_robot": "Průhlednost robota",
-          "alpha_go_to": "Průhlednost jít na",
-          "alpha_no_go": "Průhlednost nechodit na",
-          "alpha_zone_clean": "Průhlednost zóny čištění",
-          "alpha_background": "Průhlednost pozadí",
-          "alpha_text": "Průhlednost textu"
+          "alpha_charger": "Průhlednost Nabíječky",
+          "alpha_move": "Průhlednost Pohybu",
+          "alpha_wall": "Průhlednost Stěn",
+          "alpha_robot": "Průhlednost Robota",
+          "alpha_go_to": "Průhlednost Oblasti Přesunu",
+          "alpha_no_go": "Průhlednost Zakázané Oblasti",
+          "alpha_zone_clean": "Průhlednost Zóny Čištění",
+          "alpha_background": "Průhlednost Pozadí",
+          "alpha_text": "Průhlednost Textu"
         },
-        "description": "Možnosti kamery. Alfa 1",
-        "title": "Průhlednost základních barev"
+        "description": "Možnosti Kamery. Alpha 1",
+        "title": "Alpha Kanál Základních Barev"
       },
       "floor_only": {
         "data": {
           "color_room_0": "[135, 206, 250]",
-          "add_room_1_alpha": "Nastavit průhlednost:"
+          "add_room_1_alpha": "Konfigurace Průhlednosti:"
         },
         "data_description": {
-          "color_room_0": "### **Barva podlahy**"
+          "color_room_0": "### **Barva Podlahy**"
         }
       },
       "rooms_colours_1": {
@@ -265,20 +260,20 @@
           "color_room_5": "[96, 123, 139]",
           "color_room_6": "[224, 255, 255]",
           "color_room_7": "[209, 238, 238]",
-          "add_room_1_alpha": "Nastavit průhlednost:"
+          "add_room_1_alpha": "Konfigurace Průhlednosti:"
         },
         "data_description": {
-          "color_room_0": "Pokoj 1",
-          "color_room_1": "Pokoj 2",
-          "color_room_2": "Pokoj 3",
-          "color_room_3": "Pokoj 4",
-          "color_room_4": "Pokoj 5",
-          "color_room_5": "Pokoj 6",
-          "color_room_6": "Pokoj 7",
-          "color_room_7": "Pokoj 8"
+          "color_room_0": "Místnost 1",
+          "color_room_1": "Místnost 2",
+          "color_room_2": "Místnost 3",
+          "color_room_3": "Místnost 4",
+          "color_room_4": "Místnost 5",
+          "color_room_5": "Místnost 6",
+          "color_room_6": "Místnost 7",
+          "color_room_7": "Místnost 8"
         },
-        "description": "Možnosti barev kamery.",
-        "title": "Barvy pokojů od 1 do 8"
+        "description": "Možnosti Barev Kamery.",
+        "title": "Barvy Místností 1 až 8"
       },
       "rooms_colours_2": {
         "data": {
@@ -290,61 +285,62 @@
           "color_room_13": "[245, 176, 65]",
           "color_room_14": "[82, 190, 128]",
           "color_room_15": "[72, 201, 176]",
-          "add_room_2_alpha": "Nastavit průhlednost:"
+          "add_room_2_alpha": "Konfigurace Průhlednosti:"
         },
         "data_description": {
-          "color_room_8": "Pokoj 9",
-          "color_room_9": "Pokoj 10",
-          "color_room_10": "Pokoj 11",
-          "color_room_11": "Pokoj 12",
-          "color_room_12": "Pokoj 13",
-          "color_room_13": "Pokoj 14",
-          "color_room_14": "Pokoj 15",
-          "color_room_15": "Pokoj 16"
+          "color_room_8": "Místnost 9",
+          "color_room_9": "Místnost 10",
+          "color_room_10": "Místnost 11",
+          "color_room_11": "Místnost 12",
+          "color_room_12": "Místnost 13",
+          "color_room_13": "Místnost 14",
+          "color_room_14": "Místnost 15",
+          "color_room_15": "Místnost 16"
         },
-        "description": "Možnosti barev kamery.",
-        "title": "Barvy pokojů od 9 do 16"
+        "description": "Možnosti Barev Kamery.",
+        "title": "Barvy Místností 9 až 15"
       },
       "alpha_floor": {
         "data": {
-          "alpha_room_0": "Barva podlahy"
+          "alpha_room_0": "Barva Podlahy"
         }
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "Pokoj 1",
-          "alpha_room_1": "Pokoj 2",
-          "alpha_room_2": "Pokoj 3",
-          "alpha_room_3": "Pokoj 4",
-          "alpha_room_4": "Pokoj 5",
-          "alpha_room_5": "Pokoj 6",
-          "alpha_room_6": "Pokoj 7",
-          "alpha_room_7": "Pokoj 8"
+          "alpha_room_0": "Místnost 1",
+          "alpha_room_1": "Místnost 2",
+          "alpha_room_2": "Místnost 3",
+          "alpha_room_3": "Místnost 4",
+          "alpha_room_4": "Místnost 5",
+          "alpha_room_5": "Místnost 6",
+          "alpha_room_6": "Místnost 7",
+          "alpha_room_7": "Místnost 8"
         },
-        "description": "Možnosti kamery. Alfa 2",
-        "title": "Průhlednost barev pokojů"
+        "description": "Možnosti Kamery. Alpha 2",
+        "title": "Alpha Kanál Barev Místností"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "Pokoj 9",
-          "alpha_room_9": "Pokoj 10",
-          "alpha_room_10": "Pokoj 11",
-          "alpha_room_11": "Pokoj 12",
-          "alpha_room_12": "Pokoj 13",
-          "alpha_room_13": "Pokoj 14",
-          "alpha_room_14": "Pokoj 15",
-          "alpha_room_15": "Pokoj 16"
+          "alpha_room_8": "Místnost 9",
+          "alpha_room_9": "Místnost 10",
+          "alpha_room_10": "Místnost 11",
+          "alpha_room_11": "Místnost 12",
+          "alpha_room_12": "Místnost 13",
+          "alpha_room_13": "Místnost 14",
+          "alpha_room_14": "Místnost 15",
+          "alpha_room_15": "Místnost 16"
         },
-        "description": "Možnosti kamery. Alfa 3",
-        "title": "Průhlednost barev pokojů"
+        "description": "Možnosti Kamery. Alpha 3",
+        "title": "Alpha Kanál Barev Místností"
       }
     }
   },
   "selector": {
-    "camera_logs_progres": {
+    "trim_actions": {
       "options": {
-        "opt_1": "Kopírovat protokoly do www",
-        "opt_2": "Odstranit protokoly z www"
+        "save": "Uložit Změny",
+        "reset": "Obnovit na Zjištěné Hodnoty",
+        "delete": "Smazat Všechny Ořezy"
       }
     },
     "vacuum_status": {
@@ -358,31 +354,24 @@
         "paused": "Pozastaveno",
         "returning": "Návrat"
       }
-    },
-    "trim_actions": {
-      "options": {
-        "save": "Uložit změny",
-        "reset": "Obnovit na zjištěné hodnoty",
-        "delete": "Smazat všechny ořezy"
-      }
     }
   },
   "services": {
     "reload": {
-      "name": "Načíst znovu",
-      "description": "Načíst znovu platformu kamery MQTT Vacuum."
+      "name": "Znovu načíst",
+      "description": "Znovu načte platformu MQTT Vacuum Camera."
     },
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",
-      "description": "Vypnout kameru."
+      "description": "Vypne kameru."
     },
     "turn_on": {
       "name": "[%key:common::action::turn_on%]",
-      "description": "Zapnout kameru."
+      "description": "Zapne kameru."
     },
     "reset_trims": {
-      "name": "Obnovit ořezy obrázků",
-      "description": "Obnoví ořezy map."
+      "name": "Resetovat Ořezy Obrazů",
+      "description": "Resetuje ořezy map."
     },
     "snapshot": {
       "name": "Pořídit snímek",
@@ -390,14 +379,26 @@
       "fields": {
         "filename": {
           "name": "Název souboru",
-          "description": "Šablona názvu souboru. K dispozici je proměnná `entity_id`."
+          "description": "Šablona pro název souboru. Dostupná proměnná je `entity_id`."
         }
       }
     }
   },
   "exceptions": {
     "no_entity_id_provided": {
-      "message": "V konfiguraci služby chybí entity_id."
+      "message": "Chybí entity_id v konfiguraci."
+    },
+    "missing_zone_or_zone_ids": {
+      "message": "Musí být poskytnuto buď 'zone' nebo 'zone_ids'."
+    },
+    "zone_must_be_list": {
+      "message": "Parametr 'Zone' musí být seznam."
+    },
+    "zoneid_must_be_list": {
+      "message": "Parametr 'Zone_Ids' musí být seznam."
+    },
+    "zone_list_length": {
+      "message": "'Zone' musí obsahovat alespoň 1 položku, která obsahuje seznam 4 celých čísel."
     }
   }
 }

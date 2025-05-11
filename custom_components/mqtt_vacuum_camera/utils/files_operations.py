@@ -20,7 +20,6 @@ from typing import Any, Optional, List
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.storage import STORAGE_DIR
-from valetudo_map_parser.config.types import SnapshotStore
 
 from ..const import CAMERA_STORAGE, LOGGER
 from .language_cache import LanguageCache
@@ -140,7 +139,8 @@ async def async_get_active_user_language(hass: HomeAssistant) -> str:
     language_cache = LanguageCache.get_instance()
 
     # Initialize the cache if needed
-    if not language_cache._initialized:
+    # Use a property or method to check initialization status instead of accessing protected member
+    if not hasattr(language_cache, "is_initialized") or not language_cache.is_initialized():
         await language_cache.initialize(hass)
 
     # Get the language from the cache
@@ -175,7 +175,7 @@ async def async_populate_user_languages(hass: HomeAssistant):
         language_cache = LanguageCache.get_instance()
 
         # Initialize the cache if needed
-        if not language_cache._initialized:
+        if not language_cache.is_initialized():
             await language_cache.initialize(hass)
             LOGGER.info("Language cache initialized.")
         else:

@@ -793,6 +793,8 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         LOGGER.debug("Renaming the translations.")
         if self.backup_options:
             if self.hass:
+                # This will initialize the language cache only when needed
+                # The optimization is now handled in room_manager.py
                 await async_rename_room_description(self.hass, self.file_name)
                 self.camera_options = self.backup_options
             return await self.async_step_opt_save()

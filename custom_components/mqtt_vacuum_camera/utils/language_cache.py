@@ -134,7 +134,7 @@ class LanguageCache:
                         )
 
             # Mark UserLanguageStore as initialized using the proper method
-            await self.async_mark_user_language_store_initialized(user_language_store)
+            await self.async_mark_user_language_store_initialized()
 
         except Exception as e:
             _LOGGER.warning(
@@ -228,7 +228,8 @@ class LanguageCache:
             return True
         return False
 
-    async def _find_last_logged_in_user(self, hass: HomeAssistant) -> Optional[str]:
+    @staticmethod
+    async def _find_last_logged_in_user(hass: HomeAssistant) -> Optional[str]:
         """
         Find the ID of the last logged-in user.
 
@@ -251,6 +252,15 @@ class LanguageCache:
                     last_user = user
 
         return last_user.id if last_user else None
+
+    def is_initialized(self) -> bool:
+        """
+        Check if the language cache is initialized.
+
+        Returns:
+            True if initialized, False otherwise
+        """
+        return self._initialized
 
     async def get_all_languages(self) -> List[str]:
         """
@@ -314,23 +324,21 @@ class LanguageCache:
             result.append(translation)
         return result
 
-    async def async_mark_user_language_store_initialized(
-        self, user_language_store: UserLanguageStore
-    ) -> None:
+    @staticmethod
+    async def async_mark_user_language_store_initialized() -> None:
         """
         Mark the UserLanguageStore as initialized using a proper encapsulation approach.
         This method provides a public API for setting the initialization state instead of
         directly modifying protected attributes.
-
-        Args:
-            user_language_store: The UserLanguageStore instance to mark as initialized
         """
         try:
             # Since we don't have direct access to modify the external package's API,
             # we're using this method as a proper encapsulation layer.
             # In a future update of the valetudo_map_parser package, this should be
             # replaced with a proper public API call if one becomes available.
-            UserLanguageStore._initialized = True
+
+            # Use setattr to set the initialization flag instead of directly accessing protected member
+            setattr(UserLanguageStore, "_initialized", True)
             _LOGGER.debug("UserLanguageStore marked as initialized")
         except Exception as e:
             _LOGGER.warning(

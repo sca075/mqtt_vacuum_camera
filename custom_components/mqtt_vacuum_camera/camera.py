@@ -46,9 +46,7 @@ from .snapshots.snapshot import Snapshots
 from .utils.camera.camera_processing import CameraProcessor
 from .utils.files_operations import (
     async_load_file,
-    is_auth_updated,
 )
-from .utils.language_cache import LanguageCache
 from .utils.thread_pool import ThreadPoolManager
 
 
@@ -119,6 +117,11 @@ class MQTTCamera(CoordinatorEntity, Camera):
         self._last_image = None
         self.auth_update_time = None
         self._rrm_data = False  # Check for rrm data
+
+        # Set default language to English - only set once during initialization
+        # This eliminates the need for continuous language checks during camera updates
+        self._shared.user_language = "en"
+
         # get the colours used in the maps.
         self._colours = ColorsManagement(self._shared)
         self._colours.set_initial_colours(device_info)
@@ -320,12 +323,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
                 return self.camera_image(self._image_w, self._image_h)
 
         # Map View Processing
-        if is_auth_updated(self):
-            # Get the active user language using the language cache
-            language_cache = LanguageCache.get_instance()
-            self._shared.user_language = await language_cache.get_active_user_language(
-                self.hass
-            )
+        # Removed auth check to improve performance - language is now set only during initialization
         if not self._mqtt:
             LOGGER.debug("%s: No MQTT data available.", self._file_name)
             # return last/empty image if no MQTT or CPU usage too high.

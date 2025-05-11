@@ -3,17 +3,17 @@
     "step": {
       "user": {
         "data": {
-          "vacuum_entity": "ID de Entidad del Aspirador",
-          "vacuum_config_entry": "Datos de Configuración del Aspirador",
-          "vacuum_map": "Tema del Aspirador",
-          "vacuum_identifiers": "ID de MQTT del Aspirador",
+          "vacuum_entity": "ID de Entidad de Aspiradora",
+          "vacuum_config_entry": "Datos de Configuración de Aspiradora",
+          "vacuum_map": "Tema de Aspiradora",
+          "vacuum_identifiers": "ID MQTT de Aspiradora",
           "unique_id": ""
         },
         "data_description": {
-          "vacuum_entity": "ID de Entidad del Aspirador"
+          "vacuum_entity": "ID de Entidad de Aspiradora"
         },
-        "description": "Configuración de la Cámara.",
-        "title": "Configuración de la Cámara MQTT"
+        "description": "Configuración de Cámara.",
+        "title": "Configuración de Cámara MQTT"
       }
     }
   },
@@ -33,7 +33,6 @@
         "description": "Configurar ajustes de visualización",
         "menu_options": {
           "image_basic_opt": "Ajustes Básicos",
-          "image_offset": "Desplazamiento de Imagen",
           "status_text": "Texto de Estado",
           "draw_elements": "Visibilidad de Objetos",
           "segments_visibility": "Visibilidad de Segmentos"
@@ -66,7 +65,15 @@
         "description": "Opciones de configuración avanzadas",
         "menu_options": {
           "download_logs": "Descargar Registros",
-          "reset_map_trims": "Restablecer Recortes del Mapa"
+          "map_trims": "Recortes del Mapa"
+        }
+      },
+      "map_trims": {
+        "title": "Opciones de Recortes del Mapa",
+        "description": "Gestionar configuración de recortes del mapa",
+        "menu_options": {
+          "reset_map_trims": "Restablecer Recortes del Mapa",
+          "save_map_trims": "Guardar Recortes del Mapa"
         }
       },
       "download_logs": {
@@ -95,45 +102,33 @@
         "title": "Opciones de Imagen"
       },
       "image_offset": {
-        "title": "Ajustes de Desplazamiento y Recorte de Imagen",
-        "description": "Configurar desplazamientos de imagen y valores de recorte del piso",
+        "title": "Ajustes de Desplazamiento de Imagen",
+        "description": "Configurar valores de desplazamiento de imagen",
         "data": {
           "offset_top": "Desplazamiento Superior",
           "offset_bottom": "Desplazamiento Inferior",
           "offset_left": "Desplazamiento Izquierdo",
-          "offset_right": "Desplazamiento Derecho",
-          "floor_name": "Nombre del Piso",
-          "trim_up": "Recorte Superior",
-          "trim_down": "Recorte Inferior",
-          "trim_left": "Recorte Izquierdo",
-          "trim_right": "Recorte Derecho",
-          "trim_action": "Acción de Recorte"
+          "offset_right": "Desplazamiento Derecho"
         },
         "data_description": {
           "offset_top": "Píxeles a desplazar desde arriba (0-1000)",
           "offset_bottom": "Píxeles a desplazar desde abajo (0-1000)",
           "offset_left": "Píxeles a desplazar desde la izquierda (0-1000)",
-          "offset_right": "Píxeles a desplazar desde la derecha (0-1000)",
-          "floor_name": "Nombre del plano de piso actual",
-          "trim_up": "Valor de recorte superior (0-10000)",
-          "trim_down": "Valor de recorte inferior (0-10000)",
-          "trim_left": "Valor de recorte izquierdo (0-10000)",
-          "trim_right": "Valor de recorte derecho (0-10000)",
-          "trim_action": "Acción a realizar en los valores de recorte"
+          "offset_right": "Píxeles a desplazar desde la derecha (0-1000)"
         }
       },
       "status_text": {
         "data": {
-          "show_vac_status": "Mostrar Estado del Aspirador.",
+          "show_vac_status": "Mostrar Estado de Aspiradora.",
           "vac_status_font": "Fira Sans",
-          "vac_status_size": "Tamaño del Texto",
-          "vac_status_position": "Posición del Texto: Inferior (APAGADO)",
+          "vac_status_size": "Tamaño de Texto",
+          "vac_status_position": "Posición de Texto: Abajo(APAGADO)",
           "color_text": "[255, 255, 255]"
         },
         "data_description": {
-          "vac_status_font": "Fuente del Texto predeterminada Fira Serif.",
-          "vac_status_size": "Tamaño del Texto predeterminado 50.",
-          "color_text": "Color del Texto de Estado del Aspirador."
+          "vac_status_font": "Fuente de texto predeterminada Fira Serif.",
+          "vac_status_size": "Tamaño de texto predeterminado 50.",
+          "color_text": "Color de texto de estado de aspiradora."
         },
         "description": "Opciones de Imagen",
         "title": "Opciones de Texto de Estado"
@@ -148,24 +143,24 @@
           "disable_charger": "Ocultar Cargador",
           "disable_virtual_walls": "Ocultar Paredes Virtuales",
           "disable_restricted_areas": "Ocultar Áreas Restringidas",
-          "disable_no_mop_areas": "Ocultar Áreas Sin Fregado",
+          "disable_no_mop_areas": "Ocultar Áreas Sin Mopa",
           "disable_obstacles": "Ocultar Obstáculos",
           "disable_path": "Ocultar Ruta",
           "disable_predicted_path": "Ocultar Ruta Prevista",
-          "disable_go_to_target": "Ocultar Destino"
+          "disable_go_to_target": "Ocultar Objetivo Ir-A"
         },
         "data_description": {
-          "disable_floor": "Cuando está activado, el suelo no se mostrará en el mapa",
-          "disable_wall": "Cuando está activado, las paredes no se mostrarán en el mapa",
-          "disable_robot": "Cuando está activado, el robot no se mostrará en el mapa",
-          "disable_charger": "Cuando está activado, el cargador no se mostrará en el mapa",
-          "disable_virtual_walls": "Cuando está activado, las paredes virtuales no se mostrarán en el mapa",
-          "disable_restricted_areas": "Cuando está activado, las áreas restringidas no se mostrarán en el mapa",
-          "disable_no_mop_areas": "Cuando está activado, las áreas sin fregado no se mostrarán en el mapa",
-          "disable_obstacles": "Cuando está activado, los obstáculos no se mostrarán en el mapa",
-          "disable_path": "Cuando está activado, la ruta de limpieza no se mostrará en el mapa",
-          "disable_predicted_path": "Cuando está activado, la ruta prevista no se mostrará en el mapa",
-          "disable_go_to_target": "Cuando está activado, los destinos no se mostrarán en el mapa"
+          "disable_floor": "Cuando está habilitado, el suelo no se mostrará en el mapa",
+          "disable_wall": "Cuando está habilitado, las paredes no se mostrarán en el mapa",
+          "disable_robot": "Cuando está habilitado, el robot no se mostrará en el mapa",
+          "disable_charger": "Cuando está habilitado, el cargador no se mostrará en el mapa",
+          "disable_virtual_walls": "Cuando está habilitado, las paredes virtuales no se mostrarán en el mapa",
+          "disable_restricted_areas": "Cuando está habilitado, las áreas restringidas no se mostrarán en el mapa",
+          "disable_no_mop_areas": "Cuando está habilitado, las áreas sin mopa no se mostrarán en el mapa",
+          "disable_obstacles": "Cuando está habilitado, los obstáculos no se mostrarán en el mapa",
+          "disable_path": "Cuando está habilitado, la ruta de limpieza no se mostrará en el mapa",
+          "disable_predicted_path": "Cuando está habilitado, la ruta prevista no se mostrará en el mapa",
+          "disable_go_to_target": "Cuando está habilitado, los objetivos ir-a no se mostrarán en el mapa"
         }
       },
       "segments_visibility": {
@@ -189,21 +184,21 @@
           "disable_room_15": "Ocultar Habitación 15"
         },
         "data_description": {
-          "disable_room_1": "Cuando está activado, la habitación 1 no se mostrará en el mapa",
-          "disable_room_2": "Cuando está activado, la habitación 2 no se mostrará en el mapa",
-          "disable_room_3": "Cuando está activado, la habitación 3 no se mostrará en el mapa",
-          "disable_room_4": "Cuando está activado, la habitación 4 no se mostrará en el mapa",
-          "disable_room_5": "Cuando está activado, la habitación 5 no se mostrará en el mapa",
-          "disable_room_6": "Cuando está activado, la habitación 6 no se mostrará en el mapa",
-          "disable_room_7": "Cuando está activado, la habitación 7 no se mostrará en el mapa",
-          "disable_room_8": "Cuando está activado, la habitación 8 no se mostrará en el mapa",
-          "disable_room_9": "Cuando está activado, la habitación 9 no se mostrará en el mapa",
-          "disable_room_10": "Cuando está activado, la habitación 10 no se mostrará en el mapa",
-          "disable_room_11": "Cuando está activado, la habitación 11 no se mostrará en el mapa",
-          "disable_room_12": "Cuando está activado, la habitación 12 no se mostrará en el mapa",
-          "disable_room_13": "Cuando está activado, la habitación 13 no se mostrará en el mapa",
-          "disable_room_14": "Cuando está activado, la habitación 14 no se mostrará en el mapa",
-          "disable_room_15": "Cuando está activado, la habitación 15 no se mostrará en el mapa"
+          "disable_room_1": "Cuando está habilitado, la Habitación 1 no se mostrará en el mapa",
+          "disable_room_2": "Cuando está habilitado, la Habitación 2 no se mostrará en el mapa",
+          "disable_room_3": "Cuando está habilitado, la Habitación 3 no se mostrará en el mapa",
+          "disable_room_4": "Cuando está habilitado, la Habitación 4 no se mostrará en el mapa",
+          "disable_room_5": "Cuando está habilitado, la Habitación 5 no se mostrará en el mapa",
+          "disable_room_6": "Cuando está habilitado, la Habitación 6 no se mostrará en el mapa",
+          "disable_room_7": "Cuando está habilitado, la Habitación 7 no se mostrará en el mapa",
+          "disable_room_8": "Cuando está habilitado, la Habitación 8 no se mostrará en el mapa",
+          "disable_room_9": "Cuando está habilitado, la Habitación 9 no se mostrará en el mapa",
+          "disable_room_10": "Cuando está habilitado, la Habitación 10 no se mostrará en el mapa",
+          "disable_room_11": "Cuando está habilitado, la Habitación 11 no se mostrará en el mapa",
+          "disable_room_12": "Cuando está habilitado, la Habitación 12 no se mostrará en el mapa",
+          "disable_room_13": "Cuando está habilitado, la Habitación 13 no se mostrará en el mapa",
+          "disable_room_14": "Cuando está habilitado, la Habitación 14 no se mostrará en el mapa",
+          "disable_room_15": "Cuando está habilitado, la Habitación 15 no se mostrará en el mapa"
         }
       },
       "base_colours": {
@@ -219,32 +214,32 @@
           "add_base_alpha": "Configurar Transparencia:"
         },
         "data_description": {
-          "color_charger": "Color del Cargador.",
-          "color_move": "Color de Movimiento.",
-          "color_wall": "Color de la Pared.",
-          "color_robot": "Color del Robot.",
-          "color_go_to": "Color de Ir a.",
-          "color_no_go": "Color de No Ir.",
-          "color_zone_clean": "Color de Zona de Limpieza.",
-          "color_background": "Color de Fondo."
+          "color_charger": "Color del cargador.",
+          "color_move": "Color de movimiento.",
+          "color_wall": "Color de pared.",
+          "color_robot": "Color del robot.",
+          "color_go_to": "Color de ir-a.",
+          "color_no_go": "Color de no-ir.",
+          "color_zone_clean": "Color de limpieza de zona.",
+          "color_background": "Color de fondo."
         },
-        "description": "Opciones de Colores de la Cámara.",
-        "title": "Configuración de Colores Básicos"
+        "description": "Opciones de Colores de Cámara.",
+        "title": "Configuración de Colores Base"
       },
       "alpha_1": {
         "data": {
-          "alpha_charger": "Transparencia del Cargador",
-          "alpha_move": "Transparencia de Movimiento",
-          "alpha_wall": "Transparencia de la Pared",
-          "alpha_robot": "Transparencia del Robot",
-          "alpha_go_to": "Transparencia del Área de Ir a",
-          "alpha_no_go": "Transparencia del Área de No Ir",
-          "alpha_zone_clean": "Transparencia de la Zona de Limpieza",
-          "alpha_background": "Transparencia del Fondo",
-          "alpha_text": "Transparencia del Texto"
+          "alpha_charger": "Alpha Cargador",
+          "alpha_move": "Alpha Movimientos",
+          "alpha_wall": "Alpha Paredes",
+          "alpha_robot": "Alpha Robot",
+          "alpha_go_to": "Alpha Área Ir-A",
+          "alpha_no_go": "Alpha Área No-Ir",
+          "alpha_zone_clean": "Alpha Limpieza de Zona",
+          "alpha_background": "Alpha Fondo",
+          "alpha_text": "Alpha Texto"
         },
-        "description": "Opciones de la Cámara. Alpha 1",
-        "title": "Colores Básicos del Canal Alpha"
+        "description": "Opciones de Cámara. Alpha 1",
+        "title": "Canal Alpha Colores Base"
       },
       "floor_only": {
         "data": {
@@ -252,7 +247,7 @@
           "add_room_1_alpha": "Configurar Transparencia:"
         },
         "data_description": {
-          "color_room_0": "### **Color del suelo**"
+          "color_room_0": "### **Color del Suelo**"
         }
       },
       "rooms_colours_1": {
@@ -277,7 +272,7 @@
           "color_room_6": "Habitación 7",
           "color_room_7": "Habitación 8"
         },
-        "description": "Opciones de Colores de la Cámara.",
+        "description": "Opciones de Colores de Cámara.",
         "title": "Colores de Habitaciones 1 a 8"
       },
       "rooms_colours_2": {
@@ -302,12 +297,12 @@
           "color_room_14": "Habitación 15",
           "color_room_15": "Habitación 16"
         },
-        "description": "Opciones de Colores de la Cámara.",
-        "title": "Colores de Habitaciones 9 a 16"
+        "description": "Opciones de Colores de Cámara.",
+        "title": "Colores de Habitaciones 9 a 15"
       },
       "alpha_floor": {
         "data": {
-          "alpha_room_0": "Color del suelo"
+          "alpha_room_0": "Color del Suelo"
         }
       },
       "alpha_2": {
@@ -321,8 +316,8 @@
           "alpha_room_6": "Habitación 7",
           "alpha_room_7": "Habitación 8"
         },
-        "description": "Opciones de la Cámara. Alpha 2",
-        "title": "Colores de Habitaciones del Canal Alpha"
+        "description": "Opciones de Cámara. Alpha 2",
+        "title": "Canal Alpha Colores de Habitaciones"
       },
       "alpha_3": {
         "data": {
@@ -335,16 +330,17 @@
           "alpha_room_14": "Habitación 15",
           "alpha_room_15": "Habitación 16"
         },
-        "description": "Opciones de la Cámara. Alpha 3",
-        "title": "Colores de Habitaciones del Canal Alpha"
+        "description": "Opciones de Cámara. Alpha 3",
+        "title": "Canal Alpha Colores de Habitaciones"
       }
     }
   },
   "selector": {
-    "camera_logs_progres": {
+    "trim_actions": {
       "options": {
-        "opt_1": "Copiar Registros a www",
-        "opt_2": "Eliminar Registros de www"
+        "save": "Guardar Cambios",
+        "reset": "Restablecer a Valores Detectados",
+        "delete": "Eliminar Todos los Recortes"
       }
     },
     "vacuum_status": {
@@ -353,24 +349,17 @@
         "disconnected": "Desconectado",
         "charging": "Cargando",
         "cleaning": "Limpiando",
-        "docked": "Acoplado",
+        "docked": "En Base",
         "idle": "Inactivo",
         "paused": "Pausado",
         "returning": "Regresando"
-      }
-    },
-    "trim_actions": {
-      "options": {
-        "save": "Guardar Cambios",
-        "reset": "Restablecer a Valores Detectados",
-        "delete": "Eliminar Todos los Recortes"
       }
     }
   },
   "services": {
     "reload": {
       "name": "Recargar",
-      "description": "Recargar la plataforma de cámara MQTT Vacuum."
+      "description": "Recarga la Plataforma de Cámara de Aspiradora MQTT."
     },
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",
@@ -381,7 +370,7 @@
       "description": "Enciende la cámara."
     },
     "reset_trims": {
-      "name": "Restablecer recortes de imágenes",
+      "name": "Restablecer Recortes de Imágenes",
       "description": "Restablece los recortes de los mapas."
     },
     "snapshot": {
@@ -389,15 +378,27 @@
       "description": "Toma una instantánea de una cámara.",
       "fields": {
         "filename": {
-          "name": "Nombre del archivo",
-          "description": "Plantilla de un nombre de archivo. La variable disponible es `entity_id`."
+          "name": "Nombre de archivo",
+          "description": "Plantilla de un nombre de archivo. Variable disponible es `entity_id`."
         }
       }
     }
   },
   "exceptions": {
     "no_entity_id_provided": {
-      "message": "Falta entity_id en la configuración del servicio."
+      "message": "Falta entity_id en la configuración."
+    },
+    "missing_zone_or_zone_ids": {
+      "message": "Se debe proporcionar 'zone' o 'zone_ids'."
+    },
+    "zone_must_be_list": {
+      "message": "El parámetro 'Zone' debe ser una lista."
+    },
+    "zoneid_must_be_list": {
+      "message": "El parámetro 'Zone_Ids' debe ser una lista."
+    },
+    "zone_list_length": {
+      "message": "La 'Zone' debe tener al menos 1 elemento que contenga una lista de 4 enteros."
     }
   }
 }

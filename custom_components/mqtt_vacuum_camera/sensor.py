@@ -220,7 +220,7 @@ class VacuumSensor(CoordinatorEntity, SensorEntity):
         if self.entity_description.parent_key:
             data = getattr(data, self.entity_description.key)
             if data is None:
-                return
+                return {}
         return {
             attr: getattr(data, attr)
             for attr in self.entity_description.attributes
