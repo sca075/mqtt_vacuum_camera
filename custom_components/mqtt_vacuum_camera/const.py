@@ -10,13 +10,13 @@ from homeassistant.components.camera import DOMAIN as CAMERA_DOMAIN
 from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
 from homeassistant.components.vacuum import DOMAIN as VACUUM_DOMAIN
 
-"""Required in Config_Flow"""
+# Required in Config_Flow
 DOMAIN: Final = "mqtt_vacuum_camera"
 DEFAULT_NAME: Final = "mqtt vacuum camera"
 ICON: Final = "mdi:camera"
 NAME: Final = "MQTT Vacuum Camera"
 
-"""Required in Coordinator and Services"""
+# Required in Coordinator and Services
 CAMERA = CAMERA_DOMAIN
 VACUUM = VACUUM_DOMAIN
 SENSOR = SENSOR_DOMAIN
@@ -70,6 +70,21 @@ CONF_DISABLE_PATH = "disable_path"
 CONF_DISABLE_PREDICTED_PATH = "disable_predicted_path"
 CONF_DISABLE_GO_TO_TARGET = "disable_go_to_target"
 
+# List of all draw element flags for easier iteration
+DRAW_FLAGS = [
+    CONF_DISABLE_FLOOR,
+    CONF_DISABLE_WALL,
+    CONF_DISABLE_ROBOT,
+    CONF_DISABLE_CHARGER,
+    CONF_DISABLE_VIRTUAL_WALLS,
+    CONF_DISABLE_RESTRICTED_AREAS,
+    CONF_DISABLE_NO_MOP_AREAS,
+    CONF_DISABLE_OBSTACLES,
+    CONF_DISABLE_PATH,
+    CONF_DISABLE_PREDICTED_PATH,
+    CONF_DISABLE_GO_TO_TARGET,
+]
+
 # Room/Segment visibility options
 CONF_DISABLE_ROOM_1 = "disable_room_1"
 CONF_DISABLE_ROOM_2 = "disable_room_2"
@@ -86,6 +101,25 @@ CONF_DISABLE_ROOM_12 = "disable_room_12"
 CONF_DISABLE_ROOM_13 = "disable_room_13"
 CONF_DISABLE_ROOM_14 = "disable_room_14"
 CONF_DISABLE_ROOM_15 = "disable_room_15"
+
+# List of all room visibility flags for easier iteration
+ROOM_FLAGS = [
+    CONF_DISABLE_ROOM_1,
+    CONF_DISABLE_ROOM_2,
+    CONF_DISABLE_ROOM_3,
+    CONF_DISABLE_ROOM_4,
+    CONF_DISABLE_ROOM_5,
+    CONF_DISABLE_ROOM_6,
+    CONF_DISABLE_ROOM_7,
+    CONF_DISABLE_ROOM_8,
+    CONF_DISABLE_ROOM_9,
+    CONF_DISABLE_ROOM_10,
+    CONF_DISABLE_ROOM_11,
+    CONF_DISABLE_ROOM_12,
+    CONF_DISABLE_ROOM_13,
+    CONF_DISABLE_ROOM_14,
+    CONF_DISABLE_ROOM_15,
+]
 
 LOGGER = logging.getLogger(__package__)
 

@@ -15,12 +15,12 @@ import glob
 import json
 import os
 import re
-from typing import Any, Optional
+from typing import Any, Optional, List
 
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.storage import STORAGE_DIR
-from valetudo_map_parser.config.types import RoomStore, UserLanguageStore
+from valetudo_map_parser.config.types import SnapshotStore
 
 from ..const import CAMERA_STORAGE, LOGGER
 from .language_cache import LanguageCache
@@ -47,7 +47,7 @@ async def async_write_vacuum_id(
         LOGGER.warning("No vacuum_id provided.")
 
 
-async def async_get_translations_vacuum_id(storage_dir: str) -> str or None:
+async def async_get_translations_vacuum_id(storage_dir: str) -> Optional[str]:
     """Read the vacuum_id from a JSON file."""
     # Create the full file path
     vacuum_id_path = os.path.join(storage_dir, "rooms_colours_description.json")
@@ -55,10 +55,10 @@ async def async_get_translations_vacuum_id(storage_dir: str) -> str or None:
         data = await async_load_file(vacuum_id_path, True)
         if data is None:
             return None
-        vacuum_id = data.get("vacuum_id", None)
-        return vacuum_id
+        return data.get("vacuum_id", None)
     except json.JSONDecodeError:
         LOGGER.warning("Error reading the file %s.", vacuum_id_path, exc_info=True)
+        return None
     except OSError as e:
         LOGGER.error("Unhandled exception: %s", e, exc_info=True)
         return None
@@ -82,7 +82,7 @@ def remove_room_data_files(directory: str) -> None:
             LOGGER.debug("Error removing file %s: %r", file, e, exc_info=True)
 
 
-def is_auth_updated(self) -> bool | None:
+def is_auth_updated(self) -> bool:
     """Check if the auth file has been updated."""
     file_path = self.hass.config.path(STORAGE_DIR, "auth")
     # Get the last modified time of the file
@@ -90,14 +90,15 @@ def is_auth_updated(self) -> bool | None:
     if self.auth_update_time is None:
         self.auth_update_time = last_modified_time
         return True
-    elif self.auth_update_time == last_modified_time:
+    if self.auth_update_time == last_modified_time:
         return False
-    elif self.auth_update_time < last_modified_time:
+    if self.auth_update_time < last_modified_time:
         self.auth_update_time = last_modified_time
         return True
+    return False  # Default case
 
 
-async def async_find_last_logged_in_user(hass: HomeAssistant) -> str or None:
+async def async_find_last_logged_in_user(hass: HomeAssistant) -> Optional[str]:
     """Retrieve the ID of the last logged-in user based on the most recent token usage."""
     users = await hass.auth.async_get_users()  # Fetches list of all user objects
     last_user = None
@@ -297,7 +298,7 @@ def extract_core_entity_ids(entity_ids: list[str]) -> list[str]:
     return core_entity_ids
 
 
-async def async_list_files(pattern: str) -> list:
+async def async_list_files(pattern: str) -> List[str]:
     """List files matching the pattern asynchronously."""
     loop = asyncio.get_event_loop()
     with ThreadPoolExecutor() as pool:

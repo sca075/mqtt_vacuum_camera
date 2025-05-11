@@ -1,6 +1,6 @@
 """
 Camera
-Last Updated on version: 2025.5.0b1
+Last Updated on version: 2025.5.0
 """
 
 from __future__ import annotations
@@ -15,6 +15,7 @@ import time
 from typing import Any, Optional
 
 from PIL import Image
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant import config_entries, core
 from homeassistant.components.camera import Camera, CameraEntityFeature
 from homeassistant.const import CONF_UNIQUE_ID, MATCH_ALL
@@ -48,6 +49,8 @@ from .utils.files_operations import (
     is_auth_updated,
 )
 from .utils.language_cache import LanguageCache
+from .utils.thread_pool import ThreadPoolManager
+
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -558,9 +561,6 @@ class MQTTCamera(CoordinatorEntity, Camera):
     async def run_async_pil_to_bytes(self, pil_img, image_id: str = None):
         """Thread function to process the image data using persistent thread pool."""
         try:
-            # Import ThreadPoolManager here to avoid circular imports
-            from .utils.thread_pool import ThreadPoolManager
-
             # Use the persistent thread pool
             thread_pool = ThreadPoolManager.get_instance()
             result = await thread_pool.run_in_executor(
@@ -722,7 +722,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
                                 self._file_name,
                                 end_time - start_time,
                             )
-                        except Exception as e:
+                        except HomeAssistantError as e:
                             LOGGER.warning(
                                 "%s: Unexpected Error processing image: %r",
                                 self._file_name,

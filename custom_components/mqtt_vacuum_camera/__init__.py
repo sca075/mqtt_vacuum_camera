@@ -1,6 +1,6 @@
 """
 MQTT Vacuum Camera.
-Version: 2025.2.2
+Version: 2025.05.0
 """
 
 from functools import partial

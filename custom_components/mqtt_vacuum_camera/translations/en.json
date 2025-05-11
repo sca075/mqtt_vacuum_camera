@@ -33,7 +33,6 @@
         "description": "Configure image display settings",
         "menu_options": {
           "image_basic_opt": "Basic Settings",
-          "image_offset": "Image Offset",
           "status_text": "Status Text",
           "draw_elements": "Object Visibility",
           "segments_visibility": "Segments Visibility"
@@ -66,7 +65,15 @@
         "description": "Advanced configuration options",
         "menu_options": {
           "download_logs": "Download Logs",
-          "reset_map_trims": "Reset Map Trims"
+          "map_trims": "Map Trims"
+        }
+      },
+      "map_trims": {
+        "title": "Map Trims Options",
+        "description": "Manage map trim settings",
+        "menu_options": {
+          "reset_map_trims": "Reset Map Trims",
+          "save_map_trims": "Save Map Trims"
         }
       },
       "download_logs": {
@@ -95,31 +102,19 @@
         "title": "Image Options"
       },
       "image_offset": {
-        "title": "Image Offset & Trims Settings",
-        "description": "Configure image offsets and floor trim values",
+        "title": "Image Offset Settings",
+        "description": "Configure image offset values",
         "data": {
           "offset_top": "Top Offset",
           "offset_bottom": "Bottom Offset",
           "offset_left": "Left Offset",
-          "offset_right": "Right Offset",
-          "floor_name": "Floor Name",
-          "trim_up": "Upper Trim",
-          "trim_down": "Lower Trim",
-          "trim_left": "Left Trim",
-          "trim_right": "Right Trim",
-          "trim_action": "Trim Action"
+          "offset_right": "Right Offset"
         },
         "data_description": {
           "offset_top": "Pixels to offset from top (0-1000)",
           "offset_bottom": "Pixels to offset from bottom (0-1000)",
           "offset_left": "Pixels to offset from left (0-1000)",
-          "offset_right": "Pixels to offset from right (0-1000)",
-          "floor_name": "Name of the current floor plan",
-          "trim_up": "Upper trim value (0-10000)",
-          "trim_down": "Lower trim value (0-10000)",
-          "trim_left": "Left trim value (0-10000)",
-          "trim_right": "Right trim value (0-10000)",
-          "trim_action": "Action to perform on trim values"
+          "offset_right": "Pixels to offset from right (0-1000)"
         }
       },
       "status_text": {

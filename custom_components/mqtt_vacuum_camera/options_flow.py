@@ -14,7 +14,6 @@ from homeassistant.helpers.selector import (
     ColorRGBSelector,
     NumberSelector,
     NumberSelectorConfig,
-    TextSelector,
     SelectSelector,
     SelectSelectorConfig,
     SelectSelectorMode,
@@ -48,36 +47,9 @@ from .const import (
     COLOR_WALL,
     COLOR_ZONE_CLEAN,
     CONF_ASPECT_RATIO,
+    DRAW_FLAGS,
+    ROOM_FLAGS,
     CONF_AUTO_ZOOM,
-    TRIM_ACTION_DELETE,
-    TRIM_ACTION_RESET,
-    TRIM_ACTION_SAVE,
-    CONF_DISABLE_CHARGER,
-    CONF_DISABLE_FLOOR,
-    CONF_DISABLE_GO_TO_TARGET,
-    CONF_DISABLE_NO_MOP_AREAS,
-    CONF_DISABLE_OBSTACLES,
-    CONF_DISABLE_PATH,
-    CONF_DISABLE_PREDICTED_PATH,
-    CONF_DISABLE_RESTRICTED_AREAS,
-    CONF_DISABLE_ROBOT,
-    CONF_DISABLE_VIRTUAL_WALLS,
-    CONF_DISABLE_WALL,
-    CONF_DISABLE_ROOM_1,
-    CONF_DISABLE_ROOM_2,
-    CONF_DISABLE_ROOM_3,
-    CONF_DISABLE_ROOM_4,
-    CONF_DISABLE_ROOM_5,
-    CONF_DISABLE_ROOM_6,
-    CONF_DISABLE_ROOM_7,
-    CONF_DISABLE_ROOM_8,
-    CONF_DISABLE_ROOM_9,
-    CONF_DISABLE_ROOM_10,
-    CONF_DISABLE_ROOM_11,
-    CONF_DISABLE_ROOM_12,
-    CONF_DISABLE_ROOM_13,
-    CONF_DISABLE_ROOM_14,
-    CONF_DISABLE_ROOM_15,
     CONF_OFFSET_BOTTOM,
     CONF_OFFSET_LEFT,
     CONF_OFFSET_RIGHT,
@@ -103,6 +75,7 @@ from .snapshots.log_files import run_async_save_logs
 from .utils.files_operations import async_del_file, async_rename_room_description
 
 
+# noinspection PyTypeChecker
 class MQTTCameraOptionsFlowHandler(OptionsFlow):
     """Options flow handler for MQTT Vacuum Camera integration."""
 
@@ -304,7 +277,6 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                 "status_text",
                 "draw_elements",
                 "segments_visibility",
-                "image_offset",
             ],
         )  #
 
@@ -354,7 +326,8 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
             step_id="advanced",
             menu_options=[
                 "download_logs",
-                "reset_map_trims",
+                "map_trims",
+                # "image_offset", # Temporarily disabled until drawings part is fixed
             ],
         )
 
@@ -396,23 +369,11 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
     async def async_step_image_offset(
         self, user_input: Optional[Dict[str, Any]] = None
     ):
-        """Handle image offset and trims settings."""
-        entry = self.camera_config.entry_id
-        coordinator = self.hass.data[DOMAIN][entry]["coordinator"]
+        """Handle image offset settings."""
         config_options = self.camera_config.as_dict().get("options", {})
-        config_trims = config_options.get(
-            "trims_data",
-            {
-                "floor": "",
-                "trim_up": 0,
-                "trim_down": 0,
-                "trim_left": 0,
-                "trim_right": 0,
-            },
-        )
 
         if user_input is not None:
-            # Handle offset updates
+            # Handle offset updates only
             offset_updates = {
                 "offset_top": user_input.get(CONF_OFFSET_TOP),
                 "offset_bottom": user_input.get(CONF_OFFSET_BOTTOM),
@@ -420,44 +381,10 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                 "offset_right": user_input.get(CONF_OFFSET_RIGHT),
             }
 
-            # Handle trims data updates
-            trims_updates = {
-                "floor": user_input.get("floor_name", config_trims.get("floor", "")),
-                "trim_up": int(
-                    user_input.get("trim_up", config_trims.get("trim_up", 0))
-                ),
-                "trim_down": int(
-                    user_input.get("trim_down", config_trims.get("trim_down", 0))
-                ),
-                "trim_left": int(
-                    user_input.get("trim_left", config_trims.get("trim_left", 0))
-                ),
-                "trim_right": int(
-                    user_input.get("trim_right", config_trims.get("trim_right", 0))
-                ),
-            }
-
-            action = user_input.get("trim_action", TRIM_ACTION_SAVE)
-
-            match action:
-                case "save":
-                    # Get fresh trims from coordinator
-                    trims_updates = coordinator.shared.trims.to_dict()
-                case "delete":
-                    # Clear all trims
-                    trims_updates = coordinator.shared.trims.clear()
-                    offset_updates = {
-                        "offset_top": 0,
-                        "offset_bottom": 0,
-                        "offset_left": 0,
-                        "offset_right": 0,
-                    }
-
-            self.camera_options.update({**offset_updates, "trims_data": trims_updates})
-
+            self.camera_options.update(offset_updates)
             return await self.async_step_opt_save()
 
-        # Build the form schema
+        # Build the form schema - only for offsets
         offset_schema = {
             vol.Optional(
                 CONF_OFFSET_TOP, default=config_options.get("offset_top", 0)
@@ -471,36 +398,12 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
             vol.Optional(
                 CONF_OFFSET_RIGHT, default=config_options.get("offset_right", 0)
             ): NumberSelector({"min": 0, "max": 1000, "step": 1}),
-            vol.Optional(
-                "floor_name", default=config_trims.get("floor", "")
-            ): TextSelector(),
-            vol.Optional(
-                "trim_up", default=config_trims.get("trim_up", 0)
-            ): NumberSelector({"min": 0, "max": 10000, "step": 1, "mode": "box"}),
-            vol.Optional(
-                "trim_down", default=config_trims.get("trim_down", 0)
-            ): NumberSelector({"min": 0, "max": 10000, "step": 1, "mode": "box"}),
-            vol.Optional(
-                "trim_left", default=config_trims.get("trim_left", 0)
-            ): NumberSelector({"min": 0, "max": 10000, "step": 1, "mode": "box"}),
-            vol.Optional(
-                "trim_right", default=config_trims.get("trim_right", 0)
-            ): NumberSelector({"min": 0, "max": 10000, "step": 1, "mode": "box"}),
-            vol.Optional("trim_action", default=TRIM_ACTION_SAVE): SelectSelector(
-                {
-                    "options": ["save", "reset", "delete"],
-                    "translation_key": "trim_actions",
-                }
-            ),
         }
 
         return self.async_show_form(
             step_id="image_offset",
             data_schema=vol.Schema(offset_schema),
-            description_placeholders={
-                **self.camera_options,
-                "current_floor": config_trims.get("floor", ""),
-            },
+            description_placeholders=self.camera_options,
         )
 
     async def async_step_status_text(self, user_input: Optional[Dict[str, Any]] = None):
@@ -523,6 +426,57 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
             description_placeholders=self.camera_options,
         )
 
+    def _build_boolean_options_fields(self, flags, limit=None):
+        """Helper method to build boolean option fields from a list of flags.
+
+        Args:
+            flags: List of flag constants to use for building fields
+            limit: Optional limit on the number of flags to use (for rooms)
+
+        Returns:
+            Dictionary of fields for the form schema
+        """
+        fields = {}
+        flags_to_use = flags
+
+        # If limit is provided, only use that many flags
+        if limit is not None:
+            flags_to_use = flags[:limit]
+
+        for flag in flags_to_use:
+            fields[
+                vol.Optional(
+                    flag,
+                    default=self.camera_config.options.get(flag, False),
+                )
+            ] = BooleanSelector()
+
+        return fields
+
+    @staticmethod
+    def _update_boolean_options(user_input, flags, limit=None):
+        """Helper method to update options based on user input.
+
+        Args:
+            user_input: User input from the form
+            flags: List of flag constants to use for updating options
+            limit: Optional limit on the number of flags to use (for rooms)
+
+        Returns:
+            Dictionary of updated options
+        """
+        options_update = {}
+        flags_to_use = flags
+
+        # If limit is provided, only use that many flags
+        if limit is not None:
+            flags_to_use = flags[:limit]
+
+        for flag in flags_to_use:
+            options_update[flag] = user_input.get(flag, False)
+
+        return options_update
+
     async def async_step_draw_elements(
         self, user_input: Optional[Dict[str, Any]] = None
     ):
@@ -530,83 +484,13 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         LOGGER.info("Draw Elements Configuration Started.")
 
         if user_input is not None:
-            # Update options based on user input
-            self.camera_options.update(
-                {
-                    "disable_floor": user_input.get(CONF_DISABLE_FLOOR, False),
-                    "disable_wall": user_input.get(CONF_DISABLE_WALL, False),
-                    "disable_robot": user_input.get(CONF_DISABLE_ROBOT, False),
-                    "disable_charger": user_input.get(CONF_DISABLE_CHARGER, False),
-                    "disable_virtual_walls": user_input.get(
-                        CONF_DISABLE_VIRTUAL_WALLS, False
-                    ),
-                    "disable_restricted_areas": user_input.get(
-                        CONF_DISABLE_RESTRICTED_AREAS, False
-                    ),
-                    "disable_no_mop_areas": user_input.get(
-                        CONF_DISABLE_NO_MOP_AREAS, False
-                    ),
-                    "disable_obstacles": user_input.get(CONF_DISABLE_OBSTACLES, False),
-                    "disable_path": user_input.get(CONF_DISABLE_PATH, False),
-                    "disable_predicted_path": user_input.get(
-                        CONF_DISABLE_PREDICTED_PATH, False
-                    ),
-                    "disable_go_to_target": user_input.get(
-                        CONF_DISABLE_GO_TO_TARGET, False
-                    ),
-                }
-            )
+            # Update options based on user input using DRAW_FLAGS
+            options_update = self._update_boolean_options(user_input, DRAW_FLAGS)
+            self.camera_options.update(options_update)
             return await self.async_step_opt_save()
 
-        # Create schema for the form
-        fields = {
-            vol.Optional(
-                CONF_DISABLE_FLOOR,
-                default=self.camera_config.options.get("disable_floor", False),
-            ): BooleanSelector(),
-            vol.Optional(
-                CONF_DISABLE_WALL,
-                default=self.camera_config.options.get("disable_wall", False),
-            ): BooleanSelector(),
-            vol.Optional(
-                CONF_DISABLE_ROBOT,
-                default=self.camera_config.options.get("disable_robot", False),
-            ): BooleanSelector(),
-            vol.Optional(
-                CONF_DISABLE_CHARGER,
-                default=self.camera_config.options.get("disable_charger", False),
-            ): BooleanSelector(),
-            vol.Optional(
-                CONF_DISABLE_VIRTUAL_WALLS,
-                default=self.camera_config.options.get("disable_virtual_walls", False),
-            ): BooleanSelector(),
-            vol.Optional(
-                CONF_DISABLE_RESTRICTED_AREAS,
-                default=self.camera_config.options.get(
-                    "disable_restricted_areas", False
-                ),
-            ): BooleanSelector(),
-            vol.Optional(
-                CONF_DISABLE_NO_MOP_AREAS,
-                default=self.camera_config.options.get("disable_no_mop_areas", False),
-            ): BooleanSelector(),
-            vol.Optional(
-                CONF_DISABLE_OBSTACLES,
-                default=self.camera_config.options.get("disable_obstacles", False),
-            ): BooleanSelector(),
-            vol.Optional(
-                CONF_DISABLE_PATH,
-                default=self.camera_config.options.get("disable_path", False),
-            ): BooleanSelector(),
-            vol.Optional(
-                CONF_DISABLE_PREDICTED_PATH,
-                default=self.camera_config.options.get("disable_predicted_path", False),
-            ): BooleanSelector(),
-            vol.Optional(
-                CONF_DISABLE_GO_TO_TARGET,
-                default=self.camera_config.options.get("disable_go_to_target", False),
-            ): BooleanSelector(),
-        }
+        # Create schema for the form using DRAW_FLAGS
+        fields = self._build_boolean_options_fields(DRAW_FLAGS)
 
         return self.async_show_form(
             step_id="draw_elements",
@@ -620,59 +504,17 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         """Handle segments (rooms) visibility configuration."""
         LOGGER.info("Segments Visibility Configuration Started.")
 
+        # Limit to the number of rooms that exist
+        room_limit = min(self.number_of_rooms, 15)
+
         if user_input is not None:
-            # Update options based on user input
-            self.camera_options.update(
-                {
-                    "disable_room_1": user_input.get(CONF_DISABLE_ROOM_1, False),
-                    "disable_room_2": user_input.get(CONF_DISABLE_ROOM_2, False),
-                    "disable_room_3": user_input.get(CONF_DISABLE_ROOM_3, False),
-                    "disable_room_4": user_input.get(CONF_DISABLE_ROOM_4, False),
-                    "disable_room_5": user_input.get(CONF_DISABLE_ROOM_5, False),
-                    "disable_room_6": user_input.get(CONF_DISABLE_ROOM_6, False),
-                    "disable_room_7": user_input.get(CONF_DISABLE_ROOM_7, False),
-                    "disable_room_8": user_input.get(CONF_DISABLE_ROOM_8, False),
-                    "disable_room_9": user_input.get(CONF_DISABLE_ROOM_9, False),
-                    "disable_room_10": user_input.get(CONF_DISABLE_ROOM_10, False),
-                    "disable_room_11": user_input.get(CONF_DISABLE_ROOM_11, False),
-                    "disable_room_12": user_input.get(CONF_DISABLE_ROOM_12, False),
-                    "disable_room_13": user_input.get(CONF_DISABLE_ROOM_13, False),
-                    "disable_room_14": user_input.get(CONF_DISABLE_ROOM_14, False),
-                    "disable_room_15": user_input.get(CONF_DISABLE_ROOM_15, False),
-                }
-            )
+            # Update options based on user input using ROOM_FLAGS
+            options_update = self._update_boolean_options(user_input, ROOM_FLAGS, room_limit)
+            self.camera_options.update(options_update)
             return await self.async_step_opt_save()
 
         # Create schema for the form - only show fields for rooms that exist
-        fields = {}
-
-        # Only show room options up to the number of rooms that exist
-        room_constants = [
-            CONF_DISABLE_ROOM_1,
-            CONF_DISABLE_ROOM_2,
-            CONF_DISABLE_ROOM_3,
-            CONF_DISABLE_ROOM_4,
-            CONF_DISABLE_ROOM_5,
-            CONF_DISABLE_ROOM_6,
-            CONF_DISABLE_ROOM_7,
-            CONF_DISABLE_ROOM_8,
-            CONF_DISABLE_ROOM_9,
-            CONF_DISABLE_ROOM_10,
-            CONF_DISABLE_ROOM_11,
-            CONF_DISABLE_ROOM_12,
-            CONF_DISABLE_ROOM_13,
-            CONF_DISABLE_ROOM_14,
-            CONF_DISABLE_ROOM_15,
-        ]
-
-        for i in range(min(self.number_of_rooms, 15)):
-            room_key = f"disable_room_{i + 1}"
-            fields[
-                vol.Optional(
-                    room_constants[i],
-                    default=self.camera_config.options.get(room_key, False),
-                )
-            ] = BooleanSelector()
+        fields = self._build_boolean_options_fields(ROOM_FLAGS, room_limit)
 
         return self.async_show_form(
             step_id="segments_visibility",
@@ -960,28 +802,31 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
     async def async_step_reset_map_trims(self, user_input=None):
         """Handle map trims reset."""
         entry = self.camera_config.entry_id
-        LOGGER.debug("Updating the map trims for %s", entry)
+        LOGGER.debug("Resetting the map trims for %s", entry)
         coordinator = self.hass.data[DOMAIN][entry]["coordinator"]
-        config_options = self.camera_config.as_dict().get("options", {})
-        config_trims = config_options.get("trims_data", {})
 
-        if self.backup_options:
-            if all(
-                config_trims.get(key, 0) == 0
-                for key in ("trim_down", "trim_left", "trim_right", "trim_up")
-            ):
-                new_trims = coordinator.shared.trims.to_dict()
-                self.camera_options = {"trims_data": new_trims}
-            else:
-                reset_trims = coordinator.shared.trims.clear()
-                self.camera_options = {
-                    "offset_bottom": 0,
-                    "offset_left": 0,
-                    "offset_top": 0,
-                    "offset_right": 0,
-                    "trims_data": reset_trims,
-                }
-            return await self.async_step_opt_save()
+        # Always reset trims when this option is selected
+        reset_trims = coordinator.shared.trims.clear()
+        self.camera_options = {
+            "offset_bottom": 0,
+            "offset_left": 0,
+            "offset_top": 0,
+            "offset_right": 0,
+            "trims_data": reset_trims,
+        }
+        return await self.async_step_opt_save()
+
+    # pylint: disable=unused-argument
+    async def async_step_save_map_trims(self, user_input=None):
+        """Handle map trims save."""
+        entry = self.camera_config.entry_id
+        LOGGER.debug("Saving the map trims for %s", entry)
+        coordinator = self.hass.data[DOMAIN][entry]["coordinator"]
+
+        # Save current trims from coordinator
+        new_trims = coordinator.shared.trims.to_dict()
+        self.camera_options = {"trims_data": new_trims}
+        return await self.async_step_opt_save()
 
     async def async_step_opt_save(self):
         """

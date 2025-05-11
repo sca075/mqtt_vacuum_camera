@@ -183,7 +183,8 @@ def from_device_ids_to_entity_ids(
             for entry in entity_reg.entities.values():
                 if entry.device_id == device_id and entry.domain == domain:
                     resolved_entity_ids.append(entry.entity_id)
-            return resolved_entity_ids
+
+    return resolved_entity_ids if resolved_entity_ids else None
 
 
 def get_device_info_from_entity_id(entity_id: str, hass) -> DeviceEntry | None:
@@ -197,6 +198,7 @@ def get_device_info_from_entity_id(entity_id: str, hass) -> DeviceEntry | None:
             device_id = entry.device_id
             device = device_reg.async_get(device_id)
             return device
+    return None
 
 
 def get_entity_id(
@@ -258,7 +260,7 @@ def compose_obstacle_links(vacuum_host_ip: str, obstacles: list) -> list | None:
 
     LOGGER.debug("Obstacle links: linked data complete.")
 
-    return obstacle_links
+    return obstacle_links if obstacle_links else None
 
 
 def redact_ip_filter(func):
