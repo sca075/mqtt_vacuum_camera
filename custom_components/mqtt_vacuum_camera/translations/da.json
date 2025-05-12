@@ -21,7 +21,7 @@
     "step": {
       "init": {
         "title": "MQTT Kameraindstillinger",
-        "description": "### _Standardindstillinger_:",
+        "description": "Konfigurer kameraindstillinger",
         "menu_options": {
           "image_opt": "Billedindstillinger",
           "colours": "Farveindstillinger",
@@ -33,8 +33,9 @@
         "description": "Konfigurer visningsindstillinger",
         "menu_options": {
           "image_basic_opt": "Grundlæggende Indstillinger",
-          "image_offset": "Billedforskydning",
-          "status_text": "Statustekst"
+          "status_text": "Statustekst",
+          "draw_elements": "Objektsynlighed",
+          "segments_visibility": "Segmentsynlighed"
         }
       },
       "colours": {
@@ -64,7 +65,15 @@
         "description": "Avancerede konfigurationsindstillinger",
         "menu_options": {
           "download_logs": "Download Logfiler",
-          "reset_map_trims": "Nulstil Kortbeskæringer"
+          "map_trims": "Kortbeskæringer"
+        }
+      },
+      "map_trims": {
+        "title": "Kortbeskæringsindstillinger",
+        "description": "Administrer kortbeskæringsindstillinger",
+        "menu_options": {
+          "reset_map_trims": "Nulstil Kortbeskæringer",
+          "save_map_trims": "Gem Kortbeskæringer"
         }
       },
       "download_logs": {
@@ -93,31 +102,19 @@
         "title": "Billedeindstillinger"
       },
       "image_offset": {
-        "title": "Billedforskydning & Beskæringsindstillinger",
-        "description": "Konfigurer billedforskydninger og etagebeskæringsværdier",
+        "title": "Billedforskydningsindstillinger",
+        "description": "Konfigurer billedforskydningsværdier",
         "data": {
           "offset_top": "Top Forskydning",
           "offset_bottom": "Bund Forskydning",
           "offset_left": "Venstre Forskydning",
-          "offset_right": "Højre Forskydning",
-          "floor_name": "Etagenavn",
-          "trim_up": "Øvre Beskæring",
-          "trim_down": "Nedre Beskæring",
-          "trim_left": "Venstre Beskæring",
-          "trim_right": "Højre Beskæring",
-          "trim_action": "Beskæringshandling"
+          "offset_right": "Højre Forskydning"
         },
         "data_description": {
           "offset_top": "Pixels til forskydning fra top (0-1000)",
           "offset_bottom": "Pixels til forskydning fra bund (0-1000)",
           "offset_left": "Pixels til forskydning fra venstre (0-1000)",
-          "offset_right": "Pixels til forskydning fra højre (0-1000)",
-          "floor_name": "Navn på den aktuelle etageplan",
-          "trim_up": "Øvre beskæringsværdi (0-10000)",
-          "trim_down": "Nedre beskæringsværdi (0-10000)",
-          "trim_left": "Venstre beskæringsværdi (0-10000)",
-          "trim_right": "Højre beskæringsværdi (0-10000)",
-          "trim_action": "Handling at udføre på beskæringsværdier"
+          "offset_right": "Pixels til forskydning fra højre (0-1000)"
         }
       },
       "status_text": {
@@ -135,6 +132,74 @@
         },
         "description": "Billedeindstillinger",
         "title": "Statustekst indstillinger"
+      },
+      "draw_elements": {
+        "title": "Objektsynlighed",
+        "description": "Konfigurer hvilke elementer der er synlige på kortet",
+        "data": {
+          "disable_floor": "Skjul gulv",
+          "disable_wall": "Skjul vægge",
+          "disable_robot": "Skjul robot",
+          "disable_charger": "Skjul oplader",
+          "disable_virtual_walls": "Skjul virtuelle vægge",
+          "disable_restricted_areas": "Skjul begrænsede områder",
+          "disable_no_mop_areas": "Skjul no-mop områder",
+          "disable_obstacles": "Skjul forhindringer",
+          "disable_path": "Skjul sti",
+          "disable_predicted_path": "Skjul forventet sti",
+          "disable_go_to_target": "Skjul gå-til mål"
+        },
+        "data_description": {
+          "disable_floor": "Når aktiveret, vil gulvet ikke blive vist på kortet",
+          "disable_wall": "Når aktiveret, vil vægge ikke blive vist på kortet",
+          "disable_robot": "Når aktiveret, vil robotten ikke blive vist på kortet",
+          "disable_charger": "Når aktiveret, vil opladeren ikke blive vist på kortet",
+          "disable_virtual_walls": "Når aktiveret, vil virtuelle vægge ikke blive vist på kortet",
+          "disable_restricted_areas": "Når aktiveret, vil begrænsede områder ikke blive vist på kortet",
+          "disable_no_mop_areas": "Når aktiveret, vil no-mop områder ikke blive vist på kortet",
+          "disable_obstacles": "Når aktiveret, vil forhindringer ikke blive vist på kortet",
+          "disable_path": "Når aktiveret, vil rengøringsstien ikke blive vist på kortet",
+          "disable_predicted_path": "Når aktiveret, vil den forventede sti ikke blive vist på kortet",
+          "disable_go_to_target": "Når aktiveret, vil gå-til mål ikke blive vist på kortet"
+        }
+      },
+      "segments_visibility": {
+        "title": "Segmentsynlighed",
+        "description": "Konfigurer hvilke rumssegmenter der er synlige på kortet",
+        "data": {
+          "disable_room_1": "Skjul rum 1",
+          "disable_room_2": "Skjul rum 2",
+          "disable_room_3": "Skjul rum 3",
+          "disable_room_4": "Skjul rum 4",
+          "disable_room_5": "Skjul rum 5",
+          "disable_room_6": "Skjul rum 6",
+          "disable_room_7": "Skjul rum 7",
+          "disable_room_8": "Skjul rum 8",
+          "disable_room_9": "Skjul rum 9",
+          "disable_room_10": "Skjul rum 10",
+          "disable_room_11": "Skjul rum 11",
+          "disable_room_12": "Skjul rum 12",
+          "disable_room_13": "Skjul rum 13",
+          "disable_room_14": "Skjul rum 14",
+          "disable_room_15": "Skjul rum 15"
+        },
+        "data_description": {
+          "disable_room_1": "Når aktiveret, vil rum 1 ikke blive vist på kortet",
+          "disable_room_2": "Når aktiveret, vil rum 2 ikke blive vist på kortet",
+          "disable_room_3": "Når aktiveret, vil rum 3 ikke blive vist på kortet",
+          "disable_room_4": "Når aktiveret, vil rum 4 ikke blive vist på kortet",
+          "disable_room_5": "Når aktiveret, vil rum 5 ikke blive vist på kortet",
+          "disable_room_6": "Når aktiveret, vil rum 6 ikke blive vist på kortet",
+          "disable_room_7": "Når aktiveret, vil rum 7 ikke blive vist på kortet",
+          "disable_room_8": "Når aktiveret, vil rum 8 ikke blive vist på kortet",
+          "disable_room_9": "Når aktiveret, vil rum 9 ikke blive vist på kortet",
+          "disable_room_10": "Når aktiveret, vil rum 10 ikke blive vist på kortet",
+          "disable_room_11": "Når aktiveret, vil rum 11 ikke blive vist på kortet",
+          "disable_room_12": "Når aktiveret, vil rum 12 ikke blive vist på kortet",
+          "disable_room_13": "Når aktiveret, vil rum 13 ikke blive vist på kortet",
+          "disable_room_14": "Når aktiveret, vil rum 14 ikke blive vist på kortet",
+          "disable_room_15": "Når aktiveret, vil rum 15 ikke blive vist på kortet"
+        }
       },
       "base_colours": {
         "data": {
@@ -271,10 +336,11 @@
     }
   },
   "selector": {
-    "camera_logs_progres": {
+    "trim_actions": {
       "options": {
-        "opt_1": "Kopier logfiler til www",
-        "opt_2": "Fjern logfiler fra www"
+        "save": "Gem Ændringer",
+        "reset": "Nulstil til Registrerede Værdier",
+        "delete": "Slet Alle Beskæringer"
       }
     },
     "vacuum_status": {
@@ -287,13 +353,6 @@
         "idle": "Inaktiv",
         "paused": "Pause",
         "returning": "Returnerer"
-      }
-    },
-    "trim_actions": {
-      "options": {
-        "save": "Gem Ændringer",
-        "reset": "Nulstil til Registrerede Værdier",
-        "delete": "Slet Alle Beskæringer"
       }
     }
   },
@@ -328,6 +387,18 @@
   "exceptions": {
     "no_entity_id_provided": {
       "message": "Mangler entity_id i konfigurationen."
+    },
+    "missing_zone_or_zone_ids": {
+      "message": "Enten 'zone' eller 'zone_ids' skal angives."
+    },
+    "zone_must_be_list": {
+      "message": "Parameteren 'Zone' skal være en liste."
+    },
+    "zoneid_must_be_list": {
+      "message": "Parameteren 'Zone_Ids' skal være en liste."
+    },
+    "zone_list_length": {
+      "message": "'Zone' skal have mindst 1 element, der indeholder en liste med 4 heltal."
     }
   }
 }

@@ -5,8 +5,8 @@ Version: 2025.3.0b1
 
 from __future__ import annotations
 
-import re
 import functools
+import re
 from typing import Any
 
 from homeassistant.components.mqtt import DOMAIN as MQTT_DOMAIN
@@ -183,7 +183,8 @@ def from_device_ids_to_entity_ids(
             for entry in entity_reg.entities.values():
                 if entry.device_id == device_id and entry.domain == domain:
                     resolved_entity_ids.append(entry.entity_id)
-            return resolved_entity_ids
+
+    return resolved_entity_ids if resolved_entity_ids else None
 
 
 def get_device_info_from_entity_id(entity_id: str, hass) -> DeviceEntry | None:
@@ -197,6 +198,7 @@ def get_device_info_from_entity_id(entity_id: str, hass) -> DeviceEntry | None:
             device_id = entry.device_id
             device = device_reg.async_get(device_id)
             return device
+    return None
 
 
 def get_entity_id(
@@ -224,9 +226,7 @@ def compose_obstacle_links(vacuum_host_ip: str, obstacles: list) -> list | None:
     """
     obstacle_links = []
     if not obstacles or not vacuum_host_ip:
-        LOGGER.debug(
-            "No obstacles or vacuum_host_ip provided."
-        )
+        LOGGER.debug("No obstacles or vacuum_host_ip provided.")
         return None
 
     for obstacle in obstacles:
@@ -239,8 +239,10 @@ def compose_obstacle_links(vacuum_host_ip: str, obstacles: list) -> list | None:
             # Append formatted obstacle data
             if image_id != "None":
                 # Compose the link
-                image_link = (f"http://{vacuum_host_ip}"
-                              f"/api/v2/robot/capabilities/ObstacleImagesCapability/img/{image_id}")
+                image_link = (
+                    f"http://{vacuum_host_ip}"
+                    f"/api/v2/robot/capabilities/ObstacleImagesCapability/img/{image_id}"
+                )
                 obstacle_links.append(
                     {
                         "point": points,
@@ -258,7 +260,7 @@ def compose_obstacle_links(vacuum_host_ip: str, obstacles: list) -> list | None:
 
     LOGGER.debug("Obstacle links: linked data complete.")
 
-    return obstacle_links
+    return obstacle_links if obstacle_links else None
 
 
 def redact_ip_filter(func):

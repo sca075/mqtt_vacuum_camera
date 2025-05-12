@@ -1,13 +1,11 @@
 """
 Camera
-Last Updated on version: 2025.3.0b0
+Last Updated on version: 2025.5.0
 """
 
 from __future__ import annotations
 
 import asyncio
-from asyncio import gather, get_event_loop
-from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
 from io import BytesIO
 import math
@@ -20,12 +18,14 @@ from PIL import Image
 from homeassistant import config_entries, core
 from homeassistant.components.camera import Camera, CameraEntityFeature
 from homeassistant.const import CONF_UNIQUE_ID, MATCH_ALL
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.device_registry import DeviceInfo as Dev_Info
 from homeassistant.helpers.entity import DeviceInfo as Entity_Info
 from homeassistant.helpers.storage import STORAGE_DIR
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from psutil_home_assistant import PsutilWrapper as ProcInspector
+from valetudo_map_parser.config.colors import ColorsManagement
 from valetudo_map_parser.config.types import SnapshotStore
 from valetudo_map_parser.config.utils import ResizeParams, async_resize_image
 
@@ -44,12 +44,8 @@ from .const import (
 )
 from .snapshots.snapshot import Snapshots
 from .utils.camera.camera_processing import CameraProcessor
-from .utils.colors_man import ColorsManagement
-from .utils.files_operations import (
-    async_get_active_user_language,
-    async_load_file,
-    is_auth_updated,
-)
+from .utils.files_operations import async_load_file
+from .utils.thread_pool import ThreadPoolManager
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -118,6 +114,11 @@ class MQTTCamera(CoordinatorEntity, Camera):
         self._last_image = None
         self.auth_update_time = None
         self._rrm_data = False  # Check for rrm data
+
+        # Set default language to English - only set once during initialization
+        # This eliminates the need for continuous language checks during camera updates
+        self._shared.user_language = "en"
+
         # get the colours used in the maps.
         self._colours = ColorsManagement(self._shared)
         self._colours.set_initial_colours(device_info)
@@ -319,9 +320,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
                 return self.camera_image(self._image_w, self._image_h)
 
         # Map View Processing
-        if is_auth_updated(self):
-            # Get the active user language
-            self._shared.user_language = await async_get_active_user_language(self.hass)
+        # Removed auth check to improve performance - language is now set only during initialization
         if not self._mqtt:
             LOGGER.debug("%s: No MQTT data available.", self._file_name)
             # return last/empty image if no MQTT or CPU usage too high.
@@ -333,7 +332,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         pid = os.getpid()  # Start to log the CPU usage of this PID.
         proc = ProcInspector().psutil.Process(pid)  # Get the process PID.
         process_data = await self._mqtt.is_data_available()
-        if process_data and self._shared.camera_mode == CameraModes.MAP_VIEW:
+        if process_data and (self._shared.camera_mode == CameraModes.MAP_VIEW):
             # to calculate the cycle time for frame adjustment.
             start_time = time.perf_counter()
             self._log_cpu_usage(proc)
@@ -349,12 +348,18 @@ class MQTTCamera(CoordinatorEntity, Camera):
                     self._file_name,
                     process_data,
                 )
+            parsed_json = None
+            is_a_test = False
             try:
                 parsed_json, is_a_test = await self._process_parsed_json()
             except ValueError:
                 self._vac_json_available = "Error"
-                pass
-            else:
+                self.Image = await self.hass.async_create_task(
+                    self.run_async_pil_to_bytes(self.empty_if_no_data())
+                )
+                s = self.camera_image(self._image_w, self._image_h)
+                return s
+            finally:
                 # Just in case, let's check that the data is available.
                 if parsed_json is not None:
                     if self._rrm_data:
@@ -411,7 +416,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
                 self._log_memory_usage(proc)
                 self._log_cpu_usage(proc)
                 self._processing = False
-                return self.camera_image(self._image_w, self._image_h)
+        return self.camera_image(self._image_w, self._image_h)
 
     async def _update_vacuum_state(self):
         """Update vacuum state based on MQTT data."""
@@ -536,38 +541,33 @@ class MQTTCamera(CoordinatorEntity, Camera):
                 pil_img.close()
 
     def process_pil_to_bytes(self, pil_img, image_id: str = None):
-        """Async function to process the image data from the Vacuum Json data."""
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
+        """Process the PIL image to bytes.
+
+        This is a synchronous wrapper around the async conversion function,
+        designed to be called from a thread pool.
+        """
+        # Use asyncio.run which properly manages the event loop lifecycle
         try:
-            result = loop.run_until_complete(self.async_pil_to_bytes(pil_img, image_id))
-        finally:
-            loop.close()
-        return result
+            return asyncio.run(self.async_pil_to_bytes(pil_img, image_id))
+        except Exception as e:
+            LOGGER.error("Error in process_pil_to_bytes: %s", str(e), exc_info=True)
+            return None
 
     async def run_async_pil_to_bytes(self, pil_img, image_id: str = None):
-        """Thread function to process the image data from the Vacuum Json data."""
-        num_processes = 1
-        pil_img_list = [pil_img for _ in range(num_processes)]
-        loop = get_event_loop()
-
-        with ThreadPoolExecutor(
-            max_workers=1, thread_name_prefix=f"{self._file_name}_camera"
-        ) as executor:
-            tasks = [
-                loop.run_in_executor(
-                    executor, self.process_pil_to_bytes, pil_img, image_id
-                )
-                for pil_img in pil_img_list
-            ]
-            images = await gather(*tasks)
-
-        if isinstance(images, list) and len(images) > 0:
-            result = images[0]
-        else:
-            result = None
-
-        return result
+        """Thread function to process the image data using persistent thread pool."""
+        try:
+            # Use the persistent thread pool
+            thread_pool = ThreadPoolManager.get_instance()
+            result = await thread_pool.run_in_executor(
+                f"{self._file_name}_camera",
+                self.process_pil_to_bytes,
+                pil_img,
+                image_id,
+            )
+            return result
+        except Exception as e:
+            LOGGER.error("Error converting image to bytes: %s", str(e), exc_info=True)
+            return None
 
     async def handle_vacuum_start(self, event):
         """Handle the event_vacuum_start event."""
@@ -591,7 +591,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
                 LOGGER.debug("%s: Restoring the backup image.", self._file_name)
                 self.Image = self._image_bk
                 return self.camera_image(self._image_w, self._image_h)
-            return
+            return self.Image
 
         async def _set_camera_mode(mode_of_camera: CameraModes, reason: str = None):
             """Set the camera mode."""
@@ -647,95 +647,96 @@ class MQTTCamera(CoordinatorEntity, Camera):
             self._shared.obstacles_data
             and self._shared.camera_mode == CameraModes.MAP_VIEW
         ):
-            if event.data.get("entity_id") == self.entity_id:
-                await _set_camera_mode(CameraModes.OBSTACLE_SEARCH)
-                coordinates = event.data.get("coordinates")
-                if coordinates:
-                    obstacles = self._shared.obstacles_data
-                    coordinates_x = coordinates.get("x")
-                    coordinates_y = coordinates.get("y")
-                    # Find the nearest obstacle
-                    nearest_obstacle = await _async_find_nearest_obstacle(
-                        coordinates_x, coordinates_y, obstacles
+            if event.data.get("entity_id") != self.entity_id:
+                return _set_camera_mode(CameraModes.MAP_VIEW, "Entity ID mismatch")
+            await _set_camera_mode(
+                CameraModes.OBSTACLE_SEARCH, "Obstacle View Requested"
+            )
+            coordinates = event.data.get("coordinates", None)
+            if coordinates:
+                obstacles = self._shared.obstacles_data
+                coordinates_x = coordinates.get("x")
+                coordinates_y = coordinates.get("y")
+                # Find the nearest obstacle
+                nearest_obstacle = await _async_find_nearest_obstacle(
+                    coordinates_x, coordinates_y, obstacles
+                )
+                if nearest_obstacle:
+                    LOGGER.debug(
+                        "%s: Nearest obstacle found: %r",
+                        self._file_name,
+                        nearest_obstacle,
+                    )
+                    if not nearest_obstacle["link"]:
+                        return await _set_map_view_mode(
+                            "No link found for the obstacle image."
+                        )
+
+                    await _set_camera_mode(
+                        mode_of_camera=CameraModes.OBSTACLE_DOWNLOAD,
+                        reason=f"Downloading image: {nearest_obstacle['link']}",
                     )
 
-                    if nearest_obstacle:
-                        LOGGER.debug(
-                            "%s: Nearest obstacle found: %r",
-                            self._file_name,
-                            nearest_obstacle,
+                    # Download the image
+                    try:
+                        image_data = await asyncio.wait_for(
+                            fut=self.processor.download_image(nearest_obstacle["link"]),
+                            timeout=10,
                         )
-                        if nearest_obstacle["link"]:
-                            await _set_camera_mode(
-                                mode_of_camera=CameraModes.OBSTACLE_DOWNLOAD,
-                                reason=f"Downloading image: {nearest_obstacle['link']}",
+                    except asyncio.TimeoutError:
+                        LOGGER.warning("%s: Image download timed out.", self._file_name)
+                        return await _set_map_view_mode(
+                            "Obstacle image download timed out."
+                        )
+
+                    # Process the image if download was successful
+                    if image_data is not None:
+                        await _set_camera_mode(CameraModes.OBSTACLE_VIEW)
+                        try:
+                            start_time = time.perf_counter()
+                            # Open the downloaded image with PIL
+                            pil_img = await self.hass.async_create_task(
+                                self.processor.async_open_image(image_data)
                             )
-                            try:
-                                temp_image = await asyncio.wait_for(
-                                    fut=self.processor.download_image(
-                                        nearest_obstacle["link"]
-                                    ),
-                                    timeout=10,
-                                )
-                            except asyncio.TimeoutError:
-                                return await _set_map_view_mode(
-                                    "Image download timeout."
-                                )
-                            except Exception as e:
-                                return await _set_map_view_mode(
-                                    f"Error downloading image: {e}"
-                                )
-                        else:
-                            return await _set_map_view_mode(
-                                "No link found for the obstacle image."
+                            # Resize the image if resize_to is provided
+                            width = self._shared.image_ref_width
+                            height = self._shared.image_ref_height
+                            resize_data = ResizeParams(
+                                pil_img=pil_img,
+                                width=width,
+                                height=height,
+                                aspect_ratio=self._shared.image_aspect_ratio,
+                                crop_size=[],
+                                is_rand=False,
+                                offset_func=None,
                             )
-                        if temp_image is not None:
-                            await _set_camera_mode(CameraModes.OBSTACLE_VIEW)
-                            try:
-                                start_time = time.perf_counter()
-                                # Open the downloaded image with PIL
-                                pil_img = await self.hass.async_create_task(
-                                    self.processor.async_open_image(temp_image)
+                            resized_image, _ = await async_resize_image(
+                                params=resize_data
+                            )
+                            self.Image = await self.hass.async_create_task(
+                                self.run_async_pil_to_bytes(
+                                    resized_image,
+                                    image_id=nearest_obstacle["label"],
                                 )
-                                # Resize the image if resize_to is provided
-                                width = self._shared.image_ref_width
-                                height = self._shared.image_ref_height
-                                resize_data = ResizeParams(
-                                    pil_img=pil_img,
-                                    width=width,
-                                    height=height,
-                                    aspect_ratio=self._shared.image_aspect_ratio,
-                                    crop_size=[],
-                                    is_rand=False,
-                                    offset_func=None,
-                                )
-                                resized_image, _ = await async_resize_image(
-                                    params=resize_data
-                                )
-                                self.Image = await self.hass.async_create_task(
-                                    self.run_async_pil_to_bytes(
-                                        resized_image,
-                                        image_id=nearest_obstacle["label"],
-                                    )
-                                )
-                                end_time = time.perf_counter()
-                                LOGGER.debug(
-                                    "%s: Image processing time: %r seconds",
-                                    self._file_name,
-                                    end_time - start_time,
-                                )
-                                return
-                            except Exception as e:
-                                LOGGER.warning(
-                                    "%s: Unexpected Error processing image: %r",
-                                    self._file_name,
-                                    e,
-                                    exc_info=True,
-                                )
-                                return await _set_map_view_mode()
-                        else:
-                            return await _set_map_view_mode("No image downloaded.")
+                            )
+                            end_time = time.perf_counter()
+                            LOGGER.debug(
+                                "%s: Image processing time: %r seconds",
+                                self._file_name,
+                                end_time - start_time,
+                            )
+                            return self.Image
+                        except HomeAssistantError as e:
+                            LOGGER.warning(
+                                "%s: Unexpected Error processing image: %r",
+                                self._file_name,
+                                e,
+                                exc_info=True,
+                            )
+                            return await _set_map_view_mode()
                     else:
-                        return await _set_map_view_mode("No nearby obstacle found.")
+                        return await _set_map_view_mode("No image downloaded.")
+                return await _set_map_view_mode("No nearby obstacle found.")
+            return await _set_map_view_mode("No coordinates provided.")
         else:
             return await _set_map_view_mode("No obstacles data available.")

@@ -14,7 +14,6 @@ from homeassistant.helpers.selector import (
     ColorRGBSelector,
     NumberSelector,
     NumberSelectorConfig,
-    TextSelector,
     SelectSelector,
     SelectSelectorConfig,
     SelectSelectorMode,
@@ -61,12 +60,14 @@ from .const import (
     CONF_ZOOM_LOCK_RATIO,
     DEFAULT_ROOMS,
     DOMAIN,
+    DRAW_FLAGS,
     FONTS_AVAILABLE,
     IS_ALPHA,
     IS_ALPHA_R1,
     IS_ALPHA_R2,
     LOGGER,
     RATIO_VALUES,
+    ROOM_FLAGS,
     ROTATION_VALUES,
     TEXT_SIZE_VALUES,
 )
@@ -74,6 +75,7 @@ from .snapshots.log_files import run_async_save_logs
 from .utils.files_operations import async_del_file, async_rename_room_description
 
 
+# noinspection PyTypeChecker
 class MQTTCameraOptionsFlowHandler(OptionsFlow):
     """Options flow handler for MQTT Vacuum Camera integration."""
 
@@ -270,8 +272,13 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         """Handle image options menu."""
         return self.async_show_menu(
             step_id="image_opt",
-            menu_options=["image_basic_opt", "status_text"],
-        ) # "image_offset"
+            menu_options=[
+                "image_basic_opt",
+                "status_text",
+                "draw_elements",
+                "segments_visibility",
+            ],
+        )  #
 
     # pylint: disable=unused-argument
     async def async_step_colours(self, user_input=None) -> ConfigFlowResult:
@@ -319,7 +326,8 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
             step_id="advanced",
             menu_options=[
                 "download_logs",
-                "reset_map_trims",
+                "map_trims",
+                # "image_offset", # Temporarily disabled until drawings part is fixed
             ],
         )
 
@@ -361,23 +369,11 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
     async def async_step_image_offset(
         self, user_input: Optional[Dict[str, Any]] = None
     ):
-        """Handle image offset and trims settings."""
-        entry = self.camera_config.entry_id
-        coordinator = self.hass.data[DOMAIN][entry]["coordinator"]
+        """Handle image offset settings."""
         config_options = self.camera_config.as_dict().get("options", {})
-        config_trims = config_options.get(
-            "trims_data",
-            {
-                "floor": "",
-                "trim_up": 0,
-                "trim_down": 0,
-                "trim_left": 0,
-                "trim_right": 0,
-            },
-        )
 
         if user_input is not None:
-            # Handle offset updates
+            # Handle offset updates only
             offset_updates = {
                 "offset_top": user_input.get(CONF_OFFSET_TOP),
                 "offset_bottom": user_input.get(CONF_OFFSET_BOTTOM),
@@ -385,44 +381,10 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                 "offset_right": user_input.get(CONF_OFFSET_RIGHT),
             }
 
-            # Handle trims data updates
-            trims_updates = {
-                "floor": user_input.get("floor_name", config_trims.get("floor", "")),
-                "trim_up": int(
-                    user_input.get("trim_up", config_trims.get("trim_up", 0))
-                ),
-                "trim_down": int(
-                    user_input.get("trim_down", config_trims.get("trim_down", 0))
-                ),
-                "trim_left": int(
-                    user_input.get("trim_left", config_trims.get("trim_left", 0))
-                ),
-                "trim_right": int(
-                    user_input.get("trim_right", config_trims.get("trim_right", 0))
-                ),
-            }
-
-            action = user_input.get("trim_action", "save")
-
-            match action:
-                case "reset":
-                    # Get fresh trims from coordinator
-                    trims_updates = coordinator.shared.trims.to_dict()
-                case "delete":
-                    # Clear all trims
-                    trims_updates = coordinator.shared.trims.clear()
-                    offset_updates = {
-                        "offset_top": 0,
-                        "offset_bottom": 0,
-                        "offset_left": 0,
-                        "offset_right": 0,
-                    }
-
-            self.camera_options.update({**offset_updates, "trims_data": trims_updates})
-
+            self.camera_options.update(offset_updates)
             return await self.async_step_opt_save()
 
-        # Build the form schema
+        # Build the form schema - only for offsets
         offset_schema = {
             vol.Optional(
                 CONF_OFFSET_TOP, default=config_options.get("offset_top", 0)
@@ -436,36 +398,12 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
             vol.Optional(
                 CONF_OFFSET_RIGHT, default=config_options.get("offset_right", 0)
             ): NumberSelector({"min": 0, "max": 1000, "step": 1}),
-            vol.Optional(
-                "floor_name", default=config_trims.get("floor", "")
-            ): TextSelector(),
-            vol.Optional(
-                "trim_up", default=config_trims.get("trim_up", 0)
-            ): NumberSelector({"min": 0, "max": 10000, "step": 1, "mode": "box"}),
-            vol.Optional(
-                "trim_down", default=config_trims.get("trim_down", 0)
-            ): NumberSelector({"min": 0, "max": 10000, "step": 1, "mode": "box"}),
-            vol.Optional(
-                "trim_left", default=config_trims.get("trim_left", 0)
-            ): NumberSelector({"min": 0, "max": 10000, "step": 1, "mode": "box"}),
-            vol.Optional(
-                "trim_right", default=config_trims.get("trim_right", 0)
-            ): NumberSelector({"min": 0, "max": 10000, "step": 1, "mode": "box"}),
-            vol.Optional("trim_action", default="save"): SelectSelector(
-                {
-                    "options": ["save", "reset", "delete"],
-                    "translation_key": "trim_actions",
-                }
-            ),
         }
 
         return self.async_show_form(
             step_id="image_offset",
             data_schema=vol.Schema(offset_schema),
-            description_placeholders={
-                **self.camera_options,
-                "current_floor": config_trims.get("floor", ""),
-            },
+            description_placeholders=self.camera_options,
         )
 
     async def async_step_status_text(self, user_input: Optional[Dict[str, Any]] = None):
@@ -485,6 +423,104 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         return self.async_show_form(
             step_id="status_text",
             data_schema=self.status_text_options,
+            description_placeholders=self.camera_options,
+        )
+
+    def _build_boolean_options_fields(self, flags, limit=None):
+        """Helper method to build boolean option fields from a list of flags.
+
+        Args:
+            flags: List of flag constants to use for building fields
+            limit: Optional limit on the number of flags to use (for rooms)
+
+        Returns:
+            Dictionary of fields for the form schema
+        """
+        fields = {}
+        flags_to_use = flags
+
+        # If limit is provided, only use that many flags
+        if limit is not None:
+            flags_to_use = flags[:limit]
+
+        for flag in flags_to_use:
+            fields[
+                vol.Optional(
+                    flag,
+                    default=self.camera_config.options.get(flag, False),
+                )
+            ] = BooleanSelector()
+
+        return fields
+
+    @staticmethod
+    def _update_boolean_options(user_input, flags, limit=None):
+        """Helper method to update options based on user input.
+
+        Args:
+            user_input: User input from the form
+            flags: List of flag constants to use for updating options
+            limit: Optional limit on the number of flags to use (for rooms)
+
+        Returns:
+            Dictionary of updated options
+        """
+        options_update = {}
+        flags_to_use = flags
+
+        # If limit is provided, only use that many flags
+        if limit is not None:
+            flags_to_use = flags[:limit]
+
+        for flag in flags_to_use:
+            options_update[flag] = user_input.get(flag, False)
+
+        return options_update
+
+    async def async_step_draw_elements(
+        self, user_input: Optional[Dict[str, Any]] = None
+    ):
+        """Handle draw elements configuration."""
+        LOGGER.info("Draw Elements Configuration Started.")
+
+        if user_input is not None:
+            # Update options based on user input using DRAW_FLAGS
+            options_update = self._update_boolean_options(user_input, DRAW_FLAGS)
+            self.camera_options.update(options_update)
+            return await self.async_step_opt_save()
+
+        # Create schema for the form using DRAW_FLAGS
+        fields = self._build_boolean_options_fields(DRAW_FLAGS)
+
+        return self.async_show_form(
+            step_id="draw_elements",
+            data_schema=vol.Schema(fields),
+            description_placeholders=self.camera_options,
+        )
+
+    async def async_step_segments_visibility(
+        self, user_input: Optional[Dict[str, Any]] = None
+    ):
+        """Handle segments (rooms) visibility configuration."""
+        LOGGER.info("Segments Visibility Configuration Started.")
+
+        # Limit to the number of rooms that exist
+        room_limit = min(self.number_of_rooms, 15)
+
+        if user_input is not None:
+            # Update options based on user input using ROOM_FLAGS
+            options_update = self._update_boolean_options(
+                user_input, ROOM_FLAGS, room_limit
+            )
+            self.camera_options.update(options_update)
+            return await self.async_step_opt_save()
+
+        # Create schema for the form - only show fields for rooms that exist
+        fields = self._build_boolean_options_fields(ROOM_FLAGS, room_limit)
+
+        return self.async_show_form(
+            step_id="segments_visibility",
+            data_schema=vol.Schema(fields),
             description_placeholders=self.camera_options,
         )
 
@@ -759,6 +795,8 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         LOGGER.debug("Renaming the translations.")
         if self.backup_options:
             if self.hass:
+                # This will initialize the language cache only when needed
+                # The optimization is now handled in room_manager.py
                 await async_rename_room_description(self.hass, self.file_name)
                 self.camera_options = self.backup_options
             return await self.async_step_opt_save()
@@ -768,28 +806,31 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
     async def async_step_reset_map_trims(self, user_input=None):
         """Handle map trims reset."""
         entry = self.camera_config.entry_id
-        LOGGER.debug("Updating the map trims for %s", entry)
+        LOGGER.debug("Resetting the map trims for %s", entry)
         coordinator = self.hass.data[DOMAIN][entry]["coordinator"]
-        config_options = self.camera_config.as_dict().get("options", {})
-        config_trims = config_options.get("trims_data", {})
 
-        if self.backup_options:
-            if all(
-                config_trims.get(key, 0) == 0
-                for key in ("trim_down", "trim_left", "trim_right", "trim_up")
-            ):
-                new_trims = coordinator.shared.trims.to_dict()
-                self.camera_options = {"trims_data": new_trims}
-            else:
-                reset_trims = coordinator.shared.trims.clear()
-                self.camera_options = {
-                    "offset_bottom": 0,
-                    "offset_left": 0,
-                    "offset_top": 0,
-                    "offset_right": 0,
-                    "trims_data": reset_trims,
-                }
-            return await self.async_step_opt_save()
+        # Always reset trims when this option is selected
+        reset_trims = coordinator.shared.trims.clear()
+        self.camera_options = {
+            "offset_bottom": 0,
+            "offset_left": 0,
+            "offset_top": 0,
+            "offset_right": 0,
+            "trims_data": reset_trims,
+        }
+        return await self.async_step_opt_save()
+
+    # pylint: disable=unused-argument
+    async def async_step_save_map_trims(self, user_input=None):
+        """Handle map trims save."""
+        entry = self.camera_config.entry_id
+        LOGGER.debug("Saving the map trims for %s", entry)
+        coordinator = self.hass.data[DOMAIN][entry]["coordinator"]
+
+        # Save current trims from coordinator
+        new_trims = coordinator.shared.trims.to_dict()
+        self.camera_options = {"trims_data": new_trims}
+        return await self.async_step_opt_save()
 
     async def async_step_opt_save(self):
         """

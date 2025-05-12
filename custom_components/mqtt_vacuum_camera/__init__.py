@@ -1,6 +1,6 @@
 """
 MQTT Vacuum Camera.
-Version: 2025.2.2
+Version: 2025.05.0
 """
 
 from functools import partial
@@ -19,11 +19,7 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.reload import async_register_admin_service
 from homeassistant.helpers.storage import STORAGE_DIR
 
-from .common import (
-    get_vacuum_device_info,
-    get_vacuum_mqtt_topic,
-    update_options,
-)
+from .common import get_vacuum_device_info, get_vacuum_mqtt_topic, update_options
 from .const import (
     CAMERA_STORAGE,
     CONF_VACUUM_CONFIG_ENTRY_ID,
@@ -42,6 +38,7 @@ from .utils.files_operations import (
     async_get_translations_vacuum_id,
     async_rename_room_description,
 )
+from .utils.thread_pool import ThreadPoolManager
 from .utils.vacuum.mqtt_vacuum_services import (
     async_register_vacuums_services,
     async_remove_vacuums_services,
@@ -61,6 +58,10 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
 
     hass.data.setdefault(DOMAIN, {})
     hass_data = dict(entry.data)
+
+    # Language cache initialization moved to room_manager.py
+    # It now only initializes when needed for room renaming operations
+    # This improves performance by avoiding unnecessary initialization
 
     vacuum_entity_id, vacuum_device = get_vacuum_device_info(
         hass_data[CONF_VACUUM_CONFIG_ENTRY_ID], hass
@@ -130,6 +131,13 @@ async def async_unload_entry(
         # Remove config entry from domain.
         entry_data = hass.data[DOMAIN].pop(entry.entry_id)
         entry_data["unsub_options_update_listener"]()
+
+        # Shutdown thread pool for this entry
+        thread_pool = ThreadPoolManager.get_instance()
+        await thread_pool.shutdown(f"{entry.entry_id}_camera")
+        await thread_pool.shutdown(f"{entry.entry_id}_camera_text")
+        LOGGER.debug("Thread pools for %s shut down", entry.entry_id)
+
         # Remove services
         if not hass.data[DOMAIN]:
             hass.services.async_remove(DOMAIN, "reset_trims")
@@ -155,7 +163,15 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
             LOGGER.debug("No vacuum room data found. Aborting!")
             return False
         LOGGER.debug("Writing down the rooms data for %s.", vacuum_entity_id)
+        # This will initialize the language cache only when needed
+        # The optimization is now handled in room_manager.py
         await async_rename_room_description(hass, vacuum_entity_id)
+
+        # Shutdown all thread pools
+        thread_pool = ThreadPoolManager.get_instance()
+        await thread_pool.shutdown()
+        LOGGER.debug("All thread pools shut down")
+
         await hass.async_block_till_done()
         return True
 
@@ -197,6 +213,52 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
             LOGGER.info(
                 "Migration to config entry version %s successful", config_entry.version
             )
+            return True
+    if config_entry.version == 3.2:
+        LOGGER.info("Migration to config entry version %s successful", 3.2)
+        old_data = {**config_entry.data}
+        new_data = {"vacuum_config_entry": old_data["vacuum_config_entry"]}
+        LOGGER.debug(dict(new_data))
+        old_options = {**config_entry.options}
+        if len(old_options) != 0:
+            tmp_option = {
+                "disable_floor": False,  # Show floor
+                "disable_wall": False,  # Show walls
+                "disable_robot": False,  # Show robot
+                "disable_charger": False,  # Show charger
+                "disable_virtual_walls": False,  # Show virtual walls
+                "disable_restricted_areas": False,  # Show restricted areas
+                "disable_no_mop_areas": False,  # Show no-mop areas
+                "disable_obstacles": False,  # Hide obstacles
+                "disable_path": False,  # Hide path
+                "disable_predicted_path": False,  # Show predicted path
+                "disable_go_to_target": False,  # Show go-to target
+                "disable_room_1": False,
+                "disable_room_2": False,
+                "disable_room_3": False,
+                "disable_room_4": False,
+                "disable_room_5": False,
+                "disable_room_6": False,
+                "disable_room_7": False,
+                "disable_room_8": False,
+                "disable_room_9": False,
+                "disable_room_10": False,
+                "disable_room_11": False,
+                "disable_room_12": False,
+                "disable_room_13": False,
+                "disable_room_14": False,
+                "disable_room_15": False,
+            }
+            new_options = await update_options(old_options, tmp_option)
+            LOGGER.debug("Migration data: %s", dict(new_options))
+            hass.config_entries.async_update_entry(
+                config_entry, version=3.3, data=new_data, options=new_options
+            )
+            LOGGER.info(
+                "Migration to config entry version %s successful",
+                config_entry.version,
+            )
+            return True
         else:
             LOGGER.error(
                 "Migration failed: No options found in config entry. Please reconfigure the camera."

@@ -16,7 +16,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from valetudo_map_parser.config.shared import CameraShared, CameraSharedManager
 
 from .common import get_camera_device_info
-from .const import DEFAULT_NAME, SENSOR_NO_DATA, LOGGER
+from .const import DEFAULT_NAME, LOGGER, SENSOR_NO_DATA
 from .utils.connection.connector import ValetudoConnector
 
 
@@ -118,6 +118,8 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         """
         self.shared_manager.update_shared_data(dev_info)
         self.shared = self.shared_manager.get_instance()
+        self.shared.file_name = self.file_name
+        self.shared.device_info = dev_info
         self.in_sync_with_camera = True
         return self.shared, self.file_name
 
@@ -154,6 +156,11 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
             last_run_stats = sensor_data.get("last_run_stats", {})
             last_loaded_map = sensor_data.get("last_loaded_map", {"name": "Default"})
 
+            if last_run_stats is None:
+                last_run_stats = {}
+            if not last_loaded_map:
+                last_loaded_map = {"name": "Default"}
+
             formatted_data = {
                 "mainBrush": sensor_data.get("mainBrush", 0),
                 "sideBrush": sensor_data.get("sideBrush", 0),
@@ -181,7 +188,9 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
             LOGGER.warning("Missing required attribute: %s", err, exc_info=True)
             return SENSOR_NO_DATA
         except KeyError as err:
-            LOGGER.warning("Missing required key in sensor data: %s", err, exc_info=True)
+            LOGGER.warning(
+                "Missing required key in sensor data: %s", err, exc_info=True
+            )
             return SENSOR_NO_DATA
         except TypeError as err:
             LOGGER.warning("Invalid data type in sensor data: %s", err, exc_info=True)

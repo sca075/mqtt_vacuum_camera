@@ -2,6 +2,7 @@
 Last Updated on version: 2025.3.0b2
 """
 
+from enum import Enum
 import logging
 from typing import Final
 
@@ -9,13 +10,13 @@ from homeassistant.components.camera import DOMAIN as CAMERA_DOMAIN
 from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
 from homeassistant.components.vacuum import DOMAIN as VACUUM_DOMAIN
 
-"""Required in Config_Flow"""
+# Required in Config_Flow
 DOMAIN: Final = "mqtt_vacuum_camera"
 DEFAULT_NAME: Final = "mqtt vacuum camera"
 ICON: Final = "mdi:camera"
 NAME: Final = "MQTT Vacuum Camera"
 
-"""Required in Coordinator and Services"""
+# Required in Coordinator and Services
 CAMERA = CAMERA_DOMAIN
 VACUUM = VACUUM_DOMAIN
 SENSOR = SENSOR_DOMAIN
@@ -56,25 +57,71 @@ TRIM_ACTION_SAVE = "save"
 TRIM_ACTION_RESET = "reset"
 TRIM_ACTION_DELETE = "delete"
 
-LOGGER = logging.getLogger(__package__)
+# Object visibility options
+CONF_DISABLE_FLOOR = "disable_floor"
+CONF_DISABLE_WALL = "disable_wall"
+CONF_DISABLE_ROBOT = "disable_robot"
+CONF_DISABLE_CHARGER = "disable_charger"
+CONF_DISABLE_VIRTUAL_WALLS = "disable_virtual_walls"
+CONF_DISABLE_RESTRICTED_AREAS = "disable_restricted_areas"
+CONF_DISABLE_NO_MOP_AREAS = "disable_no_mop_areas"
+CONF_DISABLE_OBSTACLES = "disable_obstacles"
+CONF_DISABLE_PATH = "disable_path"
+CONF_DISABLE_PREDICTED_PATH = "disable_predicted_path"
+CONF_DISABLE_GO_TO_TARGET = "disable_go_to_target"
 
-
-DEFAULT_IMAGE_SIZE = {
-    "x": 5120,
-    "y": 5120,
-    "centre": [(5120 // 2), (5120 // 2)],
-}
-
-COLORS = [
-    "wall",
-    "zone_clean",
-    "robot",
-    "background",
-    "move",
-    "charger",
-    "no_go",
-    "go_to",
+# List of all draw element flags for easier iteration
+DRAW_FLAGS = [
+    CONF_DISABLE_FLOOR,
+    CONF_DISABLE_WALL,
+    CONF_DISABLE_ROBOT,
+    CONF_DISABLE_CHARGER,
+    CONF_DISABLE_VIRTUAL_WALLS,
+    CONF_DISABLE_RESTRICTED_AREAS,
+    CONF_DISABLE_NO_MOP_AREAS,
+    CONF_DISABLE_OBSTACLES,
+    CONF_DISABLE_PATH,
+    CONF_DISABLE_PREDICTED_PATH,
+    CONF_DISABLE_GO_TO_TARGET,
 ]
+
+# Room/Segment visibility options
+CONF_DISABLE_ROOM_1 = "disable_room_1"
+CONF_DISABLE_ROOM_2 = "disable_room_2"
+CONF_DISABLE_ROOM_3 = "disable_room_3"
+CONF_DISABLE_ROOM_4 = "disable_room_4"
+CONF_DISABLE_ROOM_5 = "disable_room_5"
+CONF_DISABLE_ROOM_6 = "disable_room_6"
+CONF_DISABLE_ROOM_7 = "disable_room_7"
+CONF_DISABLE_ROOM_8 = "disable_room_8"
+CONF_DISABLE_ROOM_9 = "disable_room_9"
+CONF_DISABLE_ROOM_10 = "disable_room_10"
+CONF_DISABLE_ROOM_11 = "disable_room_11"
+CONF_DISABLE_ROOM_12 = "disable_room_12"
+CONF_DISABLE_ROOM_13 = "disable_room_13"
+CONF_DISABLE_ROOM_14 = "disable_room_14"
+CONF_DISABLE_ROOM_15 = "disable_room_15"
+
+# List of all room visibility flags for easier iteration
+ROOM_FLAGS = [
+    CONF_DISABLE_ROOM_1,
+    CONF_DISABLE_ROOM_2,
+    CONF_DISABLE_ROOM_3,
+    CONF_DISABLE_ROOM_4,
+    CONF_DISABLE_ROOM_5,
+    CONF_DISABLE_ROOM_6,
+    CONF_DISABLE_ROOM_7,
+    CONF_DISABLE_ROOM_8,
+    CONF_DISABLE_ROOM_9,
+    CONF_DISABLE_ROOM_10,
+    CONF_DISABLE_ROOM_11,
+    CONF_DISABLE_ROOM_12,
+    CONF_DISABLE_ROOM_13,
+    CONF_DISABLE_ROOM_14,
+    CONF_DISABLE_ROOM_15,
+]
+
+LOGGER = logging.getLogger(__package__)
 
 SENSOR_NO_DATA = {
     "mainBrush": 0,
@@ -97,8 +144,6 @@ SENSOR_NO_DATA = {
     "robot_in_room": "Unsupported",
 }
 
-DEFAULT_PIXEL_SIZE = 5
-
 DEFAULT_VALUES = {
     "rotate_image": "0",
     "margins": "100",
@@ -117,6 +162,32 @@ DEFAULT_VALUES = {
     "save_trims": True,
     "trims_data": {"trim_left": 0, "trim_up": 0, "trim_right": 0, "trim_down": 0},
     "enable_www_snapshots": False,
+    "disable_floor": False,
+    "disable_wall": False,
+    "disable_robot": False,
+    "disable_charger": False,
+    "disable_virtual_walls": False,
+    "disable_restricted_areas": False,
+    "disable_no_mop_areas": False,
+    "disable_obstacles": False,
+    "disable_path": False,
+    "disable_predicted_path": False,
+    "disable_go_to_target": False,
+    "disable_room_1": False,
+    "disable_room_2": False,
+    "disable_room_3": False,
+    "disable_room_4": False,
+    "disable_room_5": False,
+    "disable_room_6": False,
+    "disable_room_7": False,
+    "disable_room_8": False,
+    "disable_room_9": False,
+    "disable_room_10": False,
+    "disable_room_11": False,
+    "disable_room_12": False,
+    "disable_room_13": False,
+    "disable_room_14": False,
+    "disable_room_15": False,
     "color_charger": [255, 128, 0],
     "color_move": [238, 247, 255],
     "color_wall": [255, 255, 0],
@@ -186,6 +257,32 @@ KEYS_TO_UPDATE = [
     "vac_status_font",
     "get_svg_file",
     "enable_www_snapshots",
+    "disable_floor",
+    "disable_wall",
+    "disable_robot",
+    "disable_charger",
+    "disable_virtual_walls",
+    "disable_restricted_areas",
+    "disable_no_mop_areas",
+    "disable_obstacles",
+    "disable_path",
+    "disable_predicted_path",
+    "disable_go_to_target",
+    "disable_room_1",
+    "disable_room_2",
+    "disable_room_3",
+    "disable_room_4",
+    "disable_room_5",
+    "disable_room_6",
+    "disable_room_7",
+    "disable_room_8",
+    "disable_room_9",
+    "disable_room_10",
+    "disable_room_11",
+    "disable_room_12",
+    "disable_room_13",
+    "disable_room_14",
+    "disable_room_15",
     "color_charger",
     "color_move",
     "color_wall",
@@ -411,7 +508,7 @@ ATTR_OBSTACLES = "obstacles"
 ATTR_CAMERA_MODE = "camera_mode"
 
 
-class CameraModes:
+class CameraModes(str, Enum):
     """Constants for the camera modes"""
 
     MAP_VIEW = "map_view"
