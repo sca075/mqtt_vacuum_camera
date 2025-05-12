@@ -46,6 +46,7 @@ from .snapshots.snapshot import Snapshots
 from .utils.camera.camera_processing import CameraProcessor
 from .utils.files_operations import async_load_file
 from .utils.thread_pool import ThreadPoolManager
+from .utils.connection.decompress import DecompressionManager
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -114,6 +115,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         self._last_image = None
         self.auth_update_time = None
         self._rrm_data = False  # Check for rrm data
+        self._dm = DecompressionManager.get_instance()
 
         # Set default language to English - only set once during initialization
         # This eliminates the need for continuous language checks during camera updates
@@ -351,6 +353,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
             parsed_json = None
             is_a_test = False
             try:
+                # Process the parsed JSON data
                 parsed_json, is_a_test = await self._process_parsed_json()
             except ValueError:
                 self._vac_json_available = "Error"
@@ -449,8 +452,25 @@ class MQTTCamera(CoordinatorEntity, Camera):
             )
             self._shared.camera_mode = CameraModes.MAP_VIEW
             return parsed_json, test_mode
-        parsed_json = await self._mqtt.update_data(self._shared.image_grab)
-        if not parsed_json:
+        start_time = time.perf_counter()
+        LOGGER.debug("%s: Decompressing payload data.", self._file_name)
+        payload, data_type = await self._mqtt.update_data(self._shared.image_grab)
+        is_data = await self._mqtt.is_data_available()
+        if payload:
+            parsed_json = await self._dm.decompress(
+                self._mqtt_listen_topic, payload.payload, data_type
+            )
+            end_time = time.perf_counter()
+            LOGGER.debug(
+                "%s: Decompression time: %r seconds",
+                self._file_name,
+                end_time - start_time,
+            )
+        else:
+            LOGGER.debug("%s: No payload data available.", self._file_name)
+            parsed_json = None
+
+        if not parsed_json and is_data:
             self._vac_json_available = "Error"
             self.Image = await self.hass.async_create_task(
                 self.run_async_pil_to_bytes(self.empty_if_no_data())
@@ -461,11 +481,11 @@ class MQTTCamera(CoordinatorEntity, Camera):
             )
             self._should_poll = False
 
-        if parsed_json[1] == "Rand256":
+        if data_type == "Rand256":
             self._shared.is_rand = True
-            self._rrm_data = parsed_json[0]
+            self._rrm_data = parsed_json
         else:
-            parsed_json = parsed_json[0]
+            parsed_json = parsed_json
             self._rrm_data = None
 
         self._vac_json_available = "Success"
