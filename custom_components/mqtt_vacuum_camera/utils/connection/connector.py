@@ -9,7 +9,6 @@ from typing import Any, Dict, List
 
 from homeassistant.components import mqtt
 from homeassistant.core import EventOrigin, HomeAssistant, callback
-from valetudo_map_parser.config.rand25_parser import RRMapParser
 from valetudo_map_parser.config.types import RoomStore
 
 from custom_components.mqtt_vacuum_camera.common import (
@@ -32,7 +31,7 @@ class RRMData:
     """Class for RRM data."""
 
     rrm_json: Any = None
-    rrm_payload: Any = None
+    # rrm_payload: Any = None
     rrm_destinations: Any = None
     mqtt_vac_re_stat: Any = None
     rrm_active_segments: List[Any] = field(default_factory=list)
@@ -83,7 +82,6 @@ class ConfigData:
     is_rrm: bool = False
     do_it_once: bool = True
     shared: Any = None
-    rrm_parser: Any = None
 
 
 class ValetudoConnector:
@@ -110,12 +108,13 @@ class ValetudoConnector:
             command_topic=command_topic,
             mqtt_hass_vacuum=mqtt_hass_vacuum,
             shared=camera_shared,
-            rrm_parser=RRMapParser(),
         )
         self.connector_data = ConnectorData(
             hass=hass,
             file_name=camera_shared.file_name,
             room_store=RoomStore(camera_shared.file_name),
+            data_in=False,
+            ignore_data=False
         )
         self.is_rand256 = is_rand256
         self.mqtt_data = MQTTData()
@@ -130,20 +129,18 @@ class ValetudoConnector:
         Update the data from MQTT.
         Unzips the data and returns the JSON based on the data type.
         """
-        payload = (
-            self.rrm_data.rrm_payload if self.is_rand256 else self.mqtt_data.img_payload
-        )
-        data_type = "Rand256" if self.is_rand256 else "Hypfer"
+        if not self.mqtt_data.img_payload:
+            LOGGER.debug("%s: No image payload available", self.connector_data.file_name)
+            return None, None
 
+        payload = self.mqtt_data.img_payload[0]
+        data_type = self.mqtt_data.img_payload[1]
+           # "Rand256" if self.is_rand256 else "Hypfer"
+        LOGGER.debug(f"%s: Updating data from MQTT. %s", self.connector_data.file_name, data_type)
         if payload and process:
             # Await the result once the worker processes the task
             result = payload
-            # For Rand256, store the result in rrm_json
-            #if data_type == "Rand256" and result:
-            #    result =
-            #    #self.rrm_data.rrm_json = result
-
-            self.config.is_rrm = bool(self.rrm_data.rrm_payload)
+            self.config.is_rrm = self.is_rand256
             self.connector_data.data_in = True
 
             LOGGER.info(
@@ -178,11 +175,9 @@ class ValetudoConnector:
                 EventOrigin.local,
             )
             return "error"
-        if self.mqtt_data.mqtt_vac_stat:
-            return str(self.mqtt_data.mqtt_vac_stat)
-        elif self.rrm_data.mqtt_vac_re_stat:
+        if self.is_rand256 and self.rrm_data.mqtt_vac_re_stat:
             return str(self.rrm_data.mqtt_vac_re_stat)
-        return None
+        return str(self.mqtt_data.mqtt_vac_stat)
 
     async def get_vacuum_error(self) -> str:
         """Return the vacuum error."""
@@ -238,14 +233,14 @@ class ValetudoConnector:
 
     async def _hypfer_handle_image_data(self, msg) -> None:
         """Handle new Hypfer image data."""
-        if not self.connector_data.data_in:
-            LOGGER.info(
-                "%s: Received Hypfer image data from MQTT",
-                self.connector_data.file_name,
-            )
+        LOGGER.info(
+            "%s: Received Hypfer image data from MQTT",
+            self.connector_data.file_name,
+        )
 
-            self.mqtt_data.img_payload = msg
-            self.connector_data.data_in = True
+        self.mqtt_data.img_payload = [msg, "Hypfer"]
+        self.connector_data.data_in = True
+        self.connector_data.ignore_data = False
 
 
     async def _hypfer_handle_status_payload(self, state) -> None:
@@ -303,7 +298,7 @@ class ValetudoConnector:
             self.connector_data.file_name,
         )
 
-        self.rrm_data.rrm_payload = msg
+        self.mqtt_data.img_payload = [msg, "Rand256"]
         if self.mqtt_data.mqtt_vac_connect_state == "disconnected":
             self.mqtt_data.mqtt_vac_connect_state = "ready"
         self.connector_data.data_in = True

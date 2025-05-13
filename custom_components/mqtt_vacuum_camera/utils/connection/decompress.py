@@ -84,14 +84,19 @@ class DecompressionManager:
                 return False
 
             if data_type == "Hypfer":
-                # Check zlib header (0x78, 0x9C) and checksum
-                return payload[0] == 0x78 and payload[1] == 0x9C
+                if not payload.startswith(b"\x78\x9c"):
+                    raise ValueError("Invalid isal-zlib header")
+                # Validate zlib header checksum
+                if (payload[0] * 256 + payload[1]) % 31 != 0:
+                    raise ValueError("Invalid isal-zlib header checksum")
 
-            # Check gzip header (0x1F, 0x8B)
-            return payload[0] == 0x1F and payload[1] == 0x8B
+            elif data_type == "Rand256":
+                if not payload.startswith(b"\x1f\x8b"):
+                    raise ValueError("Invalid gzip header")
         except Exception as e:
-            LOGGER.error("Header validation error for %s: %s", data_type, e)
+            LOGGER.warning("Header validation error for %s: %s", data_type, e)
             return False
+        return True
 
     async def _cleanup_cache(self) -> None:
         """Periodically clean up expired cache entries."""

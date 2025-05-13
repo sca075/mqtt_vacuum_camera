@@ -116,11 +116,8 @@ class MQTTCamera(CoordinatorEntity, Camera):
         self.auth_update_time = None
         self._rrm_data = False  # Check for rrm data
         self._dm = DecompressionManager.get_instance()
-
         # Set default language to English - only set once during initialization
-        # This eliminates the need for continuous language checks during camera updates
         self._shared.user_language = "en"
-
         # get the colours used in the maps.
         self._colours = ColorsManagement(self._shared)
         self._colours.set_initial_colours(device_info)
@@ -352,42 +349,38 @@ class MQTTCamera(CoordinatorEntity, Camera):
                 )
             parsed_json = None
             is_a_test = False
+            data_type = None
             try:
                 # Process the parsed JSON data
-                parsed_json, is_a_test = await self._process_parsed_json()
+                parsed_json, is_a_test, data_type = await self._process_parsed_json()
+                LOGGER.debug("Data type: %r", data_type)
+                LOGGER.debug("Is a test: %r", is_a_test)
             except ValueError:
                 self._vac_json_available = "Error"
+                pil_img = self.empty_if_no_data()
                 self.Image = await self.hass.async_create_task(
-                    self.run_async_pil_to_bytes(self.empty_if_no_data())
+                    self.run_async_pil_to_bytes(pil_img)
                 )
                 s = self.camera_image(self._image_w, self._image_h)
                 return s
             finally:
                 # Just in case, let's check that the data is available.
                 if parsed_json is not None:
-                    if self._rrm_data:
+
+                    if not self._shared.destinations and data_type == "Rand256":
                         self._shared.destinations = await self._mqtt.get_destinations()
-                        pil_img = await self.hass.async_create_task(
-                            self.processor.run_async_process_valetudo_data(
-                                self._rrm_data
-                            )
+
+
+                    LOGGER.debug(f"Processing %s data..", data_type)
+                    pil_img = await self.hass.async_create_task(
+                        self.processor.run_async_process_valetudo_data(
+                            parsed_json
                         )
-                    elif self._rrm_data is None:
-                        LOGGER.debug("Image creation in progress")
-                        pil_img = await self.hass.async_create_task(
-                            self.processor.run_async_process_valetudo_data(parsed_json)
-                        )
-                    else:
-                        # if no image was processed empty or last snapshot/frame
-                        if not is_a_test:
-                            pil_img = self.empty_if_no_data()
-                        else:
-                            LOGGER.debug("Producing test mode image")
-                            pil_img = await self.hass.async_create_task(
-                                self.processor.run_async_process_valetudo_data(
-                                    parsed_json
-                                )
-                            )
+                    )
+
+                    # if no image was processed empty or last snapshot/frame
+                    if not is_a_test and pil_img is None:
+                        pil_img = self.empty_if_no_data()
 
                     # update the image
                     self._last_image = pil_img
@@ -446,50 +439,48 @@ class MQTTCamera(CoordinatorEntity, Camera):
         """Process the parsed JSON data and return the generated image."""
         if test_mode:
             LOGGER.debug("Camera Test Mode Active...")
+            data_type = "test_mode"
             parsed_json = await async_load_file(
                 file_to_load="custom_components/mqtt_vacuum_camera/snapshots/test.json",
                 is_json=True,
             )
             self._shared.camera_mode = CameraModes.MAP_VIEW
-            return parsed_json, test_mode
-        start_time = time.perf_counter()
-        LOGGER.debug("%s: Decompressing payload data.", self._file_name)
+            return parsed_json, test_mode, data_type
         payload, data_type = await self._mqtt.update_data(self._shared.image_grab)
         is_data = await self._mqtt.is_data_available()
-        if payload:
+        if payload and data_type:
+            raw_data = payload.payload if hasattr(payload, "payload") else payload
             parsed_json = await self._dm.decompress(
-                self._mqtt_listen_topic, payload.payload, data_type
+                self._mqtt_listen_topic, raw_data, data_type
             )
-            end_time = time.perf_counter()
-            LOGGER.debug(
-                "%s: Decompression time: %r seconds",
-                self._file_name,
-                end_time - start_time,
-            )
+            # Reset data_in flag to allow receiving new data for the next frame
+            if hasattr(self._mqtt, "connector_data"):
+                self._mqtt.connector_data.data_in = False
+                LOGGER.debug("%s: Reset data_in flag to allow new data", self._file_name)
         else:
             LOGGER.debug("%s: No payload data available.", self._file_name)
             parsed_json = None
-
         if not parsed_json and is_data:
             self._vac_json_available = "Error"
+            empty_img = self.empty_if_no_data()
             self.Image = await self.hass.async_create_task(
-                self.run_async_pil_to_bytes(self.empty_if_no_data())
+                self.run_async_pil_to_bytes(empty_img)
             )
             self.camera_image(self._image_w, self._image_h)
             LOGGER.warning(
-                "%s: No JSON data available. Camera Suspended.", self._file_name
+                "%s: No JSON data available. Camera Suspended required reload.", self._file_name
             )
             self._should_poll = False
-
+            return None, False, None
+        self._vac_json_available = "Success"
         if data_type == "Rand256":
             self._shared.is_rand = True
-            self._rrm_data = parsed_json
+            LOGGER.debug("%s: Setting is_rand=True for Rand256 data", self._file_name)
         else:
-            parsed_json = parsed_json
-            self._rrm_data = None
+            self._shared.is_rand = False
+            LOGGER.debug("%s: Setting is_rand=False for Hypfer data", self._file_name)
 
-        self._vac_json_available = "Success"
-        return parsed_json, test_mode
+        return parsed_json, test_mode, data_type
 
     async def _take_snapshot(self, parsed_json, pil_img):
         """Take a snapshot if conditions are met."""
