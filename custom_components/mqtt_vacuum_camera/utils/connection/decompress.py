@@ -8,7 +8,11 @@ from isal import igzip, isal_zlib  # pylint: disable=I1101
 from valetudo_map_parser.config.rand25_parser import RRMapParser
 from valetudo_map_parser.config.types import LOGGER
 
-from ..thread_pool import ThreadPoolManager
+# Extract the cache function to module scope
+@lru_cache(maxsize=32)
+def _make_cache_key(topic: str, data_type: str, payload_hash: int) -> str:
+    """Generate a cache key for decompression results."""
+    return f"{topic}:{data_type}:{payload_hash}"
 
 
 class DecompressionManager:
@@ -81,10 +85,9 @@ class DecompressionManager:
         """
         return DecompressionManager()
 
-    @lru_cache(maxsize=32)
     def _cache_key(self, topic: str, data_type: str, payload_hash: int) -> str:
-        """Generate a cache key with LRU caching to avoid repeated string operations."""
-        return f"{topic}:{data_type}:{payload_hash}"
+        """Generate a cache key using the module-level cached function."""
+        return _make_cache_key(topic, data_type, payload_hash)
 
     def _validate_header(self, payload: bytes, data_type: str) -> bool:
         """
