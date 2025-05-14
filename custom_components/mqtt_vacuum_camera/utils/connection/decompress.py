@@ -47,7 +47,7 @@ class DecompressionManager:
         # Track background tasks for cleanup
         self._background_tasks = []
 
-        # Get the thread pool manager instance
+        # Get the thread pool manager instance - defer worker creation
         self._thread_pool = ThreadPoolManager.get_instance()
 
         # Pre-initialize parser to avoid initialization delay during first use
@@ -66,14 +66,8 @@ class DecompressionManager:
         self._active_tasks = 0
         self._task_semaphore = asyncio.Semaphore(self.MAX_CONCURRENT_TASKS)
 
-        # Start background workers
-        for _ in range(2):  # Multiple workers for better throughput
-            task = asyncio.create_task(self._worker_loop())
-            self._background_tasks.append(task)
-
-        # Start cache cleanup task
-        task = asyncio.create_task(self._cleanup_cache())
-        self._background_tasks.append(task)
+        # Defer background worker creation to avoid initialization delays
+        asyncio.create_task(self._initialize_workers())
 
     @staticmethod
     @lru_cache(maxsize=32)
@@ -454,3 +448,20 @@ class DecompressionManager:
             self._results.clear()
 
         LOGGER.debug("DecompressionManager shutdown complete")
+
+    async def _initialize_workers(self) -> None:
+        """Initialize background workers after a short delay to avoid blocking entity creation."""
+        try:
+            # Short delay to allow entity creation to complete
+            await asyncio.sleep(0.1)
+            
+            # Start background workers
+            for _ in range(2):  # Multiple workers for better throughput
+                task = asyncio.create_task(self._worker_loop())
+                self._background_tasks.append(task)
+
+            # Start cache cleanup task
+            task = asyncio.create_task(self._cleanup_cache())
+            self._background_tasks.append(task)
+        except Exception as e:
+            LOGGER.error("Error initializing workers: %s", e)
