@@ -1,14 +1,14 @@
 import asyncio
-from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 import json
-import os
 import time
 from typing import Any, Callable, Dict, Optional, Tuple
 
 from isal import igzip, isal_zlib  # pylint: disable=I1101
 from valetudo_map_parser.config.rand25_parser import RRMapParser
 from valetudo_map_parser.config.types import LOGGER
+
+from ..thread_pool import ThreadPoolManager
 
 
 class DecompressionManager:
@@ -42,10 +42,8 @@ class DecompressionManager:
         # Track background tasks for cleanup
         self._background_tasks = []
 
-        # Optimize thread pool size based on workload type
-        cpu = os.cpu_count() or 1
-        max_workers = min(max(2, cpu), 8)  # At least 2, at most 8 workers
-        self._executor = ThreadPoolExecutor(max_workers=max_workers)
+        # Get the thread pool manager instance
+        self._thread_pool = ThreadPoolManager.get_instance()
 
         # Pre-initialize parser to avoid initialization delay during first use
         self._parser = RRMapParser()
@@ -72,9 +70,16 @@ class DecompressionManager:
         task = asyncio.create_task(self._cleanup_cache())
         self._background_tasks.append(task)
 
-    @classmethod
-    def get_instance(cls) -> "DecompressionManager":
-        return cls()
+    @staticmethod
+    @lru_cache(maxsize=32)
+    def get_instance() -> "DecompressionManager":
+        """Get the singleton instance of DecompressionManager.
+        This method is cached to avoid creating multiple instances.
+
+        Returns:
+            The singleton instance
+        """
+        return DecompressionManager()
 
     @lru_cache(maxsize=32)
     def _cache_key(self, topic: str, data_type: str, payload_hash: int) -> str:
@@ -176,8 +181,11 @@ class DecompressionManager:
                         if data_type == "Hypfer":
                             # Time the decompression step
                             decompress_start_time = time.time()
-                            raw = await loop.run_in_executor(
-                                self._executor, _hypfer_decompress, payload
+                            raw = await self._thread_pool.run_in_executor(
+                                "decompression",
+                                _hypfer_decompress,
+                                payload,
+                                max_workers=4,
                             )
                             decompress_time = time.time() - decompress_start_time
 
@@ -195,8 +203,11 @@ class DecompressionManager:
                         else:
                             # Time the decompression step
                             decompress_start_time = time.time()
-                            decompressed = await loop.run_in_executor(
-                                self._executor, _rand256_decompress, payload
+                            decompressed = await self._thread_pool.run_in_executor(
+                                "decompression",
+                                _rand256_decompress,
+                                payload,
+                                max_workers=4,
                             )
                             decompress_time = time.time() - decompress_start_time
 
@@ -206,8 +217,11 @@ class DecompressionManager:
                             def _parse_rand256(buf: bytes) -> Any:
                                 return self._parser.parse_data(payload=buf, pixels=True)
 
-                            result = await loop.run_in_executor(
-                                self._executor, _parse_rand256, decompressed
+                            result = await self._thread_pool.run_in_executor(
+                                "decompression",
+                                _parse_rand256,
+                                decompressed,
+                                max_workers=4,
                             )
                             parse_time = time.time() - parse_start_time
 
@@ -285,9 +299,16 @@ class DecompressionManager:
         # Synchronous fast path for small payloads
         if data_type == "Hypfer" and payload_len <= self.SYNC_HYPFER_THRESHOLD:
             try:
+                # Define helper function
+                def _hypfer_decompress(p: bytes) -> str:
+                    return isal_zlib.decompress(p).decode()
+
                 # Time the decompression step
                 decompress_start_time = time.time()
-                raw = isal_zlib.decompress(payload).decode()
+                # Use thread pool for consistent behavior but with direct await for small payloads
+                raw = await self._thread_pool.run_in_executor(
+                    "decompression_sync", _hypfer_decompress, payload, max_workers=2
+                )
                 decompress_time = time.time() - decompress_start_time
 
                 # Time the JSON parsing step
@@ -312,14 +333,25 @@ class DecompressionManager:
 
         if data_type != "Hypfer" and payload_len <= self.SYNC_RAND256_THRESHOLD:
             try:
+                # Define helper functions
+                def _rand256_decompress(p: bytes) -> bytes:
+                    return igzip.decompress(p)
+
+                def _parse_rand256(buf: bytes) -> Any:
+                    return self._parser.parse_data(payload=buf, pixels=True)
+
                 # Time the decompression step
                 decompress_start_time = time.time()
-                decompressed = igzip.decompress(payload)
+                decompressed = await self._thread_pool.run_in_executor(
+                    "decompression_sync", _rand256_decompress, payload, max_workers=2
+                )
                 decompress_time = time.time() - decompress_start_time
 
                 # Time the parsing step
                 parse_start_time = time.time()
-                result = self._parser.parse_data(payload=decompressed, pixels=True)
+                result = await self._thread_pool.run_in_executor(
+                    "decompression_sync", _parse_rand256, decompressed, max_workers=2
+                )
                 parse_time = time.time() - parse_start_time
 
                 total_time = time.time() - overall_start_time
@@ -384,25 +416,34 @@ class DecompressionManager:
 
     async def shutdown(self) -> None:
         """Shutdown the decompression manager and clean up resources."""
+        # Only proceed if this instance is initialized
+        if not hasattr(self, "initialized") or not self.initialized:
+            LOGGER.debug("DecompressionManager not initialized, skipping shutdown")
+            return
+
         LOGGER.debug("Shutting down DecompressionManager")
 
         # Cancel all background tasks
-        for task in self._background_tasks:
-            if not task.done():
-                task.cancel()
-                try:
-                    await task
-                except asyncio.CancelledError:
-                    pass
+        if hasattr(self, "_background_tasks"):
+            for task in self._background_tasks:
+                if not task.done():
+                    task.cancel()
+                    try:
+                        await task
+                    except asyncio.CancelledError:
+                        pass
 
-        # Clear the background tasks list
-        self._background_tasks.clear()
+            # Clear the background tasks list
+            self._background_tasks.clear()
 
-        # Shutdown the thread pool executor
-        if hasattr(self, "_executor") and self._executor is not None:
-            LOGGER.debug("Shutting down DecompressionManager thread pool")
-            self._executor.shutdown(wait=True)
-            self._executor = None
+        # No need to shutdown thread pool executor - ThreadPoolManager handles this
+        # Just shutdown our specific pools if needed
+        if hasattr(self, "_thread_pool"):
+            try:
+                await self._thread_pool.shutdown("decompression")
+                await self._thread_pool.shutdown("decompression_sync")
+            except Exception as e:
+                LOGGER.debug("Error shutting down thread pools: %s", e)
 
         # Clear the cache
         if hasattr(self, "_results"):

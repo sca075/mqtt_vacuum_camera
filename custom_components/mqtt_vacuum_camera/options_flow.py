@@ -366,6 +366,16 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
             description_placeholders=self.camera_options,
         )
 
+    async def async_step_map_trims(self, user_input=None) -> ConfigFlowResult:
+        """Handle map trims settings."""
+        return self.async_show_menu(
+            step_id="map_trims",
+            menu_options=[
+                "reset_map_trims",
+                "save_map_trims",
+            ],
+        )
+
     async def async_step_image_offset(
         self, user_input: Optional[Dict[str, Any]] = None
     ):

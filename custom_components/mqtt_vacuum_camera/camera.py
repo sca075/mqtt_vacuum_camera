@@ -115,6 +115,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         self._last_image = None
         self.auth_update_time = None
         self._dm = DecompressionManager.get_instance()
+        self._image_receive_time = None  # Timestamp when image data is received
         # Set default language to English - only set once during initialization
         self._shared.user_language = "en"
         # get the colours used in the maps.
@@ -133,11 +134,11 @@ class MQTTCamera(CoordinatorEntity, Camera):
     @staticmethod
     def _start_up_logs():
         """Logs the machine running the component data"""
-        LOGGER.info("System Release: %r, %r", platform.node(), platform.release())
-        LOGGER.info("System Version: %r", platform.version())
-        LOGGER.info("System Machine: %r", platform.machine())
-        LOGGER.info("Python Version: %r", platform.python_version())
-        LOGGER.info(
+        LOGGER.debug("System Release: %r, %r", platform.node(), platform.release())
+        LOGGER.debug("System Version: %r", platform.version())
+        LOGGER.debug("System Machine: %r", platform.machine())
+        LOGGER.debug("Python Version: %r", platform.python_version())
+        LOGGER.debug(
             "Memory Available: %r and In Use: %r",
             round(
                 (ProcInspector().psutil.virtual_memory().available / (1024 * 1024)), 1
@@ -341,7 +342,9 @@ class MQTTCamera(CoordinatorEntity, Camera):
                 self._shared.image_grab = True
                 self._shared.snapshot_take = False
                 self._shared.frame_number = self.processor.get_frame_number()
-                LOGGER.info(
+                # Record the time when we receive image data
+                self._image_receive_time = time.time()
+                LOGGER.debug(
                     "%s: Camera image data update available: %r",
                     self._file_name,
                     process_data,
@@ -352,8 +355,6 @@ class MQTTCamera(CoordinatorEntity, Camera):
             try:
                 # Process the parsed JSON data
                 parsed_json, is_a_test, data_type = await self._process_parsed_json()
-                LOGGER.debug("Data type: %r", data_type)
-                LOGGER.debug("Is a test: %r", is_a_test)
             except ValueError:
                 self._vac_json_available = "Error"
                 pil_img = self.empty_if_no_data()
@@ -396,7 +397,15 @@ class MQTTCamera(CoordinatorEntity, Camera):
                     await self._take_snapshot(parsed_json, pil_img)
 
                     LOGGER.debug("%s: Image update complete", self._file_name)
-                    self._update_frame_interval(start_time)
+                    # Update frame interval based on total processing time if we have a receive timestamp
+                    if self._image_receive_time is not None:
+                        self._update_frame_interval_from_receive_time(
+                            self._image_receive_time
+                        )
+                        self._image_receive_time = None  # Reset for next cycle
+                    else:
+                        # Fall back to old method if no receive timestamp
+                        self._update_frame_interval(start_time)
                 else:
                     LOGGER.info(
                         "%s: Image not processed. Returning not updated image.",
@@ -515,6 +524,16 @@ class MQTTCamera(CoordinatorEntity, Camera):
         """Update the frame interval based on processing time."""
         processing_time = round((time.perf_counter() - start_time), 3)
         self._attr_frame_interval = max(0.1, processing_time)
+
+    def _update_frame_interval_from_receive_time(self, receive_time):
+        """Update the frame interval based on total time from receiving image data to completion."""
+        total_time = round((time.time() - receive_time), 3)
+        self._attr_frame_interval = max(0.1, total_time)
+        LOGGER.debug(
+            "%s: TIMING - Total image processing time (receive to display): %.3fs",
+            self._file_name,
+            total_time,
+        )
 
     async def async_pil_to_bytes(
         self, pil_img, image_id: str = None
