@@ -1,20 +1,22 @@
 import asyncio
+from concurrent.futures import ThreadPoolExecutor
+from functools import lru_cache
 import json
 import os
 import time
-from concurrent.futures import ThreadPoolExecutor
-from functools import lru_cache
-from typing import Any, Dict, Optional, Tuple, Callable
+from typing import Any, Callable, Dict, Optional, Tuple
 
 from isal import igzip, isal_zlib  # pylint: disable=I1101
 from valetudo_map_parser.config.rand25_parser import RRMapParser
 from valetudo_map_parser.config.types import LOGGER
+
 
 class DecompressionManager:
     """
     Singleton manager for decompressing MQTT map payloads with header validation
     and synchronous short-circuit for small payloads.
     """
+
     _instance: Optional["DecompressionManager"] = None
 
     # Increased thresholds for synchronous processing to handle more payloads directly
@@ -36,6 +38,9 @@ class DecompressionManager:
         if hasattr(self, "initialized"):
             return
         self.initialized = True
+
+        # Track background tasks for cleanup
+        self._background_tasks = []
 
         # Optimize thread pool size based on workload type
         cpu = os.cpu_count() or 1
@@ -60,10 +65,12 @@ class DecompressionManager:
 
         # Start background workers
         for _ in range(2):  # Multiple workers for better throughput
-            asyncio.create_task(self._worker_loop())
+            task = asyncio.create_task(self._worker_loop())
+            self._background_tasks.append(task)
 
         # Start cache cleanup task
-        asyncio.create_task(self._cleanup_cache())
+        task = asyncio.create_task(self._cleanup_cache())
+        self._background_tasks.append(task)
 
     @classmethod
     def get_instance(cls) -> "DecompressionManager":
@@ -104,14 +111,19 @@ class DecompressionManager:
             try:
                 await asyncio.sleep(60)  # Check every minute
                 now = time.time()
-                expired_keys = [k for k, (_, timestamp) in self._results.items()
-                               if now - timestamp > self._cache_expiry]
+                expired_keys = [
+                    k
+                    for k, (_, timestamp) in self._results.items()
+                    if now - timestamp > self._cache_expiry
+                ]
 
                 for key in expired_keys:
                     del self._results[key]
 
                 if expired_keys:
-                    LOGGER.debug("Cleaned up %d expired cache entries", len(expired_keys))
+                    LOGGER.debug(
+                        "Cleaned up %d expired cache entries", len(expired_keys)
+                    )
             except Exception as e:
                 LOGGER.error("Error in cache cleanup: %s", e)
 
@@ -121,15 +133,18 @@ class DecompressionManager:
         """
         loop = asyncio.get_running_loop()
 
-        # Pre-compile lambda functions to avoid recreation on each iteration
-        hypfer_decompress: Callable = lambda p: isal_zlib.decompress(p).decode()
-        rand256_decompress: Callable = lambda p: igzip.decompress(p)
+        # Define helper functions for decompression to avoid recreation on each iteration
+        def _hypfer_decompress(p: bytes) -> str:  # local helper
+            return isal_zlib.decompress(p).decode()
+
+        def _rand256_decompress(p: bytes) -> bytes:
+            return igzip.decompress(p)
 
         while True:
             try:
                 # Get next task with priority
                 _, (topic, payload, data_type, future) = await self._queue.get()
-                device_name = topic.split('/')[-1] if '/' in topic else topic
+                device_name = topic.split("/")[-1] if "/" in topic else topic
                 worker_start_time = time.time()
 
                 # Limit concurrent tasks
@@ -140,13 +155,18 @@ class DecompressionManager:
                         # Calculate cache key only once
                         payload_len = len(payload)
                         payload_hash = hash(payload)
-                        key = self._cache_key(topic, data_type, payload_hash) if payload_len > 50000 else ""
+                        key = (
+                            self._cache_key(topic, data_type, payload_hash)
+                            if payload_len > 50000
+                            else ""
+                        )
 
                         # Check cache first
                         if key and key in self._results:
                             LOGGER.info(
                                 "%s: TIMING - Worker cache hit for %s data",
-                                device_name, data_type
+                                device_name,
+                                data_type,
                             )
                             result, _ = self._results[key]
                             future.set_result(result)
@@ -156,7 +176,9 @@ class DecompressionManager:
                         if data_type == "Hypfer":
                             # Time the decompression step
                             decompress_start_time = time.time()
-                            raw = await loop.run_in_executor(self._executor, hypfer_decompress, payload)
+                            raw = await loop.run_in_executor(
+                                self._executor, _hypfer_decompress, payload
+                            )
                             decompress_time = time.time() - decompress_start_time
 
                             # Time the JSON parsing step
@@ -166,23 +188,34 @@ class DecompressionManager:
 
                             LOGGER.info(
                                 "%s: TIMING - Worker Hypfer processing: decompress=%.3fs, json=%.3fs",
-                                device_name, decompress_time, json_time
+                                device_name,
+                                decompress_time,
+                                json_time,
                             )
                         else:
                             # Time the decompression step
                             decompress_start_time = time.time()
-                            decompressed = await loop.run_in_executor(self._executor, rand256_decompress, payload)
+                            decompressed = await loop.run_in_executor(
+                                self._executor, _rand256_decompress, payload
+                            )
                             decompress_time = time.time() - decompress_start_time
 
                             # Time the parsing step
                             parse_start_time = time.time()
-                            parse_func = lambda: self._parser.parse_data(payload=decompressed, pixels=True)
-                            result = await loop.run_in_executor(self._executor, parse_func)
+
+                            def _parse_rand256(buf: bytes) -> Any:
+                                return self._parser.parse_data(payload=buf, pixels=True)
+
+                            result = await loop.run_in_executor(
+                                self._executor, _parse_rand256, decompressed
+                            )
                             parse_time = time.time() - parse_start_time
 
                             LOGGER.info(
                                 "%s: TIMING - Worker Rand256 processing: decompress=%.3fs, parse=%.3fs",
-                                device_name, decompress_time, parse_time
+                                device_name,
+                                decompress_time,
+                                parse_time,
                             )
 
                         # Cache result with timestamp
@@ -195,12 +228,16 @@ class DecompressionManager:
                         total_worker_time = time.time() - worker_start_time
                         LOGGER.info(
                             "%s: TIMING - Worker completed %s processing in %.3fs",
-                            device_name, data_type, total_worker_time
+                            device_name,
+                            data_type,
+                            total_worker_time,
                         )
                     except Exception as e:
                         LOGGER.error(
                             "%s: Worker decompression error for %s: %s",
-                            device_name, data_type, str(e)
+                            device_name,
+                            data_type,
+                            str(e),
                         )
                         future.set_exception(e)
                     finally:
@@ -209,15 +246,13 @@ class DecompressionManager:
             except Exception as e:
                 LOGGER.error("Worker error: %s", str(e))
 
-    async def decompress(
-        self, topic: str, payload: bytes, data_type: str
-    ) -> Any:
+    async def decompress(self, topic: str, payload: bytes, data_type: str) -> Any:
         """
         Queue a decompression task (with optional sync short-circuit) and await the JSON result.
         """
         # Start timing the entire decompression process
         overall_start_time = time.time()
-        device_name = topic.split('/')[-1] if '/' in topic else topic
+        device_name = topic.split("/")[-1] if "/" in topic else topic
 
         if not payload:
             return None
@@ -226,7 +261,9 @@ class DecompressionManager:
         payload_len = len(payload)
         LOGGER.info(
             "%s: TIMING - Starting decompression of %s data, size: %d bytes",
-            device_name, data_type, payload_len
+            device_name,
+            data_type,
+            payload_len,
         )
 
         # Fast path: check cache first using hash of payload
@@ -237,8 +274,7 @@ class DecompressionManager:
             if cached:
                 result, _ = cached
                 LOGGER.info(
-                    "%s: TIMING - Cache hit for %s data",
-                    device_name, data_type
+                    "%s: TIMING - Cache hit for %s data", device_name, data_type
                 )
                 return result
 
@@ -262,13 +298,15 @@ class DecompressionManager:
                 total_time = time.time() - overall_start_time
                 LOGGER.info(
                     "%s: TIMING - Sync Hypfer processing: total=%.3fs, decompress=%.3fs, json=%.3fs",
-                    device_name, total_time, decompress_time, json_time
+                    device_name,
+                    total_time,
+                    decompress_time,
+                    json_time,
                 )
                 return result
             except Exception as e:
                 LOGGER.error(
-                    "%s: Sync Hypfer decompression error: %s",
-                    device_name, str(e)
+                    "%s: Sync Hypfer decompression error: %s", device_name, str(e)
                 )
                 return None
 
@@ -287,20 +325,24 @@ class DecompressionManager:
                 total_time = time.time() - overall_start_time
                 LOGGER.info(
                     "%s: TIMING - Sync Rand256 processing: total=%.3fs, decompress=%.3fs, parse=%.3fs",
-                    device_name, total_time, decompress_time, parse_time
+                    device_name,
+                    total_time,
+                    decompress_time,
+                    parse_time,
                 )
                 return result
             except Exception as e:
                 LOGGER.error(
-                    "%s: Sync Rand256 decompression error: %s",
-                    device_name, str(e)
+                    "%s: Sync Rand256 decompression error: %s", device_name, str(e)
                 )
                 return None
 
         # Async path for larger payloads
         LOGGER.info(
             "%s: TIMING - Using async path for %s data (size: %d bytes)",
-            device_name, data_type, payload_len
+            device_name,
+            data_type,
+            payload_len,
         )
 
         loop = asyncio.get_running_loop()
@@ -321,7 +363,10 @@ class DecompressionManager:
         total_time = time.time() - overall_start_time
         LOGGER.info(
             "%s: TIMING - Async %s processing: total=%.3fs, wait=%.3fs",
-            device_name, data_type, total_time, wait_time
+            device_name,
+            data_type,
+            total_time,
+            wait_time,
         )
 
         return result
@@ -336,3 +381,31 @@ class DecompressionManager:
         key = self._cache_key(topic, data_type, hash(payload))
         cached = self._results.get(key)
         return cached[0] if cached else None
+
+    async def shutdown(self) -> None:
+        """Shutdown the decompression manager and clean up resources."""
+        LOGGER.debug("Shutting down DecompressionManager")
+
+        # Cancel all background tasks
+        for task in self._background_tasks:
+            if not task.done():
+                task.cancel()
+                try:
+                    await task
+                except asyncio.CancelledError:
+                    pass
+
+        # Clear the background tasks list
+        self._background_tasks.clear()
+
+        # Shutdown the thread pool executor
+        if hasattr(self, "_executor") and self._executor is not None:
+            LOGGER.debug("Shutting down DecompressionManager thread pool")
+            self._executor.shutdown(wait=True)
+            self._executor = None
+
+        # Clear the cache
+        if hasattr(self, "_results"):
+            self._results.clear()
+
+        LOGGER.debug("DecompressionManager shutdown complete")

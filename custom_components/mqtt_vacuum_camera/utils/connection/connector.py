@@ -114,7 +114,7 @@ class ValetudoConnector:
             file_name=camera_shared.file_name,
             room_store=RoomStore(camera_shared.file_name),
             data_in=False,
-            ignore_data=False
+            ignore_data=False,
         )
         self.is_rand256 = is_rand256
         self.mqtt_data = MQTTData()
@@ -130,13 +130,17 @@ class ValetudoConnector:
         Unzips the data and returns the JSON based on the data type.
         """
         if not self.mqtt_data.img_payload:
-            LOGGER.debug("%s: No image payload available", self.connector_data.file_name)
+            LOGGER.debug(
+                "%s: No image payload available", self.connector_data.file_name
+            )
             return None, None
 
         payload = self.mqtt_data.img_payload[0]
         data_type = self.mqtt_data.img_payload[1]
-           # "Rand256" if self.is_rand256 else "Hypfer"
-        LOGGER.debug(f"%s: Updating data from MQTT. %s", self.connector_data.file_name, data_type)
+        # "Rand256" if self.is_rand256 else "Hypfer"
+        LOGGER.debug(
+            "%s: Updating data from MQTT. %s", self.connector_data.file_name, data_type
+        )
         if payload and process:
             # Await the result once the worker processes the task
             result = payload
@@ -229,8 +233,6 @@ class ValetudoConnector:
             await self.async_fire_event_restart_camera(data=str(msg.payload))
         self.pkohelrs_data.state = new_state
 
-
-
     async def _hypfer_handle_image_data(self, msg) -> None:
         """Handle new Hypfer image data."""
         LOGGER.info(
@@ -241,7 +243,6 @@ class ValetudoConnector:
         self.mqtt_data.img_payload = [msg, "Hypfer"]
         self.connector_data.data_in = True
         self.connector_data.ignore_data = False
-
 
     async def _hypfer_handle_status_payload(self, state) -> None:
         """Handle Hypfer status payload."""
@@ -309,7 +310,6 @@ class ValetudoConnector:
                 {"command": "get_destinations"},
             )
             self.config.do_it_once = False
-
 
     async def rand256_handle_statuses(self, msg) -> None:
         """Handle Rand256 statuses."""

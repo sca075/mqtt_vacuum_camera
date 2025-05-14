@@ -39,6 +39,7 @@ from .utils.files_operations import (
     async_rename_room_description,
 )
 from .utils.thread_pool import ThreadPoolManager
+from .utils.connection.decompress import DecompressionManager
 from .utils.vacuum.mqtt_vacuum_services import (
     async_register_vacuums_services,
     async_remove_vacuums_services,
@@ -138,6 +139,14 @@ async def async_unload_entry(
         await thread_pool.shutdown(f"{entry.entry_id}_camera_text")
         LOGGER.debug("Thread pools for %s shut down", entry.entry_id)
 
+        # Shutdown decompression manager
+        try:
+            decompression_manager = DecompressionManager.get_instance()
+            await decompression_manager.shutdown()
+            LOGGER.debug("DecompressionManager for %s shut down", entry.entry_id)
+        except Exception as e:
+            LOGGER.error("Error shutting down DecompressionManager: %s", e)
+
         # Remove services
         if not hass.data[DOMAIN]:
             hass.services.async_remove(DOMAIN, "reset_trims")
@@ -171,6 +180,14 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
         thread_pool = ThreadPoolManager.get_instance()
         await thread_pool.shutdown()
         LOGGER.debug("All thread pools shut down")
+
+        # Shutdown decompression manager
+        try:
+            decompression_manager = DecompressionManager.get_instance()
+            await decompression_manager.shutdown()
+            LOGGER.debug("DecompressionManager shut down")
+        except Exception as e:
+            LOGGER.error("Error shutting down DecompressionManager: %s", e)
 
         await hass.async_block_till_done()
         return True
