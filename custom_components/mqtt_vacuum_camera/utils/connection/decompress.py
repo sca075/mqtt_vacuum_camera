@@ -7,6 +7,7 @@ from typing import Any, Callable, Dict, Optional, Tuple
 from isal import igzip, isal_zlib  # pylint: disable=I1101
 from valetudo_map_parser.config.rand25_parser import RRMapParser
 from valetudo_map_parser.config.types import LOGGER
+from ..thread_pool import ThreadPoolManager
 
 # Extract the cache function to module scope
 @lru_cache(maxsize=32)
