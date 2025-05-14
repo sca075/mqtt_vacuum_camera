@@ -44,6 +44,7 @@ from .const import (
 )
 from .snapshots.snapshot import Snapshots
 from .utils.camera.camera_processing import CameraProcessor
+from .utils.connection.decompress import DecompressionManager
 from .utils.files_operations import async_load_file
 from .utils.thread_pool import ThreadPoolManager
 
@@ -113,12 +114,10 @@ class MQTTCamera(CoordinatorEntity, Camera):
         self._init_clear_www_folder()
         self._last_image = None
         self.auth_update_time = None
-        self._rrm_data = False  # Check for rrm data
-
+        self._dm = DecompressionManager.get_instance()
+        self._image_receive_time = None  # Timestamp when image data is received
         # Set default language to English - only set once during initialization
-        # This eliminates the need for continuous language checks during camera updates
         self._shared.user_language = "en"
-
         # get the colours used in the maps.
         self._colours = ColorsManagement(self._shared)
         self._colours.set_initial_colours(device_info)
@@ -135,11 +134,11 @@ class MQTTCamera(CoordinatorEntity, Camera):
     @staticmethod
     def _start_up_logs():
         """Logs the machine running the component data"""
-        LOGGER.info("System Release: %r, %r", platform.node(), platform.release())
-        LOGGER.info("System Version: %r", platform.version())
-        LOGGER.info("System Machine: %r", platform.machine())
-        LOGGER.info("Python Version: %r", platform.python_version())
-        LOGGER.info(
+        LOGGER.debug("System Release: %r, %r", platform.node(), platform.release())
+        LOGGER.debug("System Version: %r", platform.version())
+        LOGGER.debug("System Machine: %r", platform.machine())
+        LOGGER.debug("Python Version: %r", platform.python_version())
+        LOGGER.debug(
             "Memory Available: %r and In Use: %r",
             round(
                 (ProcInspector().psutil.virtual_memory().available / (1024 * 1024)), 1
@@ -343,48 +342,41 @@ class MQTTCamera(CoordinatorEntity, Camera):
                 self._shared.image_grab = True
                 self._shared.snapshot_take = False
                 self._shared.frame_number = self.processor.get_frame_number()
-                LOGGER.info(
+                # Record the time when we receive image data
+                self._image_receive_time = time.time()
+                LOGGER.debug(
                     "%s: Camera image data update available: %r",
                     self._file_name,
                     process_data,
                 )
             parsed_json = None
             is_a_test = False
+            data_type = None
             try:
-                parsed_json, is_a_test = await self._process_parsed_json()
+                # Process the parsed JSON data
+                parsed_json, is_a_test, data_type = await self._process_parsed_json()
             except ValueError:
                 self._vac_json_available = "Error"
+                pil_img = self.empty_if_no_data()
                 self.Image = await self.hass.async_create_task(
-                    self.run_async_pil_to_bytes(self.empty_if_no_data())
+                    self.run_async_pil_to_bytes(pil_img)
                 )
                 s = self.camera_image(self._image_w, self._image_h)
                 return s
             finally:
                 # Just in case, let's check that the data is available.
                 if parsed_json is not None:
-                    if self._rrm_data:
+                    if not self._shared.destinations and data_type == "Rand256":
                         self._shared.destinations = await self._mqtt.get_destinations()
-                        pil_img = await self.hass.async_create_task(
-                            self.processor.run_async_process_valetudo_data(
-                                self._rrm_data
-                            )
-                        )
-                    elif self._rrm_data is None:
-                        LOGGER.debug("Image creation in progress")
-                        pil_img = await self.hass.async_create_task(
-                            self.processor.run_async_process_valetudo_data(parsed_json)
-                        )
-                    else:
-                        # if no image was processed empty or last snapshot/frame
-                        if not is_a_test:
-                            pil_img = self.empty_if_no_data()
-                        else:
-                            LOGGER.debug("Producing test mode image")
-                            pil_img = await self.hass.async_create_task(
-                                self.processor.run_async_process_valetudo_data(
-                                    parsed_json
-                                )
-                            )
+
+                    LOGGER.debug("Processing %s data..", data_type)
+                    pil_img = await self.hass.async_create_task(
+                        self.processor.run_async_process_valetudo_data(parsed_json)
+                    )
+
+                    # if no image was processed empty or last snapshot/frame
+                    if not is_a_test and pil_img is None:
+                        pil_img = self.empty_if_no_data()
 
                     # update the image
                     self._last_image = pil_img
@@ -405,7 +397,15 @@ class MQTTCamera(CoordinatorEntity, Camera):
                     await self._take_snapshot(parsed_json, pil_img)
 
                     LOGGER.debug("%s: Image update complete", self._file_name)
-                    self._update_frame_interval(start_time)
+                    # Update frame interval based on total processing time if we have a receive timestamp
+                    if self._image_receive_time is not None:
+                        self._update_frame_interval_from_receive_time(
+                            self._image_receive_time
+                        )
+                        self._image_receive_time = None  # Reset for next cycle
+                    else:
+                        # Fall back to old method if no receive timestamp
+                        self._update_frame_interval(start_time)
                 else:
                     LOGGER.info(
                         "%s: Image not processed. Returning not updated image.",
@@ -443,39 +443,57 @@ class MQTTCamera(CoordinatorEntity, Camera):
         """Process the parsed JSON data and return the generated image."""
         if test_mode:
             LOGGER.debug("Camera Test Mode Active...")
+            data_type = "test_mode"
             parsed_json = await async_load_file(
                 file_to_load="custom_components/mqtt_vacuum_camera/snapshots/test.json",
                 is_json=True,
             )
             self._shared.camera_mode = CameraModes.MAP_VIEW
-            return parsed_json, test_mode
-        parsed_json = await self._mqtt.update_data(self._shared.image_grab)
-        if not parsed_json:
+            return parsed_json, test_mode, data_type
+        payload, data_type = await self._mqtt.update_data(self._shared.image_grab)
+        is_data = await self._mqtt.is_data_available()
+        if payload and data_type:
+            raw_data = payload.payload if hasattr(payload, "payload") else payload
+            parsed_json = await self._dm.decompress(
+                self._mqtt_listen_topic, raw_data, data_type
+            )
+            # Reset data_in flag to allow receiving new data for the next frame
+            if hasattr(self._mqtt, "connector_data"):
+                self._mqtt.connector_data.data_in = False
+                LOGGER.debug(
+                    "%s: Reset data_in flag to allow new data", self._file_name
+                )
+        else:
+            LOGGER.debug("%s: No payload data available.", self._file_name)
+            parsed_json = None
+        if not parsed_json and is_data:
             self._vac_json_available = "Error"
+            empty_img = self.empty_if_no_data()
             self.Image = await self.hass.async_create_task(
-                self.run_async_pil_to_bytes(self.empty_if_no_data())
+                self.run_async_pil_to_bytes(empty_img)
             )
             self.camera_image(self._image_w, self._image_h)
             LOGGER.warning(
-                "%s: No JSON data available. Camera Suspended.", self._file_name
+                "%s: No JSON data available. Camera Suspended required reload.",
+                self._file_name,
             )
             self._should_poll = False
-
-        if parsed_json[1] == "Rand256":
-            self._shared.is_rand = True
-            self._rrm_data = parsed_json[0]
-        else:
-            parsed_json = parsed_json[0]
-            self._rrm_data = None
-
+            return None, False, None
         self._vac_json_available = "Success"
-        return parsed_json, test_mode
+        if data_type == "Rand256":
+            self._shared.is_rand = True
+            LOGGER.debug("%s: Setting is_rand=True for Rand256 data", self._file_name)
+        else:
+            self._shared.is_rand = False
+            LOGGER.debug("%s: Setting is_rand=False for Hypfer data", self._file_name)
+
+        return parsed_json, test_mode, data_type
 
     async def _take_snapshot(self, parsed_json, pil_img):
         """Take a snapshot if conditions are met."""
         if self._shared.snapshot_take and pil_img:
             if self._shared.is_rand:
-                await self.take_snapshot(self._rrm_data, pil_img)
+                await self.take_snapshot(self._shared.is_rand, pil_img)
             else:
                 await self.take_snapshot(parsed_json, pil_img)
 
@@ -506,6 +524,16 @@ class MQTTCamera(CoordinatorEntity, Camera):
         """Update the frame interval based on processing time."""
         processing_time = round((time.perf_counter() - start_time), 3)
         self._attr_frame_interval = max(0.1, processing_time)
+
+    def _update_frame_interval_from_receive_time(self, receive_time):
+        """Update the frame interval based on total time from receiving image data to completion."""
+        total_time = round((time.time() - receive_time), 3)
+        self._attr_frame_interval = max(0.1, total_time)
+        LOGGER.debug(
+            "%s: TIMING - Total image processing time (receive to display): %.3fs",
+            self._file_name,
+            total_time,
+        )
 
     async def async_pil_to_bytes(
         self, pil_img, image_id: str = None
