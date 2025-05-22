@@ -43,16 +43,25 @@ In the last releases we did start to implement the Actions for Rand256 and Hypfe
 We can now see the Obstacles Images when available, and somehow we start to organize the code. 
 The camera is stable and updated to all requirements of Home Assistant.
 Will be also time to take a brake and work in the background, so I do not expect unless required releases in January.
+Unfotunatelly the planed release 2025.05.0 will not happen as per are still work in progress.
+
+Would be really appreciated your kind help and understanding.
 
 #### 2025.5.0 - **Refactoring and New Additions**
+
+- This release will be postponed to 2025.6.0
 - **Changes**
+  - (in progress) Improvements of the code structure.
   - Refactored the code to improve readability and maintainability.
   - Remove file operation routines not required for logging export.
 - **Features / Improvements :**
+  - (done) Improved rooms outlines, for non rectangular rooms shapes.
   - Enable loading and saving of maps via services by fully integrating with  [MapLoader](https://github.com/pkoehlers/maploader).
-  - Enable selection of specific elements to display on the map..
-  - Add options for Area and Floor management.
+  - (done) Enable selection of specific elements to display on the map..
+  - (postponed) Add options for Area and Floor management.
 - **Potential Fixes:**
+  - Fix Obstacles view.
+  - Fix camera startup timeouts.
   - Fix the issue where the absence of a map causes the camera to malfunction.
   - Fix the alpha colours of the elements.
   - Implement a fully coordinated integration of the cameras and sensors.
