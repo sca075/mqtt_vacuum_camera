@@ -10,6 +10,7 @@ import asyncio
 import concurrent.futures
 from functools import lru_cache
 import logging
+import os
 from typing import Any, Callable, Dict, Optional, TypeVar
 
 _LOGGER = logging.getLogger(__name__)
@@ -24,14 +25,16 @@ class ThreadPoolManager:
     This avoids creating and destroying thread pools for each operation.
     """
 
-    _instance: Optional[ThreadPoolManager] = None
+    _instances: Dict[str, ThreadPoolManager] = {}
     _pools: Dict[str, concurrent.futures.ThreadPoolExecutor] = {}
 
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super(ThreadPoolManager, cls).__new__(cls)
-            cls._instance._pools = {}
-        return cls._instance
+    def __new__(cls, vacuum_id: str = "default"):
+        if vacuum_id not in cls._instances:
+            instance = super(ThreadPoolManager, cls).__new__(cls)
+            instance._pools = {}
+            instance.vacuum_id = vacuum_id
+            cls._instances[vacuum_id] = instance
+        return cls._instances[vacuum_id]
 
     def get_executor(
         self, name: str, max_workers: int = 1
@@ -46,14 +49,17 @@ class ThreadPoolManager:
         Returns:
             A ThreadPoolExecutor instance
         """
-        if name not in self._pools or self._pools[name]._shutdown:
+        # Create a pool name that includes the vacuum_id to avoid conflicts
+        pool_name = f"{self.vacuum_id}_{name}" if self.vacuum_id != "default" else name
+
+        if pool_name not in self._pools or self._pools[pool_name]._shutdown:
             _LOGGER.debug(
-                "Creating new thread pool for %s with %d workers", name, max_workers
+                "Creating new thread pool for %s with %d workers", pool_name, max_workers
             )
-            self._pools[name] = concurrent.futures.ThreadPoolExecutor(
-                max_workers=max_workers, thread_name_prefix=f"{name}_pool"
+            self._pools[pool_name] = concurrent.futures.ThreadPoolExecutor(
+                max_workers=max_workers, thread_name_prefix=f"{pool_name}_pool"
             )
-        return self._pools[name]
+        return self._pools[pool_name]
 
     async def shutdown(self, name: Optional[str] = None):
         """
@@ -63,13 +69,29 @@ class ThreadPoolManager:
             name: The name of the component whose pool should be shut down.
                  If None, all pools will be shut down.
         """
-        if name is not None and name in self._pools:
-            _LOGGER.debug("Shutting down thread pool for %s", name)
-            await asyncio.to_thread(self._shutdown_pool, self._pools[name])
-            del self._pools[name]
-        elif name is None:
-            _LOGGER.debug("Shutting down all thread pools")
-            for pool_name, pool in list(self._pools.items()):
+        # If a specific name is provided, create the pool name with vacuum_id
+        if name is not None:
+            pool_name = f"{self.vacuum_id}_{name}" if self.vacuum_id != "default" else name
+            if pool_name in self._pools:
+                _LOGGER.debug("Shutting down thread pool for %s", pool_name)
+                await asyncio.to_thread(self._shutdown_pool, self._pools[pool_name])
+                del self._pools[pool_name]
+        # If no name is provided, shut down all pools for this vacuum_id
+        else:
+            _LOGGER.debug("Shutting down all thread pools for vacuum_id %s", self.vacuum_id)
+            # Create a list of pools to shut down to avoid modifying the dictionary during iteration
+            pools_to_shutdown = []
+            prefix = f"{self.vacuum_id}_" if self.vacuum_id != "default" else ""
+
+            for pool_name, pool in self._pools.items():
+                # If this is the default instance, only shut down pools without a vacuum_id prefix
+                # If this is a vacuum-specific instance, only shut down pools with this vacuum_id prefix
+                if (self.vacuum_id == "default" and "_" not in pool_name) or \
+                   (self.vacuum_id != "default" and pool_name.startswith(prefix)):
+                    pools_to_shutdown.append((pool_name, pool))
+
+            for pool_name, pool in pools_to_shutdown:
+                _LOGGER.debug("Shutting down pool %s", pool_name)
                 await asyncio.to_thread(self._shutdown_pool, pool)
                 del self._pools[pool_name]
 
@@ -79,7 +101,7 @@ class ThreadPoolManager:
         pool.shutdown(wait=True)
 
     async def run_in_executor(
-        self, name: str, func: Callable[[Any], R], *args, max_workers: int = 1
+        self, name: str, func: Callable[..., R], *args, max_workers: int = 1
     ) -> R:
         """
         Run a function in a thread pool executor.
@@ -93,18 +115,71 @@ class ThreadPoolManager:
         Returns:
             The result of the function
         """
-        executor = self.get_executor(name, max_workers)
-        loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(executor, func, *args)
+        # For decompression tasks, use the optimal worker count
+        if name == "decompression":
+            max_workers = self.get_optimal_worker_count("decompression")
+
+        try:
+            executor = self.get_executor(name, max_workers)
+            loop = asyncio.get_event_loop()
+            return await loop.run_in_executor(executor, func, *args)
+        except Exception as e:
+            _LOGGER.error("Error executing function in thread pool: %s", str(e), exc_info=True)
+            raise
+
+    @staticmethod
+    def get_optimal_worker_count(task_type: str = "default") -> int:
+        """
+        Calculate the optimal number of worker threads based on the task type.
+
+        Args:
+            task_type: The type of task ("decompression" or any other task)
+
+        Returns:
+            The optimal number of worker threads
+        """
+        cpu_count = os.cpu_count() or 1
+
+        if task_type == "decompression":
+            # For decompression tasks, use at most 2 workers to avoid excessive resource usage
+            return min(2, cpu_count)
+        else:
+            # For all other tasks, use 1 worker to minimize resource usage
+            return 1
 
     @staticmethod
     @lru_cache(maxsize=32)
-    def get_instance() -> ThreadPoolManager:
+    def get_instance(vacuum_id: str = "default") -> ThreadPoolManager:
         """
-        Get the singleton instance of ThreadPoolManager.
+        Get the singleton instance of ThreadPoolManager for a specific vacuum.
         This method is cached to avoid creating multiple instances.
 
+        Args:
+            vacuum_id: The ID of the vacuum to get the instance for.
+                      Use "default" for non-vacuum-specific operations.
+
         Returns:
-            The singleton instance
+            The singleton instance for the specified vacuum
         """
-        return ThreadPoolManager()
+        return ThreadPoolManager(vacuum_id)
+
+    @classmethod
+    def get_all_instances(cls) -> Dict[str, ThreadPoolManager]:
+        """
+        Get all instances of ThreadPoolManager.
+
+        Returns:
+            A dictionary of all instances, keyed by vacuum_id
+        """
+        return cls._instances
+
+    @classmethod
+    async def shutdown_all(cls):
+        """
+        Shutdown all thread pools across all instances.
+        This is useful for application shutdown.
+        """
+        _LOGGER.debug("Shutting down all thread pools across all instances")
+        for vacuum_id, instance in list(cls._instances.items()):
+            await instance.shutdown()
+        cls._instances.clear()

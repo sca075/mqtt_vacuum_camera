@@ -1,13 +1,23 @@
+"""
+Decompression Manager for MQTT Vacuum Camera.
+This module provides a singleton manager for decompressing MQTT map payloads.
+Version: 2025.5.0
+"""
+
+from __future__ import annotations
+
 import asyncio
+from collections import OrderedDict
 from functools import lru_cache
 import json
 import time
-from typing import Any, Callable, Dict, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from isal import igzip, isal_zlib  # pylint: disable=I1101
 from valetudo_map_parser.config.rand25_parser import RRMapParser
-from valetudo_map_parser.config.types import LOGGER
-from ..thread_pool import ThreadPoolManager
+
+from custom_components.mqtt_vacuum_camera.const import LOGGER
+from custom_components.mqtt_vacuum_camera.utils.thread_pool import ThreadPoolManager
 
 # Extract the cache function to module scope
 @lru_cache(maxsize=32)
@@ -16,39 +26,96 @@ def _make_cache_key(topic: str, data_type: str, payload_hash: int) -> str:
     return f"{topic}:{data_type}:{payload_hash}"
 
 
+class FIFOCache:
+    """
+    A FIFO (First-In-First-Out) cache implementation with a maximum size limit.
+    When the cache reaches its maximum size, the oldest entries are evicted first.
+    """
+
+    def __init__(self, max_size: int = 3):
+        """Initialize the FIFO cache with a maximum size.
+
+        Args:
+            max_size: Maximum number of entries to store in the cache
+        """
+        self._max_size = max_size
+        self._cache = OrderedDict()  # OrderedDict preserves insertion order
+
+    def get(self, key: str) -> Optional[Tuple[Any, float]]:
+        """Get a value from the cache.
+
+        Args:
+            key: The cache key
+
+        Returns:
+            The cached value and timestamp, or None if not found
+        """
+        return self._cache.get(key)
+
+    def put(self, key: str, value: Any) -> None:
+        """Add a value to the cache with the current timestamp.
+
+        If the cache is full, the oldest entry will be evicted.
+
+        Args:
+            key: The cache key
+            value: The value to cache
+        """
+        # If the key already exists, remove it first to update its position
+        if key in self._cache:
+            del self._cache[key]
+
+        # Add the new entry with current timestamp
+        self._cache[key] = (value, time.time())
+
+        # If we've exceeded the maximum size, remove the oldest entry (first item)
+        if len(self._cache) > self._max_size:
+            self._cache.popitem(last=False)  # Remove the first item (oldest)
+
+    def clear(self) -> None:
+        """Clear all entries from the cache."""
+        self._cache.clear()
+
+    def __len__(self) -> int:
+        """Return the number of entries in the cache."""
+        return len(self._cache)
+
+    def get_max_size(self) -> int:
+        """Return the maximum size of the cache."""
+        return self._max_size
+
+    def get_all_keys(self) -> List[str]:
+        """Return all keys in the cache."""
+        return list(self._cache.keys())
+
+
 class DecompressionManager:
     """
     Singleton manager for decompressing MQTT map payloads with header validation
-    and synchronous short-circuit for small payloads.
+    using a FIFO queue and ThreadPoolManager for efficient processing.
+    Each vacuum has its own instance for better isolation.
     """
 
-    _instance: Optional["DecompressionManager"] = None
+    _instances: Dict[str, "DecompressionManager"] = {}  # Store instances by vacuum_id
 
-    # Increased thresholds for synchronous processing to handle more payloads directly
-    SYNC_HYPFER_THRESHOLD = 100_000  # Increased from 50_000
-    SYNC_RAND256_THRESHOLD = 150_000  # Increased from 100_000
+    def __new__(cls, vacuum_id: str = "default") -> "DecompressionManager":
+        if vacuum_id not in cls._instances:
+            cls._instances[vacuum_id] = super().__new__(cls)
+        return cls._instances[vacuum_id]
 
-    # Cache size for recently processed payloads
-    CACHE_SIZE = 10
-
-    # Maximum number of concurrent decompression tasks
-    MAX_CONCURRENT_TASKS = 4
-
-    def __new__(cls) -> "DecompressionManager":
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-        return cls._instance
-
-    def __init__(self) -> None:
-        if hasattr(self, "initialized"):
+    def __init__(self, vacuum_id: str = "default") -> None:
+        # Skip initialization if already initialized for this vacuum_id
+        if hasattr(self, "initialized") and self.initialized:
             return
+
         self.initialized = True
+        self.vacuum_id = vacuum_id
 
         # Track background tasks for cleanup
         self._background_tasks = []
 
-        # Get the thread pool manager instance - defer worker creation
-        self._thread_pool = ThreadPoolManager.get_instance()
+        # Get the thread pool manager instance for this vacuum - defer worker creation
+        self._thread_pool = ThreadPoolManager.get_instance(vacuum_id)
 
         # Pre-initialize parser to avoid initialization delay during first use
         self._parser = RRMapParser()
@@ -56,87 +123,130 @@ class DecompressionManager:
         # Use a priority queue for better task management
         self._queue: asyncio.PriorityQueue = asyncio.PriorityQueue()
 
-        # Results cache with timestamp for expiration
-        self._results: Dict[str, Tuple[Any, float]] = {}
+        # Add a counter for task ordering to ensure FIFO behavior
+        self._task_counter = 0
+
+        # FIFO cache with a maximum of 3 entries per vacuum (to handle 0.5s image frequency)
+        self._results = FIFOCache(max_size=3)
 
         # Cache expiration time (10 minutes)
         self._cache_expiry = 600
 
-        # Track active tasks to limit concurrency
-        self._active_tasks = 0
-        self._task_semaphore = asyncio.Semaphore(self.MAX_CONCURRENT_TASKS)
-
         # Defer background worker creation to avoid initialization delays
         asyncio.create_task(self._initialize_workers())
 
+        LOGGER.debug(
+            "Initialized DecompressionManager for vacuum: %s", vacuum_id
+        )
+
     @staticmethod
-    @lru_cache(maxsize=32)
-    def get_instance() -> "DecompressionManager":
-        """Get the singleton instance of DecompressionManager.
-        This method is cached to avoid creating multiple instances.
+    def get_instance(vacuum_id: str = "default") -> "DecompressionManager":
+        """Get the singleton instance of DecompressionManager for a specific vacuum.
+
+        Args:
+            vacuum_id: The unique identifier for the vacuum
 
         Returns:
-            The singleton instance
+            The singleton instance for this vacuum
         """
-        return DecompressionManager()
+        return DecompressionManager(vacuum_id)
 
-    def _cache_key(self, topic: str, data_type: str, payload_hash: int) -> str:
+    @staticmethod
+    def _cache_key(topic: str, data_type: str, payload_hash: int) -> str:
         """Generate a cache key using the module-level cached function."""
         return _make_cache_key(topic, data_type, payload_hash)
 
-    def _validate_header(self, payload: bytes, data_type: str) -> bool:
+    @property
+    def decompress_queue(self) -> bool:
         """
-        Validate compressed payload headers with minimal overhead.
+        Check if there are items in the decompression queue waiting to be processed.
+
+        Returns:
+            bool: True if there are items in the queue, False otherwise
+        """
+        return not self._queue.empty()
+
+    async def _validate_compressed_header(
+            self, payload: bytes, data_type: str
+    ) -> bool:
+        """
+        Validate compressed data headers and checksums.
+        Args:
+            payload: The compressed payload
+            data_type: Either "Rand256" or "Hypfer"
+        Returns:
+            bool: True if valid, False otherwise
         """
         try:
-            # Fast path checks with minimal operations
-            if not payload or len(payload) < 2:
+            if len(payload) < 4:
+                LOGGER.warning(
+                    "%s Payload too short: %r",
+                    self.vacuum_id,
+                    payload[:10],
+                )
                 return False
 
             if data_type == "Hypfer":
+                # isal-zlib header magic bytes: 0x78 0x9c
                 if not payload.startswith(b"\x78\x9c"):
-                    raise ValueError("Invalid isal-zlib header")
+                    LOGGER.warning(
+                        "%s Invalid isal-zlib header: %r",
+                        self.vacuum_id,
+                        payload[:10],
+                    )
+                    return False
                 # Validate zlib header checksum
                 if (payload[0] * 256 + payload[1]) % 31 != 0:
-                    raise ValueError("Invalid isal-zlib header checksum")
-
+                    LOGGER.warning(
+                        "%s Invalid isal-zlib header checksum",
+                        self.vacuum_id,
+                    )
+                    return False
             elif data_type == "Rand256":
+                # gzip header magic bytes: 0x1f 0x8b
                 if not payload.startswith(b"\x1f\x8b"):
-                    raise ValueError("Invalid gzip header")
+                    LOGGER.warning(
+                        "%s Invalid gzip header: %r",
+                        self.vacuum_id,
+                        payload[:10],
+                    )
+                    return False
+            return True
         except Exception as e:
-            LOGGER.warning("Header validation error for %s: %s", data_type, e)
+            LOGGER.error("Error validating header: %s", str(e))
             return False
-        return True
 
     async def _cleanup_cache(self) -> None:
-        """Periodically clean up expired cache entries."""
+        """
+        Periodically check for expired cache entries.
+        With the FIFO cache implementation, we don't need to manually remove old entries,
+        but we still want to log cache statistics periodically.
+        """
         while True:
             try:
                 await asyncio.sleep(60)  # Check every minute
-                now = time.time()
-                expired_keys = [
-                    k
-                    for k, (_, timestamp) in self._results.items()
-                    if now - timestamp > self._cache_expiry
-                ]
 
-                for key in expired_keys:
-                    del self._results[key]
-
-                if expired_keys:
+                # Only log cache statistics in debug mode
+                if LOGGER.isEnabledFor(10):  # DEBUG level
+                    cache_size = len(self._results)
                     LOGGER.debug(
-                        "Cleaned up %d expired cache entries", len(expired_keys)
+                        "%s: Cache status - %d entries in FIFO cache (max: %d)",
+                        self.vacuum_id,
+                        cache_size,
+                        self._results.get_max_size()
                     )
+
+            except asyncio.CancelledError:
+                break
             except Exception as e:
-                LOGGER.error("Error in cache cleanup: %s", e)
+                LOGGER.error("Error in cache monitoring: %s", str(e))
 
     async def _worker_loop(self) -> None:
         """
         Consume tasks: each is (priority, (topic, payload, data_type, future)).
+        Implements FIFO processing with efficient caching.
         """
-        loop = asyncio.get_running_loop()
 
-        # Define helper functions for decompression to avoid recreation on each iteration
         def _hypfer_decompress(p: bytes) -> str:  # local helper
             return isal_zlib.decompress(p).decode()
 
@@ -147,136 +257,149 @@ class DecompressionManager:
             try:
                 # Get next task with priority
                 _, (topic, payload, data_type, future) = await self._queue.get()
-                device_name = topic.split("/")[-1] if "/" in topic else topic
-                worker_start_time = time.time()
+                device_name = self.vacuum_id
 
-                # Limit concurrent tasks
-                async with self._task_semaphore:
-                    self._active_tasks += 1
-
-                    try:
-                        # Calculate cache key only once
-                        payload_len = len(payload)
-                        payload_hash = hash(payload)
-                        key = (
-                            self._cache_key(topic, data_type, payload_hash)
-                            if payload_len > 50000
-                            else ""
-                        )
-
-                        # Check cache first
-                        if key and key in self._results:
+                # Generate cache key for larger payloads
+                key = None
+                payload_len = len(payload)
+                if payload_len > 50000:  # Only hash larger payloads
+                    payload_hash = hash(payload)
+                    key = self._cache_key(topic, data_type, payload_hash)
+                    # Check cache first
+                    cached = self._results.get(key)
+                    if cached:
+                        result, timestamp = cached
+                        if LOGGER.isEnabledFor(20):  # INFO level
                             LOGGER.info(
-                                "%s: TIMING - Worker cache hit for %s data",
+                                "%s: Cache hit for %s data",
                                 device_name,
-                                data_type,
+                                data_type
                             )
-                            result, _ = self._results[key]
-                            future.set_result(result)
-                            continue
-
-                        # Process based on data type
-                        if data_type == "Hypfer":
-                            # Time the decompression step
-                            decompress_start_time = time.time()
-                            raw = await self._thread_pool.run_in_executor(
-                                "decompression",
-                                _hypfer_decompress,
-                                payload,
-                                max_workers=4,
-                            )
-                            decompress_time = time.time() - decompress_start_time
-
-                            # Time the JSON parsing step
-                            json_start_time = time.time()
-                            result = json.loads(raw)
-                            json_time = time.time() - json_start_time
-
-                            LOGGER.info(
-                                "%s: TIMING - Worker Hypfer processing: decompress=%.3fs, json=%.3fs",
-                                device_name,
-                                decompress_time,
-                                json_time,
-                            )
-                        else:
-                            # Time the decompression step
-                            decompress_start_time = time.time()
-                            decompressed = await self._thread_pool.run_in_executor(
-                                "decompression",
-                                _rand256_decompress,
-                                payload,
-                                max_workers=4,
-                            )
-                            decompress_time = time.time() - decompress_start_time
-
-                            # Time the parsing step
-                            parse_start_time = time.time()
-
-                            def _parse_rand256(buf: bytes) -> Any:
-                                return self._parser.parse_data(payload=buf, pixels=True)
-
-                            result = await self._thread_pool.run_in_executor(
-                                "decompression",
-                                _parse_rand256,
-                                decompressed,
-                                max_workers=4,
-                            )
-                            parse_time = time.time() - parse_start_time
-
-                            LOGGER.info(
-                                "%s: TIMING - Worker Rand256 processing: decompress=%.3fs, parse=%.3fs",
-                                device_name,
-                                decompress_time,
-                                parse_time,
-                            )
-
-                        # Cache result with timestamp
-                        if key:
-                            self._results[key] = (result, time.time())
-
                         future.set_result(result)
-
-                        # Log total worker time
-                        total_worker_time = time.time() - worker_start_time
-                        LOGGER.info(
-                            "%s: TIMING - Worker completed %s processing in %.3fs",
-                            device_name,
-                            data_type,
-                            total_worker_time,
-                        )
-                    except Exception as e:
-                        LOGGER.error(
-                            "%s: Worker decompression error for %s: %s",
-                            device_name,
-                            data_type,
-                            str(e),
-                        )
-                        future.set_exception(e)
-                    finally:
-                        self._active_tasks -= 1
                         self._queue.task_done()
+                        continue
+
+                try:
+                    # Process based on data type
+                    if data_type == "Hypfer":
+                        # ThreadPoolManager will automatically use optimal worker count for decompression
+                        raw = await self._thread_pool.run_in_executor(
+                            "decompression",
+                            _hypfer_decompress,
+                            payload,
+                        )
+
+                        result = json.loads(raw)
+
+                        if LOGGER.isEnabledFor(20):  # INFO level
+                            LOGGER.info(
+                                "%s: Hypfer processing completed",
+                                device_name
+                            )
+                    else:
+                        # ThreadPoolManager will automatically use optimal worker count for decompression
+                        decompressed = await self._thread_pool.run_in_executor(
+                            "decompression",
+                            _rand256_decompress,
+                            payload,
+                        )
+
+                        def _parse_rand256(buf: bytes) -> Any:
+                            return self._parser.parse_data(payload=buf, pixels=True)
+
+                        # ThreadPoolManager will automatically use optimal worker count for decompression
+                        result = await self._thread_pool.run_in_executor(
+                            "decompression",
+                            _parse_rand256,
+                            decompressed,
+                        )
+
+                        if LOGGER.isEnabledFor(20):  # INFO level
+                            LOGGER.info(
+                                "%s: Rand256 processing completed",
+                                device_name
+                            )
+
+                    # Cache result in FIFO cache
+                    if key:
+                        self._results.put(key, result)
+
+                    future.set_result(result)
+
+                    # Log completion in debug mode
+                    if LOGGER.isEnabledFor(10):  # DEBUG level
+                        LOGGER.debug(
+                            "%s: Worker completed %s processing",
+                            device_name,
+                            data_type
+                        )
+                except Exception as e:
+                    LOGGER.error(
+                        "%s: Worker decompression error for %s: %s",
+                        device_name,
+                        data_type,
+                        str(e),
+                    )
+                    future.set_exception(e)
+                finally:
+                    self._queue.task_done()
+            except asyncio.CancelledError:
+                break
             except Exception as e:
                 LOGGER.error("Worker error: %s", str(e))
 
+    async def queue_task(self, topic: str, payload: bytes, data_type: str) -> None:
+        """
+        Queue a decompression task without waiting for the result.
+        This is used when we want to add a task to the queue but not process it immediately.
+        Implements strict FIFO ordering with priority queue.
+        """
+        if not payload:
+            return
+
+        # Validate header
+        if not await self._validate_compressed_header(payload, data_type):
+            return
+
+        device_name = self.vacuum_id
+
+        # Create a future that will never be awaited
+        loop = asyncio.get_running_loop()
+        future: asyncio.Future = loop.create_future()
+
+        # Use a monotonically increasing counter for strict FIFO ordering
+        self._task_counter += 1
+        priority = -self._task_counter  # Negative to ensure earlier tasks have higher priority
+
+        # Queue the task with priority
+        await self._queue.put((priority, (topic, payload, data_type, future)))
+
+        LOGGER.debug(
+            "%s: Queued %s task for later processing. Queue size: %d",
+            device_name,
+            data_type,
+            self._queue.qsize()
+        )
+
     async def decompress(self, topic: str, payload: bytes, data_type: str) -> Any:
         """
-        Queue a decompression task (with optional sync short-circuit) and await the JSON result.
+        Queue a decompression task and await the JSON result.
+        Uses FIFO ordering based on arrival time with efficient caching.
         """
-        # Start timing the entire decompression process
-        overall_start_time = time.time()
-        device_name = topic.split("/")[-1] if "/" in topic else topic
+        device_name = self.vacuum_id
 
         if not payload:
             return None
 
-        # Log the payload size
+        # Log the payload size only in debug mode
         payload_len = len(payload)
-        LOGGER.info(
-            "%s: TIMING - Starting decompression of %s data, size: %d bytes",
-            device_name,
-            data_type,
-            payload_len,
-        )
+        if LOGGER.isEnabledFor(10):  # DEBUG level
+            LOGGER.debug(
+                "%s: Starting decompression of %s data, size: %d bytes",
+                device_name,
+                data_type,
+                payload_len,
+            )
 
         # Fast path: check cache first using hash of payload
         if payload_len > 50000:  # Only hash larger payloads
@@ -285,119 +408,47 @@ class DecompressionManager:
             cached = self._results.get(key)
             if cached:
                 result, _ = cached
-                LOGGER.info(
-                    "%s: TIMING - Cache hit for %s data", device_name, data_type
-                )
+                if LOGGER.isEnabledFor(20):  # INFO level
+                    LOGGER.info(
+                        "%s: Cache hit for %s data",
+                        device_name,
+                        data_type
+                    )
                 return result
 
         # Validate header
-        if not self._validate_header(payload, data_type):
+        if not await self._validate_compressed_header(payload, data_type):
             return None
 
-        # Synchronous fast path for small payloads
-        if data_type == "Hypfer" and payload_len <= self.SYNC_HYPFER_THRESHOLD:
-            try:
-                # Define helper function
-                def _hypfer_decompress(p: bytes) -> str:
-                    return isal_zlib.decompress(p).decode()
-
-                # Time the decompression step
-                decompress_start_time = time.time()
-                # Use thread pool for consistent behavior but with direct await for small payloads
-                raw = await self._thread_pool.run_in_executor(
-                    "decompression_sync", _hypfer_decompress, payload, max_workers=2
-                )
-                decompress_time = time.time() - decompress_start_time
-
-                # Time the JSON parsing step
-                json_start_time = time.time()
-                result = json.loads(raw)
-                json_time = time.time() - json_start_time
-
-                total_time = time.time() - overall_start_time
-                LOGGER.info(
-                    "%s: TIMING - Sync Hypfer processing: total=%.3fs, decompress=%.3fs, json=%.3fs",
-                    device_name,
-                    total_time,
-                    decompress_time,
-                    json_time,
-                )
-                return result
-            except Exception as e:
-                LOGGER.error(
-                    "%s: Sync Hypfer decompression error: %s", device_name, str(e)
-                )
-                return None
-
-        if data_type != "Hypfer" and payload_len <= self.SYNC_RAND256_THRESHOLD:
-            try:
-                # Define helper functions
-                def _rand256_decompress(p: bytes) -> bytes:
-                    return igzip.decompress(p)
-
-                def _parse_rand256(buf: bytes) -> Any:
-                    return self._parser.parse_data(payload=buf, pixels=True)
-
-                # Time the decompression step
-                decompress_start_time = time.time()
-                decompressed = await self._thread_pool.run_in_executor(
-                    "decompression_sync", _rand256_decompress, payload, max_workers=2
-                )
-                decompress_time = time.time() - decompress_start_time
-
-                # Time the parsing step
-                parse_start_time = time.time()
-                result = await self._thread_pool.run_in_executor(
-                    "decompression_sync", _parse_rand256, decompressed, max_workers=2
-                )
-                parse_time = time.time() - parse_start_time
-
-                total_time = time.time() - overall_start_time
-                LOGGER.info(
-                    "%s: TIMING - Sync Rand256 processing: total=%.3fs, decompress=%.3fs, parse=%.3fs",
-                    device_name,
-                    total_time,
-                    decompress_time,
-                    parse_time,
-                )
-                return result
-            except Exception as e:
-                LOGGER.error(
-                    "%s: Sync Rand256 decompression error: %s", device_name, str(e)
-                )
-                return None
-
-        # Async path for larger payloads
-        LOGGER.info(
-            "%s: TIMING - Using async path for %s data (size: %d bytes)",
-            device_name,
-            data_type,
-            payload_len,
-        )
+        # Async path for all payloads - only log in debug mode
+        if LOGGER.isEnabledFor(10):  # DEBUG level
+            LOGGER.debug(
+                "%s: Using async path for %s data",
+                device_name,
+                data_type
+            )
 
         loop = asyncio.get_running_loop()
         future: asyncio.Future = loop.create_future()
 
-        # Use priority based on payload size (smaller = higher priority)
-        priority = payload_len
+        # Use a monotonically increasing counter for strict FIFO ordering
+        # Lower values have higher priority, so we use negative counter
+        self._task_counter += 1
+        priority = -self._task_counter  # Negative to ensure earlier tasks have higher priority
 
         # Queue the task with priority
         await self._queue.put((priority, (topic, payload, data_type, future)))
 
         # Wait for the result
-        wait_start_time = time.time()
         result = await future
-        wait_time = time.time() - wait_start_time
 
-        # Log the total time
-        total_time = time.time() - overall_start_time
-        LOGGER.info(
-            "%s: TIMING - Async %s processing: total=%.3fs, wait=%.3fs",
-            device_name,
-            data_type,
-            total_time,
-            wait_time,
-        )
+        # Log completion in debug mode
+        if LOGGER.isEnabledFor(10):  # DEBUG level
+            LOGGER.debug(
+                "%s: Async %s processing completed",
+                device_name,
+                data_type
+            )
 
         return result
 
@@ -412,6 +463,44 @@ class DecompressionManager:
         cached = self._results.get(key)
         return cached[0] if cached else None
 
+    def has_pending_tasks(self) -> bool:
+        """
+        Check if there are any pending decompression tasks in the queue.
+
+        Returns:
+            bool: True if there are tasks waiting to be processed, False otherwise
+        """
+        return not self._queue.empty()
+
+    def get_pending_tasks_count(self) -> int:
+        """
+        Get the number of pending decompression tasks in the queue.
+
+        Returns:
+            int: The number of tasks waiting to be processed
+        """
+        return self._queue.qsize()
+
+    def get_queue_status(self) -> Dict[str, Any]:
+        """
+        Get status information about the decompression queue.
+
+        Returns:
+            Dict with queue status information including:
+            - pending_tasks: Number of tasks in the queue
+            - has_pending: Whether there are any pending tasks
+            - cache_entries: Number of cached results
+            - cache_max_size: Maximum number of entries in the cache
+            - vacuum_id: Vacuum identifier
+        """
+        return {
+            "pending_tasks": self._queue.qsize(),
+            "has_pending": not self._queue.empty(),
+            "cache_entries": len(self._results),
+            "cache_max_size": self._results.get_max_size(),
+            "vacuum_id": self.vacuum_id,
+        }
+
     async def shutdown(self) -> None:
         """Shutdown the decompression manager and clean up resources."""
         # Only proceed if this instance is initialized
@@ -419,7 +508,7 @@ class DecompressionManager:
             LOGGER.debug("DecompressionManager not initialized, skipping shutdown")
             return
 
-        LOGGER.debug("Shutting down DecompressionManager")
+        LOGGER.debug("Shutting down DecompressionManager for %s", self.vacuum_id)
 
         # Cancel all background tasks
         if hasattr(self, "_background_tasks"):
@@ -439,29 +528,39 @@ class DecompressionManager:
         if hasattr(self, "_thread_pool"):
             try:
                 await self._thread_pool.shutdown("decompression")
-                await self._thread_pool.shutdown("decompression_sync")
             except Exception as e:
                 LOGGER.debug("Error shutting down thread pools: %s", e)
 
-        # Clear the cache
+        # Clear the FIFO cache
         if hasattr(self, "_results"):
             self._results.clear()
 
-        LOGGER.debug("DecompressionManager shutdown complete")
+        # Remove this instance from the instances dictionary
+        if self.vacuum_id in DecompressionManager._instances:
+            del DecompressionManager._instances[self.vacuum_id]
+
+        LOGGER.debug("DecompressionManager shutdown complete for %s", self.vacuum_id)
 
     async def _initialize_workers(self) -> None:
         """Initialize background workers after a short delay to avoid blocking entity creation."""
         try:
             # Short delay to allow entity creation to complete
             await asyncio.sleep(0.1)
-            
-            # Start background workers
-            for _ in range(2):  # Multiple workers for better throughput
-                task = asyncio.create_task(self._worker_loop())
-                self._background_tasks.append(task)
 
-            # Start cache cleanup task
+            # Start a single worker for better resource management
+            # This is sufficient since we're using a priority queue
+            task = asyncio.create_task(self._worker_loop())
+            self._background_tasks.append(task)
+
+            # Start cache monitoring task
             task = asyncio.create_task(self._cleanup_cache())
             self._background_tasks.append(task)
+
+            if LOGGER.isEnabledFor(10):  # DEBUG level
+                LOGGER.debug(
+                    "%s: Initialized workers with FIFO cache (max size: %d)",
+                    self.vacuum_id,
+                    self._results.get_max_size()
+                )
         except Exception as e:
             LOGGER.error("Error initializing workers: %s", e)

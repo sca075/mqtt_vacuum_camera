@@ -456,6 +456,8 @@ class ValetudoConnector:
     @redact_ip_filter
     def _log_vacuum_ips(self, ips: str) -> str:
         """Log vacuum IPs with redaction"""
+        if ips:
+            self.config.shared.vacuum_ips = ips
         return f"{self.connector_data.file_name}: Vacuum IPs: {ips}"
 
     @callback

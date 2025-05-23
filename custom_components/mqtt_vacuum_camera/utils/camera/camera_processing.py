@@ -42,7 +42,8 @@ class CameraProcessor:
             "custom_components/mqtt_vacuum_camera/translations/"
         )
         self._status_text = StatusText(self.hass, self._shared)
-        self._thread_pool = ThreadPoolManager.get_instance()
+        # Get thread pool instance for this vacuum
+        self._thread_pool = ThreadPoolManager.get_instance(self._file_name)
         self._language_cache = LanguageCache.get_instance()
 
     async def async_process_valetudo_data(self, parsed_json: JsonType) -> PilPNG | None:
@@ -184,9 +185,12 @@ class CameraProcessor:
     ) -> PilPNG | None:
         """Thread function to process the image data from the Vacuum Json data using persistent thread pool."""
         try:
-            # Use the persistent thread pool instead of creating a new one each time
-            result = await self._thread_pool.run_in_executor(
-                f"{self._file_name}_camera", self.process_valetudo_data, parsed_json
+            # Use the persistent thread pool - the ThreadPoolManager will automatically
+            # use a shared pool for this vacuum to avoid creating multiple pools
+            result = await asyncio.create_task(
+                self._thread_pool.run_in_executor(
+                    f"{self._file_name}_camera", self.process_valetudo_data, parsed_json
+                )
             )
 
             if result is not None:
@@ -242,31 +246,30 @@ class CameraProcessor:
     async def run_async_draw_image_text(self, pil_img: PilPNG, color: Color) -> PilPNG:
         """Thread function to process the image text using persistent thread pool."""
         try:
-            # Use the persistent thread pool instead of creating a new one each time
-            result = await self._thread_pool.run_in_executor(
-                f"{self._file_name}_camera_text",
-                self.process_status_text,
-                pil_img,
-                color,
-                self._shared.vacuum_status_font,
-                self._shared.vacuum_status_position,
+            # Use the persistent thread pool - the ThreadPoolManager will automatically
+            # use a shared pool for this vacuum to avoid creating multiple pools
+            result = await asyncio.create_task(
+                self._thread_pool.run_in_executor(
+                    f"{self._file_name}_camera_text",
+                    self.process_status_text,
+                    pil_img,
+                    color,
+                    self._shared.vacuum_status_font,
+                    self._shared.vacuum_status_position,
+                )
             )
             return result
         except Exception as e:
             LOGGER.error("Error processing image text: %s", str(e), exc_info=True)
             return pil_img  # Return original image if text processing fails
 
-    @staticmethod
-    async def download_image(url: str):
-        """
-        Asynchronously download an image without blocking.
+    async def download_image(self, url):
+        """Download an image from a URL."""
+        LOGGER.debug("Downloading image from URL: %s", url)
 
-        Args:
-            url (str): The URL to download the image from.
-
-        Returns:
-            Image: The downloaded image in jpeg format.
-        """
+        # Fix double http:// in URL if present
+        if url.startswith("http://http://"):
+            url = url.replace("http://http://", "http://")
 
         try:
             timeout = aiohttp.ClientTimeout(total=3)  # Set the timeout to 3 seconds
@@ -276,18 +279,17 @@ class CameraProcessor:
                         obstacle_image = await response.read()
                         LOGGER.debug("Image downloaded successfully!")
                         return obstacle_image
-                    raise HTTPException(
-                        text="Failed to download the Obstacle image.",
-                        reason=response.reason,
+                    raise aiohttp.ClientError(
+                        f"Failed to download the Obstacle image. Status: {response.status}, Reason: {response.reason}"
                     )
-        except aiohttp.ClientTimeoutError as e:
+        except asyncio.TimeoutError as e:
             LOGGER.warning(
                 "Timeout error occurred: %s",
                 e,
                 exc_info=True,
             )
             return None
-        except asyncio.TimeoutError as e:
+        except aiohttp.ClientError as e:
             LOGGER.error("Error downloading image: %s", e, exc_info=True)
             return None
 
@@ -305,9 +307,12 @@ class CameraProcessor:
             # Use BytesIO to convert bytes to a file-like object
             bytes_io = BytesIO(obstacle_image)
 
-            # Use the persistent thread pool
-            pil_img = await self._thread_pool.run_in_executor(
-                f"{self._file_name}_camera", Image.open, bytes_io
+            # Use the persistent thread pool - the ThreadPoolManager will automatically
+            # use a shared pool for this vacuum to avoid creating multiple pools
+            pil_img = await asyncio.create_task(
+                self._thread_pool.run_in_executor(
+                    f"{self._file_name}_camera", Image.open, bytes_io
+                )
             )
             return pil_img
         except Exception as e:
