@@ -39,6 +39,7 @@ from .utils.files_operations import (
     async_rename_room_description,
 )
 from .utils.thread_pool import ThreadPoolManager
+from .utils.connection.decompress import DecompressionManager
 from .utils.vacuum.mqtt_vacuum_services import (
     async_register_vacuums_services,
     async_remove_vacuums_services,
@@ -58,10 +59,6 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
 
     hass.data.setdefault(DOMAIN, {})
     hass_data = dict(entry.data)
-
-    # Language cache initialization moved to room_manager.py
-    # It now only initializes when needed for room renaming operations
-    # This improves performance by avoiding unnecessary initialization
 
     vacuum_entity_id, vacuum_device = get_vacuum_device_info(
         hass_data[CONF_VACUUM_CONFIG_ENTRY_ID], hass
@@ -133,9 +130,8 @@ async def async_unload_entry(
         entry_data["unsub_options_update_listener"]()
 
         # Shutdown thread pool for this entry
-        thread_pool = ThreadPoolManager.get_instance()
-        await thread_pool.shutdown(f"{entry.entry_id}_camera")
-        await thread_pool.shutdown(f"{entry.entry_id}_camera_text")
+        thread_pool = ThreadPoolManager.get_instance(entry.entry_id)
+        await thread_pool.shutdown()  # Shutdown all pools for this vacuum
         LOGGER.debug("Thread pools for %s shut down", entry.entry_id)
 
         # Remove services
@@ -167,10 +163,20 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
         # The optimization is now handled in room_manager.py
         await async_rename_room_description(hass, vacuum_entity_id)
 
-        # Shutdown all thread pools
-        thread_pool = ThreadPoolManager.get_instance()
-        await thread_pool.shutdown()
+        # Shutdown all thread pools across all instances
+        await ThreadPoolManager.shutdown_all()
         LOGGER.debug("All thread pools shut down")
+
+        # Shutdown all decompression managers
+        try:
+            # Don't shut down the default instance during startup
+            # Each camera entity will create its own instance with its vacuum_id
+            # These will be properly shut down during unload_entry
+            LOGGER.debug(
+                "Skipping default DecompressionManager shutdown during startup"
+            )
+        except Exception as e:
+            LOGGER.error("Error with DecompressionManager: %s", e)
 
         await hass.async_block_till_done()
         return True
