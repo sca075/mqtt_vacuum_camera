@@ -661,10 +661,10 @@ class MQTTCamera(CoordinatorEntity, Camera):
                 self._image_bk = self.Image
 
             LOGGER.debug(
-                "%s: Camera Mode Change to %s",
+                "%s: Camera Mode Change to %s%s",
                 self._file_name,
                 self._shared.camera_mode,
-                reason if reason else ", ''.",
+                f", {reason}" if reason else "",
             )
 
         async def _async_find_nearest_obstacle(x, y, all_obstacles):
@@ -717,7 +717,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
             and self._shared.camera_mode == CameraModes.MAP_VIEW
         ):
             if event.data.get("entity_id") != self.entity_id:
-                return _set_camera_mode(CameraModes.MAP_VIEW, "Entity ID mismatch")
+                return await _set_camera_mode(CameraModes.MAP_VIEW, "Entity ID mismatch")
             await _set_camera_mode(
                 CameraModes.OBSTACLE_SEARCH, "Obstacle View Requested"
             )
@@ -760,7 +760,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
 
                     # Process the image if download was successful
                     if image_data is not None:
-                        await _set_camera_mode(CameraModes.OBSTACLE_VIEW)
+                        await _set_camera_mode(CameraModes.OBSTACLE_VIEW, "Image downloaded successfully")
                         try:
                             start_time = time.perf_counter()
                             # Open the downloaded image with PIL
@@ -805,7 +805,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
                                 e,
                                 exc_info=True,
                             )
-                            return await _set_map_view_mode()
+                            return await _set_map_view_mode("Error processing image")
                     else:
                         return await _set_map_view_mode("No image downloaded.")
                 return await _set_map_view_mode("No nearby obstacle found.")
