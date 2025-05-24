@@ -53,9 +53,12 @@ class Snapshots:
             # Store JSON data if provided
             if json_data and not isinstance(json_data, bool):
                 # Use synchronous file operations since we're in a thread
-                json_file_path = os.path.join(self.storage_path, f"{self.file_name}.json")
-                with open(json_file_path, 'w', encoding='utf-8') as f:
+                json_file_path = os.path.join(
+                    self.storage_path, f"{self.file_name}.json"
+                )
+                with open(json_file_path, "w", encoding="utf-8") as f:
                     import json as json_lib
+
                     json_lib.dump(json_data, f)
                 _LOGGER.debug("%s: JSON data saved to storage", self.file_name)
 
@@ -66,36 +69,33 @@ class Snapshots:
             if self._shared.enable_snapshots and os.path.isfile(self.snapshot_img):
                 shutil.copy(
                     os.path.join(self.storage_path, f"{self.file_name}.png"),
-                    os.path.join(self._directory_path, "www", f"snapshot_{self.file_name}.png"),
+                    os.path.join(
+                        self._directory_path, "www", f"snapshot_{self.file_name}.png"
+                    ),
                 )
                 _LOGGER.debug("%s: Snapshot image saved in WWW folder.", self.file_name)
 
             # Ensure image is closed to prevent resource leaks
-            if hasattr(image_data, 'close'):
+            if hasattr(image_data, "close"):
                 image_data.close()
 
             return None
         except (IOError, OSError) as e:
             _LOGGER.error("Error in process_snapshot: %s", str(e))
             # Ensure image is closed even on error
-            if hasattr(image_data, 'close'):
+            if hasattr(image_data, "close"):
                 image_data.close()
             return None
 
     async def run_async_take_snapshot(self, json_data: Any, pil_img: PilPNG) -> None:
         """Process the image snapshot using the thread pool manager."""
         # Get the thread pool manager instance for this vacuum
-        thread_pool = ThreadPoolManager.get_instance(self.file_name)
+        thread_pool = ThreadPoolManager(self.file_name)
 
         # Run the snapshot processing in the thread pool
         # The ThreadPoolManager will automatically use a shared pool for this vacuum
-        return await asyncio.create_task(
-            thread_pool.run_in_executor(
-                f"{self.file_name}_snapshot",
-                self.process_snapshot,
-                json_data,
-                pil_img
-            )
+        return await thread_pool.run_in_executor(
+            "snapshot", self.process_snapshot, json_data, pil_img
         )
 
     async def shutdown(self) -> None:

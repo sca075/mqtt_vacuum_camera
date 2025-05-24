@@ -121,9 +121,6 @@ class ValetudoConnector:
         self.rrm_data = RRMData(rrm_command=f"{mqtt_topic}/command")
         self.pkohelrs_data = PkohelrsData()
 
-    # Removed redundant _process_decompression_queue method
-    # Now using the optimized DecompressionManager directly
-
     async def update_data(self, process: bool = True):
         """
         Update the data from MQTT.

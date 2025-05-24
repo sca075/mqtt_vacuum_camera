@@ -134,15 +134,6 @@ async def async_unload_entry(
         await thread_pool.shutdown()  # Shutdown all pools for this vacuum
         LOGGER.debug("Thread pools for %s shut down", entry.entry_id)
 
-        # Shutdown decompression manager for this specific vacuum
-        try:
-            # Get the specific instance for this vacuum
-            decompression_manager = DecompressionManager.get_instance(entry.entry_id)
-            await decompression_manager.shutdown()
-            LOGGER.debug("DecompressionManager for %s shut down", entry.entry_id)
-        except Exception as e:
-            LOGGER.error("Error shutting down DecompressionManager for %s: %s", entry.entry_id, e)
-
         # Remove services
         if not hass.data[DOMAIN]:
             hass.services.async_remove(DOMAIN, "reset_trims")
@@ -181,7 +172,9 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
             # Don't shut down the default instance during startup
             # Each camera entity will create its own instance with its vacuum_id
             # These will be properly shut down during unload_entry
-            LOGGER.debug("Skipping default DecompressionManager shutdown during startup")
+            LOGGER.debug(
+                "Skipping default DecompressionManager shutdown during startup"
+            )
         except Exception as e:
             LOGGER.error("Error with DecompressionManager: %s", e)
 

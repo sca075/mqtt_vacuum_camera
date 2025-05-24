@@ -117,6 +117,8 @@ class StatusText:
                     status_text.append(" \u00b7 ")
                     status_text.append(f"{charge_level}")
                     status_text.append(f" {self._shared.vacuum_battery}%")
+                    # When vacuum is not docked, it's not fully charged (should stream)
+                    self._shared.vacuum_bat_charged = False
                 if text_size >= 50:
                     text_pixels = sum(len(text) for text in status_text)
                     text_size = int(
