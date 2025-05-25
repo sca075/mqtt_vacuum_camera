@@ -114,6 +114,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         self._cpu_percent = None
         self._init_clear_www_folder()
         self._last_image = None
+        self._obstacle_image = None
         self.auth_update_time = None
         self._dm = DecompressionManager.get_instance(self._file_name)
         LOGGER.debug(
@@ -213,7 +214,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
 
         # Cancel any pending debounced calls
         if hasattr(self, '_obstacle_view_debouncer'):
-            await self._obstacle_view_debouncer.async_cancel()
+            self._obstacle_view_debouncer.async_cancel()
 
     @property
     def name(self) -> str:
@@ -318,7 +319,8 @@ class MQTTCamera(CoordinatorEntity, Camera):
         """Camera Turn Off"""
         self._shared.camera_mode = CameraModes.CAMERA_OFF
 
-    def _load_snapshot_image(self, snapshot_path: str) -> Image.Image:
+    @staticmethod
+    def _load_snapshot_image(snapshot_path: str) -> Image.Image:
         """
         Synchronous helper function to load snapshot image from file.
         This function is designed to be called from a thread pool.
@@ -386,7 +388,8 @@ class MQTTCamera(CoordinatorEntity, Camera):
 
         # Obstacle View Processing
         if self._shared.camera_mode == CameraModes.OBSTACLE_VIEW:
-            if self.Image is not None:
+            if self._obstacle_image is not None:
+                self.Image = self._obstacle_image
                 return self.camera_image(self._image_w, self._image_h)
 
         # Map View Processing
@@ -694,6 +697,13 @@ class MQTTCamera(CoordinatorEntity, Camera):
             self._shared.camera_mode = mode_of_camera
             if mode_of_camera == CameraModes.OBSTACLE_SEARCH and not self._image_bk:
                 self._image_bk = self.Image
+            if mode_of_camera == CameraModes.MAP_VIEW:
+                self._obstacle_image = None
+                if self._image_bk:
+                    self.Image = self._image_bk
+                    self._image_bk = None
+                    self._obstacle_image = None
+                    self.camera_image(self._image_w, self._image_h)
 
             LOGGER.debug(
                 "%s: Camera Mode Change to %s%s",  # ruff: noqa: E501
@@ -741,10 +751,9 @@ class MQTTCamera(CoordinatorEntity, Camera):
             self._file_name,
             self._shared.camera_mode,
         )
-        LOGGER.debug(
-            "%s: Obstacles data: %s", self._file_name, self._shared.obstacles_data
-        )
+
         if self._shared.camera_mode == CameraModes.OBSTACLE_VIEW:
+            self._obstacle_image = None
             return await _set_map_view_mode("Obstacle View Exit Requested.")
 
         # Prevent processing if already in obstacle processing modes
@@ -754,7 +763,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
                 self._file_name,
                 self._shared.camera_mode,
             )
-            return
+            return self.Image
 
         if (
             self._shared.obstacles_data
@@ -794,7 +803,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
                     try:
                         image_data = await asyncio.wait_for(
                             fut=self.processor.download_image(nearest_obstacle["link"]),
-                            timeout=10,
+                            timeout=self.frame_interval,
                         )
                     except asyncio.TimeoutError:
                         LOGGER.warning("%s: Image download timed out.", self._file_name)
@@ -831,7 +840,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
                                 # If it's not a tuple, assume it's the image directly
                                 resized_image = resize_result
 
-                            self.Image = await self.run_async_pil_to_bytes(
+                            self._obstacle_image = await self.run_async_pil_to_bytes(
                                 resized_image,
                                 image_id=nearest_obstacle["label"],
                             )
@@ -841,6 +850,8 @@ class MQTTCamera(CoordinatorEntity, Camera):
                                 self._file_name,
                                 end_time - start_time,
                             )
+                            self.Image = self._obstacle_image
+                            self.async_schedule_update_ha_state(force_refresh=True)
                             return self.Image
                         except HomeAssistantError as e:
                             LOGGER.warning(
