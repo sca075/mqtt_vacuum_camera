@@ -20,6 +20,7 @@ from homeassistant.components.camera import Camera, CameraEntityFeature
 from homeassistant.const import CONF_UNIQUE_ID, MATCH_ALL
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers.debounce import Debouncer
 from homeassistant.helpers.device_registry import DeviceInfo as Dev_Info
 from homeassistant.helpers.entity import DeviceInfo as Entity_Info
 from homeassistant.helpers.storage import STORAGE_DIR
@@ -132,8 +133,17 @@ class MQTTCamera(CoordinatorEntity, Camera):
         self.uns_event_vacuum_start = self.hass.bus.async_listen(
             "event_vacuum_start", self.handle_vacuum_start
         )
+        # Initialize debouncer for obstacle view events
+        self._obstacle_view_debouncer = Debouncer(
+            self.hass,
+            LOGGER,
+            cooldown=0.5,  # 500ms debounce for rapid events
+            immediate=True,  # Process first event immediately
+            function=self._process_obstacle_event,
+        )
+
         self.uns_event_obstacle_coordinates = self.hass.bus.async_listen(
-            "mqtt_vacuum_camera_obstacle_coordinates", self.handle_obstacle_view
+            "mqtt_vacuum_camera_obstacle_coordinates", self._debounced_obstacle_handler
         )
 
     @staticmethod
@@ -200,6 +210,10 @@ class MQTTCamera(CoordinatorEntity, Camera):
 
         # Shutdown camera thread pools
         await self.thread_pool.shutdown(self._file_name)
+
+        # Cancel any pending debounced calls
+        if hasattr(self, '_obstacle_view_debouncer'):
+            await self._obstacle_view_debouncer.async_cancel()
 
     @property
     def name(self) -> str:
@@ -636,6 +650,27 @@ class MQTTCamera(CoordinatorEntity, Camera):
         self._shared.reset_trims()  # requires valetudo_map_parser >0.1.9b41
         LOGGER.debug("%s Trims cleared: %s", self._file_name, self._shared.trims)
 
+    async def _debounced_obstacle_handler(self, event):
+        """Handler that debounces incoming obstacle view events."""
+        # Store the latest event data
+        self._latest_obstacle_event = event
+        # Trigger the debouncer - it will call _process_obstacle_event after cooldown
+        await self._obstacle_view_debouncer.async_call()
+
+    async def _process_obstacle_event(self):
+        """Process the latest obstacle event after debouncing."""
+        if not hasattr(self, '_latest_obstacle_event'):
+            LOGGER.debug("%s: No obstacle event data available for processing", self._file_name)
+            return
+
+        event = self._latest_obstacle_event
+        LOGGER.debug(
+            "%s: Processing debounced obstacle event: %s",
+            self._file_name,
+            str(event.data)
+        )
+        await self.handle_obstacle_view(event)
+
     async def handle_obstacle_view(self, event):
         """Handle the event mqtt_vacuum_camera_obstacle_coordinates."""
 
@@ -643,7 +678,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
             """Set the camera mode to MAP_VIEW."""
             self._shared.camera_mode = CameraModes.MAP_VIEW
             LOGGER.debug(
-                "%s: Camera Mode Change to %s%s",
+                "%s: Camera Mode Change to %s%s",  # ruff: noqa: E501
                 self._file_name,
                 self._shared.camera_mode,
                 f", {reason}" if reason else "",
@@ -661,7 +696,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
                 self._image_bk = self.Image
 
             LOGGER.debug(
-                "%s: Camera Mode Change to %s%s",
+                "%s: Camera Mode Change to %s%s",  # ruff: noqa: E501
                 self._file_name,
                 self._shared.camera_mode,
                 f", {reason}" if reason else "",
@@ -695,7 +730,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
             return nearest_obstacles
 
         LOGGER.debug(
-            "%s: Received event: %s, Data: %s",
+            "%s: Executing obstacle view logic for event: %s, Data: %s",
             self._file_name,
             str(event.event_type),
             str(event.data),
@@ -711,6 +746,15 @@ class MQTTCamera(CoordinatorEntity, Camera):
         )
         if self._shared.camera_mode == CameraModes.OBSTACLE_VIEW:
             return await _set_map_view_mode("Obstacle View Exit Requested.")
+
+        # Prevent processing if already in obstacle processing modes
+        if self._shared.camera_mode in [CameraModes.OBSTACLE_DOWNLOAD, CameraModes.OBSTACLE_SEARCH]:
+            LOGGER.debug(
+                "%s: Already processing obstacle view (mode: %s), ignoring request",
+                self._file_name,
+                self._shared.camera_mode,
+            )
+            return
 
         if (
             self._shared.obstacles_data
