@@ -273,19 +273,19 @@ class CameraProcessor:
         return result
 
     @staticmethod
-    async def download_image(url: str):
+    async def download_image(url: str, set_timeout: int = 6):
         """
         Asynchronously download an image without blocking.
 
         Args:
             url (str): The URL to download the image from.
-
+            set_timeout (int): The timeout for the download in seconds.
         Returns:
             Image: The downloaded image in jpeg format.
         """
 
         try:
-            timeout = aiohttp.ClientTimeout(total=3)  # Set the timeout to 3 seconds
+            timeout = aiohttp.ClientTimeout(total=set_timeout)
             async with aiohttp.ClientSession(timeout=timeout) as session:
                 async with session.get(url) as response:
                     if response.status == 200:
@@ -296,7 +296,7 @@ class CameraProcessor:
                         text="Failed to download the Obstacle image.",
                         reason=response.reason,
                     )
-        except aiohttp.ClientTimeoutError as e:
+        except aiohttp.ClientError as e:
             LOGGER.warning(
                 "Timeout error occurred: %s",
                 e,

@@ -39,6 +39,7 @@ from .const import (
     CAMERA_STORAGE,
     CONF_VACUUM_IDENTIFIERS,
     DOMAIN,
+    DOWNLOAD_TIMEOUT,
     LOGGER,
     NOT_STREAMING_STATES,
     CameraModes,
@@ -110,6 +111,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         self._image_h = None
         self._should_poll = False
         self._attr_frame_interval = 6
+        self._json_data = None
         self._vac_json_available = None
         self._cpu_percent = None
         self._init_clear_www_folder()
@@ -211,10 +213,6 @@ class MQTTCamera(CoordinatorEntity, Camera):
 
         # Shutdown camera thread pools
         await self.thread_pool.shutdown(self._file_name)
-
-        # Cancel any pending debounced calls
-        if hasattr(self, '_obstacle_view_debouncer'):
-            self._obstacle_view_debouncer.async_cancel()
 
     @property
     def name(self) -> str:
@@ -389,8 +387,8 @@ class MQTTCamera(CoordinatorEntity, Camera):
         # Obstacle View Processing
         if self._shared.camera_mode == CameraModes.OBSTACLE_VIEW:
             if self._obstacle_image is not None:
-                self.Image = self._obstacle_image
-                return self.camera_image(self._image_w, self._image_h)
+                self.Image = self._obstacle_image # this must be set for the camera_image() to work.
+                return self._obstacle_image
 
         # Map View Processing
         if not self._mqtt:
@@ -501,11 +499,15 @@ class MQTTCamera(CoordinatorEntity, Camera):
         """Process the parsed JSON data and return the generated image."""
         if test_mode:
             LOGGER.debug("Camera Test Mode Active...")
-            data_type = "test_mode"
-            parsed_json = await async_load_file(
-                file_to_load="custom_components/mqtt_vacuum_camera/snapshots/test.json",
-                is_json=True,
-            )
+            data_type = "hypfer"
+            if not self._shared.image_grab:
+                return None, test_mode, data_type
+            if self._json_data is None:
+                self._json_data = await async_load_file(
+                    file_to_load="custom_components/mqtt_vacuum_camera/snapshots/test.json",
+                    is_json=True,
+                )
+            parsed_json = self._json_data
             self._shared.camera_mode = CameraModes.MAP_VIEW
             return parsed_json, test_mode, data_type
 
@@ -676,6 +678,10 @@ class MQTTCamera(CoordinatorEntity, Camera):
 
     async def handle_obstacle_view(self, event):
         """Handle the event mqtt_vacuum_camera_obstacle_coordinates."""
+        width = self._shared.image_ref_width
+        height = self._shared.image_ref_height
+        shared_ratio = self._shared.image_aspect_ratio
+        obstacles_data = self._shared.obstacles_data
 
         async def _set_map_view_mode(reason: str = None):
             """Set the camera mode to MAP_VIEW."""
@@ -695,16 +701,24 @@ class MQTTCamera(CoordinatorEntity, Camera):
         async def _set_camera_mode(mode_of_camera: CameraModes, reason: str = None):
             """Set the camera mode."""
             self._shared.camera_mode = mode_of_camera
-            if mode_of_camera == CameraModes.OBSTACLE_SEARCH and not self._image_bk:
-                self._image_bk = self.Image
-            if mode_of_camera == CameraModes.MAP_VIEW:
-                self._obstacle_image = None
-                if self._image_bk:
-                    self.Image = self._image_bk
-                    self._image_bk = None
-                    self._obstacle_image = None
-                    self.camera_image(self._image_w, self._image_h)
 
+            match mode_of_camera:
+                case CameraModes.OBSTACLE_SEARCH:
+                    if not self._image_bk:
+                        self._image_bk = self.Image
+
+                case CameraModes.OBSTACLE_VIEW:
+                    self._shared.image_grab = False
+                    self._processing = True
+
+                case CameraModes.MAP_VIEW:
+                    self._obstacle_image = None
+                    self._processing = False
+                    self._shared.image_grab = True
+                    if self._image_bk:
+                        self.Image = self._image_bk
+                        self._image_bk = None
+                        self.camera_image(self._image_w, self._image_h)
             LOGGER.debug(
                 "%s: Camera Mode Change to %s%s",  # ruff: noqa: E501
                 self._file_name,
@@ -715,9 +729,9 @@ class MQTTCamera(CoordinatorEntity, Camera):
         async def _async_find_nearest_obstacle(x, y, all_obstacles):
             """Find the nearest obstacle to the given coordinates."""
             nearest_obstacles = None
-            w = self._shared.image_ref_width
-            h = self._shared.image_ref_height
-            min_distance = round(60 * (w / h))  # (60 * aspect ratio) pixels distance
+            w = width
+            h = height
+            min_distance = round(65 * (w / h))
             LOGGER.debug(
                 "Finding in the nearest %d pixels obstacle to coordinates: %d, %d",
                 min_distance,
@@ -753,7 +767,6 @@ class MQTTCamera(CoordinatorEntity, Camera):
         )
 
         if self._shared.camera_mode == CameraModes.OBSTACLE_VIEW:
-            self._obstacle_image = None
             return await _set_map_view_mode("Obstacle View Exit Requested.")
 
         # Prevent processing if already in obstacle processing modes
@@ -766,7 +779,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
             return self.Image
 
         if (
-            self._shared.obstacles_data
+            obstacles_data
             and self._shared.camera_mode == CameraModes.MAP_VIEW
         ):
             if event.data.get("entity_id") != self.entity_id:
@@ -776,7 +789,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
             )
             coordinates = event.data.get("coordinates", None)
             if coordinates:
-                obstacles = self._shared.obstacles_data
+                obstacles = obstacles_data
                 coordinates_x = coordinates.get("x")
                 coordinates_y = coordinates.get("y")
                 # Find the nearest obstacle
@@ -802,8 +815,8 @@ class MQTTCamera(CoordinatorEntity, Camera):
                     # Download the image
                     try:
                         image_data = await asyncio.wait_for(
-                            fut=self.processor.download_image(nearest_obstacle["link"]),
-                            timeout=self.frame_interval,
+                            fut=self.processor.download_image(nearest_obstacle["link"], DOWNLOAD_TIMEOUT),
+                            timeout=(DOWNLOAD_TIMEOUT + 1), # dead man switch, do not remove.
                         )
                     except asyncio.TimeoutError:
                         LOGGER.warning("%s: Image download timed out.", self._file_name)
@@ -821,27 +834,31 @@ class MQTTCamera(CoordinatorEntity, Camera):
                                 self.processor.async_open_image(image_data)
                             )
                             # Resize the image if resize_to is provided
-                            width = self._shared.image_ref_width
-                            height = self._shared.image_ref_height
-                            resize_data = ResizeParams(
-                                pil_img=pil_img,
-                                width=width,
-                                height=height,
-                                aspect_ratio=self._shared.image_aspect_ratio,
-                                crop_size=[],
-                                is_rand=False,
-                                offset_func=None,
-                            )
-                            # Handle the case where async_resize_image returns an Image object instead of a tuple
-                            resize_result = await async_resize_image(params=resize_data)
-                            if isinstance(resize_result, tuple):
-                                resized_image, _ = resize_result
-                            else:
-                                # If it's not a tuple, assume it's the image directly
-                                resized_image = resize_result
+                            if shared_ratio != "None":
+                                resize_data = ResizeParams(
+                                    pil_img=pil_img,
+                                    width=width,
+                                    height=height,
+                                    aspect_ratio=shared_ratio,
+                                    crop_size=[],
+                                    is_rand=False,
+                                    offset_func=None,
+                                )
+                                # Handle the case where async_resize_image returns an Image object instead of a tuple
+                                resize_result = await async_resize_image(params=resize_data)
+                                if isinstance(resize_result, tuple):
+                                    resized_image, _ = resize_result
+                                else:
+                                    # If it's not a tuple, assume it's the image directly
+                                    resized_image = resize_result
 
+                                # Use the resized image
+                                image = resized_image
+                            else:
+                                # Use original image if no aspect ratio is set
+                                image = pil_img
                             self._obstacle_image = await self.run_async_pil_to_bytes(
-                                resized_image,
+                                image,
                                 image_id=nearest_obstacle["label"],
                             )
                             end_time = time.perf_counter()
@@ -852,7 +869,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
                             )
                             self.Image = self._obstacle_image
                             self.async_schedule_update_ha_state(force_refresh=True)
-                            return self.Image
+                            return self._obstacle_image
                         except HomeAssistantError as e:
                             LOGGER.warning(
                                 "%s: Unexpected Error processing image: %r",
