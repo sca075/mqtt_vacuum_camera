@@ -507,6 +507,7 @@ ATTR_POINTS = "points"
 ATTR_OBSTACLES = "obstacles"
 ATTR_CAMERA_MODE = "camera_mode"
 
+DOWNLOAD_TIMEOUT = 6
 
 class CameraModes(str, Enum):
     """Constants for the camera modes"""
