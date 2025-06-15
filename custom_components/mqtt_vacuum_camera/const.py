@@ -416,6 +416,7 @@ DECODED_TOPICS = {
     "/destinations",  # Rand256
     "/command",  # Rand256
     "/custom_command",  # Rand256
+    "/command_status",  # Rand256
     "/attributes",  # Rand256
 }
 

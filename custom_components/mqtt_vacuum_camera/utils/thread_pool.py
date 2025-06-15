@@ -1,7 +1,7 @@
 """
 Thread Pool Manager for MQTT Vacuum Camera.
 This module provides a persistent thread pool for image processing operations.
-Version: 2025.5.0
+Version: 2025.6.0
 """
 
 from __future__ import annotations
@@ -11,7 +11,8 @@ import concurrent.futures
 from functools import lru_cache
 import logging
 import os
-from typing import Callable, Dict, Optional, TypeVar
+import threading
+from typing import Awaitable, Callable, Dict, TypeVar
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -32,70 +33,56 @@ class ThreadPoolManager:
             instance = super(ThreadPoolManager, cls).__new__(cls)
             instance._pools = {}  # Instance-specific pools dictionary
             instance.vacuum_id = vacuum_id
+            instance.pools_to_shutdown = []
+            # DON'T set _initialized here - let __init__ handle it
             cls._instances[vacuum_id] = instance
         return cls._instances[vacuum_id]
+
+    def __init__(self, vacuum_id: str = "default"):
+        # Only initialize if this is a new instance
+        if not hasattr(self, '_initialized'):
+            self._pools = {}
+            self.vacuum_id = vacuum_id
+            self._pre_create_pools()  # Pre-create all pools
+            self._initialized = True
+
+    def _pre_create_pools(self):
+        """Pre-create all thread pools for this vacuum."""
+        pool_configs = {
+            "decompression": self.get_optimal_worker_count("decompression"),  # 2 workers
+            "camera": 1,
+            "camera_processing": 1,
+            "snapshot": 1,
+        }
+
+        for name, workers in pool_configs.items():
+            pool_name = f"{self.vacuum_id}_{name}"
+            thread_prefix = f"{pool_name}_pool"
+            _LOGGER.debug("Pre-creating thread pool: %s with %d workers", pool_name, workers)
+
+            self._pools[pool_name] = concurrent.futures.ThreadPoolExecutor(
+                max_workers=workers,
+                thread_name_prefix=thread_prefix
+            )
 
     def get_executor(
         self, name: str, max_workers: int = 1
     ) -> concurrent.futures.ThreadPoolExecutor:
-        """
-        Get or create a thread pool executor for a specific component.
-
-        Args:
-            name: The name of the component requesting the executor
-            max_workers: Maximum number of worker threads
-
-        Returns:
-            A ThreadPoolExecutor instance
-        """
         # Create a pool name that includes the vacuum_id to avoid conflicts
-        pool_name = f"{self.vacuum_id}_{name}" if self.vacuum_id != "default" else name
-
-        if pool_name not in self._pools or self._pools[pool_name]._shutdown:
-            _LOGGER.debug(
-                "Creating new thread pool for %s with %d workers",
-                pool_name,
-                max_workers,
+        if self.vacuum_id != "default":
+            pool_name = f"{self.vacuum_id}_{name}"
+        else:
+            pool_name = f"default_{name}"
+            _LOGGER.warning(
+                "Using default vacuum_id for thread pool. This is not recommended."
             )
+
+        if pool_name not in self._pools:
+            thread_prefix = f"{pool_name}_pool"
             self._pools[pool_name] = concurrent.futures.ThreadPoolExecutor(
-                max_workers=max_workers, thread_name_prefix=f"{pool_name}_pool"
+                max_workers=max_workers, thread_name_prefix=thread_prefix
             )
         return self._pools[pool_name]
-
-    async def shutdown(self, name: Optional[str] = None):
-        """
-        Shutdown a specific thread pool or all thread pools asynchronously.
-
-        Args:
-            name: The name of the component whose pool should be shut down.
-                 If None, all pools will be shut down.
-        """
-        # If a specific name is provided, create the pool name with vacuum_id
-        if name is not None:
-            pool_name = (
-                f"{self.vacuum_id}_{name}" if self.vacuum_id != "default" else name
-            )
-            if pool_name in self._pools:
-                _LOGGER.debug("Shutting down thread pool for %s", pool_name)
-                await asyncio.to_thread(self._shutdown_pool, self._pools[pool_name])
-                del self._pools[pool_name]
-        # If no name is provided, shut down all pools for this vacuum_id
-        else:
-            _LOGGER.debug(
-                "Shutting down all thread pools for vacuum_id %s", self.vacuum_id
-            )
-            # Create a list of pools to shut down to avoid modifying the dictionary during iteration
-            pools_to_shutdown = list(self._pools.items())
-
-            for pool_name, pool in pools_to_shutdown:
-                _LOGGER.debug("Shutting down pool %s", pool_name)
-                await asyncio.to_thread(self._shutdown_pool, pool)
-                del self._pools[pool_name]
-
-    @staticmethod
-    def _shutdown_pool(pool: concurrent.futures.ThreadPoolExecutor):
-        """Shutdown a thread pool (to be called via asyncio.to_thread)."""
-        pool.shutdown(wait=True)
 
     async def run_in_executor(
         self, name: str, func: Callable[..., R], *args, max_workers: int = 1
@@ -116,14 +103,60 @@ class ThreadPoolManager:
             max_workers = self.get_optimal_worker_count("decompression")
 
         try:
-            executor = self.get_executor(self.vacuum_id, max_workers)
+            executor = self.get_executor(name, max_workers)
             loop = asyncio.get_running_loop()
-            return await loop.run_in_executor(executor, func, *args)
+
+            # Create a wrapper function that logs from the worker thread
+            def logged_func(*args):
+                try:
+                    result = func(*args)
+                    return result
+                except Exception as err:
+                    _LOGGER.error(
+                        "ThreadPoolManager: Error in %s worker thread %s: %s",
+                        name,
+                        threading.current_thread().name,
+                        str(err)
+                    )
+                    raise
+
+            return await loop.run_in_executor(executor, logged_func, *args)
         except Exception as e:
             _LOGGER.error(
                 "Error executing function in thread pool: %s", str(e), exc_info=True
             )
             raise
+
+
+    async def run_async_in_executor(
+        self, name: str, async_func: Callable[..., Awaitable[R]], *args, max_workers: int = 1
+    ) -> R:
+        """
+        Run an async function in a thread pool by automatically wrapping it.
+
+        Args:
+            name: The name of the component requesting the executor
+            async_func: The async function to run
+            *args: Arguments to pass to the function
+            max_workers: Maximum number of worker threads
+
+        Returns:
+            The result of the async function
+        """
+        # Create a wrapper that captures the async function and its arguments
+        def sync_wrapper_with_args():
+            # Create new event loop in worker thread
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                # Run the async function with the captured arguments
+                result = loop.run_until_complete(async_func(*args))
+                return result
+            finally:
+                loop.close()
+
+        # Run the wrapper function in the executor (no additional args needed)
+        return await self.run_in_executor(name, sync_wrapper_with_args, max_workers=max_workers)
 
     @staticmethod
     def get_optimal_worker_count(task_type: str = "default") -> int:
@@ -147,7 +180,7 @@ class ThreadPoolManager:
 
     @staticmethod
     @lru_cache(maxsize=32)
-    def get_instance(vacuum_id: str = "default") -> ThreadPoolManager:
+    def get_instance(vacuum_id: str) -> ThreadPoolManager:
         """
         Get the singleton instance of ThreadPoolManager for a specific vacuum.
         This method is cached to avoid creating multiple instances.
@@ -161,25 +194,39 @@ class ThreadPoolManager:
         """
         return ThreadPoolManager(vacuum_id)
 
-    @classmethod
-    def get_all_instances(cls) -> Dict[str, ThreadPoolManager]:
-        """
-        Get all instances of ThreadPoolManager.
-
-        Returns:
-            A dictionary of all instances, keyed by vacuum_id
-        """
-        return cls._instances
 
     @classmethod
     async def shutdown_all(cls):
         """
-        Shutdown all thread pools across all instances.
+        Shutdown all thread pools across all instances with proper error handling.
         This is useful for application shutdown.
         """
         _LOGGER.debug("Shutting down all thread pools across all instances")
         # Create a copy of the instances to avoid modifying during iteration
         instances = list(cls._instances.items())
+
+        # Collect all pools from all instances for direct shutdown
+        all_pools = []
         for vacuum_id, instance in instances:
-            await instance.shutdown()
+            pools_to_shutdown = list(instance._pools.items())
+            all_pools.extend(pools_to_shutdown)
+
+        # Shutdown all pools quickly - don't wait for completion
+        if all_pools:
+            try:
+                # Initiate shutdown for all pools without waiting
+                for pool_name, pool in all_pools:
+                    _LOGGER.debug("Initiating shutdown for pool: %s", pool_name)
+                    try:
+                        # Use shutdown(wait=False) for immediate return
+                        pool.shutdown(wait=False)
+                    except Exception as e:
+                        _LOGGER.warning("Error shutting down pool %s: %s", pool_name, e)
+
+                _LOGGER.debug("All thread pool shutdowns initiated")
+            except Exception as e:
+                _LOGGER.error("Error during thread pool shutdown: %s", e)
+
+        # Clear instances regardless of shutdown success
         cls._instances.clear()
+        _LOGGER.debug("Thread pool instances cleared")

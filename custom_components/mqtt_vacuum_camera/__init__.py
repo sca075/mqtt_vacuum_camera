@@ -11,7 +11,7 @@ from homeassistant.components import mqtt
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONF_UNIQUE_ID,
-    EVENT_HOMEASSISTANT_FINAL_WRITE,
+    EVENT_HOMEASSISTANT_STOP,
     SERVICE_RELOAD,
     Platform,
 )
@@ -29,6 +29,7 @@ from .const import (
     LOGGER,
 )
 from .coordinator import MQTTVacuumCoordinator
+from .utils.thread_pool import ThreadPoolManager
 from .utils.camera.camera_services import (
     obstacle_view,
     reload_camera_config,
@@ -38,8 +39,6 @@ from .utils.files_operations import (
     async_get_translations_vacuum_id,
     async_rename_room_description,
 )
-from .utils.thread_pool import ThreadPoolManager
-from .utils.connection.decompress import DecompressionManager
 from .utils.vacuum.mqtt_vacuum_services import (
     async_register_vacuums_services,
     async_remove_vacuums_services,
@@ -128,12 +127,6 @@ async def async_unload_entry(
         # Remove config entry from domain.
         entry_data = hass.data[DOMAIN].pop(entry.entry_id)
         entry_data["unsub_options_update_listener"]()
-
-        # Shutdown thread pool for this entry
-        thread_pool = ThreadPoolManager.get_instance(entry.entry_id)
-        await thread_pool.shutdown()  # Shutdown all pools for this vacuum
-        LOGGER.debug("Thread pools for %s shut down", entry.entry_id)
-
         # Remove services
         if not hass.data[DOMAIN]:
             hass.services.async_remove(DOMAIN, "reset_trims")
@@ -149,7 +142,9 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
 
     async def handle_homeassistant_stop(event):
         """Handle Home Assistant stop event."""
-        LOGGER.info("Home Assistant is stopping. Writing down the rooms data.")
+        LOGGER.info("Home Assistant is stopping.")
+        # Remove thread pool
+        await ThreadPoolManager.shutdown_all()
         storage = hass.config.path(STORAGE_DIR, CAMERA_STORAGE)
         if not os.path.exists(storage):
             LOGGER.debug("Storage path: %s do not exists. Aborting!", storage)
@@ -159,30 +154,13 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
             LOGGER.debug("No vacuum room data found. Aborting!")
             return False
         LOGGER.debug("Writing down the rooms data for %s.", vacuum_entity_id)
-        # This will initialize the language cache only when needed
-        # The optimization is now handled in room_manager.py
         await async_rename_room_description(hass, vacuum_entity_id)
-
-        # Shutdown all thread pools across all instances
-        await ThreadPoolManager.shutdown_all()
-        LOGGER.debug("All thread pools shut down")
-
-        # Shutdown all decompression managers
-        try:
-            # Don't shut down the default instance during startup
-            # Each camera entity will create its own instance with its vacuum_id
-            # These will be properly shut down during unload_entry
-            LOGGER.debug(
-                "Skipping default DecompressionManager shutdown during startup"
-            )
-        except Exception as e:
-            LOGGER.error("Error with DecompressionManager: %s", e)
 
         await hass.async_block_till_done()
         return True
 
     hass.bus.async_listen_once(
-        EVENT_HOMEASSISTANT_FINAL_WRITE, handle_homeassistant_stop
+        EVENT_HOMEASSISTANT_STOP, handle_homeassistant_stop
     )
 
     # Make sure MQTT integration is enabled and the client is available

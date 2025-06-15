@@ -8,7 +8,7 @@
     "iot_class": "local_polling",
     "issue_tracker": "https://github.com/sca075/mqtt_vacuum_camera/issues",
     "requirements": [
-        "valetudo_map_parser==0.1.9a2"
+        "valetudo_map_parser==0.1.9a6"
     ],
-    "version": "2025.5.0b7"
+    "version": "2025.6.0b0"
 }

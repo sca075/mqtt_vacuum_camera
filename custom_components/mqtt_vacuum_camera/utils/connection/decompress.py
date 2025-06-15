@@ -5,7 +5,6 @@ Version: 2025.5.0
 
 from __future__ import annotations
 
-import asyncio
 import json
 from typing import Any, Dict, Optional
 
@@ -36,21 +35,21 @@ class DecompressionManager:
     _instances: Dict[str, DecompressionManager] = {}
 
     @classmethod
-    def get_instance(cls, vacuum_id: str) -> DecompressionManager:
-        if vacuum_id not in cls._instances:
+    def get_instance(cls, file_name: str) -> DecompressionManager:
+        if file_name not in cls._instances:
             instance = super().__new__(cls)
-            instance._init(vacuum_id)
-            cls._instances[vacuum_id] = instance
-        return cls._instances[vacuum_id]
+            instance._init(file_name)
+            cls._instances[file_name] = instance
+        return cls._instances[file_name]
 
-    def _init(self, vacuum_id: str) -> None:
-        self.vacuum_id = vacuum_id
-        self._thread_pool = ThreadPoolManager(vacuum_id)
+    def _init(self, file_name: str) -> None:
+        self.vacuum_id = file_name
+        self._thread_pool = ThreadPoolManager(file_name)
         self._parser = RRMapParser()
-        LOGGER.debug(f"Initialized DecompressionManager for vacuum: {vacuum_id}")
+        LOGGER.debug(f"Initialized DecompressionManager for vacuum: {file_name}")
 
     async def decompress(
-        self, topic: str = None, payload: bytes = None, data_type: str = None
+        self, payload: bytes = None, data_type: str = None
     ) -> Optional[Any]:
         """Process a payload and return the result."""
         # If no parameters provided, use the last stored payload

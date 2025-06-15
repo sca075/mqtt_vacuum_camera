@@ -1,6 +1,6 @@
 """
 Multiprocessing module
-Version: 2025.3.0b1
+Version: 2025.5.0
 This module provide the image multiprocessing in order to
 avoid the overload of the main_thread of Home Assistant.
 """
@@ -8,7 +8,6 @@ avoid the overload of the main_thread of Home Assistant.
 from __future__ import annotations
 
 import asyncio
-from asyncio import gather, get_event_loop
 import concurrent.futures
 from io import BytesIO
 from typing import Any
@@ -26,6 +25,7 @@ from custom_components.mqtt_vacuum_camera.utils.files_operations import (
     async_get_active_user_language,
 )
 from custom_components.mqtt_vacuum_camera.utils.status_text import StatusText
+from custom_components.mqtt_vacuum_camera.utils.thread_pool import ThreadPoolManager
 
 LOGGER.propagate = True
 
@@ -41,6 +41,7 @@ class CameraProcessor:
         self._re_handler = ReImageHandler(camera_shared)
         self._shared = camera_shared
         self._file_name = self._shared.file_name
+        self._thread_pool = ThreadPoolManager(self._file_name)
         self._translations_path = self.hass.config.path(
             "custom_components/mqtt_vacuum_camera/translations/"
         )
@@ -164,46 +165,22 @@ class CameraProcessor:
             return pil_img
         return None
 
-    def process_valetudo_data(self, parsed_json: JsonType):
-        """Async function to process the image data from the Vacuum Json data."""
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        try:
-            if self._shared.is_rand:
-                result = loop.run_until_complete(
-                    self.async_process_rand256_data(parsed_json)
-                )
-            else:
-                result = loop.run_until_complete(
-                    self.async_process_valetudo_data(parsed_json)
-                )
-        finally:
-            loop.close()
-        return result
-
     async def run_async_process_valetudo_data(
-        self, parsed_json: JsonType
+            self, parsed_json: JsonType
     ) -> PilPNG | None:
-        """Thread function to process the image data from the Vacuum Json data."""
-        num_processes = 1
-        parsed_json_list = [parsed_json for _ in range(num_processes)]
-        loop = get_event_loop()
-
-        with concurrent.futures.ThreadPoolExecutor(
-            max_workers=1, thread_name_prefix=f"{self._file_name}_camera_processing"
-        ) as executor:
-            tasks = [
-                loop.run_in_executor(executor, self.process_valetudo_data, parsed_json)
-                for parsed_json in parsed_json_list
-            ]
-            images = await gather(*tasks)
-
-        if isinstance(images, list) and len(images) > 0:
-            LOGGER.debug("%s: Camera frame processed.", self._file_name)
-            result = images[0]
+        """Thread function to process the image data using ThreadPoolManager."""
+        if self._shared.is_rand:
+            result = await self._thread_pool.run_async_in_executor(
+                "camera_processing",
+                self.async_process_rand256_data,  # sync function!
+                parsed_json
+            )
         else:
-            result = None
-
+            result = await self._thread_pool.run_async_in_executor(
+                "camera_processing",
+                self.async_process_valetudo_data,  # sync function!
+                parsed_json
+            )
         return result
 
     def get_frame_number(self):
@@ -229,49 +206,6 @@ class CameraProcessor:
             )
         return pil_img
 
-    def process_status_text(
-        self, pil_img: PilPNG, color: Color, font: str, img_top: bool = True
-    ):
-        """Async function to process the image data from the Vacuum Json data."""
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        try:
-            result = loop.run_until_complete(
-                self.async_draw_image_text(pil_img, color, font, img_top)
-            )
-        finally:
-            loop.close()
-        return result
-
-    async def run_async_draw_image_text(self, pil_img: PilPNG, color: Color) -> PilPNG:
-        """Thread function to process the image data from the Vacuum Json data."""
-        num_processes = 1
-        pil_img_list = [pil_img for _ in range(num_processes)]
-        loop = get_event_loop()
-
-        with concurrent.futures.ThreadPoolExecutor(
-            max_workers=1, thread_name_prefix=f"{self._file_name}_camera_text"
-        ) as executor:
-            tasks = [
-                loop.run_in_executor(
-                    executor,
-                    self.process_status_text,
-                    pil_img,
-                    color,
-                    self._shared.vacuum_status_font,
-                    self._shared.vacuum_status_position,
-                )
-                for pil_img in pil_img_list
-            ]
-            images = await gather(*tasks)
-
-        if isinstance(images, list) and len(images) > 0:
-            result = images[0]
-        else:
-            result = None
-
-        return result
-
     @staticmethod
     async def download_image(url: str, set_timeout: int = 6):
         """
@@ -294,7 +228,7 @@ class CameraProcessor:
                         return obstacle_image
                     raise HTTPException(
                         text="Failed to download the Obstacle image.",
-                        reason=response.reason,
+                        reason=response.reason or "Unknown server error",
                     )
         except aiohttp.ClientError as e:
             LOGGER.warning(
@@ -317,11 +251,7 @@ class CameraProcessor:
         Returns:
             Image.Image: PIL image.
         """
-        executor = concurrent.futures.ThreadPoolExecutor(
-            max_workers=1, thread_name_prefix=f"{self._file_name}_camera"
-        )
-        loop = asyncio.get_running_loop()
-        pil_img = await loop.run_in_executor(
-            executor, Image.open, BytesIO(obstacle_image)
+        pil_img = await self._thread_pool.run_in_executor(
+            "camera", Image.open, BytesIO(obstacle_image)
         )
         return pil_img
