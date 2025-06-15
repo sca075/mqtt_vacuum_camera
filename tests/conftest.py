@@ -2,12 +2,12 @@
 
 import json
 import os
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from homeassistant.core import HomeAssistant
-from homeassistant.setup import async_setup_component
 from homeassistant.helpers.device_registry import DeviceEntry
+from homeassistant.setup import async_setup_component
+import pytest
 
 from custom_components.mqtt_vacuum_camera.const import DOMAIN, CameraModes
 

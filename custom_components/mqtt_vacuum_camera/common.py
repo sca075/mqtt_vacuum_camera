@@ -220,49 +220,6 @@ def get_entity_id(
     return vacuum_entity_id
 
 
-def compose_obstacle_links(vacuum_host_ip: str, obstacles: list) -> list | None:
-    """
-    Compose JSON with obstacle details including the image link.
-    """
-    obstacle_links = []
-    if not obstacles or not vacuum_host_ip:
-        LOGGER.debug("No obstacles or vacuum_host_ip provided.")
-        return None
-
-    for obstacle in obstacles:
-        # Extract obstacle details
-        label = obstacle.get("label", "")
-        points = obstacle.get("points", {})
-        image_id = obstacle.get("id", "None")
-
-        if label and points and image_id and vacuum_host_ip:
-            # Append formatted obstacle data
-            if image_id != "None":
-                # Compose the link
-                image_link = (
-                    f"http://{vacuum_host_ip}"
-                    f"/api/v2/robot/capabilities/ObstacleImagesCapability/img/{image_id}"
-                )
-                obstacle_links.append(
-                    {
-                        "point": points,
-                        "label": label,
-                        "link": image_link,
-                    }
-                )
-            else:
-                obstacle_links.append(
-                    {
-                        "point": points,
-                        "label": label,
-                    }
-                )
-
-    LOGGER.debug("Obstacle links: linked data complete.")
-
-    return obstacle_links if obstacle_links else None
-
-
 def redact_ip_filter(func):
     """Decorator to remove IP addresses from function output"""
 

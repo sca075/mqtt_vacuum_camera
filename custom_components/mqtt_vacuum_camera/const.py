@@ -416,6 +416,7 @@ DECODED_TOPICS = {
     "/destinations",  # Rand256
     "/command",  # Rand256
     "/custom_command",  # Rand256
+    "/command_status",  # Rand256
     "/attributes",  # Rand256
 }
 
@@ -507,6 +508,7 @@ ATTR_POINTS = "points"
 ATTR_OBSTACLES = "obstacles"
 ATTR_CAMERA_MODE = "camera_mode"
 
+DOWNLOAD_TIMEOUT = 6
 
 class CameraModes(str, Enum):
     """Constants for the camera modes"""

@@ -12,7 +12,7 @@ from dataclasses import dataclass
 import json
 import logging
 import os
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import STORAGE_DIR
@@ -137,6 +137,12 @@ class RoomManager:
 
         # Process room data
         room_list = list(room_data.items())
+        _LOGGER.debug(
+            "Processing %d rooms for vacuum %s. Sample room data: %s",
+            len(room_list),
+            vacuum_id,
+            room_list[:2] if room_list else "None"
+        )
 
         # Batch all modifications to reduce I/O
         modifications = []
@@ -168,7 +174,7 @@ class RoomManager:
 
     @staticmethod
     async def _modify_translation_data(
-        data: dict, room_list: List[Tuple[str, dict]]
+        data: dict, room_list: List[Tuple[str, Union[dict, str]]]
     ) -> Optional[dict]:
         """
         Modify translation data with room information.
@@ -254,8 +260,20 @@ class RoomManager:
                 color_key = f"color_room_{j}"
                 if j < len(room_list):
                     room_id, room_info = room_list[j]
-                    # Get the room name; if missing, fallback to a default name
-                    room_name = room_info.get("name", f"Room {room_id}")
+                    # Handle both dictionary and string formats for room_info
+                    if isinstance(room_info, dict):
+                        # Dictionary format: {"name": "Room Name", ...}
+                        room_name = room_info.get("name", f"Room {room_id}")
+                    elif isinstance(room_info, str):
+                        # String format: room_info is the room name directly
+                        room_name = room_info
+                    else:
+                        # Fallback for unexpected formats
+                        _LOGGER.warning(
+                            "Unexpected room_info format for room %s: %s (type: %s)",
+                            room_id, room_info, type(room_info)
+                        )
+                        room_name = f"Room {room_id}"
                     data_description[color_key] = (
                         f"### **RoomID {room_id} {room_name}**"
                     )
@@ -279,7 +297,20 @@ class RoomManager:
                 alpha_room_key = f"alpha_room_{j}"
                 if j < len(room_list):
                     room_id, room_info = room_list[j]
-                    room_name = room_info.get("name", f"Room {room_id}")
+                    # Handle both dictionary and string formats for room_info
+                    if isinstance(room_info, dict):
+                        # Dictionary format: {"name": "Room Name", ...}
+                        room_name = room_info.get("name", f"Room {room_id}")
+                    elif isinstance(room_info, str):
+                        # String format: room_info is the room name directly
+                        room_name = room_info
+                    else:
+                        # Fallback for unexpected formats
+                        _LOGGER.warning(
+                            "Unexpected room_info format for room %s: %s (type: %s)",
+                            room_id, room_info, type(room_info)
+                        )
+                        room_name = f"Room {room_id}"
                     alpha_data[alpha_room_key] = f"RoomID {room_id} {room_name}"
                 else:
                     # Use default description or empty string if no room data
