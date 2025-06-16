@@ -51,16 +51,16 @@ class Snapshots:
         """
         try:
             # Store JSON data if provided
-            if json_data and not isinstance(json_data, bool):
-                # Use synchronous file operations since we're in a thread
-                json_file_path = os.path.join(
-                    self.storage_path, f"{self.file_name}.json"
-                )
-                with open(json_file_path, "w", encoding="utf-8") as f:
-                    import json as json_lib
-
-                    json_lib.dump(json_data, f)
-                _LOGGER.debug("%s: JSON data saved to storage", self.file_name)
+            # if json_data and not isinstance(json_data, bool):
+            #     # Use synchronous file operations since we're in a thread
+            #     json_file_path = os.path.join(
+            #         self.storage_path, f"{self.file_name}.json"
+            #     )
+            #     with open(json_file_path, "w", encoding="utf-8") as f:
+            #         import json as json_lib
+            #
+            #         json_lib.dump(json_data, f)
+            #     _LOGGER.debug("%s: JSON data saved to storage", self.file_name)
 
             # Save image ready for snapshot
             image_data.save(self.snapshot_img)
@@ -97,12 +97,3 @@ class Snapshots:
         return await thread_pool.run_in_executor(
             "snapshot", self.process_snapshot, json_data, pil_img
         )
-
-    async def shutdown(self) -> None:
-        """Shutdown the snapshot thread pool.
-
-        This should be called when the camera is unloaded or when Home Assistant is shutting down.
-        """
-        _LOGGER.debug("%s: Shutting down snapshot thread pool", self.file_name)
-        thread_pool = ThreadPoolManager.get_instance()
-        await thread_pool.shutdown(f"{self.file_name}_snapshot")
