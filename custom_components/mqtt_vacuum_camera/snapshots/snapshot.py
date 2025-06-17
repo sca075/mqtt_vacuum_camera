@@ -1,6 +1,5 @@
 """Snapshot Version: 2025.3.0b0"""
 
-import asyncio
 import logging
 import os
 import shutil
@@ -43,7 +42,7 @@ class Snapshots:
                 return hass.config.path(STORAGE_DIR)
         return storage_path
 
-    def process_snapshot(self, json_data: Any, image_data: PilPNG) -> None:
+    def process_snapshot(self, image_data: PilPNG, json_data: Any = None) -> None:
         """Process the snapshot synchronously.
 
         This function is called from the thread pool.
@@ -51,16 +50,16 @@ class Snapshots:
         """
         try:
             # Store JSON data if provided
-            # if json_data and not isinstance(json_data, bool):
-            #     # Use synchronous file operations since we're in a thread
-            #     json_file_path = os.path.join(
-            #         self.storage_path, f"{self.file_name}.json"
-            #     )
-            #     with open(json_file_path, "w", encoding="utf-8") as f:
-            #         import json as json_lib
-            #
-            #         json_lib.dump(json_data, f)
-            #     _LOGGER.debug("%s: JSON data saved to storage", self.file_name)
+            if json_data and not isinstance(json_data, bool):
+                # Use synchronous file operations since we're in a thread
+                json_file_path = os.path.join(
+                    self.storage_path, f"{self.file_name}.json"
+                )
+                with open(json_file_path, "w", encoding="utf-8") as f:
+                    import json as json_lib
+
+                    json_lib.dump(json_data, f)
+                _LOGGER.debug("%s: JSON data saved to storage", self.file_name)
 
             # Save image ready for snapshot
             image_data.save(self.snapshot_img)
@@ -95,5 +94,5 @@ class Snapshots:
         # Run the snapshot processing in the thread pool
         # The ThreadPoolManager will automatically use a shared pool for this vacuum
         return await thread_pool.run_in_executor(
-            "snapshot", self.process_snapshot, json_data, pil_img
+            "snapshot", self.process_snapshot, pil_img, json_data
         )

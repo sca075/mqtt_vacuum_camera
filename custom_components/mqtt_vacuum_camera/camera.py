@@ -35,7 +35,6 @@ from .const import (
     CAMERA_STORAGE,
     CONF_VACUUM_IDENTIFIERS,
     DOMAIN,
-
     LOGGER,
     NOT_STREAMING_STATES,
     CameraModes,
@@ -101,7 +100,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         self._identifiers = device_info.get(CONF_VACUUM_IDENTIFIERS)
         self._snapshots = Snapshots(self.hass, self._shared)
         self.Image = None
-        self._image_bk = None
+        self.image_bk = None
         self._processing = False
         self._image_w = None
         self._image_h = None
@@ -152,7 +151,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
                 self.processor,
                 self.hass,
                 self.entity_id,
-                self.thread_pool
+                self.thread_pool,
             )
 
     @staticmethod
@@ -314,7 +313,8 @@ class MQTTCamera(CoordinatorEntity, Camera):
         Synchronous helper function to load snapshot image from file.
         This function is designed to be called from a thread pool.
         """
-        return Image.open(snapshot_path)
+        with Image.open(snapshot_path) as img:
+            return img.copy()
 
     async def async_empty_if_no_data(self) -> Image:
         """
@@ -348,7 +348,6 @@ class MQTTCamera(CoordinatorEntity, Camera):
         LOGGER.info("%s: Returning Empty image.", self._file_name)
         return empty_img
 
-
     async def take_snapshot(self, json_data: Any, image_data: Image.Image) -> None:
         """Camera Automatic Snapshots."""
         partial_snapshot = SnapshotStore()
@@ -361,7 +360,9 @@ class MQTTCamera(CoordinatorEntity, Camera):
         # Obstacle View Processing
         if self._shared.camera_mode == CameraModes.OBSTACLE_VIEW:
             if self._obstacle_image is not None:
-                self.Image = self._obstacle_image # this must be set for the camera_image() to work.
+                self.Image = (
+                    self._obstacle_image
+                )  # this must be set for the camera_image() to work.
                 return self._obstacle_image
 
         # Map View Processing
@@ -421,12 +422,12 @@ class MQTTCamera(CoordinatorEntity, Camera):
                         self._shared.vacuum_state == "docked"
                         and self._shared.camera_mode == CameraModes.MAP_VIEW
                     ):
-                        self._image_bk = self.Image
+                        self.image_bk = self.Image
                     elif (
                         self._shared.camera_mode == CameraModes.MAP_VIEW
                         and self._shared.vacuum_state != "docked"
                     ):
-                        self._image_bk = None
+                        self.image_bk = None
                     # Take a snapshot temporarily disabled here.
                     # await self._take_snapshot(parsed_json, pil_img)
 
@@ -570,7 +571,9 @@ class MQTTCamera(CoordinatorEntity, Camera):
             )
             if self._shared.show_vacuum_state:
                 pil_img = await self.processor.async_draw_image_text(
-                    pil_img, self._shared.user_colors[8], self._shared.vacuum_status_font,
+                    pil_img,
+                    self._shared.user_colors[8],
+                    self._shared.vacuum_status_font,
                     self._shared.vacuum_status_position,
                 )
         else:
@@ -620,15 +623,17 @@ class MQTTCamera(CoordinatorEntity, Camera):
 
     async def _process_obstacle_event(self):
         """Process the latest obstacle event after debouncing."""
-        if not hasattr(self, '_latest_obstacle_event'):
-            LOGGER.debug("%s: No obstacle event data available for processing", self._file_name)
+        if not hasattr(self, "_latest_obstacle_event"):
+            LOGGER.debug(
+                "%s: No obstacle event data available for processing", self._file_name
+            )
             return
 
         event = self._latest_obstacle_event
         LOGGER.debug(
             "%s: Processing debounced obstacle event: %s",
             self._file_name,
-            str(event.data)
+            str(event.data),
         )
         await self.handle_obstacle_view(event)
 

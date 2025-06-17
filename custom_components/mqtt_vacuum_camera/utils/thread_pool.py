@@ -40,7 +40,7 @@ class ThreadPoolManager:
 
     def __init__(self, vacuum_id: str = "default"):
         # Only initialize if this is a new instance
-        if not hasattr(self, '_initialized'):
+        if not hasattr(self, "_initialized"):
             self._pools = {}
             self.vacuum_id = vacuum_id
             self._pre_create_pools()  # Pre-create all pools
@@ -49,7 +49,9 @@ class ThreadPoolManager:
     def _pre_create_pools(self):
         """Pre-create all thread pools for this vacuum."""
         pool_configs = {
-            "decompression": self.get_optimal_worker_count("decompression"),  # 2 workers
+            "decompression": self.get_optimal_worker_count(
+                "decompression"
+            ),  # 2 workers
             "camera": 1,
             "camera_processing": 1,
             "snapshot": 1,
@@ -57,12 +59,12 @@ class ThreadPoolManager:
 
         for name, workers in pool_configs.items():
             pool_name = f"{self.vacuum_id}_{name}"
-            thread_prefix = f"{pool_name}_pool"
-            _LOGGER.debug("Pre-creating thread pool: %s with %d workers", pool_name, workers)
+            _LOGGER.debug(
+                "Pre-creating thread pool: %s with %d workers", pool_name, workers
+            )
 
             self._pools[pool_name] = concurrent.futures.ThreadPoolExecutor(
-                max_workers=workers,
-                thread_name_prefix=thread_prefix
+                max_workers=workers, thread_name_prefix=pool_name
             )
 
     def get_executor(
@@ -78,10 +80,10 @@ class ThreadPoolManager:
             )
 
         if pool_name not in self._pools:
-            thread_prefix = f"{pool_name}_pool"
-            self._pools[pool_name] = concurrent.futures.ThreadPoolExecutor(
-                max_workers=max_workers, thread_name_prefix=thread_prefix
+            raise RuntimeError(
+                f"Thread pool '{pool_name}' not found. Available pools: {list(self._pools.keys())}"
             )
+
         return self._pools[pool_name]
 
     async def run_in_executor(
@@ -116,7 +118,7 @@ class ThreadPoolManager:
                         "ThreadPoolManager: Error in %s worker thread %s: %s",
                         name,
                         threading.current_thread().name,
-                        str(err)
+                        str(err),
                     )
                     raise
 
@@ -127,9 +129,12 @@ class ThreadPoolManager:
             )
             raise
 
-
     async def run_async_in_executor(
-        self, name: str, async_func: Callable[..., Awaitable[R]], *args, max_workers: int = 1
+        self,
+        name: str,
+        async_func: Callable[..., Awaitable[R]],
+        *args,
+        max_workers: int = 1,
     ) -> R:
         """
         Run an async function in a thread pool by automatically wrapping it.
@@ -143,6 +148,7 @@ class ThreadPoolManager:
         Returns:
             The result of the async function
         """
+
         # Create a wrapper that captures the async function and its arguments
         def sync_wrapper_with_args():
             # Create new event loop in worker thread
@@ -156,7 +162,9 @@ class ThreadPoolManager:
                 loop.close()
 
         # Run the wrapper function in the executor (no additional args needed)
-        return await self.run_in_executor(name, sync_wrapper_with_args, max_workers=max_workers)
+        return await self.run_in_executor(
+            name, sync_wrapper_with_args, max_workers=max_workers
+        )
 
     @staticmethod
     def get_optimal_worker_count(task_type: str = "default") -> int:
@@ -194,7 +202,6 @@ class ThreadPoolManager:
         """
         return ThreadPoolManager(vacuum_id)
 
-
     @classmethod
     async def shutdown_all(cls):
         """
@@ -229,4 +236,7 @@ class ThreadPoolManager:
 
         # Clear instances regardless of shutdown success
         cls._instances.clear()
-        _LOGGER.debug("Thread pool instances cleared")
+
+        # CRITICAL FIX: Clear the LRU cache to prevent returning defunct instances
+        cls.get_instance.cache_clear()
+        _LOGGER.debug("Thread pool instances and LRU cache cleared")

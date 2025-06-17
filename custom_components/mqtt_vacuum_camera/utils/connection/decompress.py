@@ -81,8 +81,3 @@ class DecompressionManager:
         except Exception as e:
             LOGGER.error(f"{self.vacuum_id}: Error processing payload: {e}")
             return None
-
-    async def shutdown(self) -> None:
-        await self._thread_pool.shutdown("decompression")
-        if self.vacuum_id in DecompressionManager._instances:
-            del DecompressionManager._instances[self.vacuum_id]

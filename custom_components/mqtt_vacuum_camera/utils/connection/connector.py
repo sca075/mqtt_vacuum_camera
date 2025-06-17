@@ -124,7 +124,6 @@ class ValetudoConnector:
     async def update_data(self, process: bool = True):
         """
         Update the data from MQTT.
-        Unzips the data and returns the JSON based on the data type.
         """
         if not self.mqtt_data.img_payload:
             LOGGER.debug(
@@ -134,12 +133,12 @@ class ValetudoConnector:
 
         payload = self.mqtt_data.img_payload[0]
         data_type = self.mqtt_data.img_payload[1]
-        # "Rand256" if self.is_rand256 else "Hypfer"
+
         if payload and process:
-            # Await the result once the worker processes the task
             result = payload
             self.config.is_rrm = self.is_rand256
             self.connector_data.data_in = True
+            self.mqtt_data.img_payload = None
             return result, data_type
         self.connector_data.ignore_data = True
         self.connector_data.data_in = False

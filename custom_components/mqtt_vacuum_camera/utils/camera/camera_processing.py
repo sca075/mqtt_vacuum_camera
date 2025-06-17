@@ -166,20 +166,20 @@ class CameraProcessor:
         return None
 
     async def run_async_process_valetudo_data(
-            self, parsed_json: JsonType
+        self, parsed_json: JsonType
     ) -> PilPNG | None:
         """Thread function to process the image data using ThreadPoolManager."""
         if self._shared.is_rand:
             result = await self._thread_pool.run_async_in_executor(
                 "camera_processing",
                 self.async_process_rand256_data,  # sync function!
-                parsed_json
+                parsed_json,
             )
         else:
             result = await self._thread_pool.run_async_in_executor(
                 "camera_processing",
                 self.async_process_valetudo_data,  # sync function!
-                parsed_json
+                parsed_json,
             )
         return result
 

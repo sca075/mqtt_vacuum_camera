@@ -141,7 +141,7 @@ class RoomManager:
             "Processing %d rooms for vacuum %s. Sample room data: %s",
             len(room_list),
             vacuum_id,
-            room_list[:2] if room_list else "None"
+            room_list[:2] if room_list else "None",
         )
 
         # Batch all modifications to reduce I/O
@@ -271,7 +271,9 @@ class RoomManager:
                         # Fallback for unexpected formats
                         _LOGGER.warning(
                             "Unexpected room_info format for room %s: %s (type: %s)",
-                            room_id, room_info, type(room_info)
+                            room_id,
+                            room_info,
+                            type(room_info),
                         )
                         room_name = f"Room {room_id}"
                     data_description[color_key] = (
@@ -308,7 +310,9 @@ class RoomManager:
                         # Fallback for unexpected formats
                         _LOGGER.warning(
                             "Unexpected room_info format for room %s: %s (type: %s)",
-                            room_id, room_info, type(room_info)
+                            room_id,
+                            room_info,
+                            type(room_info),
                         )
                         room_name = f"Room {room_id}"
                     alpha_data[alpha_room_key] = f"RoomID {room_id} {room_name}"
