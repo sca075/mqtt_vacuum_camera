@@ -35,7 +35,7 @@ class ObstacleViewHandler:
     ):
         """
         Initialize the ObstacleViewHandler.
-        
+
         Args:
             shared_data: Camera shared data object
             file_name: Vacuum file name for logging
@@ -51,7 +51,9 @@ class ObstacleViewHandler:
         self.entity_id = entity_id
         self.thread_pool = thread_pool
 
-    async def handle_obstacle_view(self, event_data: dict, camera_instance: Any) -> Optional[bytes]:
+    async def handle_obstacle_view(
+        self, event_data: dict, camera_instance: Any
+    ) -> Optional[bytes]:
         """
         Handle the obstacle view event.
 
@@ -76,20 +78,24 @@ class ObstacleViewHandler:
                 self._shared.camera_mode,
                 f", {reason}" if reason else "",
             )
-            if camera_instance._image_bk:
+            if camera_instance.image_bk:
                 LOGGER.debug("%s: Restoring the backup image.", self._file_name)
-                camera_instance.Image = camera_instance._image_bk
-                return camera_instance.camera_image(camera_instance._image_w, camera_instance._image_h)
+                camera_instance.Image = camera_instance.image_bk
+                return camera_instance.camera_image(
+                    camera_instance._image_w, camera_instance._image_h
+                )
             return camera_instance.Image
 
-        async def _set_camera_mode(mode_of_camera: CameraModes, reason: str = None) -> None:
+        async def _set_camera_mode(
+            mode_of_camera: CameraModes, reason: str = None
+        ) -> None:
             """Set the camera mode."""
             self._shared.camera_mode = mode_of_camera
 
             match mode_of_camera:
                 case CameraModes.OBSTACLE_SEARCH:
-                    if not camera_instance._image_bk:
-                        camera_instance._image_bk = camera_instance.Image
+                    if not camera_instance.image_bk:
+                        camera_instance.image_bk = camera_instance.Image
 
                 case CameraModes.OBSTACLE_VIEW:
                     self._shared.image_grab = False
@@ -99,10 +105,12 @@ class ObstacleViewHandler:
                     camera_instance._obstacle_image = None
                     camera_instance._processing = False
                     self._shared.image_grab = True
-                    if camera_instance._image_bk:
-                        camera_instance.Image = camera_instance._image_bk
-                        camera_instance._image_bk = None
-                        camera_instance.camera_image(camera_instance._image_w, camera_instance._image_h)
+                    if camera_instance.image_bk:
+                        camera_instance.Image = camera_instance.image_bk
+                        camera_instance.image_bk = None
+                        camera_instance.camera_image(
+                            camera_instance._image_w, camera_instance._image_h
+                        )
 
             LOGGER.debug(
                 "%s: Camera Mode Change to %s%s",
@@ -111,7 +119,9 @@ class ObstacleViewHandler:
                 f", {reason}" if reason else "",
             )
 
-        async def _async_find_nearest_obstacle(x: int, y: int, all_obstacles: list) -> Optional[dict]:
+        async def _async_find_nearest_obstacle(
+            x: int, y: int, all_obstacles: list
+        ) -> Optional[dict]:
             """Find the nearest obstacle to the given coordinates."""
             nearest_obstacles = None
             w = width
@@ -143,7 +153,7 @@ class ObstacleViewHandler:
             self._file_name,
             str(event_data),
         )
-        
+
         LOGGER.debug(
             "%s: Current camera mode: %s",
             self._file_name,
@@ -155,7 +165,10 @@ class ObstacleViewHandler:
             return await _set_map_view_mode("Obstacle View Exit Requested.")
 
         # Prevent processing if already in obstacle processing modes
-        if self._shared.camera_mode in [CameraModes.OBSTACLE_DOWNLOAD, CameraModes.OBSTACLE_SEARCH]:
+        if self._shared.camera_mode in [
+            CameraModes.OBSTACLE_DOWNLOAD,
+            CameraModes.OBSTACLE_SEARCH,
+        ]:
             LOGGER.debug(
                 "%s: Already processing obstacle view (mode: %s), ignoring request",
                 self._file_name,
@@ -172,7 +185,9 @@ class ObstacleViewHandler:
                 self.entity_id,
             )
 
-            await _set_camera_mode(CameraModes.OBSTACLE_SEARCH, "Obstacle View Requested")
+            await _set_camera_mode(
+                CameraModes.OBSTACLE_SEARCH, "Obstacle View Requested"
+            )
             coordinates = event_data.get("coordinates")
 
             if coordinates:
@@ -193,7 +208,9 @@ class ObstacleViewHandler:
                     )
 
                     if not nearest_obstacle["link"]:
-                        return await _set_map_view_mode("No link found for the obstacle image.")
+                        return await _set_map_view_mode(
+                            "No link found for the obstacle image."
+                        )
 
                     await _set_camera_mode(
                         mode_of_camera=CameraModes.OBSTACLE_DOWNLOAD,
@@ -206,7 +223,9 @@ class ObstacleViewHandler:
                     )
 
                     if success:
-                        await _set_camera_mode(CameraModes.OBSTACLE_VIEW, "Image downloaded successfully")
+                        await _set_camera_mode(
+                            CameraModes.OBSTACLE_VIEW, "Image downloaded successfully"
+                        )
                         return camera_instance._obstacle_image
                     else:
                         return await _set_map_view_mode("No image downloaded.")
@@ -228,7 +247,9 @@ class ObstacleViewHandler:
         """Download and process the obstacle image."""
         try:
             image_data = await asyncio.wait_for(
-                fut=self.processor.download_image(nearest_obstacle["link"], DOWNLOAD_TIMEOUT),
+                self.processor.download_image(
+                    nearest_obstacle["link"], DOWNLOAD_TIMEOUT
+                ),
                 timeout=(DOWNLOAD_TIMEOUT + 1),  # dead man switch, do not remove.
             )
         except asyncio.TimeoutError:
@@ -269,8 +290,10 @@ class ObstacleViewHandler:
                     # Use original image if no aspect ratio is set
                     image = pil_img
 
-                camera_instance._obstacle_image = await camera_instance.run_async_pil_to_bytes(
-                    image, image_id=nearest_obstacle["label"]
+                camera_instance._obstacle_image = (
+                    await camera_instance.run_async_pil_to_bytes(
+                        image, image_id=nearest_obstacle["label"]
+                    )
                 )
                 end_time = time.perf_counter()
 
