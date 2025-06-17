@@ -18,6 +18,7 @@ from valetudo_map_parser.config.shared import CameraShared, CameraSharedManager
 from .common import get_camera_device_info
 from .const import DEFAULT_NAME, LOGGER, SENSOR_NO_DATA
 from .utils.connection.connector import ValetudoConnector
+from .utils.thread_pool import ThreadPoolManager
 
 
 class MQTTVacuumCoordinator(DataUpdateCoordinator):
@@ -49,6 +50,7 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         self.connector: Optional[ValetudoConnector] = None
         self.in_sync_with_camera: bool = False
         self.sensor_data = SENSOR_NO_DATA
+        self.thread_pool = None
         # Initialize shared data and MQTT connector
         self.shared, self.file_name = self._init_shared_data(self.vacuum_topic)
         self.start_up_mqtt()
@@ -98,6 +100,7 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         if mqtt_listen_topic and not self.shared_manager:
             file_name = mqtt_listen_topic.split("/")[1].lower()
             self.shared_manager = CameraSharedManager(file_name, self.device_info)
+            self.thread_pool = ThreadPoolManager(file_name)
             shared = self.shared_manager.get_instance()
             LOGGER.debug("Camera %s Starting up..", file_name)
 
@@ -120,6 +123,7 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         self.shared = self.shared_manager.get_instance()
         self.shared.file_name = self.file_name
         self.shared.device_info = dev_info
+        self.shared.is_rand = self.is_rand256
         self.in_sync_with_camera = True
         return self.shared, self.file_name
 
