@@ -1,6 +1,6 @@
 """
 Decompression Manager for MQTT Vacuum Camera.
-Version: 2025.5.0
+Version: 2025.6.0
 """
 
 from __future__ import annotations
