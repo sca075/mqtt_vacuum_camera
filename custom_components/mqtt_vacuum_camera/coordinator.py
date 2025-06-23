@@ -5,7 +5,7 @@ Version: 2025.3.0b0
 
 import asyncio
 from datetime import timedelta
-from typing import Optional
+from typing import Optional, Any
 
 import async_timeout
 from homeassistant.config_entries import ConfigEntry
@@ -14,14 +14,19 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from valetudo_map_parser.config.shared import CameraShared, CameraSharedManager
+from valetudo_map_parser.config.types import LOGGER
 
-from .common import get_camera_device_info
 from .const import DEFAULT_NAME, LOGGER, SENSOR_NO_DATA
+from .common import get_camera_device_info
 from .utils.connection.connector import ValetudoConnector
+from .utils.connection.decompress import DecompressionManager
+from .utils.model import CameraImageData
+from .utils.vacuum.vacuum_state import VacuumStateManager
 from .utils.thread_pool import ThreadPoolManager
+from .utils.camera.camera_processing import CameraProcessor
 
 
-class MQTTVacuumCoordinator(DataUpdateCoordinator):
+class SensorsCoordinator(DataUpdateCoordinator):
     """Coordinator for MQTT Vacuum Camera."""
 
     def __init__(
@@ -199,3 +204,177 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         except TypeError as err:
             LOGGER.warning("Invalid data type in sensor data: %s", err, exc_info=True)
             return SENSOR_NO_DATA
+
+class CameraCoordinator(DataUpdateCoordinator[CameraImageData]):
+
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        entry: ConfigEntry,
+        vacuum_topic: str,
+        is_rand256: bool = False,
+    ) -> None:
+        """Initialize the camera coordinator - keep it simple."""
+
+        # Basic setup first
+        self.vacuum_topic = vacuum_topic
+        self.is_rand256 = is_rand256
+        self.file_name = vacuum_topic.split("/")[1].lower()
+        self._prev_image = None
+        self._prev_data_type = None
+        self.device_entity: ConfigEntry = entry
+        self.device_info: DeviceInfo = get_camera_device_info(hass, self.device_entity)
+        # Initialize shared data (from working code pattern)
+        self.shared_manager = CameraSharedManager(self.file_name, self.device_info)
+        self.shared = self.shared_manager.get_instance()
+        self.shared.file_name = self.file_name
+        self.shared.user_language = "en" # Set default language
+        self.shared.is_rand = is_rand256
+
+        # Initialize thread pools (keep existing stable code)
+        self.thread_pool = ThreadPoolManager(self.file_name)
+
+        # Initialize connector (from working code)
+        self.connector = ValetudoConnector(vacuum_topic, hass, self.shared, is_rand256)
+
+        # Initialize decompression (from working code)
+        self.decompression_manager = DecompressionManager.get_instance(self.file_name)
+
+        # Initialize camera processor (for JSON to PIL processing)
+        self.processor = CameraProcessor(hass, self.shared)
+        # Initialize vacuum state manager (add after connector is created)
+        self.state_manager = VacuumStateManager(
+            shared_data=self.shared,
+            connector=self.connector,
+            file_name=self.file_name
+        )
+
+        # Coordinator init
+        super().__init__(
+            hass,
+            LOGGER,
+            name=f"MQTT Vacuum Camera {vacuum_topic}",
+            update_interval=timedelta(seconds=2),
+            update_method=self.update_data,
+        )
+
+        # Mark as ready
+        self._setup_complete = True
+        self._mqtt_subscribed = False
+
+        LOGGER.debug("Camera coordinator initialized for: %s", self.file_name)
+
+    @property
+    def setup_complete(self) -> bool:
+        """Return True if coordinator setup is complete."""
+        return self._setup_complete
+
+    async def update_data(self) -> dict[str, Any]:
+        """Process MQTT data to PIL image - coordinator handles all processing."""
+        should_stream = await self.state_manager.update_vacuum_state()
+        try:
+            # Check if data is available (from working code)
+            if await self.connector.is_data_available():
+                should_stream = await self.state_manager.update_vacuum_state()
+                LOGGER.debug("MQTT data available for: %s", self.file_name)
+                payload, data_type = await self.connector.update_data(True)
+                if payload and data_type:
+                    # Decompress the data
+                    data = payload.payload if hasattr(payload, "payload") else payload
+                    parsed_json = await self.decompression_manager.decompress(data, data_type)
+
+                    if parsed_json:
+                        LOGGER.debug("JSON decompressed for: %s", self.file_name)
+
+                        # Process JSON to PIL image
+                        pil_img = await self.processor.run_async_process_valetudo_data(parsed_json)
+                        if pil_img:
+                            LOGGER.debug("PIL image processed for: %s", self.file_name)
+
+                            # Cache for next time when no new data
+                            self._prev_image = pil_img
+                            self._prev_data_type = data_type
+
+                            # Return NEW processed data
+                            return {
+                                "pil_image": pil_img,
+                                "shared_data": self.shared,
+                                "thread_pool": self.thread_pool,
+                                "data_type": data_type,
+                                "vacuum_topic": self.vacuum_topic,
+                                "parsed_json": parsed_json,
+                                "segments": parsed_json.get("segments", {}),
+                                "vacuum_status": self.shared.vacuum_state,
+                                "vacuum_battery": self.shared.vacuum_battery,
+                                "vacuum_connection": True,
+                                "image_width": pil_img.width,
+                                "image_height": pil_img.height,
+                                "success": should_stream,
+                            }
+                        else:
+                            LOGGER.warning("Failed to process JSON to PIL for: %s", self.file_name)
+                    else:
+                        LOGGER.warning("Failed to decompress data for: %s", self.file_name)
+
+            # Return previous image data
+            if self._prev_image:
+                return {
+                    "pil_image": self._prev_image,
+                    "shared_data": self.shared,
+                    "thread_pool": self.thread_pool,
+                    "data_type": self._prev_data_type,
+                    "vacuum_topic": self.vacuum_topic,
+                    "vacuum_status": self.shared.vacuum_state,
+                    "vacuum_battery": self.shared.vacuum_battery,
+                    "vacuum_connection": True,
+                    "success": should_stream,
+                }
+            else:
+                # No previous image available
+                return {
+                    "shared_data": self.shared,
+                    "thread_pool": self.thread_pool,
+                    "vacuum_topic": self.vacuum_topic,
+                    "vacuum_status": self.shared.vacuum_state,
+                    "vacuum_battery": self.shared.vacuum_battery,
+                    "vacuum_connection": True,
+                    "success": should_stream,
+                }
+
+        except Exception as err:
+            LOGGER.error("Error processing image for %s: %s", self.file_name, err)
+            # Return error data
+            return {
+                "shared_data": self.shared,
+                "thread_pool": self.thread_pool,
+                "vacuum_topic": self.vacuum_topic,
+                "error_message": str(err),
+                "success": False,
+            }
+
+    async def async_subscribe_mqtt(self) -> None:
+        """Subscribe to MQTT topics."""
+        if self._mqtt_subscribed:
+            return
+
+        try:
+            LOGGER.debug("Subscribing to MQTT topics for: %s", self.file_name)
+            await self.connector.async_subscribe_to_topics()
+            self._mqtt_subscribed = True
+            LOGGER.debug("MQTT subscription complete for: %s", self.file_name)
+        except Exception as err:
+            LOGGER.error("Failed to subscribe to MQTT for %s: %s", self.file_name, err)
+            raise
+
+    async def async_unsubscribe_mqtt(self) -> None:
+        """Unsubscribe from MQTT topics."""
+        if not self._mqtt_subscribed:
+            return
+
+        try:
+            LOGGER.debug("Unsubscribing from MQTT topics for: %s", self.file_name)
+            await self.connector.async_unsubscribe_from_topics()
+            self._mqtt_subscribed = False
+            LOGGER.debug("MQTT unsubscription complete for: %s", self.file_name)
+        except Exception as err:
+            LOGGER.error("Failed to unsubscribe from MQTT for %s: %s", self.file_name, err)

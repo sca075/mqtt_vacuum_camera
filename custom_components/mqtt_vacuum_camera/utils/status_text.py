@@ -6,6 +6,7 @@ Clas to handle the status text of the vacuum cleaners.
 
 from __future__ import annotations
 
+import asyncio
 import json
 
 from valetudo_map_parser.config.types import JsonType, PilPNG
@@ -28,34 +29,43 @@ class StatusText:
             f"custom_components/{DOMAIN}/translations/"
         )
 
-    def load_translations(self, language: str) -> JsonType:
+    async def async_load_translations(self, language: str) -> JsonType:
         """
-        Load the user selected language json file and return it.
+        Load the user selected language json file and return it asynchronously.
         """
         file_name = f"{language}.json"
         file_path = f"{self._translations_path}/{file_name}"
-        try:
-            with open(file_path) as file:
-                translations = json.load(file)
-        except FileNotFoundError:
-            LOGGER.warning(
-                "%s Not found. Report to the author that %s is missing.",
-                file_path,
-                language,
-            )
-            return None
-        except json.JSONDecodeError:
-            LOGGER.warning("%s is not a valid JSON file.", file_path, exc_info=True)
-            return None
-        return translations
 
-    def get_vacuum_status_translation(self, language: str) -> any:
+        def _read_translation_file(path: str) -> JsonType:
+            """Helper function to read translation file synchronously."""
+            try:
+                with open(path) as file:
+                    return json.load(file)
+            except FileNotFoundError:
+                LOGGER.warning(
+                    "%s Not found. Report to the author that %s is missing.",
+                    path,
+                    language,
+                )
+                return None
+            except json.JSONDecodeError:
+                LOGGER.warning("%s is not a valid JSON file.", path, exc_info=True)
+                return None
+
+        try:
+            # Use asyncio.to_thread for non-blocking file operations
+            return await asyncio.to_thread(_read_translation_file, file_path)
+        except Exception as e:
+            LOGGER.warning("Error loading translation file %s: %s", file_path, str(e))
+            return None
+
+    async def async_get_vacuum_status_translation(self, language: str) -> any:
         """
-        Get the vacuum status translation.
+        Get the vacuum status translation asynchronously.
         @param language: String IT, PL, DE, ES, FR, EN.
         @return: Json data or None.
         """
-        translations = self.load_translations(language)
+        translations = await self.async_load_translations(language)
 
         # Check if the translations file is loaded.
         if translations is None:
@@ -66,20 +76,26 @@ class StatusText:
         )
         return vacuum_status_options
 
-    def translate_vacuum_status(self) -> str:
-        """Return the translated status."""
+    async def async_translate_vacuum_status(self) -> str:
+        """Return the translated status asynchronously."""
         status = self._shared.vacuum_state
         language = self._shared.user_language
+
+        # Check if status is None and provide fallback
+        if status is None:
+            LOGGER.warning("Vacuum state is None, falling back to 'not available'")
+            return "not available"
+
         if not language:
             return status.capitalize()
-        translations = self.get_vacuum_status_translation(language)
+        translations = await self.async_get_vacuum_status_translation(language)
         if translations is not None and status in translations:
             return translations[status]
         return status.capitalize()
 
-    def get_status_text(self, text_img: PilPNG) -> tuple[list[str], int]:
+    async def async_get_status_text(self, text_img: PilPNG) -> tuple[list[str], int]:
         """
-        Compose the image status text.
+        Compose the image status text asynchronously.
         :param text_img: Image to draw the text on.
         :return status_text, text_size: List of the status text and the text size.
         """
@@ -88,7 +104,13 @@ class StatusText:
         text_size = self._shared.vacuum_status_size  # default text size
         charge_level = "\u03de"  # unicode Koppa symbol
         charging = "\u2211"  # unicode Charging symbol
-        vacuum_state = self.translate_vacuum_status()
+        vacuum_state = await self.async_translate_vacuum_status()
+
+        # Check if vacuum_state is None and provide fallback
+        if vacuum_state is None:
+            LOGGER.warning("Vacuum state is None, falling back to 'not available'")
+            vacuum_state = "not available"
+
         if self._shared.show_vacuum_state:
             status_text = [f"{self.file_name}: {vacuum_state}"]
             if not self._shared.vacuum_connection:
@@ -124,4 +146,10 @@ class StatusText:
                     text_size = int(
                         (text_size_coverage * text_img.width) // text_pixels
                     )
+
+        # Final check to ensure status_text is never None
+        if status_text is None:
+            LOGGER.warning("Status text is None, falling back to 'not available'")
+            status_text = [f"{self.file_name}: not available"]
+
         return status_text, text_size

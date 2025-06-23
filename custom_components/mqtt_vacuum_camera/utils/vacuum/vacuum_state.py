@@ -1,0 +1,56 @@
+
+from __future__ import annotations
+
+from valetudo_map_parser.config.types import LOGGER
+
+from typing import Any
+from ...const import NOT_STREAMING_STATES
+
+class VacuumStateManager:
+    """Manages vacuum state and streaming logic."""
+
+    def __init__(self, shared_data: Any, connector: Any, file_name: str):
+        """Initialize the vacuum state manager."""
+        self.shared = shared_data
+        self.connector = connector
+        self.file_name = file_name
+
+    async def update_vacuum_state(self) -> bool:
+        """
+        Update vacuum state and return streaming decision.
+
+        Returns:
+            bool: True if camera should stream, False if is idle
+        """
+        try:
+            # Update battery level
+            self.shared.vacuum_battery = await self.connector.get_battery_level()
+
+            # Update connection state
+            self.shared.vacuum_connection = await self.connector.get_vacuum_connection_state()
+
+            # Update vacuum status
+            if self.shared.vacuum_connection:
+                self.shared.vacuum_state = await self.connector.get_vacuum_status()
+            else:
+                self.shared.vacuum_state = "disconnected"
+
+            # Return streaming decision
+            return self._should_stream()
+
+        except Exception as err:
+            LOGGER.error("Error updating vacuum state for %s: %s", self.file_name, err)
+            return False
+
+    def _should_stream(self) -> bool:
+        """Determine if camera should stream based on vacuum state."""
+        if not self.shared.vacuum_connection:
+            return False
+
+        current_status = self.shared.vacuum_state
+
+        # Streaming logic from original camera.py
+        return (
+                current_status not in NOT_STREAMING_STATES
+                or (current_status == "docked" and not self.shared.vacuum_bat_charged)
+        )

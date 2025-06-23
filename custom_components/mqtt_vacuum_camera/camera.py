@@ -1,18 +1,19 @@
 """
-Camera
-Last Updated on version: 2025.6.0
+MQTT Vacuum Camera Entity - Simple Implementation
+Camera just handles PIL to bytes conversion, coordinator does all processing.
+Version: 2025.6.0
 """
 
 from __future__ import annotations
 
 from datetime import timedelta
-from io import BytesIO
 import os
-import platform
+from io import BytesIO
 import time
 from typing import Any, Optional
-
 from PIL import Image
+
+from homeassistant.core import callback
 from homeassistant import config_entries, core
 from homeassistant.components.camera import Camera, CameraEntityFeature
 from homeassistant.const import CONF_UNIQUE_ID, MATCH_ALL
@@ -22,10 +23,10 @@ from homeassistant.helpers.device_registry import DeviceInfo as Dev_Info
 from homeassistant.helpers.entity import DeviceInfo as Entity_Info
 from homeassistant.helpers.storage import STORAGE_DIR
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from psutil_home_assistant import PsutilWrapper as ProcInspector
-from valetudo_map_parser.config.colors import ColorsManagement
 from valetudo_map_parser.config.types import SnapshotStore
+from valetudo_map_parser.config.colors import ColorsManagement
 
+from .coordinator import CameraCoordinator
 from .common import get_vacuum_unique_id_from_mqtt_topic
 from .const import (
     ATTR_FRIENDLY_NAME,
@@ -36,18 +37,13 @@ from .const import (
     CONF_VACUUM_IDENTIFIERS,
     DOMAIN,
     LOGGER,
-    NOT_STREAMING_STATES,
     CameraModes,
 )
 from .snapshots.snapshot import Snapshots
-from .utils.camera.camera_processing import CameraProcessor
 from .utils.camera.obstacle_handler import ObstacleViewHandler
-from .utils.connection.decompress import DecompressionManager
 from .utils.files_operations import async_load_file
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
-
-SCAN_INTERVAL = timedelta(seconds=3)
 
 
 async def async_setup_entry(
@@ -58,74 +54,87 @@ async def async_setup_entry(
     """Setup camera from a config entry created in the integrations UI."""
     config = hass.data[DOMAIN][config_entry.entry_id]
     coordinator = hass.data[DOMAIN][config_entry.entry_id]["coordinator"]
+
     # Update our config to and eventually add or remove option.
     if config_entry.options:
         config.update(config_entry.options)
 
-    camera = [MQTTCamera(coordinator, config)]
-    async_add_entities(camera, update_before_add=True)
+    # Create camera entity
+    camera = [MQTTVacuumCamera(coordinator, config)]
+
+    # Add entities
+    async_add_entities(camera, update_before_add=False)
 
 
-class MQTTCamera(CoordinatorEntity, Camera):
+class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
     """
-    Rend the vacuum map and the vacuum state for:
-    Valetudo Hypfer and rand256 Firmwares Vacuums maps.
-    From PI4 up to all other Home Assistant supported platforms.
+    Simple MQTT Vacuum Camera Entity.
+
+    Coordinator handles all processing (MQTT → JSON → PIL).
+    Camera just handles PIL → bytes conversion and display.
     """
 
     _attr_has_entity_name = True
     _unrecorded_attributes = frozenset({MATCH_ALL})
+    _attr_should_poll = False  # CoordinatorEntity handles updates automatically
 
-    # noinspection PyUnusedLocal
-    def __init__(self, coordinator, device_info):
+    def __init__(self, coordinator: CameraCoordinator, device_info: dict[str, Any]) -> None:
+        """Initialize the simple camera entity."""
         super().__init__(coordinator)
         Camera.__init__(self)
+
         self.hass = coordinator.hass
-        self._shared, self._file_name = coordinator.update_shared_data(device_info)
-        self._state = "init"
+        self.coordinator = coordinator
+        self._device_info = device_info
+
+        # Basic attributes
         self._attr_model = "MQTT Vacuums"
         self._attr_brand = "MQTT Vacuum Camera"
         self._attr_name = "Camera"
         self._attr_is_on = True
         self._attr_motion_detection_enabled = False
-        self._homeassistant_path = self.hass.config.path()  # get Home Assistant path
-        self._start_up_logs()
-        self._storage_path, self.snapshot_img, self.log_file = self._init_paths()
+        self._attr_frame_interval = 1.0
+        self._attr_should_poll = True
+
+        # Core data from coordinator
+        self._file_name = coordinator.file_name
+        self._shared = coordinator.shared
         self._mqtt_listen_topic = coordinator.vacuum_topic
+
+        # Camera Functions
+        self._homeassistant_path = self.hass.config.path()  # get Home Assistant path
+        self._storage_path, self.snapshot_img, self.log_file = self._init_paths()
+        self.thread_pool = self.coordinator.thread_pool.get_instance(self._file_name)
+        self._colours = ColorsManagement(self._shared)
+        self._snapshots = Snapshots(self.hass, self._shared)
+        self._obstacle_handler = None
+        self._init_clear_www_folder()
+
+        # Unique ID and identifiers
         self._attr_unique_id = device_info.get(
             CONF_UNIQUE_ID,
             get_vacuum_unique_id_from_mqtt_topic(self._mqtt_listen_topic),
         )
-        self._mqtt = coordinator.connector
         self._identifiers = device_info.get(CONF_VACUUM_IDENTIFIERS)
-        self._snapshots = Snapshots(self.hass, self._shared)
-        self.Image = None
-        self.image_bk = None
-        self._processing = False
-        self._image_w = None
-        self._image_h = None
-        self._should_poll = False
-        self._attr_frame_interval = 6
-        self._json_data = None
-        self._vac_json_available = None
-        self._cpu_percent = None
-        self._init_clear_www_folder()
-        self._last_image = None
-        self._obstacle_image = None
-        self.auth_update_time = None
-        self._dm = DecompressionManager.get_instance(self._file_name)
-        self._image_receive_time = None  # Timestamp when image data is received
-        # Set default language to English - only set once during initialization
-        self._shared.user_language = "en"
-        # get the colours used in the maps.
-        self._colours = ColorsManagement(self._shared)
-        self._colours.set_initial_colours(device_info)
-        # Create the processor for the camera.
-        self.processor = CameraProcessor(self.hass, self._shared)
-        self.thread_pool = self.coordinator.thread_pool
-        self._obstacle_handler = None
-        self._shared.image_grab = True
-        # Listen to the vacuum.start event
+
+        # Image state
+        self.Image: Optional[bytes] = None
+        self.image_bk: Optional[bytes] = None
+        self._obstacle_image: Optional[bytes] = None
+        self._last_image: Optional[Image.Image] = None
+        self._image_w: Optional[int] = None
+        self._image_h: Optional[int] = None
+
+        # Processing state
+        self._processing = True
+        self._image_receive_time: Optional[float] = None
+        self._vac_json_available = "Initializing"
+
+        # Performance tracking
+        self._timing_log_counter = 0
+        self.uns_event_obstacle_coordinates = self.hass.bus.async_listen(
+            "mqtt_vacuum_camera_obstacle_coordinates", self._debounced_obstacle_handler
+        )
         self.uns_event_vacuum_start = self.hass.bus.async_listen(
             "event_vacuum_start", self.handle_vacuum_start
         )
@@ -138,48 +147,6 @@ class MQTTCamera(CoordinatorEntity, Camera):
             function=self._process_obstacle_event,
         )
 
-        self.uns_event_obstacle_coordinates = self.hass.bus.async_listen(
-            "mqtt_vacuum_camera_obstacle_coordinates", self._debounced_obstacle_handler
-        )
-
-    def _init_obstacle_handler(self):
-        """Initialize the obstacle handler with required dependencies."""
-        if not self._obstacle_handler:
-            self._obstacle_handler = ObstacleViewHandler(
-                self._shared,
-                self._file_name,
-                self.processor,
-                self.hass,
-                self.entity_id,
-                self.thread_pool,
-            )
-
-    @staticmethod
-    def _start_up_logs():
-        """Logs the machine running the component data"""
-        LOGGER.debug("System Release: %r, %r", platform.node(), platform.release())
-        LOGGER.debug("System Version: %r", platform.version())
-        LOGGER.debug("System Machine: %r", platform.machine())
-        LOGGER.debug("Python Version: %r", platform.python_version())
-        LOGGER.debug(
-            "Memory Available: %r and In Use: %r",
-            round(
-                (ProcInspector().psutil.virtual_memory().available / (1024 * 1024)), 1
-            ),
-            round((ProcInspector().psutil.virtual_memory().used / (1024 * 1024)), 1),
-        )
-
-    def _init_clear_www_folder(self):
-        """Remove PNG and ZIP's stored in HA config WWW"""
-        # If enable_snapshots check if for png in www
-        if not self._shared.enable_snapshots and os.path.isfile(
-            f"{self._homeassistant_path}/www/snapshot_{self._file_name}.png"
-        ):
-            os.remove(f"{self._homeassistant_path}/www/snapshot_{self._file_name}.png")
-        # If there is a log zip in www remove it
-        if os.path.isfile(self.log_file):
-            os.remove(self.log_file)
-
     def _init_paths(self):
         """Initialize Camera Paths"""
         storage_path = f"{self.hass.config.path(STORAGE_DIR)}/{CAMERA_STORAGE}"
@@ -189,20 +156,186 @@ class MQTTCamera(CoordinatorEntity, Camera):
         log_file = f"{storage_path}/{self._file_name}.zip"
         return storage_path, snapshot_img, log_file
 
+    def _init_clear_www_folder(self):
+        """Remove PNG and ZIP's stored in HA config WWW"""
+        # If enable_snapshots check if for png in www
+        if not self._shared.enable_snapshots and os.path.isfile(
+                f"{self._homeassistant_path}/www/snapshot_{self._file_name}.png"
+        ):
+            os.remove(f"{self._homeassistant_path}/www/snapshot_{self._file_name}.png")
+        # If there is a log zip in www remove it
+        if os.path.isfile(self.log_file):
+            os.remove(self.log_file)
+
+    def _init_obstacle_handler(self):
+        """Initialize the obstacle handler with required dependencies."""
+        if not self._obstacle_handler:
+            self._obstacle_handler = ObstacleViewHandler(
+                self._shared,
+                self._file_name,
+                self.coordinator.processor,
+                self.hass,
+                self.entity_id,
+                self.thread_pool,
+            )
+
     async def async_added_to_hass(self) -> None:
         """Handle entity added to Home Assistant."""
-        await self._mqtt.async_subscribe_to_topics()
-        self._should_poll = True
+        await super().async_added_to_hass()
+
+        # Initialize colors
+        self._colours.set_initial_colours(self._device_info)
+
+        # Set default language
+        self._shared.user_language = "en"
+
+        # Subscribe to MQTT topics
+        await self.coordinator.async_subscribe_mqtt()
+
+        # Set camera mode and initial state
         self._shared.camera_mode = CameraModes.MAP_VIEW
-        self.async_schedule_update_ha_state(True)
+        self._shared.image_grab = True
+
+        LOGGER.debug("Simple camera entity added to HA for: %s", self._file_name)
 
     async def async_will_remove_from_hass(self) -> None:
         """Handle entity removal from Home Assistant."""
         await super().async_will_remove_from_hass()
 
         # Unsubscribe from MQTT topics
-        if self._mqtt:
-            await self._mqtt.async_unsubscribe_from_topics()
+        await self.coordinator.async_unsubscribe_mqtt()
+
+        LOGGER.debug("Simple camera entity removed from HA for: %s", self._file_name)
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+
+        if self._shared.camera_mode == CameraModes.OBSTACLE_VIEW:
+            if self._obstacle_image is not None:
+                self.Image = self._obstacle_image
+                self.async_write_ha_state()
+                return
+
+        # Process new image data
+        if self.coordinator.data and self.coordinator.data.get("pil_image"):
+            LOGGER.debug("Processing PIL image from coordinator for: %s", self._file_name)
+
+            try:
+                # Get PIL image from coordinator
+                pil_img = self.coordinator.data["pil_image"]
+                # Convert PIL to bytes for camera display
+                self.hass.async_create_task(self._async_convert_and_update(pil_img))
+
+            except Exception as err:
+                LOGGER.error("Error processing coordinator update for %s: %s", self._file_name, err)
+                self._vac_json_available = "Error"
+                self._processing = False
+        else:
+            # Image backup
+            if (self._shared.vacuum_state == "docked" and
+                    self._shared.camera_mode == CameraModes.MAP_VIEW):
+                self.image_bk = self.Image
+            elif (self._shared.camera_mode == CameraModes.MAP_VIEW and
+                  self._shared.vacuum_state != "docked"):
+                self.image_bk = None
+            LOGGER.debug("No PIL image available from coordinator for: %s", self._file_name)
+
+    async def _async_convert_and_update(self, pil_img):
+        """Convert PIL to bytes and update state."""
+        try:
+            # Convert PIL to bytes for camera display
+            if self._processing or self.Image is None:
+                self.Image = await self.async_pil_to_bytes(pil_img)
+                self._processing = False
+
+            # Store last image
+            self._last_image = pil_img.copy()
+            self._vac_json_available = "Success"
+
+            LOGGER.debug("Image conversion complete for: %s", self._file_name)
+
+        except Exception as err:
+            LOGGER.error("Error converting PIL to bytes for %s: %s", self._file_name, err)
+            self._vac_json_available = "Error"
+        finally:
+            # Update HA state
+            self.async_write_ha_state()
+
+
+    async def async_pil_to_bytes(
+            self, pil_img, image_id: str = None
+    ) -> Optional[bytes]:
+        """Convert PIL image to bytes"""
+        if pil_img:
+            self._last_image = pil_img.copy()
+            LOGGER.debug(
+                "%s: Output Image: %s.",
+                self._file_name,
+                image_id if image_id else self._shared.vac_json_id,
+            )
+            if self._shared.show_vacuum_state:
+                pil_img = await self.coordinator.processor.async_draw_image_text(
+                    pil_img,
+                    self._shared.user_colors[8],
+                    self._shared.vacuum_status_font,
+                    self._shared.vacuum_status_position,
+                )
+        else:
+            if self._last_image is not None:
+                LOGGER.debug("%s: Output Last Image.", self._file_name)
+                pil_img = self._last_image
+            else:
+                LOGGER.debug("%s: Output Gray Image.", self._file_name)
+                pil_img = Image.new("RGB", (800, 600), "gray")
+        self._image_w = pil_img.width
+        self._image_h = pil_img.height
+        buffered = BytesIO()
+        try:
+            pil_img.save(buffered, format="PNG")
+            return buffered.getvalue()
+        except Exception as err:
+            LOGGER.error("Error converting PIL to bytes for %s: %s", self._file_name, err)
+            return None
+        finally:
+            buffered.close()
+
+
+    async def run_async_pil_to_bytes(self, pil_img, image_id: str = None):
+        """Thread function to process the image data using persistent thread pool."""
+        try:
+            result = await self.thread_pool.run_async_in_executor(
+                "camera",
+                self.async_pil_to_bytes,
+                pil_img,
+                image_id,
+            )
+            return result
+        except Exception as e:
+            LOGGER.error("Error converting image to bytes: %s", str(e), exc_info=True)
+            return None
+
+    @property
+    def should_poll(self) -> bool:
+        """ON/OFF Camera Polling Based on Camera Mode."""
+        poling_states = {
+            CameraModes.OBSTACLE_DOWNLOAD: False,
+            CameraModes.OBSTACLE_SEARCH: False,
+            CameraModes.MAP_VIEW: True,
+            CameraModes.OBSTACLE_VIEW: True,
+            CameraModes.CAMERA_STANDBY: False,
+        }
+
+        if isinstance(self._shared.camera_mode, bool):
+            self._shared.camera_mode = (
+                CameraModes.MAP_VIEW
+                if self._shared.camera_mode
+                else CameraModes.CAMERA_STANDBY
+            )
+
+        self._attr_should_poll = poling_states.get(self._shared.camera_mode, False)
+        return self._attr_should_poll
+
 
     @property
     def name(self) -> str:
@@ -232,28 +365,15 @@ class MQTTCamera(CoordinatorEntity, Camera):
     @property
     def is_streaming(self) -> bool:
         """Return true if the device is streaming."""
-        updated_status = self._shared.vacuum_state
-        self._attr_is_streaming = (
-            updated_status not in NOT_STREAMING_STATES
-            or not self._shared.vacuum_bat_charged
-        )
-        return self._attr_is_streaming
+        if not self.coordinator.data:
+            self._processing = False
+            return False
+        result = self.coordinator.data.get("success", False)
+        if not result:
+            self._processing = False
+        self._processing = True
+        return self._processing
 
-    def disable_motion_detection(self) -> bool:
-        """Disable Motion Detection
-        :return bool always False as this is not in use in this implementation"""
-        return False
-
-    def enable_motion_detection(self) -> bool:
-        """Enable Motion Detection
-        :return bool always False as this is not in use in this implementation"""
-        return False
-
-    def camera_image(
-        self, width: Optional[int] = None, height: Optional[int] = None
-    ) -> Optional[bytes]:
-        """Camera Image"""
-        return self.Image
 
     @property
     def supported_features(self) -> int:
@@ -267,31 +387,11 @@ class MQTTCamera(CoordinatorEntity, Camera):
             ATTR_FRIENDLY_NAME: self._attr_name,
             ATTR_VACUUM_TOPIC: self._mqtt_listen_topic,
             ATTR_JSON_DATA: self._vac_json_available,
-            ATTR_SNAPSHOT_PATH: f"/local/snapshot_{self._file_name}.png",
+            ATTR_SNAPSHOT_PATH: f"/www/snapshot_{self._file_name}.png",
         }
-        attributes.update(self._shared.generate_attributes())
+        if self._shared:
+            attributes.update(self._shared.generate_attributes())
         return attributes
-
-    @property
-    def should_poll(self) -> bool:
-        """ON/OFF Camera Polling Based on Camera Mode."""
-        poling_states = {
-            CameraModes.OBSTACLE_DOWNLOAD: False,
-            CameraModes.OBSTACLE_SEARCH: False,
-            CameraModes.MAP_VIEW: True,
-            CameraModes.OBSTACLE_VIEW: True,
-            CameraModes.CAMERA_STANDBY: False,
-        }
-
-        if isinstance(self._shared.camera_mode, bool):
-            self._shared.camera_mode = (
-                CameraModes.MAP_VIEW
-                if self._shared.camera_mode
-                else CameraModes.CAMERA_STANDBY
-            )
-
-        self._should_poll = poling_states.get(self._shared.camera_mode, False)
-        return self._should_poll
 
     @property
     def device_info(self):
@@ -299,13 +399,27 @@ class MQTTCamera(CoordinatorEntity, Camera):
         device_info = Dev_Info if Dev_Info else Entity_Info
         return device_info(identifiers=self._identifiers)
 
+    def camera_image(
+        self, width: Optional[int] = None, height: Optional[int] = None
+    ) -> Optional[bytes]:
+        """Camera Image"""
+        return self.Image
+
     def turn_on(self) -> None:
         """Camera Turn On"""
-        self._shared.camera_mode = CameraModes.CAMERA_ON
+        if self._shared:
+            self._shared.camera_mode = CameraModes.CAMERA_ON
 
     def turn_off(self) -> None:
         """Camera Turn Off"""
-        self._shared.camera_mode = CameraModes.CAMERA_OFF
+        if self._shared:
+            self._shared.camera_mode = CameraModes.CAMERA_OFF
+
+    async def take_snapshot(self, json_data: Any, image_data: Image.Image) -> None:
+        """Camera Automatic Snapshots."""
+        partial_snapshot = SnapshotStore()
+        await partial_snapshot.async_set_snapshot_save_data(self._file_name)
+        await self._snapshots.run_async_take_snapshot(json_data, image_data)
 
     @staticmethod
     def _load_snapshot_image(snapshot_path: str) -> Image.Image:
@@ -348,266 +462,6 @@ class MQTTCamera(CoordinatorEntity, Camera):
         LOGGER.info("%s: Returning Empty image.", self._file_name)
         return empty_img
 
-    async def take_snapshot(self, json_data: Any, image_data: Image.Image) -> None:
-        """Camera Automatic Snapshots."""
-        partial_snapshot = SnapshotStore()
-        await partial_snapshot.async_set_snapshot_save_data(self._file_name)
-        await self._snapshots.run_async_take_snapshot(json_data, image_data)
-
-    async def async_update(self):
-        """Camera Frame Update."""
-
-        # Obstacle View Processing
-        if self._shared.camera_mode == CameraModes.OBSTACLE_VIEW:
-            if self._obstacle_image is not None:
-                self.Image = (
-                    self._obstacle_image
-                )  # this must be set for the camera_image() to work.
-                return self._obstacle_image
-
-        # Map View Processing
-        if not self._mqtt:
-            LOGGER.debug("%s: No MQTT data available.", self._file_name)
-            # return last/empty image if no MQTT or CPU usage too high.
-            await self._handle_no_mqtt_data()
-
-        # If we have data from MQTT, we process the image.
-        await self._update_vacuum_state()
-        pid = os.getpid()  # Start to log the CPU usage of this PID.
-        proc = ProcInspector().psutil.Process(pid)  # Get the process PID.
-        process_data = await self._mqtt.is_data_available()
-        if process_data and (self._shared.camera_mode == CameraModes.MAP_VIEW):
-            # to calculate the cycle time for frame adjustment.
-            start_time = time.perf_counter()
-            self._log_cpu_usage(proc)
-            # if the vacuum is working, or it is the first image.
-            if self.is_streaming:
-                self._shared.image_grab = True
-                self._shared.snapshot_take = False
-                self._shared.frame_number = self.processor.get_frame_number()
-            # Record the time when we receive image data
-            self._image_receive_time = time.time()
-            self._processing = True
-            parsed_json = None
-            data_type = None
-            is_a_test = False
-            try:
-                # Process the parsed JSON data
-                parsed_json, is_a_test, data_type = await self._process_parsed_json()
-            except ValueError:
-                self._vac_json_available = "Error"
-                pil_img = await self.async_empty_if_no_data()
-                self.Image = await self.run_async_pil_to_bytes(pil_img)
-                s = self.camera_image(self._image_w, self._image_h)
-                return s
-            finally:
-                # Just in case, let's check that the data is available.
-                if parsed_json is not None:
-                    if not self._shared.destinations and data_type == "Rand256":
-                        self._shared.destinations = await self._mqtt.get_destinations()
-
-                    pil_img = await self.hass.async_create_task(
-                        self.processor.run_async_process_valetudo_data(parsed_json)
-                    )
-
-                    # if no image was processed empty or last snapshot/frame
-                    if not is_a_test and pil_img is None:
-                        pil_img = await self.async_empty_if_no_data()
-
-                    # update the image
-                    self._last_image = pil_img.copy()
-                    self.Image = await self.run_async_pil_to_bytes(pil_img)
-
-                    if (
-                        self._shared.vacuum_state == "docked"
-                        and self._shared.camera_mode == CameraModes.MAP_VIEW
-                    ):
-                        self.image_bk = self.Image
-                    elif (
-                        self._shared.camera_mode == CameraModes.MAP_VIEW
-                        and self._shared.vacuum_state != "docked"
-                    ):
-                        self.image_bk = None
-                    # Take a snapshot temporarily disabled here.
-                    # await self._take_snapshot(parsed_json, pil_img)
-
-                    # Update frame interval based on total processing time if we have a received timestamp
-                    if self._image_receive_time is not None:
-                        self._update_frame_interval_from_receive_time(
-                            self._image_receive_time
-                        )
-                        self._image_receive_time = None  # Reset for next cycle
-                    else:
-                        # Fall back to old method if no receive timestamp
-                        self._update_frame_interval(start_time)
-                else:
-                    self._attr_frame_interval = 0.1
-                # HA supervised Memory and CUP usage report.
-                self._log_memory_usage(proc)
-                self._log_cpu_usage(proc)
-                self._processing = False
-        return self.camera_image(self._image_w, self._image_h)
-
-    async def _update_vacuum_state(self):
-        """Update vacuum state based on MQTT data."""
-        self._shared.vacuum_battery = await self._mqtt.get_battery_level()
-        self._shared.vacuum_connection = await self._mqtt.get_vacuum_connection_state()
-
-        if not self._shared.vacuum_connection:
-            self._shared.vacuum_state = "disconnected"
-        else:
-            if self._shared.vacuum_state == "disconnected":
-                self._shared.vacuum_state = await self._mqtt.get_vacuum_status()
-            else:
-                self._shared.vacuum_state = await self._mqtt.get_vacuum_status()
-
-    async def _handle_no_mqtt_data(self):
-        """Handle the scenario where no MQTT data is available."""
-        pil_img = await self.async_empty_if_no_data()
-        self.Image = await self.run_async_pil_to_bytes(pil_img)
-        return self.camera_image(pil_img.width, pil_img.height)
-
-    async def _process_parsed_json(self, test_mode: bool = False):
-        """Process the parsed JSON data and return the generated image."""
-        if test_mode:
-            LOGGER.debug("Camera Test Mode Active...")
-            data_type = "hypfer"
-            if not self._shared.image_grab:
-                return None, test_mode, data_type
-            if self._json_data is None:
-                self._json_data = await async_load_file(
-                    file_to_load="custom_components/mqtt_vacuum_camera/snapshots/test.json",
-                    is_json=True,
-                )
-            parsed_json = self._json_data
-            self._shared.camera_mode = CameraModes.MAP_VIEW
-            return parsed_json, test_mode, data_type
-
-        # Get data from MQTT and decompress it
-        parsed_json = None
-        payload, data_type = await self._mqtt.update_data(self._shared.image_grab)
-        if payload and data_type:
-            data = payload.payload if hasattr(payload, "payload") else payload
-            parsed_json = await self.hass.async_create_task(
-                self._dm.decompress(data, data_type)
-            )
-
-        if not parsed_json and self._shared.image_grab:
-            self._vac_json_available = "Error"
-            empty_img = await self.async_empty_if_no_data()
-            self.Image = await self.run_async_pil_to_bytes(empty_img)
-            self.camera_image(self._image_w, self._image_h)
-            LOGGER.warning(
-                "%s: No JSON data available. Camera Suspended required reload.",
-                self._file_name,
-            )
-            self._should_poll = False
-            return None, False, None
-        self._vac_json_available = "Success"
-        if data_type == "Rand256":
-            self._shared.is_rand = True
-        else:
-            self._shared.is_rand = False
-
-        return parsed_json, test_mode, data_type
-
-    async def _take_snapshot(self, parsed_json, pil_img):
-        """Take a snapshot if conditions are met."""
-        if self._shared.snapshot_take and pil_img:
-            if self._shared.is_rand:
-                await self.take_snapshot(self._shared.is_rand, pil_img)
-            else:
-                await self.take_snapshot(parsed_json, pil_img)
-
-    def _log_cpu_usage(self, proc):
-        """Log the CPU usage."""
-        self._cpu_percent = round(
-            ((proc.cpu_percent() / int(ProcInspector().psutil.cpu_count())) / 10), 1
-        )
-
-    def _log_memory_usage(self, proc):
-        """Log the memory usage."""
-        memory_percent = round(
-            (
-                (proc.memory_info()[0] / 2.0**30)
-                / (ProcInspector().psutil.virtual_memory().total / 2.0**30)
-            )
-            * 100,
-            2,
-        )
-        LOGGER.debug(
-            "%s: Camera Memory: GB in use %.2f / system available %.2f%%.",
-            self._file_name,
-            round(proc.memory_info()[0] / 2.0**30, 2),
-            memory_percent,
-        )
-
-    def _update_frame_interval(self, start_time):
-        """Update the frame interval based on processing time."""
-        processing_time = round((time.perf_counter() - start_time), 3)
-        self._attr_frame_interval = max(0.1, processing_time)
-
-    def _update_frame_interval_from_receive_time(self, receive_time):
-        """Update the frame interval based on total time from receiving image data to completion."""
-        total_time = round((time.time() - receive_time), 3)
-        self._attr_frame_interval = max(0.1, total_time)
-
-        LOGGER.debug(
-            "%s: Image Completed - Total image processing time (receive to display): %.3fs",
-            self._file_name,
-            total_time,
-        )
-
-    async def async_pil_to_bytes(
-        self, pil_img, image_id: str = None
-    ) -> Optional[bytes]:
-        """Convert PIL image to bytes"""
-        if pil_img:
-            self._last_image = pil_img.copy()
-            LOGGER.debug(
-                "%s: Output Image: %s.",
-                self._file_name,
-                image_id if image_id else self._shared.vac_json_id,
-            )
-            if self._shared.show_vacuum_state:
-                pil_img = await self.processor.async_draw_image_text(
-                    pil_img,
-                    self._shared.user_colors[8],
-                    self._shared.vacuum_status_font,
-                    self._shared.vacuum_status_position,
-                )
-        else:
-            if self._last_image is not None:
-                LOGGER.debug("%s: Output Last Image.", self._file_name)
-                pil_img = self._last_image
-            else:
-                LOGGER.debug("%s: Output Gray Image.", self._file_name)
-                # Use synchronous fallback since we're in a thread pool context
-                # and only need a gray image, not file loading
-                pil_img = Image.new("RGB", (800, 600), "gray")
-        self._image_w = pil_img.width
-        self._image_h = pil_img.height
-        buffered = BytesIO()
-        try:
-            pil_img.save(buffered, format="PNG")
-            return buffered.getvalue()
-        finally:
-            buffered.close()
-
-    async def run_async_pil_to_bytes(self, pil_img, image_id: str = None):
-        """Thread function to process the image data using persistent thread pool."""
-        try:
-            result = await self.thread_pool.run_async_in_executor(
-                "camera",
-                self.async_pil_to_bytes,
-                pil_img,
-                image_id,
-            )
-            return result
-        except Exception as e:
-            LOGGER.error("Error converting image to bytes: %s", str(e), exc_info=True)
-            return None
-
     async def handle_vacuum_start(self, event):
         """Handle the event_vacuum_start event."""
         LOGGER.debug("Received event: %s, Data: %s", event.event_type, str(event.data))
@@ -615,7 +469,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         LOGGER.debug("%s Trims cleared: %s", self._file_name, self._shared.trims)
 
     async def _debounced_obstacle_handler(self, event):
-        """Handler that debounces incoming obstacle view events."""
+        """Handler that debounce incoming obstacle view events."""
         # Store the latest event data
         self._latest_obstacle_event = event
         # Trigger the debouncer - it will call _process_obstacle_event after cooldown

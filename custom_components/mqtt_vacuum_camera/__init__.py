@@ -28,7 +28,7 @@ from .const import (
     DOMAIN,
     LOGGER,
 )
-from .coordinator import MQTTVacuumCoordinator
+from .coordinator import CameraCoordinator
 from .utils.thread_pool import ThreadPoolManager
 from .utils.camera.camera_services import (
     obstacle_view,
@@ -74,7 +74,7 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
 
     is_rand256 = is_rand256_vacuum(vacuum_device)
 
-    data_coordinator = MQTTVacuumCoordinator(hass, entry, mqtt_topic_vacuum, is_rand256)
+    data_coordinator = CameraCoordinator(hass, entry, mqtt_topic_vacuum, is_rand256)
 
     hass_data.update(
         {
@@ -143,8 +143,8 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
     async def handle_homeassistant_stop(event):
         """Handle Home Assistant stop event."""
         LOGGER.info("Home Assistant is stopping.")
-        # Remove thread pool
-        await ThreadPoolManager.shutdown_all()
+
+        # First: Save room data
         storage = hass.config.path(STORAGE_DIR, CAMERA_STORAGE)
         if not os.path.exists(storage):
             LOGGER.debug("Storage path: %s do not exists. Aborting!", storage)
@@ -155,6 +155,9 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
             return False
         LOGGER.debug("Writing down the rooms data for %s.", vacuum_entity_id)
         await async_rename_room_description(hass, vacuum_entity_id)
+
+        # Then: Remove thread pools after room data is safely saved
+        await ThreadPoolManager.shutdown_all()
 
         await hass.async_block_till_done()
         return True

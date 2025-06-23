@@ -40,18 +40,16 @@ class ThreadPoolManager:
 
     def __init__(self, vacuum_id: str = "default"):
         # Only initialize if this is a new instance
-        if not hasattr(self, "_initialized"):
+        if not hasattr(self, '_initialized'):
             self._pools = {}
             self.vacuum_id = vacuum_id
-            self._pre_create_pools()  # Pre-create all pools
+            self._create_used_pools()  # Pre-create all pools
             self._initialized = True
 
-    def _pre_create_pools(self):
+    def _create_used_pools(self):
         """Pre-create all thread pools for this vacuum."""
         pool_configs = {
-            "decompression": self.get_optimal_worker_count(
-                "decompression"
-            ),  # 2 workers
+            "decompression": self._get_optimal_worker_count("decompression"),  # 2 workers
             "camera": 1,
             "camera_processing": 1,
             "snapshot": 1,
@@ -59,15 +57,11 @@ class ThreadPoolManager:
 
         for name, workers in pool_configs.items():
             pool_name = f"{self.vacuum_id}_{name}"
-            _LOGGER.debug(
-                "Pre-creating thread pool: %s with %d workers", pool_name, workers
-            )
+            _LOGGER.debug("Pre-creating thread pool: %s with %d workers", pool_name, workers)
 
-            self._pools[pool_name] = concurrent.futures.ThreadPoolExecutor(
-                max_workers=workers, thread_name_prefix=pool_name
-            )
+            self._pools[pool_name] = self.get_create_executor(name, workers)
 
-    def get_executor(
+    def get_create_executor(
         self, name: str, max_workers: int = 1
     ) -> concurrent.futures.ThreadPoolExecutor:
         # Create a pool name that includes the vacuum_id to avoid conflicts
@@ -80,11 +74,12 @@ class ThreadPoolManager:
             )
 
         if pool_name not in self._pools:
-            raise RuntimeError(
-                f"Thread pool '{pool_name}' not found. Available pools: {list(self._pools.keys())}"
+            new_pool = concurrent.futures.ThreadPoolExecutor(
+                max_workers=max_workers, thread_name_prefix=pool_name 
             )
-
-        return self._pools[pool_name]
+        else:
+            new_pool = self._pools[pool_name]
+        return new_pool
 
     async def run_in_executor(
         self, name: str, func: Callable[..., R], *args, max_workers: int = 1
@@ -101,15 +96,16 @@ class ThreadPoolManager:
         Returns:
             The result of the function
         """
-        if name == "decompression":
-            max_workers = self.get_optimal_worker_count("decompression")
-
         try:
-            executor = self.get_executor(name, max_workers)
+            executor = self.get_create_executor(name, max_workers)
             loop = asyncio.get_running_loop()
 
             # Create a wrapper function that logs from the worker thread
             def logged_func(*args):
+                _LOGGER.debug(
+                    "Running function in thread pool: %s",
+                    name,
+                )
                 try:
                     result = func(*args)
                     return result
@@ -118,7 +114,7 @@ class ThreadPoolManager:
                         "ThreadPoolManager: Error in %s worker thread %s: %s",
                         name,
                         threading.current_thread().name,
-                        str(err),
+                        str(err)
                     )
                     raise
 
@@ -129,12 +125,9 @@ class ThreadPoolManager:
             )
             raise
 
+
     async def run_async_in_executor(
-        self,
-        name: str,
-        async_func: Callable[..., Awaitable[R]],
-        *args,
-        max_workers: int = 1,
+        self, name: str, async_func: Callable[..., Awaitable[R]], *args, max_workers: int = 1
     ) -> R:
         """
         Run an async function in a thread pool by automatically wrapping it.
@@ -148,7 +141,6 @@ class ThreadPoolManager:
         Returns:
             The result of the async function
         """
-
         # Create a wrapper that captures the async function and its arguments
         def sync_wrapper_with_args():
             # Create new event loop in worker thread
@@ -162,12 +154,10 @@ class ThreadPoolManager:
                 loop.close()
 
         # Run the wrapper function in the executor (no additional args needed)
-        return await self.run_in_executor(
-            name, sync_wrapper_with_args, max_workers=max_workers
-        )
+        return await self.run_in_executor(name, sync_wrapper_with_args, max_workers=max_workers)
 
     @staticmethod
-    def get_optimal_worker_count(task_type: str = "default") -> int:
+    def _get_optimal_worker_count(task_type: str = "default") -> int:
         """
         Calculate the optimal number of worker threads based on the task type.
 
@@ -195,12 +185,13 @@ class ThreadPoolManager:
 
         Args:
             vacuum_id: The ID of the vacuum to get the instance for.
-                      Use "default" for non-vacuum-specific operations.
+                    Use "default" for non-vacuum-specific operations.
 
         Returns:
             The singleton instance for the specified vacuum
         """
         return ThreadPoolManager(vacuum_id)
+
 
     @classmethod
     async def shutdown_all(cls):
@@ -235,8 +226,6 @@ class ThreadPoolManager:
                 _LOGGER.error("Error during thread pool shutdown: %s", e)
 
         # Clear instances regardless of shutdown success
-        cls._instances.clear()
-
-        # CRITICAL FIX: Clear the LRU cache to prevent returning defunct instances
         cls.get_instance.cache_clear()
-        _LOGGER.debug("Thread pool instances and LRU cache cleared")
+        cls._instances.clear()
+        _LOGGER.debug("Thread pool instances cleared")

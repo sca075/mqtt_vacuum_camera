@@ -8,7 +8,6 @@ avoid the overload of the main_thread of Home Assistant.
 from __future__ import annotations
 
 import asyncio
-import concurrent.futures
 from io import BytesIO
 from typing import Any
 
@@ -90,9 +89,9 @@ class CameraProcessor:
                 if not self._shared.image_size:
                     self._shared.image_size = self._map_handler.get_img_size()
 
-                update_vac_state = self._shared.vacuum_state
+                updated_vac_state = self._shared.vacuum_state
                 if not self._shared.snapshot_take and (
-                    update_vac_state in NOT_STREAMING_STATES
+                    updated_vac_state in NOT_STREAMING_STATES
                 ):
                     # suspend image processing if we are at the next frame.
                     if (
@@ -101,8 +100,9 @@ class CameraProcessor:
                     ):
                         self._shared.image_grab = False
                         LOGGER.info(
-                            "Suspended the camera data processing for: %s.",
+                            "Set the camera data processing for: %s to %s.",
                             self._file_name,
+                            self._shared.image_grab,
                         )
                         # take a snapshot
                         self._shared.snapshot_take = True
@@ -195,7 +195,7 @@ class CameraProcessor:
         if self._shared.user_language is None:
             self._shared.user_language = await async_get_active_user_language(self.hass)
         if pil_img is not None:
-            text, size = self._status_text.get_status_text(pil_img)
+            text, size = await self._status_text.async_get_status_text(pil_img)
             Draw.status_text(
                 image=pil_img,
                 size=size,
