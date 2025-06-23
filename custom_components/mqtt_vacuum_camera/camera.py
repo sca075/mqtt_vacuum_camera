@@ -78,7 +78,9 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
     _unrecorded_attributes = frozenset({MATCH_ALL})
     _attr_should_poll = False  # CoordinatorEntity handles updates automatically
 
-    def __init__(self, coordinator: CameraCoordinator, device_info: dict[str, Any]) -> None:
+    def __init__(
+        self, coordinator: CameraCoordinator, device_info: dict[str, Any]
+    ) -> None:
         """Initialize the simple camera entity."""
         super().__init__(coordinator)
         Camera.__init__(self)
@@ -160,7 +162,7 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
         """Remove PNG and ZIP's stored in HA config WWW"""
         # If enable_snapshots check if for png in www
         if not self._shared.enable_snapshots and os.path.isfile(
-                f"{self._homeassistant_path}/www/snapshot_{self._file_name}.png"
+            f"{self._homeassistant_path}/www/snapshot_{self._file_name}.png"
         ):
             os.remove(f"{self._homeassistant_path}/www/snapshot_{self._file_name}.png")
         # If there is a log zip in www remove it
@@ -219,7 +221,9 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
 
         # Process new image data
         if self.coordinator.data and self.coordinator.data.get("pil_image"):
-            LOGGER.debug("Processing PIL image from coordinator for: %s", self._file_name)
+            LOGGER.debug(
+                "Processing PIL image from coordinator for: %s", self._file_name
+            )
 
             try:
                 # Get PIL image from coordinator
@@ -228,18 +232,28 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
                 self.hass.async_create_task(self._async_convert_and_update(pil_img))
 
             except Exception as err:
-                LOGGER.error("Error processing coordinator update for %s: %s", self._file_name, err)
+                LOGGER.error(
+                    "Error processing coordinator update for %s: %s",
+                    self._file_name,
+                    err,
+                )
                 self._vac_json_available = "Error"
                 self._processing = False
         else:
             # Image backup
-            if (self._shared.vacuum_state == "docked" and
-                    self._shared.camera_mode == CameraModes.MAP_VIEW):
+            if (
+                self._shared.vacuum_state == "docked"
+                and self._shared.camera_mode == CameraModes.MAP_VIEW
+            ):
                 self.image_bk = self.Image
-            elif (self._shared.camera_mode == CameraModes.MAP_VIEW and
-                  self._shared.vacuum_state != "docked"):
+            elif (
+                self._shared.camera_mode == CameraModes.MAP_VIEW
+                and self._shared.vacuum_state != "docked"
+            ):
                 self.image_bk = None
-            LOGGER.debug("No PIL image available from coordinator for: %s", self._file_name)
+            LOGGER.debug(
+                "No PIL image available from coordinator for: %s", self._file_name
+            )
 
     async def _async_convert_and_update(self, pil_img):
         """Convert PIL to bytes and update state."""
@@ -256,15 +270,16 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
             LOGGER.debug("Image conversion complete for: %s", self._file_name)
 
         except Exception as err:
-            LOGGER.error("Error converting PIL to bytes for %s: %s", self._file_name, err)
+            LOGGER.error(
+                "Error converting PIL to bytes for %s: %s", self._file_name, err
+            )
             self._vac_json_available = "Error"
         finally:
             # Update HA state
             self.async_write_ha_state()
 
-
     async def async_pil_to_bytes(
-            self, pil_img, image_id: str = None
+        self, pil_img, image_id: str = None
     ) -> Optional[bytes]:
         """Convert PIL image to bytes"""
         if pil_img:
@@ -295,11 +310,12 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
             pil_img.save(buffered, format="PNG")
             return buffered.getvalue()
         except Exception as err:
-            LOGGER.error("Error converting PIL to bytes for %s: %s", self._file_name, err)
+            LOGGER.error(
+                "Error converting PIL to bytes for %s: %s", self._file_name, err
+            )
             return None
         finally:
             buffered.close()
-
 
     async def run_async_pil_to_bytes(self, pil_img, image_id: str = None):
         """Thread function to process the image data using persistent thread pool."""
@@ -335,7 +351,6 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
 
         self._attr_should_poll = poling_states.get(self._shared.camera_mode, False)
         return self._attr_should_poll
-
 
     @property
     def name(self) -> str:
@@ -373,7 +388,6 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
             self._processing = False
         self._processing = True
         return self._processing
-
 
     @property
     def supported_features(self) -> int:

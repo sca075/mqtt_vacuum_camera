@@ -1,3 +1,7 @@
+"""
+Vacuum State Manager for MQTT Vacuum Camera.
+Version: 2025.6.0
+"""
 
 from __future__ import annotations
 
@@ -5,6 +9,7 @@ from valetudo_map_parser.config.types import LOGGER
 
 from typing import Any
 from ...const import NOT_STREAMING_STATES
+
 
 class VacuumStateManager:
     """Manages vacuum state and streaming logic."""
@@ -27,7 +32,9 @@ class VacuumStateManager:
             self.shared.vacuum_battery = await self.connector.get_battery_level()
 
             # Update connection state
-            self.shared.vacuum_connection = await self.connector.get_vacuum_connection_state()
+            self.shared.vacuum_connection = (
+                await self.connector.get_vacuum_connection_state()
+            )
 
             # Update vacuum status
             if self.shared.vacuum_connection:
@@ -50,7 +57,6 @@ class VacuumStateManager:
         current_status = self.shared.vacuum_state
 
         # Streaming logic from original camera.py
-        return (
-                current_status not in NOT_STREAMING_STATES
-                or (current_status == "docked" and not self.shared.vacuum_bat_charged)
+        return current_status not in NOT_STREAMING_STATES or (
+            current_status == "docked" and not self.shared.vacuum_bat_charged
         )

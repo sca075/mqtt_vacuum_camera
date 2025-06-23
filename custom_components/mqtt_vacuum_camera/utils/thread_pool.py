@@ -9,12 +9,11 @@ from __future__ import annotations
 import asyncio
 import concurrent.futures
 from functools import lru_cache
-import logging
 import os
 import threading
 from typing import Awaitable, Callable, Dict, TypeVar
 
-_LOGGER = logging.getLogger(__name__)
+from valetudo_map_parser.config.types import LOGGER
 
 T = TypeVar("T")
 R = TypeVar("R")
@@ -40,7 +39,7 @@ class ThreadPoolManager:
 
     def __init__(self, vacuum_id: str = "default"):
         # Only initialize if this is a new instance
-        if not hasattr(self, '_initialized'):
+        if not hasattr(self, "_initialized"):
             self._pools = {}
             self.vacuum_id = vacuum_id
             self._create_used_pools()  # Pre-create all pools
@@ -49,7 +48,9 @@ class ThreadPoolManager:
     def _create_used_pools(self):
         """Pre-create all thread pools for this vacuum."""
         pool_configs = {
-            "decompression": self._get_optimal_worker_count("decompression"),  # 2 workers
+            "decompression": self._get_optimal_worker_count(
+                "decompression"
+            ),  # 2 workers
             "camera": 1,
             "camera_processing": 1,
             "snapshot": 1,
@@ -57,9 +58,11 @@ class ThreadPoolManager:
 
         for name, workers in pool_configs.items():
             pool_name = f"{self.vacuum_id}_{name}"
-            _LOGGER.debug("Pre-creating thread pool: %s with %d workers", pool_name, workers)
+            LOGGER.debug(
+                "Pre-creating thread pool: %s with %d workers", pool_name, workers
+            )
 
-            self._pools[pool_name] = self.get_create_executor(name, workers)
+            _ = self.get_create_executor(name, workers)
 
     def get_create_executor(
         self, name: str, max_workers: int = 1
@@ -69,17 +72,15 @@ class ThreadPoolManager:
             pool_name = f"{self.vacuum_id}_{name}"
         else:
             pool_name = f"default_{name}"
-            _LOGGER.warning(
+            LOGGER.warning(
                 "Using default vacuum_id for thread pool. This is not recommended."
             )
 
         if pool_name not in self._pools:
-            new_pool = concurrent.futures.ThreadPoolExecutor(
-                max_workers=max_workers, thread_name_prefix=pool_name 
+            self._pools[pool_name] = concurrent.futures.ThreadPoolExecutor(
+                max_workers=max_workers, thread_name_prefix=pool_name
             )
-        else:
-            new_pool = self._pools[pool_name]
-        return new_pool
+        return self._pools[pool_name]
 
     async def run_in_executor(
         self, name: str, func: Callable[..., R], *args, max_workers: int = 1
@@ -102,7 +103,7 @@ class ThreadPoolManager:
 
             # Create a wrapper function that logs from the worker thread
             def logged_func(*args):
-                _LOGGER.debug(
+                LOGGER.debug(
                     "Running function in thread pool: %s",
                     name,
                 )
@@ -110,24 +111,27 @@ class ThreadPoolManager:
                     result = func(*args)
                     return result
                 except Exception as err:
-                    _LOGGER.error(
+                    LOGGER.error(
                         "ThreadPoolManager: Error in %s worker thread %s: %s",
                         name,
                         threading.current_thread().name,
-                        str(err)
+                        str(err),
                     )
                     raise
 
             return await loop.run_in_executor(executor, logged_func, *args)
         except Exception as e:
-            _LOGGER.error(
+            LOGGER.error(
                 "Error executing function in thread pool: %s", str(e), exc_info=True
             )
             raise
 
-
     async def run_async_in_executor(
-        self, name: str, async_func: Callable[..., Awaitable[R]], *args, max_workers: int = 1
+        self,
+        name: str,
+        async_func: Callable[..., Awaitable[R]],
+        *args,
+        max_workers: int = 1,
     ) -> R:
         """
         Run an async function in a thread pool by automatically wrapping it.
@@ -141,6 +145,7 @@ class ThreadPoolManager:
         Returns:
             The result of the async function
         """
+
         # Create a wrapper that captures the async function and its arguments
         def sync_wrapper_with_args():
             # Create new event loop in worker thread
@@ -154,7 +159,9 @@ class ThreadPoolManager:
                 loop.close()
 
         # Run the wrapper function in the executor (no additional args needed)
-        return await self.run_in_executor(name, sync_wrapper_with_args, max_workers=max_workers)
+        return await self.run_in_executor(
+            name, sync_wrapper_with_args, max_workers=max_workers
+        )
 
     @staticmethod
     def _get_optimal_worker_count(task_type: str = "default") -> int:
@@ -192,14 +199,13 @@ class ThreadPoolManager:
         """
         return ThreadPoolManager(vacuum_id)
 
-
     @classmethod
     async def shutdown_all(cls):
         """
         Shutdown all thread pools across all instances with proper error handling.
         This is useful for application shutdown.
         """
-        _LOGGER.debug("Shutting down all thread pools across all instances")
+        LOGGER.debug("Shutting down all thread pools across all instances")
         # Create a copy of the instances to avoid modifying during iteration
         instances = list(cls._instances.items())
 
@@ -214,18 +220,18 @@ class ThreadPoolManager:
             try:
                 # Initiate shutdown for all pools without waiting
                 for pool_name, pool in all_pools:
-                    _LOGGER.debug("Initiating shutdown for pool: %s", pool_name)
+                    LOGGER.debug("Initiating shutdown for pool: %s", pool_name)
                     try:
                         # Use shutdown(wait=False) for immediate return
                         pool.shutdown(wait=False)
                     except Exception as e:
-                        _LOGGER.warning("Error shutting down pool %s: %s", pool_name, e)
+                        LOGGER.warning("Error shutting down pool %s: %s", pool_name, e)
 
-                _LOGGER.debug("All thread pool shutdowns initiated")
+                LOGGER.debug("All thread pool shutdowns initiated")
             except Exception as e:
-                _LOGGER.error("Error during thread pool shutdown: %s", e)
+                LOGGER.error("Error during thread pool shutdown: %s", e)
 
         # Clear instances regardless of shutdown success
         cls.get_instance.cache_clear()
         cls._instances.clear()
-        _LOGGER.debug("Thread pool instances cleared")
+        LOGGER.debug("Thread pool instances cleared")

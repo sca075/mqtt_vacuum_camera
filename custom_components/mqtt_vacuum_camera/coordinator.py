@@ -16,7 +16,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from valetudo_map_parser.config.shared import CameraShared, CameraSharedManager
 from valetudo_map_parser.config.types import LOGGER
 
-from .const import DEFAULT_NAME, LOGGER, SENSOR_NO_DATA
+from .const import DEFAULT_NAME, SENSOR_NO_DATA
 from .common import get_camera_device_info
 from .utils.connection.connector import ValetudoConnector
 from .utils.connection.decompress import DecompressionManager
@@ -205,7 +205,9 @@ class SensorsCoordinator(DataUpdateCoordinator):
             LOGGER.warning("Invalid data type in sensor data: %s", err, exc_info=True)
             return SENSOR_NO_DATA
 
+
 class CameraCoordinator(DataUpdateCoordinator[CameraImageData]):
+    """Coordinator for MQTT Vacuum Camera."""
 
     def __init__(
         self,
@@ -228,8 +230,9 @@ class CameraCoordinator(DataUpdateCoordinator[CameraImageData]):
         self.shared_manager = CameraSharedManager(self.file_name, self.device_info)
         self.shared = self.shared_manager.get_instance()
         self.shared.file_name = self.file_name
-        self.shared.user_language = "en" # Set default language
+        self.shared.user_language = "en"  # Set default language
         self.shared.is_rand = is_rand256
+        self.shared.vacuum_state = "disconnected"
 
         # Initialize thread pools (keep existing stable code)
         self.thread_pool = ThreadPoolManager(self.file_name)
@@ -244,9 +247,7 @@ class CameraCoordinator(DataUpdateCoordinator[CameraImageData]):
         self.processor = CameraProcessor(hass, self.shared)
         # Initialize vacuum state manager (add after connector is created)
         self.state_manager = VacuumStateManager(
-            shared_data=self.shared,
-            connector=self.connector,
-            file_name=self.file_name
+            shared_data=self.shared, connector=self.connector, file_name=self.file_name
         )
 
         # Coordinator init
@@ -275,19 +276,22 @@ class CameraCoordinator(DataUpdateCoordinator[CameraImageData]):
         try:
             # Check if data is available (from working code)
             if await self.connector.is_data_available():
-                should_stream = await self.state_manager.update_vacuum_state()
                 LOGGER.debug("MQTT data available for: %s", self.file_name)
                 payload, data_type = await self.connector.update_data(True)
                 if payload and data_type:
                     # Decompress the data
                     data = payload.payload if hasattr(payload, "payload") else payload
-                    parsed_json = await self.decompression_manager.decompress(data, data_type)
+                    parsed_json = await self.decompression_manager.decompress(
+                        data, data_type
+                    )
 
                     if parsed_json:
                         LOGGER.debug("JSON decompressed for: %s", self.file_name)
 
                         # Process JSON to PIL image
-                        pil_img = await self.processor.run_async_process_valetudo_data(parsed_json)
+                        pil_img = await self.processor.run_async_process_valetudo_data(
+                            parsed_json
+                        )
                         if pil_img:
                             LOGGER.debug("PIL image processed for: %s", self.file_name)
 
@@ -312,9 +316,13 @@ class CameraCoordinator(DataUpdateCoordinator[CameraImageData]):
                                 "success": should_stream,
                             }
                         else:
-                            LOGGER.warning("Failed to process JSON to PIL for: %s", self.file_name)
+                            LOGGER.warning(
+                                "Failed to process JSON to PIL for: %s", self.file_name
+                            )
                     else:
-                        LOGGER.warning("Failed to decompress data for: %s", self.file_name)
+                        LOGGER.warning(
+                            "Failed to decompress data for: %s", self.file_name
+                        )
 
             # Return previous image data
             if self._prev_image:
@@ -377,4 +385,6 @@ class CameraCoordinator(DataUpdateCoordinator[CameraImageData]):
             self._mqtt_subscribed = False
             LOGGER.debug("MQTT unsubscription complete for: %s", self.file_name)
         except Exception as err:
-            LOGGER.error("Failed to unsubscribe from MQTT for %s: %s", self.file_name, err)
+            LOGGER.error(
+                "Failed to unsubscribe from MQTT for %s: %s", self.file_name, err
+            )
