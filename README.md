@@ -49,7 +49,7 @@ Would be really appreciated your kind help and understanding.
 
 #### 2025.5.0 - **Refactoring and New Additions**
 
-- This release will be postponed to 2025.6.0
+- This release will be postponed till below is completed and tested.
 - **Changes**
   - (in progress) Improvements of the code structure.
   - Refactored the code to improve readability and maintainability.
