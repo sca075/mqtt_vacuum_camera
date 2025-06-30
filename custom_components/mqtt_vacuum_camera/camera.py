@@ -41,7 +41,6 @@ from .const import (
 )
 from .snapshots.snapshot import Snapshots
 from .utils.camera.obstacle_handler import ObstacleViewHandler
-from .utils.files_operations import async_load_file
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 

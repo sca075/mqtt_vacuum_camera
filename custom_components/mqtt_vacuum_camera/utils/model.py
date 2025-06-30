@@ -41,7 +41,7 @@ class CameraImageData(TypedDict, total=False):
 
 
 class SensorData(TypedDict, total=False):
-    """Sensor data structure - just placeholders."""
+    """ Sensor data structure - just placeholders. """
 
     # Vacuum state
     vacuum_status: Optional[str]
@@ -63,6 +63,21 @@ class SensorData(TypedDict, total=False):
     # Map data
     segments: Optional[Dict[str, str]]
     destinations: Optional[Dict[str, Any]]
+
+    # Error handling
+    error_message: Optional[str]
+    success: bool
+
+
+class VacuumData(TypedDict, total=False):
+    """Combined vacuum data structure with camera and sensor subkeys."""
+    # Main structure
+    vacuum_topic: str
+    shared_data: Any
+
+    # Substructures
+    camera: CameraImageData
+    sensors: SensorData
 
     # Error handling
     error_message: Optional[str]

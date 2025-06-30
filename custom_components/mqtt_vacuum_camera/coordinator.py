@@ -14,19 +14,18 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from valetudo_map_parser.config.shared import CameraShared, CameraSharedManager
-from valetudo_map_parser.config.types import LOGGER
 
-from .const import DEFAULT_NAME, SENSOR_NO_DATA
+from .const import DEFAULT_NAME, SENSOR_NO_DATA, LOGGER
 from .common import get_camera_device_info
 from .utils.connection.connector import ValetudoConnector
 from .utils.connection.decompress import DecompressionManager
-from .utils.model import CameraImageData
+from .utils.model import CameraImageData, VacuumData
 from .utils.vacuum.vacuum_state import VacuumStateManager
 from .utils.thread_pool import ThreadPoolManager
 from .utils.camera.camera_processing import CameraProcessor
 
 
-class SensorsCoordinator(DataUpdateCoordinator):
+class SensorsCoordinator(DataUpdateCoordinator[VacuumData]):
     """Coordinator for MQTT Vacuum Camera."""
 
     def __init__(
@@ -215,6 +214,8 @@ class CameraCoordinator(DataUpdateCoordinator[CameraImageData]):
         entry: ConfigEntry,
         vacuum_topic: str,
         is_rand256: bool = False,
+        connector: Optional[ValetudoConnector] = None,
+        shared: Optional[CameraShared] = None,
     ) -> None:
         """Initialize the camera coordinator - keep it simple."""
 
@@ -227,18 +228,24 @@ class CameraCoordinator(DataUpdateCoordinator[CameraImageData]):
         self.device_entity: ConfigEntry = entry
         self.device_info: DeviceInfo = get_camera_device_info(hass, self.device_entity)
         # Initialize shared data (from working code pattern)
-        self.shared_manager = CameraSharedManager(self.file_name, self.device_info)
-        self.shared = self.shared_manager.get_instance()
-        self.shared.file_name = self.file_name
-        self.shared.user_language = "en"  # Set default language
-        self.shared.is_rand = is_rand256
-        self.shared.vacuum_state = "disconnected"
+        if shared:
+            self.shared = shared
+        else:
+            self.shared_manager = CameraSharedManager(self.file_name, self.device_info)
+            self.shared = self.shared_manager.get_instance()
+            self.shared.file_name = self.file_name
+            self.shared.user_language = "en"  # Set default language
+            self.shared.is_rand = is_rand256
+            self.shared.vacuum_state = "disconnected"
 
         # Initialize thread pools (keep existing stable code)
         self.thread_pool = ThreadPoolManager(self.file_name)
 
         # Initialize connector (from working code)
-        self.connector = ValetudoConnector(vacuum_topic, hass, self.shared, is_rand256)
+        if connector:
+            self.connector = connector
+        else:
+            self.connector = ValetudoConnector(vacuum_topic, hass, self.shared, is_rand256)
 
         # Initialize decompression (from working code)
         self.decompression_manager = DecompressionManager.get_instance(self.file_name)
@@ -262,6 +269,7 @@ class CameraCoordinator(DataUpdateCoordinator[CameraImageData]):
         # Mark as ready
         self._setup_complete = True
         self._mqtt_subscribed = False
+        self.async_request_refresh()
 
         LOGGER.debug("Camera coordinator initialized for: %s", self.file_name)
 

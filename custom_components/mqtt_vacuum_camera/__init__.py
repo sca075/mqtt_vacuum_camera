@@ -5,10 +5,12 @@ Version: 2025.05.0
 
 from functools import partial
 import os
+from typing import Optional
 
 from homeassistant import config_entries, core
 from homeassistant.components import mqtt
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.const import (
     CONF_UNIQUE_ID,
     EVENT_HOMEASSISTANT_STOP,
@@ -18,8 +20,10 @@ from homeassistant.const import (
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.reload import async_register_admin_service
 from homeassistant.helpers.storage import STORAGE_DIR
+from valetudo_map_parser.config.shared import CameraShared, CameraSharedManager
 
-from .common import get_vacuum_device_info, get_vacuum_mqtt_topic, update_options
+from  .utils.connection.connector import ValetudoConnector
+from .common import get_vacuum_device_info, get_vacuum_mqtt_topic, update_options, get_camera_device_info
 from .const import (
     CAMERA_STORAGE,
     CONF_VACUUM_CONFIG_ENTRY_ID,
@@ -48,6 +52,39 @@ from .utils.vacuum.mqtt_vacuum_services import (
 PLATFORMS = [Platform.CAMERA, Platform.SENSOR]
 
 
+def init_shared_data(
+        mqtt_listen_topic: str, device_info: DeviceInfo,
+) -> tuple[Optional[CameraShared], Optional[str]]:
+    """
+    Initialize the shared data.
+    """
+    shared = None
+    file_name = None
+
+    if mqtt_listen_topic:
+        file_name = mqtt_listen_topic.split("/")[1].lower()
+        shared_manager = CameraSharedManager(file_name, device_info)
+        shared = shared_manager.get_instance()
+        LOGGER.debug("Camera %s Starting up..", file_name)
+
+    return shared, file_name
+
+
+def start_up_mqtt(hass, vacuum_topic: str, is_rand256: bool, shared: CameraShared) -> ValetudoConnector:
+    """
+    Initialize the MQTT Connector.
+    """
+    connector = ValetudoConnector(
+        vacuum_topic, hass, shared, is_rand256
+    )
+    return connector
+
+def int_coordinators(hass, entry, vacuum_topic, is_rand256):
+    device_info: DeviceInfo = get_camera_device_info(hass, entry)
+    shared, file_name = init_shared_data(vacuum_topic, device_info)
+    connector = start_up_mqtt(hass, vacuum_topic, is_rand256, shared)
+    return CameraCoordinator(hass, entry, vacuum_topic, is_rand256, connector, shared)
+
 async def options_update_listener(hass: core.HomeAssistant, config_entry: ConfigEntry):
     """Handle options update."""
     await hass.config_entries.async_reload(config_entry.entry_id)
@@ -74,14 +111,15 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
 
     is_rand256 = is_rand256_vacuum(vacuum_device)
 
-    data_coordinator = CameraCoordinator(hass, entry, mqtt_topic_vacuum, is_rand256)
+    # data_coordinator = CameraCoordinator(hass, entry, mqtt_topic_vacuum, is_rand256)
+    data_coordinators = int_coordinators(hass, entry, mqtt_topic_vacuum, is_rand256)
 
     hass_data.update(
         {
             CONF_VACUUM_CONNECTION_STRING: mqtt_topic_vacuum,
             CONF_VACUUM_IDENTIFIERS: vacuum_device.identifiers,
             CONF_UNIQUE_ID: entry.unique_id,
-            "coordinator": data_coordinator,
+            "coordinator": data_coordinators,
             "is_rand256": is_rand256,
         }
     )
@@ -96,7 +134,7 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
         hass.services.async_register(
             DOMAIN, "obstacle_view", partial(obstacle_view, hass=hass)
         )
-        await async_register_vacuums_services(hass, data_coordinator)
+        await async_register_vacuums_services(hass, data_coordinators)
     # Registers update listener to update config entry when options are updated.
     unsub_options_update_listener = entry.add_update_listener(options_update_listener)
     # Store a reference to the unsubscribe function to clean up if an entry is unloaded.
