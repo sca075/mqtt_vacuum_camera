@@ -13,6 +13,7 @@ class CameraImageData(TypedDict, total=False):
 
     # Core data
     pil_image: Optional[Image.Image]
+    is_rand: bool
     shared_data: Any
     thread_pool: Any
 
@@ -43,6 +44,7 @@ class CameraImageData(TypedDict, total=False):
 class SensorData(TypedDict, total=False):
     """ Sensor data structure - just placeholders. """
 
+    is_rand: bool
     # Vacuum state
     vacuum_status: Optional[str]
     vacuum_battery: Optional[int]
@@ -70,11 +72,7 @@ class SensorData(TypedDict, total=False):
 
 
 class VacuumData(TypedDict, total=False):
-    """Combined vacuum data structure with camera and sensor subkeys."""
-    # Main structure
-    vacuum_topic: str
-    shared_data: Any
-
+    """Combined vacuum data structure with camera and sensor sub-keys."""
     # Substructures
     camera: CameraImageData
     sensors: SensorData

@@ -32,7 +32,7 @@ from .const import (
     DOMAIN,
     LOGGER,
 )
-from .coordinator import CameraCoordinator
+from .coordinator import CameraCoordinator, SensorsCoordinator
 from .utils.thread_pool import ThreadPoolManager
 from .utils.camera.camera_services import (
     obstacle_view,
@@ -83,7 +83,9 @@ def int_coordinators(hass, entry, vacuum_topic, is_rand256):
     device_info: DeviceInfo = get_camera_device_info(hass, entry)
     shared, file_name = init_shared_data(vacuum_topic, device_info)
     connector = start_up_mqtt(hass, vacuum_topic, is_rand256, shared)
-    return CameraCoordinator(hass, entry, vacuum_topic, is_rand256, connector, shared)
+    camera_coordinator = CameraCoordinator(hass, entry, vacuum_topic, is_rand256, connector, shared)
+    sensor_coordinator = SensorsCoordinator(hass, entry, vacuum_topic, is_rand256, connector, shared)
+    return {"camera": camera_coordinator, "sensors": sensor_coordinator}
 
 async def options_update_listener(hass: core.HomeAssistant, config_entry: ConfigEntry):
     """Handle options update."""
@@ -119,7 +121,7 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
             CONF_VACUUM_CONNECTION_STRING: mqtt_topic_vacuum,
             CONF_VACUUM_IDENTIFIERS: vacuum_device.identifiers,
             CONF_UNIQUE_ID: entry.unique_id,
-            "coordinator": data_coordinators,
+            "coordinators": data_coordinators,
             "is_rand256": is_rand256,
         }
     )

@@ -52,14 +52,14 @@ async def async_setup_entry(
 ) -> None:
     """Setup camera from a config entry created in the integrations UI."""
     config = hass.data[DOMAIN][config_entry.entry_id]
-    coordinator = hass.data[DOMAIN][config_entry.entry_id]["coordinator"]
-
+    coordinators = hass.data[DOMAIN][config_entry.entry_id]["coordinators"]
+    camera_coordinator = coordinators["camera"]
     # Update our config to and eventually add or remove option.
     if config_entry.options:
         config.update(config_entry.options)
 
     # Create camera entity
-    camera = [MQTTVacuumCamera(coordinator, config)]
+    camera = [MQTTVacuumCamera(camera_coordinator, config)]
 
     # Add entities
     async_add_entities(camera, update_before_add=False)
@@ -383,6 +383,7 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
             self._processing = False
             return False
         result = self.coordinator.data.get("success", False)
+        LOGGER.info("Is streaming: %s", result)
         if not result:
             self._processing = False
         self._processing = True

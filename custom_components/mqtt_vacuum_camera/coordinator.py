@@ -19,7 +19,7 @@ from .const import DEFAULT_NAME, SENSOR_NO_DATA, LOGGER
 from .common import get_camera_device_info
 from .utils.connection.connector import ValetudoConnector
 from .utils.connection.decompress import DecompressionManager
-from .utils.model import CameraImageData, VacuumData
+from .utils.model import VacuumData, SensorData
 from .utils.vacuum.vacuum_state import VacuumStateManager
 from .utils.thread_pool import ThreadPoolManager
 from .utils.camera.camera_processing import CameraProcessor
@@ -34,17 +34,19 @@ class SensorsCoordinator(DataUpdateCoordinator[VacuumData]):
         entry: ConfigEntry,
         vacuum_topic: str,
         rand256_vacuum: bool = False,
-        polling_interval: timedelta = timedelta(seconds=3),
+        connector: Optional[ValetudoConnector] = None,
+        shared: Optional[CameraShared] = None,
     ):
         """Initialize the coordinator."""
         super().__init__(
             hass,
             LOGGER,
             name=DEFAULT_NAME,
-            update_interval=polling_interval,
+            update_method=self._async_update_data,
         )
         self.hass: HomeAssistant = hass
         self.vacuum_topic: str = vacuum_topic
+        self.data = VacuumData["sensors"]
         self.is_rand256: bool = rand256_vacuum
         self.device_entity: ConfigEntry = entry
         self.device_info: DeviceInfo = get_camera_device_info(hass, self.device_entity)
@@ -56,8 +58,15 @@ class SensorsCoordinator(DataUpdateCoordinator[VacuumData]):
         self.sensor_data = SENSOR_NO_DATA
         self.thread_pool = None
         # Initialize shared data and MQTT connector
-        self.shared, self.file_name = self._init_shared_data(self.vacuum_topic)
-        self.start_up_mqtt()
+        if shared:
+            self.shared = shared
+            self.file_name = shared.file_name
+        else:
+            self.shared, self.file_name = self._init_shared_data(self.vacuum_topic)
+        if connector:
+            self.connector = connector
+        else:
+            self.connector = self.start_up_mqtt()
         self.scheduled_refresh: asyncio.TimerHandle | None = None
 
     def schedule_refresh(self) -> None:
@@ -131,23 +140,7 @@ class SensorsCoordinator(DataUpdateCoordinator[VacuumData]):
         self.in_sync_with_camera = True
         return self.shared, self.file_name
 
-    async def async_update_camera_data(self, process: bool = True):
-        """
-        Fetch data from the MQTT topics.
-        """
-        try:
-            async with async_timeout.timeout(10):
-                # Fetch and process maps data from the MQTT connector
-                return await self.connector.update_data(process)
-        except Exception as err:
-            LOGGER.error(
-                "Error communicating with MQTT or processing data: %s",
-                err,
-                exc_info=True,
-            )
-            raise UpdateFailed(f"Error communicating with MQTT: {err}") from err
-
-    async def async_update_sensor_data(self, sensor_data):
+    async def async_update_sensor_data(self, sensor_data) -> SensorData:
         """Update the sensor data format before sending to the sensors."""
         try:
             if not sensor_data:
@@ -205,7 +198,7 @@ class SensorsCoordinator(DataUpdateCoordinator[VacuumData]):
             return SENSOR_NO_DATA
 
 
-class CameraCoordinator(DataUpdateCoordinator[CameraImageData]):
+class CameraCoordinator(DataUpdateCoordinator[VacuumData]):
     """Coordinator for MQTT Vacuum Camera."""
 
     def __init__(
