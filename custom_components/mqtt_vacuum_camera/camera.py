@@ -38,6 +38,7 @@ from .const import (
     DOMAIN,
     LOGGER,
     CameraModes,
+    NOT_STREAMING_STATES,
 )
 from .snapshots.snapshot import Snapshots
 from .utils.camera.obstacle_handler import ObstacleViewHandler
@@ -223,7 +224,11 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
             LOGGER.debug(
                 "Processing PIL image from coordinator for: %s", self._file_name
             )
-
+            if self.is_streaming:
+                self._shared.image_grab = True
+                self._shared.snapshot_take = False
+                self._shared.frame_number = self.coordinator.processor.get_frame_number()
+            self._processing = True
             try:
                 # Get PIL image from coordinator
                 pil_img = self.coordinator.data["pil_image"]
@@ -379,15 +384,12 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
     @property
     def is_streaming(self) -> bool:
         """Return true if the device is streaming."""
-        if not self.coordinator.data:
-            self._processing = False
-            return False
-        result = self.coordinator.data.get("success", False)
-        LOGGER.info("Is streaming: %s", result)
-        if not result:
-            self._processing = False
-        self._processing = True
-        return self._processing
+        updated_status = self._shared.vacuum_state
+        self._attr_is_streaming = (
+                updated_status not in NOT_STREAMING_STATES
+                or not self._shared.vacuum_bat_charged
+        )
+        return self._attr_is_streaming
 
     @property
     def supported_features(self) -> int:
