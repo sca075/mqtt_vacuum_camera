@@ -7,14 +7,17 @@ from __future__ import annotations
 
 from valetudo_map_parser.config.types import LOGGER
 
-from typing import Any
 from ...const import NOT_STREAMING_STATES
+from ...utils.connection.connector import ValetudoConnector
+from valetudo_map_parser.config.shared import CameraShared
 
 
 class VacuumStateManager:
     """Manages vacuum state and streaming logic."""
 
-    def __init__(self, shared_data: Any, connector: Any, file_name: str):
+    def __init__(
+        self, shared_data: CameraShared, connector: ValetudoConnector, file_name: str
+    ):
         """Initialize the vacuum state manager."""
         self.shared = shared_data
         self.connector = connector

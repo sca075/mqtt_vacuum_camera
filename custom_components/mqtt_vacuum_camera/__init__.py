@@ -22,8 +22,13 @@ from homeassistant.helpers.reload import async_register_admin_service
 from homeassistant.helpers.storage import STORAGE_DIR
 from valetudo_map_parser.config.shared import CameraShared, CameraSharedManager
 
-from  .utils.connection.connector import ValetudoConnector
-from .common import get_vacuum_device_info, get_vacuum_mqtt_topic, update_options, get_camera_device_info
+from .utils.connection.connector import ValetudoConnector
+from .common import (
+    get_vacuum_device_info,
+    get_vacuum_mqtt_topic,
+    update_options,
+    get_camera_device_info,
+)
 from .const import (
     CAMERA_STORAGE,
     CONF_VACUUM_CONFIG_ENTRY_ID,
@@ -53,7 +58,8 @@ PLATFORMS = [Platform.CAMERA, Platform.SENSOR]
 
 
 def init_shared_data(
-        mqtt_listen_topic: str, device_info: DeviceInfo,
+    mqtt_listen_topic: str,
+    device_info: DeviceInfo,
 ) -> tuple[Optional[CameraShared], Optional[str]]:
     """
     Initialize the shared data.
@@ -70,22 +76,28 @@ def init_shared_data(
     return shared, file_name
 
 
-def start_up_mqtt(hass, vacuum_topic: str, is_rand256: bool, shared: CameraShared) -> ValetudoConnector:
+def start_up_mqtt(
+    hass, vacuum_topic: str, is_rand256: bool, shared: CameraShared
+) -> ValetudoConnector:
     """
     Initialize the MQTT Connector.
     """
-    connector = ValetudoConnector(
-        vacuum_topic, hass, shared, is_rand256
-    )
+    connector = ValetudoConnector(vacuum_topic, hass, shared, is_rand256)
     return connector
 
-def int_coordinators(hass, entry, vacuum_topic, is_rand256):
+
+def init_coordinators(hass, entry, vacuum_topic, is_rand256):
     device_info: DeviceInfo = get_camera_device_info(hass, entry)
     shared, file_name = init_shared_data(vacuum_topic, device_info)
     connector = start_up_mqtt(hass, vacuum_topic, is_rand256, shared)
-    camera_coordinator = CameraCoordinator(hass, entry, vacuum_topic, is_rand256, connector, shared)
-    sensor_coordinator = SensorsCoordinator(hass, entry, vacuum_topic, is_rand256, connector, shared)
+    camera_coordinator = CameraCoordinator(
+        hass, entry, vacuum_topic, is_rand256, connector, shared
+    )
+    sensor_coordinator = SensorsCoordinator(
+        hass, entry, vacuum_topic, is_rand256, connector, shared
+    )
     return {"camera": camera_coordinator, "sensors": sensor_coordinator}
+
 
 async def options_update_listener(hass: core.HomeAssistant, config_entry: ConfigEntry):
     """Handle options update."""
@@ -113,8 +125,7 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
 
     is_rand256 = is_rand256_vacuum(vacuum_device)
 
-    # data_coordinator = CameraCoordinator(hass, entry, mqtt_topic_vacuum, is_rand256)
-    data_coordinators = int_coordinators(hass, entry, mqtt_topic_vacuum, is_rand256)
+    data_coordinators = init_coordinators(hass, entry, mqtt_topic_vacuum, is_rand256)
 
     hass_data.update(
         {

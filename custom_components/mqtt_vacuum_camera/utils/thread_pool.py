@@ -13,7 +13,7 @@ import os
 import threading
 from typing import Awaitable, Callable, Dict, TypeVar
 
-from valetudo_map_parser.config.types import LOGGER
+from ..const import LOGGER
 
 T = TypeVar("T")
 R = TypeVar("R")
@@ -26,16 +26,19 @@ class ThreadPoolManager:
     """
 
     _instances: Dict[str, ThreadPoolManager] = {}
+    _instances_lock = threading.Lock()
 
     def __new__(cls, vacuum_id: str = "default"):
-        if vacuum_id not in cls._instances:
-            instance = super(ThreadPoolManager, cls).__new__(cls)
-            instance._pools = {}  # Instance-specific pools dictionary
-            instance.vacuum_id = vacuum_id
-            instance.pools_to_shutdown = []
-            # DON'T set _initialized here - let __init__ handle it
-            cls._instances[vacuum_id] = instance
-        return cls._instances[vacuum_id]
+        with cls._instances_lock:
+            if vacuum_id not in cls._instances:
+                instance = super(ThreadPoolManager, cls).__new__(cls)
+                instance._pools = {}  # Instance-specific pools dictionary
+                instance.vacuum_id = vacuum_id
+                instance._pool_lock = threading.Lock()  # Instance-level lock
+                instance.pools_to_shutdown = []
+                # DON'T set _initialized here - let __init__ handle it
+                cls._instances[vacuum_id] = instance
+            return cls._instances[vacuum_id]
 
     def __init__(self, vacuum_id: str = "default"):
         # Only initialize if this is a new instance
@@ -75,12 +78,12 @@ class ThreadPoolManager:
             LOGGER.warning(
                 "Using default vacuum_id for thread pool. This is not recommended."
             )
-
-        if pool_name not in self._pools:
-            self._pools[pool_name] = concurrent.futures.ThreadPoolExecutor(
-                max_workers=max_workers, thread_name_prefix=pool_name
-            )
-        return self._pools[pool_name]
+        with self._pool_lock:
+            if pool_name not in self._pools:
+                self._pools[pool_name] = concurrent.futures.ThreadPoolExecutor(
+                    max_workers=max_workers, thread_name_prefix=pool_name
+                )
+            return self._pools[pool_name]
 
     async def run_in_executor(
         self, name: str, func: Callable[..., R], *args, max_workers: int = 1
@@ -211,7 +214,7 @@ class ThreadPoolManager:
 
         # Collect all pools from all instances for direct shutdown
         all_pools = []
-        for vacuum_id, instance in instances:
+        for _, instance in instances:
             pools_to_shutdown = list(instance._pools.items())
             all_pools.extend(pools_to_shutdown)
 
@@ -220,18 +223,18 @@ class ThreadPoolManager:
             try:
                 # Initiate shutdown for all pools without waiting
                 for pool_name, pool in all_pools:
-                    LOGGER.debug("Initiating shutdown for pool: %s", pool_name)
+                    LOGGER.debug("Shutdown for pool: %s", pool_name)
                     try:
                         # Use shutdown(wait=False) for immediate return
                         pool.shutdown(wait=False)
                     except Exception as e:
                         LOGGER.warning("Error shutting down pool %s: %s", pool_name, e)
 
-                LOGGER.debug("All thread pool shutdowns initiated")
+                LOGGER.debug("All thread pools are now shutdown...")
             except Exception as e:
                 LOGGER.error("Error during thread pool shutdown: %s", e)
 
         # Clear instances regardless of shutdown success
         cls.get_instance.cache_clear()
         cls._instances.clear()
-        LOGGER.debug("Thread pool instances cleared")
+        LOGGER.info("Thread pools and instances cleared")

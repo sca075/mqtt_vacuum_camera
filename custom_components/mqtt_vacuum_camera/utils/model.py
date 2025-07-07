@@ -42,7 +42,7 @@ class CameraImageData(TypedDict, total=False):
 
 
 class SensorData(TypedDict, total=False):
-    """ Sensor data structure - just placeholders. """
+    """Sensor data structure - just placeholders."""
 
     is_rand: bool
     # Vacuum state
@@ -73,6 +73,7 @@ class SensorData(TypedDict, total=False):
 
 class VacuumData(TypedDict, total=False):
     """Combined vacuum data structure with camera and sensor sub-keys."""
+
     # Substructures
     camera: CameraImageData
     sensors: SensorData

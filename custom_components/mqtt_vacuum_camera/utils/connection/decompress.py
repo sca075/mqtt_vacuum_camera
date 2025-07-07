@@ -19,14 +19,14 @@ def _safe_zlib_decompress(data: bytes) -> str:
     try:
         return isal_zlib.decompress(data).decode()
     except Exception as e:
-        raise ValueError(f"Invalid Hypfer payload: {e}")
+        raise ValueError(f"Invalid Hypfer payload: {e}") from e
 
 
 def _safe_gzip_decompress(data: bytes) -> bytes:
     try:
         return igzip.decompress(data)
     except Exception as e:
-        raise ValueError(f"Invalid Rand256 payload: {e}")
+        raise ValueError(f"Invalid Rand256 payload: {e}") from e
 
 
 class DecompressionManager:

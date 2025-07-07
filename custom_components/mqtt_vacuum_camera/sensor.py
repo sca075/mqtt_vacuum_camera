@@ -290,6 +290,8 @@ async def async_setup_entry(hass: HomeAssistant, config_entry, async_add_entitie
     sensors = []
     for sensor_type, description in SENSOR_TYPES.items():
         sensors.append(
-            VacuumSensor(sensor_coordinator, description, sensor_type, vacuum_identifier)
+            VacuumSensor(
+                sensor_coordinator, description, sensor_type, vacuum_identifier
+            )
         )
     async_add_entities(sensors, update_before_add=False)

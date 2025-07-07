@@ -227,7 +227,9 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
             if self.is_streaming:
                 self._shared.image_grab = True
                 self._shared.snapshot_take = False
-                self._shared.frame_number = self.coordinator.processor.get_frame_number()
+                self._shared.frame_number = (
+                    self.coordinator.processor.get_frame_number()
+                )
             self._processing = True
             try:
                 # Get PIL image from coordinator
@@ -386,8 +388,8 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
         """Return true if the device is streaming."""
         updated_status = self._shared.vacuum_state
         self._attr_is_streaming = (
-                updated_status not in NOT_STREAMING_STATES
-                or not self._shared.vacuum_bat_charged
+            updated_status not in NOT_STREAMING_STATES
+            or not self._shared.vacuum_bat_charged
         )
         return self._attr_is_streaming
 

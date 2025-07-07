@@ -238,7 +238,9 @@ class CameraCoordinator(DataUpdateCoordinator[VacuumData]):
         if connector:
             self.connector = connector
         else:
-            self.connector = ValetudoConnector(vacuum_topic, hass, self.shared, is_rand256)
+            self.connector = ValetudoConnector(
+                vacuum_topic, hass, self.shared, is_rand256
+            )
 
         # Initialize decompression (from working code)
         self.decompression_manager = DecompressionManager.get_instance(self.file_name)

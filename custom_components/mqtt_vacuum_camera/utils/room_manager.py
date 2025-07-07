@@ -173,6 +173,34 @@ class RoomManager:
         return True
 
     @staticmethod
+    def _extract_room_name(room_id: str, room_info: Union[dict, str]) -> str:
+        """
+        Extract room name from room_info, handling both dictionary and string formats.
+
+        Args:
+            room_id: The room ID
+            room_info: Room information (dict or string)
+
+        Returns:
+            The extracted room name
+        """
+        if isinstance(room_info, dict):
+            # Dictionary format: {"name": "Room Name", ...}
+            return room_info.get("name", f"Room {room_id}")
+        elif isinstance(room_info, str):
+            # String format: room_info is the room name directly
+            return room_info
+        else:
+            # Fallback for unexpected formats
+            _LOGGER.warning(
+                "Unexpected room_info format for room %s: %s (type: %s)",
+                room_id,
+                room_info,
+                type(room_info),
+            )
+            return f"Room {room_id}"
+
+    @staticmethod
     async def _modify_translation_data(
         data: dict, room_list: List[Tuple[str, Union[dict, str]]]
     ) -> Optional[dict]:
@@ -260,22 +288,7 @@ class RoomManager:
                 color_key = f"color_room_{j}"
                 if j < len(room_list):
                     room_id, room_info = room_list[j]
-                    # Handle both dictionary and string formats for room_info
-                    if isinstance(room_info, dict):
-                        # Dictionary format: {"name": "Room Name", ...}
-                        room_name = room_info.get("name", f"Room {room_id}")
-                    elif isinstance(room_info, str):
-                        # String format: room_info is the room name directly
-                        room_name = room_info
-                    else:
-                        # Fallback for unexpected formats
-                        _LOGGER.warning(
-                            "Unexpected room_info format for room %s: %s (type: %s)",
-                            room_id,
-                            room_info,
-                            type(room_info),
-                        )
-                        room_name = f"Room {room_id}"
+                    room_name = RoomManager._extract_room_name(room_id, room_info)
                     data_description[color_key] = (
                         f"### **RoomID {room_id} {room_name}**"
                     )
@@ -299,22 +312,7 @@ class RoomManager:
                 alpha_room_key = f"alpha_room_{j}"
                 if j < len(room_list):
                     room_id, room_info = room_list[j]
-                    # Handle both dictionary and string formats for room_info
-                    if isinstance(room_info, dict):
-                        # Dictionary format: {"name": "Room Name", ...}
-                        room_name = room_info.get("name", f"Room {room_id}")
-                    elif isinstance(room_info, str):
-                        # String format: room_info is the room name directly
-                        room_name = room_info
-                    else:
-                        # Fallback for unexpected formats
-                        _LOGGER.warning(
-                            "Unexpected room_info format for room %s: %s (type: %s)",
-                            room_id,
-                            room_info,
-                            type(room_info),
-                        )
-                        room_name = f"Room {room_id}"
+                    room_name = RoomManager._extract_room_name(room_id, room_info)
                     alpha_data[alpha_room_key] = f"RoomID {room_id} {room_name}"
                 else:
                     # Use default description or empty string if no room data
