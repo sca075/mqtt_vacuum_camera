@@ -48,6 +48,11 @@ class Snapshots:
         This function is called from the thread pool.
         Stores both the JSON data and the image.
         """
+        # Validate image data before processing
+        if image_data is None:
+            _LOGGER.warning("%s: Cannot process snapshot - no image data provided", self.file_name)
+            return
+
         try:
             # Store JSON data if provided
             if json_data and not isinstance(json_data, bool):

@@ -219,6 +219,25 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
 
         # Get PIL image from coordinator
         pil_img = self.coordinator.get_map_image()
+
+        # Check if automatic snapshot should be taken
+        if (
+            self._shared.snapshot_take
+            and self._shared.enable_snapshots
+            and self._shared.camera_mode == CameraModes.MAP_VIEW
+        ):
+            # Use current PIL image or last available image for snapshot
+            snapshot_image = pil_img if pil_img else self._last_image
+            if snapshot_image:
+                LOGGER.debug(
+                    "Taking automatic snapshot for %s (snapshot_take flag set)",
+                    self._file_name
+                )
+                self.hass.async_create_task(self.take_snapshot({}, snapshot_image))
+                # Reset the flag after taking snapshot
+                self._shared.snapshot_take = False
+                snapshot_image.close()
+
         # Process new image data
         if pil_img:
             LOGGER.debug(
@@ -255,6 +274,7 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
                 and self._shared.vacuum_state != "docked"
             ):
                 self.image_bk = None
+
             LOGGER.debug(
                 "No PIL image available from coordinator for: %s", self._file_name
             )
