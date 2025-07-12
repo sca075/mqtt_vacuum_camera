@@ -1,6 +1,6 @@
 """
 MQTT Vacuum Camera.
-Version: 2025.05.0
+Version: 2025.07.0
 """
 
 from functools import partial
@@ -93,10 +93,12 @@ def init_coordinators(hass, entry, vacuum_topic, is_rand256):
     camera_coordinator = CameraCoordinator(
         hass, entry, vacuum_topic, is_rand256, connector, shared
     )
-    sensor_coordinator = SensorsCoordinator(
+    if is_rand256:
+        sensor_coordinator = SensorsCoordinator(
         hass, entry, vacuum_topic, is_rand256, connector, shared
-    )
-    return {"camera": camera_coordinator, "sensors": sensor_coordinator}
+        )
+        return {"camera": camera_coordinator, "sensors": sensor_coordinator}
+    return {"camera": camera_coordinator}
 
 
 async def options_update_listener(hass: core.HomeAssistant, config_entry: ConfigEntry):

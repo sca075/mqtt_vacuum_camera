@@ -1,6 +1,6 @@
 """
 MQTT Vacuum Camera Coordinator.
-Version: 2025.3.0b0
+Version: 2025.7.0
 """
 
 import asyncio
@@ -46,7 +46,6 @@ class SensorsCoordinator(DataUpdateCoordinator[VacuumData]):
         )
         self.hass: HomeAssistant = hass
         self.vacuum_topic: str = vacuum_topic
-        self.data = SensorData
         self.is_rand256: bool = rand256_vacuum
         self.device_entity: ConfigEntry = entry
         self.device_info: DeviceInfo = get_camera_device_info(hass, self.device_entity)
@@ -55,7 +54,7 @@ class SensorsCoordinator(DataUpdateCoordinator[VacuumData]):
         self.file_name: str = ""
         self.connector: Optional[ValetudoConnector] = None
         self.in_sync_with_camera: bool = False
-        self.sensor_data = SENSOR_NO_DATA
+        self.sensor_data =  SENSOR_NO_DATA
         self.thread_pool = None
         # Initialize shared data and MQTT connector
         if shared:
@@ -317,7 +316,7 @@ class CameraCoordinator(DataUpdateCoordinator[VacuumData]):
                         LOGGER.debug("Camera update pushed: %s", self.file_name)
                         return
 
-                except Exception as err:
+                except RuntimeError as err:
                     LOGGER.error(
                         "Failed to process camera update for %s: %s",
                         self.file_name,
@@ -330,9 +329,7 @@ class CameraCoordinator(DataUpdateCoordinator[VacuumData]):
             self.async_set_updated_data(
                 VacuumData(
                     camera=CameraImageData(
-                        pil_image=self._prev_image,
                         data_type=self._prev_data_type,
-                        vacuum_topic=self.vacuum_topic,
                         is_rand=self.is_rand256,
                         success=False,
                     )
@@ -350,6 +347,7 @@ class CameraCoordinator(DataUpdateCoordinator[VacuumData]):
             )
 
     async def async_should_stream(self):
+        """Determine if camera should stream based on vacuum state and new data."""
         new_data = await self.connector.is_data_available()
         should_stream = await self.state_manager.update_vacuum_state()
 
@@ -367,7 +365,7 @@ class CameraCoordinator(DataUpdateCoordinator[VacuumData]):
             await self.connector.async_subscribe_to_topics()
             self._mqtt_subscribed = True
             LOGGER.debug("MQTT subscription complete for: %s", self.file_name)
-        except Exception as err:
+        except RuntimeError as err:
             LOGGER.error("Failed to subscribe to MQTT for %s: %s", self.file_name, err)
             raise
 
@@ -381,7 +379,7 @@ class CameraCoordinator(DataUpdateCoordinator[VacuumData]):
             await self.connector.async_unsubscribe_from_topics()
             self._mqtt_subscribed = False
             LOGGER.debug("MQTT unsubscription complete for: %s", self.file_name)
-        except Exception as err:
+        except RuntimeError as err:
             LOGGER.error(
                 "Failed to unsubscribe from MQTT for %s: %s", self.file_name, err
             )
