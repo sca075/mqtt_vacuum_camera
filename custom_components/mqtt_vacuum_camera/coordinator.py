@@ -54,7 +54,7 @@ class SensorsCoordinator(DataUpdateCoordinator[VacuumData]):
         self.file_name: str = ""
         self.connector: Optional[ValetudoConnector] = None
         self.in_sync_with_camera: bool = False
-        self.sensor_data =  SENSOR_NO_DATA
+        self.sensor_data = SENSOR_NO_DATA
         self.thread_pool = None
         # Initialize shared data and MQTT connector
         if shared:
@@ -350,10 +350,7 @@ class CameraCoordinator(DataUpdateCoordinator[VacuumData]):
         """Determine if camera should stream based on vacuum state and new data."""
         new_data = await self.connector.is_data_available()
         should_stream = await self.state_manager.update_vacuum_state()
-
-        if (should_stream and new_data) or not self._prev_image:
-            return True
-        return False
+        return (should_stream and new_data) or not self._prev_image
 
     async def async_subscribe_mqtt(self) -> None:
         """Subscribe to MQTT topics."""

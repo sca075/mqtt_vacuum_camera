@@ -95,7 +95,7 @@ def init_coordinators(hass, entry, vacuum_topic, is_rand256):
     )
     if is_rand256:
         sensor_coordinator = SensorsCoordinator(
-        hass, entry, vacuum_topic, is_rand256, connector, shared
+            hass, entry, vacuum_topic, is_rand256, connector, shared
         )
         return {"camera": camera_coordinator, "sensors": sensor_coordinator}
     return {"camera": camera_coordinator}
