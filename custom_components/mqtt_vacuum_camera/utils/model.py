@@ -1,83 +1,84 @@
-"""
-Data models for MQTT Vacuum Camera integration.
-Simple data structure placeholders.
-Version: 2025.6.0
-"""
-
-from typing import Any, Dict, Optional, TypedDict
+from dataclasses import dataclass, field
+from typing import Optional, Dict, Any
 from PIL import Image
 
 
-class CameraImageData(TypedDict, total=False):
-    """Camera data structure - just placeholders."""
+@dataclass
+class CameraImageData:
+    """Optimized structure for camera data."""
 
-    # Core data
-    pil_image: Optional[Image.Image]
-    is_rand: bool
-    shared_data: Any
-    thread_pool: Any
+    pil_image: Optional[Image.Image] = None
+    is_rand: bool = False
+    shared_data: Any = None  # Should be typed if possible
+    thread_pool: Any = None  # Should be typed if possible
 
-    # Basic info
-    data_type: Optional[str]
-    vacuum_topic: str
+    data_type: Optional[str] = None
+    vacuum_topic: str = ""
 
-    # Map data
-    segments: Optional[Dict[str, str]]
-    destinations: Optional[Dict[str, Any]]
-    parsed_json: Optional[Dict[str, Any]]
+    segments: Optional[Dict[str, str]] = field(default_factory=dict)
+    destinations: Optional[Dict[str, Any]] = field(default_factory=dict)
+    parsed_json: Optional[Dict[str, Any]] = field(default_factory=dict)
 
-    # Vacuum state
-    vacuum_status: Optional[str]
-    vacuum_battery: Optional[int]
-    vacuum_connection: Optional[bool]
-    vacuum_position: Optional[Dict[str, float]]
+    vacuum_status: Optional[str] = None
+    vacuum_battery: Optional[int] = None
+    vacuum_connection: Optional[bool] = None
+    vacuum_position: Optional[Dict[str, float]] = field(default_factory=dict)
 
-    # Image info
-    image_width: Optional[int]
-    image_height: Optional[int]
+    image_width: Optional[int] = None
+    image_height: Optional[int] = None
 
-    # Error handling
-    error_message: Optional[str]
-    success: bool
+    error_message: Optional[str] = None
+    success: bool = True
 
-
-class SensorData(TypedDict, total=False):
-    """Sensor data structure - just placeholders."""
-
-    is_rand: bool
-    # Vacuum state
-    vacuum_status: Optional[str]
-    vacuum_battery: Optional[int]
-    vacuum_connection: Optional[bool]
-    vacuum_position: Optional[Dict[str, float]]
-
-    # Cleaning statistics
-    cleaning_time: Optional[int]
-    cleaning_area: Optional[float]
-    total_cleaning_time: Optional[int]
-
-    # Maintenance
-    main_brush_left: Optional[int]
-    side_brush_left: Optional[int]
-    filter_left: Optional[int]
-    sensor_dirty_left: Optional[int]
-
-    # Map data
-    segments: Optional[Dict[str, str]]
-    destinations: Optional[Dict[str, Any]]
-
-    # Error handling
-    error_message: Optional[str]
-    success: bool
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, CameraImageData):
+            return False
+        return self.parsed_json == other.parsed_json
 
 
-class VacuumData(TypedDict, total=False):
-    """Combined vacuum data structure with camera and sensor sub-keys."""
+@dataclass
+class SensorData:
+    """Optimized structure for sensor data."""
 
-    # Substructures
-    camera: CameraImageData
-    sensors: SensorData
+    is_rand: bool = False
+    vacuum_status: Optional[str] = None
+    vacuum_battery: Optional[int] = None
+    vacuum_connection: Optional[bool] = None
+    vacuum_position: Optional[Dict[str, float]] = field(default_factory=dict)
 
-    # Error handling
-    error_message: Optional[str]
-    success: bool
+    cleaning_time: Optional[int] = None
+    cleaning_area: Optional[float] = None
+    total_cleaning_time: Optional[int] = None
+
+    main_brush_left: Optional[int] = None
+    side_brush_left: Optional[int] = None
+    filter_left: Optional[int] = None
+    sensor_dirty_left: Optional[int] = None
+
+    segments: Optional[Dict[str, str]] = field(default_factory=dict)
+    destinations: Optional[Dict[str, Any]] = field(default_factory=dict)
+
+    error_message: Optional[str] = None
+    success: bool = True
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, SensorData):
+            return False
+        return (
+            self.vacuum_status == other.vacuum_status
+            and self.vacuum_battery == other.vacuum_battery
+            and self.cleaning_area == other.cleaning_area
+        )
+
+
+@dataclass
+class VacuumData:
+    camera: Optional[CameraImageData] = None
+    sensors: Optional[SensorData] = None
+    error_message: Optional[str] = None
+    success: bool = True
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, VacuumData):
+            return False
+        return self.camera == other.camera and self.sensors == other.sensors

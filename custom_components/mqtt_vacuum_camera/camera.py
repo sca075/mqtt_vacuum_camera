@@ -6,10 +6,8 @@ Version: 2025.6.0
 
 from __future__ import annotations
 
-from datetime import timedelta
 import os
 from io import BytesIO
-import time
 from typing import Any, Optional
 from PIL import Image
 
@@ -219,10 +217,12 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
                 self.async_write_ha_state()
                 return
 
+        # Get PIL image from coordinator
+        pil_img = self.coordinator.get_map_image()
         # Process new image data
-        if self.coordinator.data and self.coordinator.data.get("pil_image"):
+        if pil_img:
             LOGGER.debug(
-                "Processing PIL image from coordinator for: %s", self._file_name
+                "Converting PIL image from coordinator for: %s", self._file_name
             )
             if self.is_streaming:
                 self._shared.image_grab = True
@@ -232,8 +232,6 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
                 )
             self._processing = True
             try:
-                # Get PIL image from coordinator
-                pil_img = self.coordinator.data["pil_image"]
                 # Convert PIL to bytes for camera display
                 self.hass.async_create_task(self._async_convert_and_update(pil_img))
 
@@ -269,12 +267,8 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
                 self.Image = await self.async_pil_to_bytes(pil_img)
                 self._processing = False
 
-            # Store last image
-            self._last_image = pil_img.copy()
-            self._vac_json_available = "Success"
-
             LOGGER.debug("Image conversion complete for: %s", self._file_name)
-
+            self._vac_json_available = "Success"
         except Exception as err:
             LOGGER.error(
                 "Error converting PIL to bytes for %s: %s", self._file_name, err
@@ -288,6 +282,7 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
         self, pil_img, image_id: str = None
     ) -> Optional[bytes]:
         """Convert PIL image to bytes"""
+        pil_img_text = None
         if pil_img:
             self._last_image = pil_img.copy()
             LOGGER.debug(
@@ -295,8 +290,8 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
                 self._file_name,
                 image_id if image_id else self._shared.vac_json_id,
             )
-            if self._shared.show_vacuum_state:
-                pil_img = await self.coordinator.processor.async_draw_image_text(
+            if self._shared.show_vacuum_state and pil_img:
+                pil_img_text = await self.coordinator.processor.async_draw_image_text(
                     pil_img,
                     self._shared.user_colors[8],
                     self._shared.vacuum_status_font,
@@ -305,7 +300,7 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
         else:
             if self._last_image is not None:
                 LOGGER.debug("%s: Output Last Image.", self._file_name)
-                pil_img = self._last_image
+                pil_img = self._last_image.copy()
             else:
                 LOGGER.debug("%s: Output Gray Image.", self._file_name)
                 pil_img = Image.new("RGB", (800, 600), "gray")
@@ -313,7 +308,10 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
         self._image_h = pil_img.height
         buffered = BytesIO()
         try:
-            pil_img.save(buffered, format="PNG")
+            if pil_img_text:
+                pil_img_text.save(buffered, format="PNG")
+            else:
+                pil_img.save(buffered, format="PNG")
             return buffered.getvalue()
         except Exception as err:
             LOGGER.error(

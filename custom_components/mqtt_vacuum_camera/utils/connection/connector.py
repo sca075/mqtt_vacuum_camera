@@ -9,6 +9,7 @@ from typing import Any, Dict, List
 
 from homeassistant.components import mqtt
 from homeassistant.core import EventOrigin, HomeAssistant, callback
+from homeassistant.helpers.dispatcher import async_dispatcher_send
 from valetudo_map_parser.config.types import RoomStore
 
 from custom_components.mqtt_vacuum_camera.common import (
@@ -16,6 +17,7 @@ from custom_components.mqtt_vacuum_camera.common import (
     redact_ip_filter,
 )
 from custom_components.mqtt_vacuum_camera.const import (
+    DOMAIN,
     DECODED_TOPICS,
     LOGGER,
     NON_DECODED_TOPICS,
@@ -211,6 +213,10 @@ class ValetudoConnector:
 
         self.mqtt_data.img_payload = [msg, "Hypfer"]
         self.connector_data.data_in = True
+        async_dispatcher_send(
+            self.connector_data.hass,
+            f"{DOMAIN}_{self.connector_data.file_name}_camera_update",
+        )
         self.connector_data.ignore_data = False
 
     async def _hypfer_handle_status_payload(self, state) -> None:
@@ -269,6 +275,10 @@ class ValetudoConnector:
                 {"command": "get_destinations"},
             )
             self.config.do_it_once = False
+        async_dispatcher_send(
+            self.connector_data.hass,
+            f"{DOMAIN}_{self.connector_data.file_name}_camera_update",
+        )
 
     async def rand256_handle_statuses(self, msg) -> None:
         """Handle Rand256 statuses."""

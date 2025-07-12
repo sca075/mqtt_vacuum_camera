@@ -46,13 +46,13 @@ class VacuumStateManager:
                 self.shared.vacuum_state = "disconnected"
 
             # Return streaming decision
-            return self._should_stream()
+            return self.should_stream()
 
         except Exception as err:
             LOGGER.error("Error updating vacuum state for %s: %s", self.file_name, err)
             return False
 
-    def _should_stream(self) -> bool:
+    def should_stream(self) -> bool:
         """Determine if camera should stream based on vacuum state."""
         if not self.shared.vacuum_connection:
             return False
