@@ -1,25 +1,34 @@
 """
 MQTT Vacuum Camera.
-Version: 2025.05.0
+Version: 2025.07.0
 """
 
 from functools import partial
 import os
+from typing import Optional
 
 from homeassistant import config_entries, core
 from homeassistant.components import mqtt
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.const import (
     CONF_UNIQUE_ID,
-    EVENT_HOMEASSISTANT_FINAL_WRITE,
+    EVENT_HOMEASSISTANT_STOP,
     SERVICE_RELOAD,
     Platform,
 )
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.reload import async_register_admin_service
 from homeassistant.helpers.storage import STORAGE_DIR
+from valetudo_map_parser.config.shared import CameraShared, CameraSharedManager
 
-from .common import get_vacuum_device_info, get_vacuum_mqtt_topic, update_options
+from .utils.connection.connector import ValetudoConnector
+from .common import (
+    get_vacuum_device_info,
+    get_vacuum_mqtt_topic,
+    update_options,
+    get_camera_device_info,
+)
 from .const import (
     CAMERA_STORAGE,
     CONF_VACUUM_CONFIG_ENTRY_ID,
@@ -28,7 +37,8 @@ from .const import (
     DOMAIN,
     LOGGER,
 )
-from .coordinator import MQTTVacuumCoordinator
+from .coordinator import CameraCoordinator, SensorsCoordinator
+from .utils.thread_pool import ThreadPoolManager
 from .utils.camera.camera_services import (
     obstacle_view,
     reload_camera_config,
@@ -38,7 +48,6 @@ from .utils.files_operations import (
     async_get_translations_vacuum_id,
     async_rename_room_description,
 )
-from .utils.thread_pool import ThreadPoolManager
 from .utils.vacuum.mqtt_vacuum_services import (
     async_register_vacuums_services,
     async_remove_vacuums_services,
@@ -46,6 +55,50 @@ from .utils.vacuum.mqtt_vacuum_services import (
 )
 
 PLATFORMS = [Platform.CAMERA, Platform.SENSOR]
+
+
+def init_shared_data(
+    mqtt_listen_topic: str,
+    device_info: DeviceInfo,
+) -> tuple[Optional[CameraShared], Optional[str]]:
+    """
+    Initialize the shared data.
+    """
+    shared = None
+    file_name = None
+
+    if mqtt_listen_topic:
+        file_name = mqtt_listen_topic.split("/")[1].lower()
+        shared_manager = CameraSharedManager(file_name, device_info)
+        shared = shared_manager.get_instance()
+        LOGGER.debug("Camera %s Starting up..", file_name)
+
+    return shared, file_name
+
+
+def start_up_mqtt(
+    hass, vacuum_topic: str, is_rand256: bool, shared: CameraShared
+) -> ValetudoConnector:
+    """
+    Initialize the MQTT Connector.
+    """
+    connector = ValetudoConnector(vacuum_topic, hass, shared, is_rand256)
+    return connector
+
+
+def init_coordinators(hass, entry, vacuum_topic, is_rand256):
+    device_info: DeviceInfo = get_camera_device_info(hass, entry)
+    shared, file_name = init_shared_data(vacuum_topic, device_info)
+    connector = start_up_mqtt(hass, vacuum_topic, is_rand256, shared)
+    camera_coordinator = CameraCoordinator(
+        hass, entry, vacuum_topic, is_rand256, connector, shared
+    )
+    if is_rand256:
+        sensor_coordinator = SensorsCoordinator(
+            hass, entry, vacuum_topic, is_rand256, connector, shared
+        )
+        return {"camera": camera_coordinator, "sensors": sensor_coordinator}
+    return {"camera": camera_coordinator}
 
 
 async def options_update_listener(hass: core.HomeAssistant, config_entry: ConfigEntry):
@@ -58,10 +111,6 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
 
     hass.data.setdefault(DOMAIN, {})
     hass_data = dict(entry.data)
-
-    # Language cache initialization moved to room_manager.py
-    # It now only initializes when needed for room renaming operations
-    # This improves performance by avoiding unnecessary initialization
 
     vacuum_entity_id, vacuum_device = get_vacuum_device_info(
         hass_data[CONF_VACUUM_CONFIG_ENTRY_ID], hass
@@ -78,14 +127,14 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
 
     is_rand256 = is_rand256_vacuum(vacuum_device)
 
-    data_coordinator = MQTTVacuumCoordinator(hass, entry, mqtt_topic_vacuum, is_rand256)
+    data_coordinators = init_coordinators(hass, entry, mqtt_topic_vacuum, is_rand256)
 
     hass_data.update(
         {
             CONF_VACUUM_CONNECTION_STRING: mqtt_topic_vacuum,
             CONF_VACUUM_IDENTIFIERS: vacuum_device.identifiers,
             CONF_UNIQUE_ID: entry.unique_id,
-            "coordinator": data_coordinator,
+            "coordinators": data_coordinators,
             "is_rand256": is_rand256,
         }
     )
@@ -100,7 +149,7 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
         hass.services.async_register(
             DOMAIN, "obstacle_view", partial(obstacle_view, hass=hass)
         )
-        await async_register_vacuums_services(hass, data_coordinator)
+        await async_register_vacuums_services(hass, data_coordinators)
     # Registers update listener to update config entry when options are updated.
     unsub_options_update_listener = entry.add_update_listener(options_update_listener)
     # Store a reference to the unsubscribe function to clean up if an entry is unloaded.
@@ -131,13 +180,6 @@ async def async_unload_entry(
         # Remove config entry from domain.
         entry_data = hass.data[DOMAIN].pop(entry.entry_id)
         entry_data["unsub_options_update_listener"]()
-
-        # Shutdown thread pool for this entry
-        thread_pool = ThreadPoolManager.get_instance()
-        await thread_pool.shutdown(f"{entry.entry_id}_camera")
-        await thread_pool.shutdown(f"{entry.entry_id}_camera_text")
-        LOGGER.debug("Thread pools for %s shut down", entry.entry_id)
-
         # Remove services
         if not hass.data[DOMAIN]:
             hass.services.async_remove(DOMAIN, "reset_trims")
@@ -153,7 +195,9 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
 
     async def handle_homeassistant_stop(event):
         """Handle Home Assistant stop event."""
-        LOGGER.info("Home Assistant is stopping. Writing down the rooms data.")
+        LOGGER.info("Home Assistant is stopping.")
+
+        # First: Save room data
         storage = hass.config.path(STORAGE_DIR, CAMERA_STORAGE)
         if not os.path.exists(storage):
             LOGGER.debug("Storage path: %s do not exists. Aborting!", storage)
@@ -163,21 +207,15 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
             LOGGER.debug("No vacuum room data found. Aborting!")
             return False
         LOGGER.debug("Writing down the rooms data for %s.", vacuum_entity_id)
-        # This will initialize the language cache only when needed
-        # The optimization is now handled in room_manager.py
         await async_rename_room_description(hass, vacuum_entity_id)
 
-        # Shutdown all thread pools
-        thread_pool = ThreadPoolManager.get_instance()
-        await thread_pool.shutdown()
-        LOGGER.debug("All thread pools shut down")
+        # Then: Remove thread pools after room data is safely saved
+        await ThreadPoolManager.shutdown_all()
 
         await hass.async_block_till_done()
         return True
 
-    hass.bus.async_listen_once(
-        EVENT_HOMEASSISTANT_FINAL_WRITE, handle_homeassistant_stop
-    )
+    hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, handle_homeassistant_stop)
 
     # Make sure MQTT integration is enabled and the client is available
     if not await mqtt.async_wait_for_mqtt_client(hass):
