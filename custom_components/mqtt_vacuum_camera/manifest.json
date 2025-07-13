@@ -10,6 +10,6 @@
     "requirements": [
         "valetudo_map_parser==0.1.9a8"
     ],
-    "loggers": ["custom_components.mqtt_vacuum_camera"],
+    "loggers": ["mqtt_vacuum_camera"],
     "version": "2025.7.0"
 }
