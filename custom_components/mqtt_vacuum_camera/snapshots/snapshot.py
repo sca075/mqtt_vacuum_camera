@@ -50,7 +50,9 @@ class Snapshots:
         """
         # Validate image data before processing
         if image_data is None:
-            _LOGGER.warning("%s: Cannot process snapshot - no image data provided", self.file_name)
+            _LOGGER.warning(
+                "%s: Cannot process snapshot - no image data provided", self.file_name
+            )
             return
 
         try:

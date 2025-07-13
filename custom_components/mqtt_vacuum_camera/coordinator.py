@@ -5,12 +5,12 @@ Version: 2025.7.0
 
 import asyncio
 from typing import Optional
+from PIL import Image
 
 import async_timeout
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
-from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from valetudo_map_parser.config.shared import CameraShared, CameraSharedManager
@@ -67,14 +67,6 @@ class SensorsCoordinator(DataUpdateCoordinator[VacuumData]):
         else:
             self.connector = self.start_up_mqtt()
         self.scheduled_refresh: asyncio.TimerHandle | None = None
-
-    def schedule_refresh(self) -> None:
-        """Schedule coordinator refresh after 1 second."""
-        if self.scheduled_refresh:
-            self.scheduled_refresh.cancel()
-        self.scheduled_refresh = async_call_later(
-            self.hass, 1, lambda: asyncio.create_task(self.async_refresh())
-        )
 
     async def _async_update_data(self):
         """
@@ -139,7 +131,7 @@ class SensorsCoordinator(DataUpdateCoordinator[VacuumData]):
         self.in_sync_with_camera = True
         return self.shared, self.file_name
 
-    async def async_update_sensor_data(self, sensor_data) -> SensorData:
+    async def async_update_sensor_data(self, sensor_data) -> VacuumData.sensors:
         """Update the sensor data format before sending to the sensors."""
         try:
             if not sensor_data:
@@ -182,7 +174,7 @@ class SensorsCoordinator(DataUpdateCoordinator[VacuumData]):
                 "last_loaded_map": last_loaded_map.get("name", "Default"),
                 "robot_in_room": vacuum_room.get("in_room"),
             }
-            return VacuumData(sensors=formatted_data)
+            return SensorData(**formatted_data).to_dict()
 
         except AttributeError as err:
             LOGGER.warning("Missing required attribute: %s", err, exc_info=True)
@@ -223,6 +215,10 @@ class CameraCoordinator(DataUpdateCoordinator[VacuumData]):
         # Initialize shared data (from working code pattern)
         if shared:
             self.shared = shared
+            self.shared.file_name = self.file_name
+            self.shared.user_language = "en"  # Set default language
+            self.shared.is_rand = is_rand256
+            self.shared.vacuum_state = "disconnected"
         else:
             self.shared_manager = CameraSharedManager(self.file_name, self.device_info)
             self.shared = self.shared_manager.get_instance()
@@ -246,7 +242,6 @@ class CameraCoordinator(DataUpdateCoordinator[VacuumData]):
             self.connector = ValetudoConnector(
                 vacuum_topic, hass, self.shared, is_rand256
             )
-
         # Initialize decompression (from working code)
         self.decompression_manager = DecompressionManager.get_instance(self.file_name)
 
@@ -281,10 +276,14 @@ class CameraCoordinator(DataUpdateCoordinator[VacuumData]):
 
     def get_map_image(self):
         """Get the current map image."""
+        if not self.current_image:
+            return Image.new("RGB", (800, 600), "gray")
         return self.current_image
 
     async def _handle_mqtt_camera_event(self) -> None:
         """Handle camera update signal from MQTT connector."""
+        if self.is_rand256 and not self.shared.destinations:
+            self.shared.destinations = await self.connector.get_destinations()
         LOGGER.debug("Received dispatcher signal for: %s", self.file_name)
         if await self.async_should_stream():
             payload, data_type = await self.connector.update_data(True)
