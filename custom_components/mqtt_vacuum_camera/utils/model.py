@@ -43,7 +43,7 @@ class SensorData:
     # Maintenance
     mainBrush: int = 0
     sideBrush: int = 0
-    filter: int = 0
+    filter_life: int = 0
     sensor: int = 0
 
     # Current cleaning session

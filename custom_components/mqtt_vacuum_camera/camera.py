@@ -232,7 +232,9 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
                     "Taking automatic snapshot for %s (snapshot_take flag set)",
                     self._file_name,
                 )
-                self.hass.async_create_task(self.take_snapshot({}, snapshot_image))
+                # Use context manager to ensure snapshot_image is closed
+                with snapshot_image:
+                    self.hass.async_create_task(self.take_snapshot({}, snapshot_image))
                 # Reset the flag after taking snapshot
                 self._shared.snapshot_take = False
 
@@ -276,7 +278,7 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
             LOGGER.debug(
                 "No PIL image available from coordinator for: %s", self._file_name
             )
-        return self.camera_image(pil_img.width, pil_img.height)
+        return self.camera_image()
 
     async def _async_convert_and_update(self, pil_img):
         """Convert PIL to bytes and update state."""

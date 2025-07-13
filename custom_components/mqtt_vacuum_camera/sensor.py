@@ -211,7 +211,6 @@ class VacuumSensor(CoordinatorEntity[SensorsCoordinator], SensorEntity):
     async def _extract_attributes(self):
         """Return state attributes with valid values."""
         data = self.coordinator.sensor_data
-        LOGGER.debug("AttributesData: %s", data["data"])
         if self.entity_description.parent_key:
             data = getattr(data, self.entity_description.key)
             if data is None:

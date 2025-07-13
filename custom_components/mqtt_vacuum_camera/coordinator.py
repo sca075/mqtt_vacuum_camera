@@ -4,7 +4,7 @@ Version: 2025.7.0
 """
 
 import asyncio
-from typing import Optional
+from typing import Optional, Dict, Any
 from PIL import Image
 
 import async_timeout
@@ -14,6 +14,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from valetudo_map_parser.config.shared import CameraShared, CameraSharedManager
+from valetudo_map_parser.config.types import DEFAULT_IMAGE_SIZE
 
 from .const import DOMAIN, DEFAULT_NAME, SENSOR_NO_DATA, LOGGER
 from .common import get_camera_device_info
@@ -131,7 +132,7 @@ class SensorsCoordinator(DataUpdateCoordinator[VacuumData]):
         self.in_sync_with_camera = True
         return self.shared, self.file_name
 
-    async def async_update_sensor_data(self, sensor_data) -> VacuumData.sensors:
+    async def async_update_sensor_data(self, sensor_data) -> Dict[str, Any]:
         """Update the sensor data format before sending to the sensors."""
         try:
             if not sensor_data:
@@ -156,7 +157,7 @@ class SensorsCoordinator(DataUpdateCoordinator[VacuumData]):
             formatted_data = {
                 "mainBrush": sensor_data.get("mainBrush", 0),
                 "sideBrush": sensor_data.get("sideBrush", 0),
-                "filter": sensor_data.get("filter", 0),
+                "filter_life": sensor_data.get("filter", 0),
                 "sensor": sensor_data.get("sensor", 0),
                 "currentCleanTime": sensor_data.get("currentCleanTime", 0),
                 "currentCleanArea": sensor_data.get("currentCleanArea", 0),
@@ -276,8 +277,12 @@ class CameraCoordinator(DataUpdateCoordinator[VacuumData]):
 
     def get_map_image(self):
         """Get the current map image."""
+        # If no image, return a gray image
         if not self.current_image:
-            return Image.new("RGB", (800, 600), "gray")
+            return Image.new("RGB",
+                             (DEFAULT_IMAGE_SIZE.get("x"),
+                              DEFAULT_IMAGE_SIZE.get("y")),
+                             "gray")
         return self.current_image
 
     async def _handle_mqtt_camera_event(self) -> None:
