@@ -232,9 +232,7 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
                     "Taking automatic snapshot for %s (snapshot_take flag set)",
                     self._file_name,
                 )
-                # Use context manager to ensure snapshot_image is closed
-                with snapshot_image:
-                    self.hass.async_create_task(self.take_snapshot({}, snapshot_image))
+                self.hass.async_create_task(self.take_snapshot({}, snapshot_image))
                 # Reset the flag after taking snapshot
                 self._shared.snapshot_take = False
 
