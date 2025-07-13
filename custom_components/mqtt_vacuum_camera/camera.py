@@ -1,7 +1,7 @@
 """
 MQTT Vacuum Camera Entity - Simple Implementation
 Camera just handles PIL to bytes conversion, coordinator does all processing.
-Version: 2025.6.0
+Version: 2025.7.0
 """
 
 from __future__ import annotations
@@ -208,15 +208,14 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
         LOGGER.debug("Simple camera entity removed from HA for: %s", self._file_name)
 
     @callback
-    def _handle_coordinator_update(self) -> None:
+    def _handle_coordinator_update(self) -> bytes:
         """Handle updated data from the coordinator."""
 
         if self._shared.camera_mode == CameraModes.OBSTACLE_VIEW:
             if self._obstacle_image is not None:
                 self.Image = self._obstacle_image
                 self.async_write_ha_state()
-                return
-
+            return self.Image
         # Get PIL image from coordinator
         pil_img = self.coordinator.get_map_image()
 
@@ -231,12 +230,13 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
             if snapshot_image:
                 LOGGER.debug(
                     "Taking automatic snapshot for %s (snapshot_take flag set)",
-                    self._file_name
+                    self._file_name,
                 )
-                self.hass.async_create_task(self.take_snapshot({}, snapshot_image))
+                # Use context manager to ensure snapshot_image is closed
+                with snapshot_image:
+                    self.hass.async_create_task(self.take_snapshot({}, snapshot_image))
                 # Reset the flag after taking snapshot
                 self._shared.snapshot_take = False
-                snapshot_image.close()
 
         # Process new image data
         if pil_img:
@@ -278,6 +278,7 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
             LOGGER.debug(
                 "No PIL image available from coordinator for: %s", self._file_name
             )
+        return self.camera_image()
 
     async def _async_convert_and_update(self, pil_img):
         """Convert PIL to bytes and update state."""

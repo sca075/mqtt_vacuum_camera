@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from typing import Optional, Dict, Any
 from PIL import Image
 
@@ -38,37 +38,47 @@ class CameraImageData:
 
 @dataclass
 class SensorData:
-    """Optimized structure for sensor data."""
+    """Structured and complete sensor data model."""
 
-    is_rand: bool = False
-    vacuum_status: Optional[str] = None
-    vacuum_battery: Optional[int] = None
-    vacuum_connection: Optional[bool] = None
-    vacuum_position: Optional[Dict[str, float]] = field(default_factory=dict)
+    # Maintenance
+    mainBrush: int = 0
+    sideBrush: int = 0
+    filter_life: int = 0
+    sensor: int = 0
 
-    cleaning_time: Optional[int] = None
-    cleaning_area: Optional[float] = None
-    total_cleaning_time: Optional[int] = None
+    # Current cleaning session
+    currentCleanTime: int = 0
+    currentCleanArea: float = 0.0
 
-    main_brush_left: Optional[int] = None
-    side_brush_left: Optional[int] = None
-    filter_left: Optional[int] = None
-    sensor_dirty_left: Optional[int] = None
+    # Cumulative cleaning stats
+    cleanTime: int = 0
+    cleanArea: float = 0.0
+    cleanCount: int = 0
 
-    segments: Optional[Dict[str, str]] = field(default_factory=dict)
-    destinations: Optional[Dict[str, Any]] = field(default_factory=dict)
+    # Vacuum status
+    battery: int = 0
+    state: str = "unknown"
 
-    error_message: Optional[str] = None
+    # Last run stats
+    last_run_start: int = 0
+    last_run_end: int = 0
+    last_run_duration: int = 0
+    last_run_area: float = 0.0
+
+    # Bin status
+    last_bin_out: int = 0
+    last_bin_full: int = 0
+
+    # Map info
+    last_loaded_map: str = "Default"
+    robot_in_room: str = "Unsupported"
+
+    # Metadata
     success: bool = True
+    error_message: Optional[str] = None
 
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, SensorData):
-            return False
-        return (
-            self.vacuum_status == other.vacuum_status
-            and self.vacuum_battery == other.vacuum_battery
-            and self.cleaning_area == other.cleaning_area
-        )
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
 
 
 @dataclass

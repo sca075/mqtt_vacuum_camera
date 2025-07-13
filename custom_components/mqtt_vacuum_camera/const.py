@@ -508,7 +508,7 @@ ATTR_POINTS = "points"
 ATTR_OBSTACLES = "obstacles"
 ATTR_CAMERA_MODE = "camera_mode"
 
-DOWNLOAD_TIMEOUT = 6
+DOWNLOAD_TIMEOUT = 6  # seconds for downloading the obstacle image.
 
 
 class CameraModes(str, Enum):

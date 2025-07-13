@@ -16,6 +16,7 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.const import PERCENTAGE, UnitOfArea, UnitOfTime
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity import EntityCategory
 
@@ -176,7 +177,7 @@ SENSOR_TYPES = {
 }
 
 
-class VacuumSensor(SensorsCoordinator, SensorEntity):
+class VacuumSensor(CoordinatorEntity[SensorsCoordinator], SensorEntity):
     """Representation of a vacuum sensor."""
 
     entity_description: VacuumSensorDescription
@@ -221,7 +222,7 @@ class VacuumSensor(SensorsCoordinator, SensorEntity):
         }
 
     @callback
-    async def _handle_coordinator_update(self):
+    def _handle_coordinator_update(self):
         """Fetch the latest state from the coordinator and update the sensor."""
         data = self.coordinator.sensor_data
         if data is None:
