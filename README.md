@@ -10,6 +10,8 @@
 
 ## Current Release: [![GitHub Latest Release][releases_shield]][latest_release] [![GitHub All Releases][downloads_total_shield]][releases]
 
+# 2025.7.0 recal: If you did update the camera to this version please revert immediately to the previus version you were running. Really sorry for the incovininece.
+
 ![Screenshot 2023-12-27 at 13 37 57](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/4f1f76ee-b507-4fde-b1bd-32e6980873cb)
 
 
