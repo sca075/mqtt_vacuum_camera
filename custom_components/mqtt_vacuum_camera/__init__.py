@@ -1,6 +1,6 @@
 """
 MQTT Vacuum Camera.
-Version: 2025.07.0
+Version: 2025.07.1
 """
 
 from functools import partial
@@ -149,7 +149,7 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
         hass.services.async_register(
             DOMAIN, "obstacle_view", partial(obstacle_view, hass=hass)
         )
-        await async_register_vacuums_services(hass, data_coordinators)
+        await async_register_vacuums_services(hass, data_coordinators["camera"])
     # Registers update listener to update config entry when options are updated.
     unsub_options_update_listener = entry.add_update_listener(options_update_listener)
     # Store a reference to the unsubscribe function to clean up if an entry is unloaded.

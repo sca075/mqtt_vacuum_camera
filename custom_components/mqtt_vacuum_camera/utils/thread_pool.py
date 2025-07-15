@@ -11,7 +11,7 @@ import concurrent.futures
 from functools import lru_cache
 import os
 import threading
-from typing import Awaitable, Callable, Dict, TypeVar
+from typing import Awaitable, Callable, Dict, TypeVar, List
 
 from ..const import LOGGER
 
@@ -238,3 +238,24 @@ class ThreadPoolManager:
         cls.get_instance.cache_clear()
         cls._instances.clear()
         LOGGER.info("Thread pools and instances cleared")
+
+
+class TaskQueue:
+    def __init__(self, max_batch=5, batch_timeout=0.1):
+        self._queue: List[Awaitable] = []
+        self._max_batch, self._timeout = max_batch, batch_timeout
+        self._timer = None
+
+    def add_task(self, coro: Awaitable):
+        self._queue.append(coro)
+        if len(self._queue) >= self._max_batch:
+            asyncio.create_task(self._process_batch())
+        elif len(self._queue) == 1:  # First task starts timer
+            self._timer = asyncio.create_task(asyncio.sleep(self._timeout))
+            self._timer.add_done_callback(lambda _: asyncio.create_task(self._process_batch()))
+
+    async def _process_batch(self):
+        if self._queue:
+            batch, self._queue = self._queue[:self._max_batch], self._queue[self._max_batch:]
+            if self._timer: self._timer.cancel()
+            await asyncio.gather(*batch, return_exceptions=True)

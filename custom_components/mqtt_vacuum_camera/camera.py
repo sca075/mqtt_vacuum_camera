@@ -1,7 +1,7 @@
 """
-MQTT Vacuum Camera Entity - Simple Implementation
+MQTT Vacuum Camera Entity
 Camera just handles PIL to bytes conversion, coordinator does all processing.
-Version: 2025.7.0
+Version: 2025.7.1
 """
 
 from __future__ import annotations
@@ -39,6 +39,7 @@ from .const import (
     NOT_STREAMING_STATES,
 )
 from .snapshots.snapshot import Snapshots
+from .utils.thread_pool import TaskQueue
 from .utils.camera.obstacle_handler import ObstacleViewHandler
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
@@ -66,7 +67,7 @@ async def async_setup_entry(
 
 class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
     """
-    Simple MQTT Vacuum Camera Entity.
+    MQTT Vacuum Camera Entity.
 
     Coordinator handles all processing (MQTT → JSON → PIL).
     Camera just handles PIL → bytes conversion and display.
@@ -86,15 +87,15 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
         self.hass = coordinator.hass
         self.coordinator = coordinator
         self._device_info = device_info
-
+        self.task_async = TaskQueue()
         # Basic attributes
         self._attr_model = "MQTT Vacuums"
         self._attr_brand = "MQTT Vacuum Camera"
-        self._attr_name = "Camera"
+        self._attr_name = f"Camera {coordinator.file_name}"
         self._attr_is_on = True
         self._attr_motion_detection_enabled = False
         self._attr_frame_interval = 1.0
-        self._attr_should_poll = True
+        # self._attr_should_poll = True
 
         # Core data from coordinator
         self._file_name = coordinator.file_name
@@ -232,7 +233,7 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
                     "Taking automatic snapshot for %s (snapshot_take flag set)",
                     self._file_name,
                 )
-                self.hass.async_create_task(self.take_snapshot({}, snapshot_image))
+                self.task_async.add_task(self.take_snapshot({}, snapshot_image))
                 # Reset the flag after taking snapshot
                 self._shared.snapshot_take = False
 
@@ -250,7 +251,7 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
             self._processing = True
             try:
                 # Convert PIL to bytes for camera display
-                self.hass.async_create_task(self._async_convert_and_update(pil_img))
+                self.task_async.add_task(self._async_convert_and_update(pil_img))
 
             except Exception as err:
                 LOGGER.error(
@@ -354,26 +355,26 @@ class MQTTVacuumCamera(CoordinatorEntity[CameraCoordinator], Camera):
             LOGGER.error("Error converting image to bytes: %s", str(e), exc_info=True)
             return None
 
-    @property
-    def should_poll(self) -> bool:
-        """ON/OFF Camera Polling Based on Camera Mode."""
-        poling_states = {
-            CameraModes.OBSTACLE_DOWNLOAD: False,
-            CameraModes.OBSTACLE_SEARCH: False,
-            CameraModes.MAP_VIEW: True,
-            CameraModes.OBSTACLE_VIEW: True,
-            CameraModes.CAMERA_STANDBY: False,
-        }
-
-        if isinstance(self._shared.camera_mode, bool):
-            self._shared.camera_mode = (
-                CameraModes.MAP_VIEW
-                if self._shared.camera_mode
-                else CameraModes.CAMERA_STANDBY
-            )
-
-        self._attr_should_poll = poling_states.get(self._shared.camera_mode, False)
-        return self._attr_should_poll
+    # @property
+    # def should_poll(self) -> bool:
+    #     """ON/OFF Camera Polling Based on Camera Mode."""
+    #     poling_states = {
+    #         CameraModes.OBSTACLE_DOWNLOAD: False,
+    #         CameraModes.OBSTACLE_SEARCH: False,
+    #         CameraModes.MAP_VIEW: True,
+    #         CameraModes.OBSTACLE_VIEW: True,
+    #         CameraModes.CAMERA_STANDBY: False,
+    #     }
+    #
+    #     if isinstance(self._shared.camera_mode, bool):
+    #         self._shared.camera_mode = (
+    #             CameraModes.MAP_VIEW
+    #             if self._shared.camera_mode
+    #             else CameraModes.CAMERA_STANDBY
+    #         )
+    #
+    #     self._attr_should_poll = poling_states.get(self._shared.camera_mode, False)
+    #     return self._attr_should_poll
 
     @property
     def name(self) -> str:
