@@ -10,7 +10,7 @@ from __future__ import annotations
 from typing import Any, Self
 
 from homeassistant import config_entries, core
-from homeassistant.components.camera import Camera, CameraEntityFeature
+from homeassistant.components.image import ImageEntity
 from homeassistant.helpers import config_validation as cv
 
 from .coordinator import CameraCoordinator
@@ -36,13 +36,13 @@ async def async_setup_entry(
         config.update(config_entry.options)
 
     # Create camera entity
-    camera = [MQTTVacuumCamera(camera_coordinator, config)]
+    image = [MQTTVacuumImage(camera_coordinator, config)]
 
     # Add entities
-    async_add_entities(camera, update_before_add=False)
+    async_add_entities(image, update_before_add=False)
 
 
-class MQTTVacuumCamera(MQTTVacuumCoordinatorEntity, Camera):
+class MQTTVacuumImage(MQTTVacuumCoordinatorEntity, ImageEntity):
     _attr_has_entity_name = True
     def __init__(
             self: Self,
@@ -50,15 +50,13 @@ class MQTTVacuumCamera(MQTTVacuumCoordinatorEntity, Camera):
             device_info: dict[str, Any]
     ) -> None:
         MQTTVacuumCoordinatorEntity.__init__(self, coordinator, device_info)
-        Camera.__init__(self)
+        ImageEntity.__init__(self, coordinator.hass)
         self.content_type = "image/png"
-
-    @property
-    def frame_interval(self) -> float:
-        """Camera Frame Interval"""
-        return self._attr_frame_interval
 
     @property
     def name(self) -> str:
         """Camera Entity Name"""
         return self._attr_name
+
+    def image(self: Self) -> bytes | None:
+        return self.Image

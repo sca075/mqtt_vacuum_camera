@@ -54,7 +54,7 @@ from .utils.vacuum.mqtt_vacuum_services import (
     is_rand256_vacuum,
 )
 
-PLATFORMS = [Platform.CAMERA, Platform.SENSOR]
+PLATFORMS = [Platform.CAMERA, Platform.SENSOR, Platform.IMAGE]
 
 
 def init_shared_data(
@@ -157,10 +157,10 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
     hass.data[DOMAIN][entry.entry_id] = hass_data
     if bool(hass_data.get("is_rand256")):
         await hass.config_entries.async_forward_entry_setups(
-            entry, ["camera", "sensor"]
+            entry, ["camera", "sensor", "image"]
         )
     else:
-        await hass.config_entries.async_forward_entry_setups(entry, ["camera"])
+        await hass.config_entries.async_forward_entry_setups(entry, ["camera", "image"])
 
     return True
 

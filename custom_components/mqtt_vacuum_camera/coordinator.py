@@ -252,9 +252,7 @@ class CameraCoordinator(DataUpdateCoordinator[VacuumData]):
         # If no image, return a gray image
         if not self.current_image:
             return Image.new("RGB",
-                             (DEFAULT_IMAGE_SIZE.get("x"),
-                              DEFAULT_IMAGE_SIZE.get("y")),
-                             "gray")
+                             (800, 600), "gray")
         return self.current_image
 
     async def _handle_mqtt_camera_event(self) -> None:
