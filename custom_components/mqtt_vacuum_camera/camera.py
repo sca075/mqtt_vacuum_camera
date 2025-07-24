@@ -10,7 +10,7 @@ from __future__ import annotations
 from typing import Any, Self
 
 from homeassistant import config_entries, core
-from homeassistant.components.camera import Camera, CameraEntityFeature
+from homeassistant.components.camera import Camera
 from homeassistant.helpers import config_validation as cv
 
 from .coordinator import CameraCoordinator
@@ -44,10 +44,9 @@ async def async_setup_entry(
 
 class MQTTVacuumCamera(MQTTVacuumCoordinatorEntity, Camera):
     _attr_has_entity_name = True
+
     def __init__(
-            self: Self,
-            coordinator: CameraCoordinator,
-            device_info: dict[str, Any]
+        self: Self, coordinator: CameraCoordinator, device_info: dict[str, Any]
     ) -> None:
         MQTTVacuumCoordinatorEntity.__init__(self, coordinator, device_info)
         Camera.__init__(self)

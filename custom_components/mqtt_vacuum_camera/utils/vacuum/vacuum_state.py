@@ -58,6 +58,12 @@ class VacuumStateManager:
             return False
 
         current_status = self.shared.vacuum_state
+        state_changed = current_status not in NOT_STREAMING_STATES or (
+            current_status == "docked" and not self.shared.vacuum_bat_charged
+        )
+        if state_changed:
+            self.shared.image_grab = True
+            self.shared.snapshot_take = False
 
         # Streaming logic from original camera.py
         return current_status not in NOT_STREAMING_STATES or (

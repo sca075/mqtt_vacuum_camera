@@ -252,10 +252,16 @@ class TaskQueue:
             asyncio.create_task(self._process_batch())
         elif len(self._queue) == 1:  # First task starts timer
             self._timer = asyncio.create_task(asyncio.sleep(self._timeout))
-            self._timer.add_done_callback(lambda _: asyncio.create_task(self._process_batch()))
+            self._timer.add_done_callback(
+                lambda _: asyncio.create_task(self._process_batch())
+            )
 
     async def _process_batch(self):
         if self._queue:
-            batch, self._queue = self._queue[:self._max_batch], self._queue[self._max_batch:]
-            if self._timer: self._timer.cancel()
+            batch, self._queue = (
+                self._queue[: self._max_batch],
+                self._queue[self._max_batch :],
+            )
+            if self._timer:
+                self._timer.cancel()
             await asyncio.gather(*batch, return_exceptions=True)

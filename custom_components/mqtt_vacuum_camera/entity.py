@@ -1,3 +1,4 @@
+
 """
 MQTT Vacuum Camera Entity
 Camera just handles PIL to bytes conversion, coordinator does all processing.
@@ -7,8 +8,7 @@ Version: 2025.7.1
 from __future__ import annotations
 
 import os
-from io import BytesIO
-from typing import Any, Optional, Self
+from typing import Any, Optional
 from PIL import Image
 
 from homeassistant.core import callback
@@ -33,14 +33,10 @@ from .const import (
     CONF_VACUUM_IDENTIFIERS,
     LOGGER,
     CameraModes,
-    NOT_STREAMING_STATES,
 )
 from .snapshots.snapshot import Snapshots
 from .utils.thread_pool import TaskQueue
 from .utils.camera.obstacle_handler import ObstacleViewHandler
-
-
-
 
 class MQTTVacuumCoordinatorEntity(CoordinatorEntity[CameraCoordinator]):
     """
@@ -103,7 +99,6 @@ class MQTTVacuumCoordinatorEntity(CoordinatorEntity[CameraCoordinator]):
         self._image_h: Optional[int] = None
 
         # Processing state
-        self._processing = True
         self._image_receive_time: Optional[float] = None
         self._vac_json_available = "Initializing"
 
@@ -216,18 +211,19 @@ class MQTTVacuumCoordinatorEntity(CoordinatorEntity[CameraCoordinator]):
         # Process new image data
         if pil_img:
             LOGGER.debug(
-                "Converting PIL image from coordinator for: %s", self._file_name
+                "Updating image from coordinator for: %s", self._file_name
             )
             if self.is_streaming:
-                self._shared.image_grab = True
-                self._shared.snapshot_take = False
                 self._shared.frame_number = (
                     self.coordinator.processor.get_frame_number()
                 )
-            self._processing = True
             try:
-                # Convert PIL to bytes for camera display
-                self.task_async.add_task(self._async_convert_and_update(pil_img))
+                self.attr_frame_interval = self.coordinator.processor.get_processing_time()
+                self.Image = self.coordinator.processor.get_image_bytes()
+                self._image_w = pil_img.width
+                self._image_h = pil_img.height
+                self._vac_json_available = "Success"
+                self.coordinator.processor._processing_lock = False
 
             except Exception as err:
                 LOGGER.error(
@@ -253,83 +249,8 @@ class MQTTVacuumCoordinatorEntity(CoordinatorEntity[CameraCoordinator]):
             LOGGER.debug(
                 "No PIL image available from coordinator for: %s", self._file_name
             )
-        return self.camera_image()
-
-    async def _async_convert_and_update(self, pil_img):
-        """Convert PIL to bytes and update state."""
-        try:
-            # Convert PIL to bytes for camera display
-            if self._processing or self.Image is None:
-                self.Image = await self.async_pil_to_bytes(pil_img)
-                self._processing = False
-
-            LOGGER.debug("Image conversion complete for: %s", self._file_name)
-            self._vac_json_available = "Success"
-        except Exception as err:
-            LOGGER.error(
-                "Error converting PIL to bytes for %s: %s", self._file_name, err
-            )
-            self._vac_json_available = "Error"
-        finally:
-            # Update HA state
-            self.async_write_ha_state()
-
-    async def async_pil_to_bytes(
-        self, pil_img, image_id: str = None
-    ) -> Optional[bytes]:
-        """Convert PIL image to bytes"""
-        pil_img_text = None
-        if pil_img:
-            self._last_image = pil_img.copy()
-            LOGGER.debug(
-                "%s: Output Image: %s.",
-                self._file_name,
-                image_id if image_id else self._shared.vac_json_id,
-            )
-            if self._shared.show_vacuum_state and pil_img:
-                pil_img_text = await self.coordinator.processor.async_draw_image_text(
-                    pil_img,
-                    self._shared.user_colors[8],
-                    self._shared.vacuum_status_font,
-                    self._shared.vacuum_status_position,
-                )
-        else:
-            if self._last_image is not None:
-                LOGGER.debug("%s: Output Last Image.", self._file_name)
-                pil_img = self._last_image.copy()
-            else:
-                LOGGER.debug("%s: Output Gray Image.", self._file_name)
-                pil_img = Image.new("RGB", (800, 600), "gray")
-        self._image_w = pil_img.width
-        self._image_h = pil_img.height
-        buffered = BytesIO()
-        try:
-            if pil_img_text:
-                pil_img_text.save(buffered, format="PNG")
-            else:
-                pil_img.save(buffered, format="PNG")
-            return buffered.getvalue()
-        except Exception as err:
-            LOGGER.error(
-                "Error converting PIL to bytes for %s: %s", self._file_name, err
-            )
-            return None
-        finally:
-            buffered.close()
-
-    async def run_async_pil_to_bytes(self, pil_img, image_id: str = None):
-        """Thread function to process the image data using persistent thread pool."""
-        try:
-            result = await self.thread_pool.run_async_in_executor(
-                "camera",
-                self.async_pil_to_bytes,
-                pil_img,
-                image_id,
-            )
-            return result
-        except Exception as e:
-            LOGGER.error("Error converting image to bytes: %s", str(e), exc_info=True)
-            return None
+        self.async_write_ha_state()
+        return self.camera_image(self._image_w, self._image_h)
 
     @property
     def name(self) -> str:
@@ -359,17 +280,13 @@ class MQTTVacuumCoordinatorEntity(CoordinatorEntity[CameraCoordinator]):
     @property
     def is_streaming(self) -> bool:
         """Return true if the device is streaming."""
-        updated_status = self._shared.vacuum_state
-        self._attr_is_streaming = (
-            updated_status not in NOT_STREAMING_STATES
-            or not self._shared.vacuum_bat_charged
-        )
+        self._attr_is_streaming = self.coordinator.should_stream
         return self._attr_is_streaming
 
     @property
     def supported_features(self) -> int:
         """Return supported features."""
-        return CameraEntityFeature.ON_OFF
+        return CameraEntityFeature.ON_OFF | CameraEntityFeature.STREAM
 
     @property
     def extra_state_attributes(self) -> dict:
@@ -420,38 +337,6 @@ class MQTTVacuumCoordinatorEntity(CoordinatorEntity[CameraCoordinator]):
         """
         with Image.open(snapshot_path) as img:
             return img.copy()
-
-    async def async_empty_if_no_data(self) -> Image:
-        """
-        It will return the last image if available or
-        an empty image if there are no data.
-        This is the async version that uses thread pool for file I/O.
-        """
-        if self._last_image:
-            LOGGER.debug("%s: Returning Last image.", self._file_name)
-            return self._last_image
-        # Check if the snapshot file exists
-        LOGGER.info("%s: Searching for %s.", self._file_name, self.snapshot_img)
-        if os.path.isfile(self.snapshot_img):
-            try:
-                # Load the snapshot image using thread pool to avoid blocking
-                self._last_image = await self.thread_pool.run_in_executor(
-                    "snapshot", self._load_snapshot_image, self.snapshot_img
-                )
-                LOGGER.debug("%s: Returning Snapshot image.", self._file_name)
-                return self._last_image
-            except Exception as e:
-                LOGGER.warning(
-                    "%s: Error loading snapshot image %s: %s",
-                    self._file_name,
-                    self.snapshot_img,
-                    str(e),
-                )
-                # Fall through to create empty image
-        # Create an empty image with a gray background
-        empty_img = Image.new("RGB", (800, 600), "gray")
-        LOGGER.info("%s: Returning Empty image.", self._file_name)
-        return empty_img
 
     async def handle_vacuum_start(self, event):
         """Handle the event_vacuum_start event."""

@@ -26,7 +26,7 @@ class CameraImageData:
 
     image_width: Optional[int] = None
     image_height: Optional[int] = None
-
+    is_streaming: bool = False
     error_message: Optional[str] = None
     success: bool = True
 

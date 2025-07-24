@@ -44,19 +44,24 @@ async def async_setup_entry(
 
 class MQTTVacuumImage(MQTTVacuumCoordinatorEntity, ImageEntity):
     _attr_has_entity_name = True
+
     def __init__(
-            self: Self,
-            coordinator: CameraCoordinator,
-            device_info: dict[str, Any]
+        self: Self, coordinator: CameraCoordinator, device_info: dict[str, Any]
     ) -> None:
         MQTTVacuumCoordinatorEntity.__init__(self, coordinator, device_info)
         ImageEntity.__init__(self, coordinator.hass)
         self.content_type = "image/png"
+        # coordinator.image_entity = self
 
     @property
     def name(self) -> str:
         """Camera Entity Name"""
-        return self._attr_name
+        return f"Image {self._attr_name}"
 
     def image(self: Self) -> bytes | None:
+        """Return bytes of image"""
         return self.Image
+
+    @property
+    def image_last_updated(self: Self):
+        return self._last_image_time
