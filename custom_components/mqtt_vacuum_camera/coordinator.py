@@ -180,7 +180,6 @@ class CameraCoordinator(DataUpdateCoordinator[VacuumData]):
         self._prev_data_type = None
         self.device_entity: ConfigEntry = entry
         self.device_info: DeviceInfo = get_camera_device_info(hass, self.device_entity)
-        self.image_entity = None
         self.task_async = TaskQueue()
         # Initialize connector
         if connector:
@@ -194,14 +193,15 @@ class CameraCoordinator(DataUpdateCoordinator[VacuumData]):
             self.shared.vacuum_state = "docked"
             # Initialize vacuum state manager (add after connector is created)
             self.state_manager = VacuumStateManager(
-                shared_data=self.shared, connector=self.connector, file_name=self.file_name
+                shared_data=self.shared,
+                connector=self.connector,
+                file_name=self.file_name,
             )
             self.shared.image_grab = True
             self.shared.snapshot_take = False
             self.should_stream = True
         # Initialize thread pools (keep existing stable code)
         self.thread_pool = ThreadPoolManager(self.file_name)
-
 
         # Initialize decompression (from working code)
         self.decompression_manager = DecompressionManager.get_instance(self.file_name)
@@ -244,7 +244,6 @@ class CameraCoordinator(DataUpdateCoordinator[VacuumData]):
     def get_map_image(self):
         """Get the current map image."""
         # If no image, return a gray image
-        # self.image_entity.image_url
         if not self.current_image:
             return Image.new("RGB", (800, 600), "gray")
         return self.current_image
@@ -265,7 +264,6 @@ class CameraCoordinator(DataUpdateCoordinator[VacuumData]):
             LOGGER.debug("Camera manual update pushed: %s", self.file_name)
             return self.async_set_updated_data(VacuumData(camera=data))
         return None
-
 
     async def async_should_stream(self) -> bool:
         """Determine if camera should stream based on vacuum state and new data."""

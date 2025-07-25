@@ -1,4 +1,3 @@
-
 """
 MQTT Vacuum Camera Entity
 Camera just handles PIL to bytes conversion, coordinator does all processing.
@@ -38,6 +37,7 @@ from .snapshots.snapshot import Snapshots
 from .utils.thread_pool import TaskQueue
 from .utils.camera.obstacle_handler import ObstacleViewHandler
 
+
 class MQTTVacuumCoordinatorEntity(CoordinatorEntity[CameraCoordinator]):
     """
     MQTT Vacuum Camera Entity.
@@ -46,8 +46,6 @@ class MQTTVacuumCoordinatorEntity(CoordinatorEntity[CameraCoordinator]):
     Camera just handles PIL → bytes conversion and display.
     """
 
-
-
     def __init__(
         self, coordinator: CameraCoordinator, device_info: dict[str, Any]
     ) -> None:
@@ -55,7 +53,9 @@ class MQTTVacuumCoordinatorEntity(CoordinatorEntity[CameraCoordinator]):
         super().__init__(coordinator)
         self._attr_has_entity_name = True
         self._unrecorded_attributes = frozenset({MATCH_ALL})
-        self._attr_should_poll = False  # CoordinatorEntity handles updates automatically
+        self._attr_should_poll = (
+            False  # CoordinatorEntity handles updates automatically
+        )
         self.hass = coordinator.hass
         self.coordinator = coordinator
         self._device_info = device_info
@@ -68,7 +68,6 @@ class MQTTVacuumCoordinatorEntity(CoordinatorEntity[CameraCoordinator]):
         self._attr_motion_detection_enabled = False
         self._attr_frame_interval = 1.0
         self._attr_is_streaming = True
-
         # Core data from coordinator
         self._file_name = coordinator.file_name
         self._shared = coordinator.shared
@@ -168,7 +167,7 @@ class MQTTVacuumCoordinatorEntity(CoordinatorEntity[CameraCoordinator]):
         self._shared.camera_mode = CameraModes.MAP_VIEW
         self._shared.image_grab = True
 
-        LOGGER.debug("Simple camera entity added to HA for: %s", self._file_name)
+        LOGGER.debug("Camera entity added to HA for: %s", self._file_name)
 
     async def async_will_remove_from_hass(self) -> None:
         """Handle entity removal from Home Assistant."""
@@ -176,8 +175,14 @@ class MQTTVacuumCoordinatorEntity(CoordinatorEntity[CameraCoordinator]):
 
         # Unsubscribe from MQTT topics
         await self.coordinator.async_unsubscribe_mqtt()
+        self._obstacle_view_debouncer.async_shutdown()
+        self.uns_event_obstacle_coordinates.async_remove()
+        self.uns_event_vacuum_start.async_remove()
+        self.coordinator.processor._unsub_dispatcher = None
+        self.coordinator.processor._unsub_dispatcher_ready = None
+        self.coordinator._unsub_dispatcher_ready = None
 
-        LOGGER.debug("Simple camera entity removed from HA for: %s", self._file_name)
+        LOGGER.debug("Camera entity removed from HA for: %s", self._file_name)
 
     @callback
     def _handle_coordinator_update(self) -> bytes:
@@ -204,21 +209,19 @@ class MQTTVacuumCoordinatorEntity(CoordinatorEntity[CameraCoordinator]):
                     "Taking automatic snapshot for %s (snapshot_take flag set)",
                     self._file_name,
                 )
-                self.task_async.add_task(self.take_snapshot({}, snapshot_image))
+                self.hass.async_create_task(
+                     self.take_snapshot({}, snapshot_image), "take_snapshot"
+                )
                 # Reset the flag after taking snapshot
                 self._shared.snapshot_take = False
 
         # Process new image data
         if pil_img:
-            LOGGER.debug(
-                "Updating image from coordinator for: %s", self._file_name
-            )
-            if self.is_streaming:
-                self._shared.frame_number = (
-                    self.coordinator.processor.get_frame_number()
-                )
+            LOGGER.debug("Updating image from coordinator for: %s", self._file_name)
             try:
-                self.attr_frame_interval = self.coordinator.processor.get_processing_time()
+                self._attr_frame_interval = (
+                    self.coordinator.processor.get_processing_time()
+                )
                 self.Image = self.coordinator.processor.get_image_bytes()
                 self._image_w = pil_img.width
                 self._image_h = pil_img.height
@@ -271,11 +274,6 @@ class MQTTVacuumCoordinatorEntity(CoordinatorEntity[CameraCoordinator]):
     def is_on(self) -> bool:
         """Return true if on."""
         return self._attr_is_on
-
-    @property
-    def frame_interval(self) -> float:
-        """Camera Frame Interval"""
-        return self._attr_frame_interval
 
     @property
     def is_streaming(self) -> bool:

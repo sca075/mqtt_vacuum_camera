@@ -51,7 +51,6 @@ class MQTTVacuumImage(MQTTVacuumCoordinatorEntity, ImageEntity):
         MQTTVacuumCoordinatorEntity.__init__(self, coordinator, device_info)
         ImageEntity.__init__(self, coordinator.hass)
         self.content_type = "image/png"
-        # coordinator.image_entity = self
 
     @property
     def name(self) -> str:
