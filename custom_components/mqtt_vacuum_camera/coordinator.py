@@ -9,7 +9,7 @@ from PIL import Image
 
 import async_timeout
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
@@ -230,11 +230,25 @@ class CameraCoordinator(DataUpdateCoordinator[VacuumData]):
         # Setup dispatcher to listen for MQTT updates
         self._unsub_dispatcher_ready = async_dispatcher_connect(
             hass,
-            f"{DOMAIN}_{self.file_name}_camera_update_ready",
+            f"{DOMAIN}_{self.file_name}_update_ready",
             self._handle_mqtt_camera_event,
         )
 
         LOGGER.debug("Camera coordinator initialized for: %s", self.file_name)
+
+    def cleanup_all_dispatchers(self):
+        """Clean up all dispatcher connections."""
+        # Clean up coordinator's own dispatchers
+        if hasattr(self, '_unsub_dispatcher_ready') and self._unsub_dispatcher_ready:
+            self._unsub_dispatcher_ready()
+            self._unsub_dispatcher_ready = None
+
+        # Clean up processor's dispatchers
+        if hasattr(self, 'processor') and self.processor:
+            if hasattr(self.processor, 'unsub_dispatcher') and self.processor.unsub_dispatcher:
+                self.processor.unsub_dispatcher()
+                self.processor.unsub_dispatcher = None
+
 
     @property
     def setup_complete(self) -> bool:
@@ -248,6 +262,7 @@ class CameraCoordinator(DataUpdateCoordinator[VacuumData]):
             return Image.new("RGB", (800, 600), "gray")
         return self.current_image
 
+    @callback
     async def _handle_mqtt_camera_event(self) -> None:
         """Handle camera update signal from MQTT connector."""
         LOGGER.debug("Processor update received: %s", self.file_name)
@@ -261,7 +276,7 @@ class CameraCoordinator(DataUpdateCoordinator[VacuumData]):
             self.shared.frame_number != self.processor.get_frame_number()
         ):
             self._prev_image = self.current_image.copy()
-            LOGGER.debug("Camera manual update pushed: %s", self.file_name)
+            # LOGGER.debug("Camera manual update pushed: %s", self.file_name)
             return self.async_set_updated_data(VacuumData(camera=data))
         return None
 

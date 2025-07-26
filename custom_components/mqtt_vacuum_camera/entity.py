@@ -34,7 +34,6 @@ from .const import (
     CameraModes,
 )
 from .snapshots.snapshot import Snapshots
-from .utils.thread_pool import TaskQueue
 from .utils.camera.obstacle_handler import ObstacleViewHandler
 
 
@@ -59,7 +58,6 @@ class MQTTVacuumCoordinatorEntity(CoordinatorEntity[CameraCoordinator]):
         self.hass = coordinator.hass
         self.coordinator = coordinator
         self._device_info = device_info
-        self.task_async = TaskQueue()
         # Basic attributes
         self._attr_model = "MQTT Vacuums"
         self._attr_brand = "MQTT Vacuum Camera"
@@ -98,7 +96,7 @@ class MQTTVacuumCoordinatorEntity(CoordinatorEntity[CameraCoordinator]):
         self._image_h: Optional[int] = None
 
         # Processing state
-        self._image_receive_time: Optional[float] = None
+        self._last_image_time: Optional[float] = None
         self._vac_json_available = "Initializing"
 
         # Performance tracking
@@ -175,12 +173,8 @@ class MQTTVacuumCoordinatorEntity(CoordinatorEntity[CameraCoordinator]):
 
         # Unsubscribe from MQTT topics
         await self.coordinator.async_unsubscribe_mqtt()
-        self._obstacle_view_debouncer.async_shutdown()
-        self.uns_event_obstacle_coordinates.async_remove()
-        self.uns_event_vacuum_start.async_remove()
-        self.coordinator.processor._unsub_dispatcher = None
-        self.coordinator.processor._unsub_dispatcher_ready = None
-        self.coordinator._unsub_dispatcher_ready = None
+        self.coordinator.cleanup_all_dispatchers()
+        self._obstacle_view_debouncer.async_cancel()
 
         LOGGER.debug("Camera entity removed from HA for: %s", self._file_name)
 
@@ -217,16 +211,17 @@ class MQTTVacuumCoordinatorEntity(CoordinatorEntity[CameraCoordinator]):
 
         # Process new image data
         if pil_img:
-            LOGGER.debug("Updating image from coordinator for: %s", self._file_name)
+            LOGGER.debug("Image data from coordinator data for: %s", self._file_name)
             try:
                 self._attr_frame_interval = (
                     self.coordinator.processor.get_processing_time()
                 )
                 self.Image = self.coordinator.processor.get_image_bytes()
+                self._last_image_time = self.coordinator.processor.last_image_time
                 self._image_w = pil_img.width
                 self._image_h = pil_img.height
                 self._vac_json_available = "Success"
-                self.coordinator.processor._processing_lock = False
+                self.coordinator.processor.processing_lock = False
 
             except Exception as err:
                 LOGGER.error(

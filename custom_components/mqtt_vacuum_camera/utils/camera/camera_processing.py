@@ -20,6 +20,7 @@ from valetudo_map_parser.config.drawable import Drawable as Draw
 from valetudo_map_parser.config.types import Color, JsonType, PilPNG
 from valetudo_map_parser.hypfer_handler import HypferMapImageHandler
 from valetudo_map_parser.rand25_handler import ReImageHandler
+from homeassistant.core import callback
 from homeassistant.helpers.dispatcher import (
     async_dispatcher_send,
     async_dispatcher_connect,
@@ -71,17 +72,17 @@ class CameraProcessor:
         self.current_image_bytes = None
         self.current_image_hash = None
         self._last_image = None
-        self._last_image_time: Optional[datetime] = None
+        self.last_image_time: Optional[datetime] = None
 
         # Simple storage
-        self._processing_lock = False
+        self.processing_lock = False
         self._processing_time = 0
-        self.camera_streaming = False
+        self.camera_streaming = True
 
-        self._unsub_dispatcher = async_dispatcher_connect(
+        self.unsub_dispatcher = async_dispatcher_connect(
             hass,
-            f"{DOMAIN}_{self._file_name}_camera_update",
-            self.async_handle_mqtt_camera_update,
+            f"{DOMAIN}_{self._file_name}_new_data",
+            self.async_handle_mqtt_update,
         )
 
     async def async_process_valetudo_data(self, parsed_json: JsonType) -> PilPNG | None:
@@ -294,9 +295,11 @@ class CameraProcessor:
         )
         return pil_img
 
-    async def async_handle_mqtt_camera_update(self):
-        """Handle the event_vacuum_start event."""
-        if self._processing_lock:
+
+    @callback
+    async def async_handle_mqtt_update(self):
+        """Handle the dispatcher signal for new MQTT data."""
+        if self.processing_lock:
             LOGGER.debug("Processing lock active, skipping update")
             return
         start_time = time.perf_counter()
@@ -319,14 +322,14 @@ class CameraProcessor:
             )
             async_dispatcher_send(
                 self.hass,
-                f"{DOMAIN}_{self._file_name}_camera_update_ready",
+                f"{DOMAIN}_{self._file_name}_update_ready",
             )
 
     async def async_process_image_data(self, payload, data_type: str):
         """Process image data - simple and direct."""
         try:
             # Decompress data
-            self._processing_lock = True
+            self.processing_lock = True
             parsed_json = None
             if self._decompression_manager:
                 data = payload.payload if hasattr(payload, "payload") else payload
@@ -396,7 +399,7 @@ class CameraProcessor:
             else:
                 pil_img = Image.new("RGB", (800, 600), "gray")
 
-        self._last_image_time = datetime.now()
+        self.last_image_time = datetime.now()
         buffered = BytesIO()
 
         try:

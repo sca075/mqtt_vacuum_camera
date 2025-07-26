@@ -215,7 +215,7 @@ class ValetudoConnector:
         self.connector_data.data_in = True
         async_dispatcher_send(
             self.connector_data.hass,
-            f"{DOMAIN}_{self.connector_data.file_name}_camera_update",
+            f"{DOMAIN}_{self.connector_data.file_name}_new_data",
         )
         self.connector_data.ignore_data = False
 
@@ -277,7 +277,7 @@ class ValetudoConnector:
             self.config.do_it_once = False
         async_dispatcher_send(
             self.connector_data.hass,
-            f"{DOMAIN}_{self.connector_data.file_name}_camera_update",
+            f"{DOMAIN}_{self.connector_data.file_name}_new_data",
         )
 
     async def rand256_handle_statuses(self, msg) -> None:

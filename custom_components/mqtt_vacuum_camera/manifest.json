@@ -11,5 +11,5 @@
     "requirements": [
         "valetudo_map_parser==0.1.9a8"
     ],
-    "version": "2025.7.0"
+    "version": "2025.7.1b0"
 }
