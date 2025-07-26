@@ -1,5 +1,6 @@
-from dataclasses import dataclass, field, asdict
-from typing import Optional, Dict, Any
+from dataclasses import asdict, dataclass, field
+from typing import Any, Dict, Optional
+
 from PIL import Image
 
 
@@ -26,7 +27,7 @@ class CameraImageData:
 
     image_width: Optional[int] = None
     image_height: Optional[int] = None
-
+    is_streaming: bool = False
     error_message: Optional[str] = None
     success: bool = True
 

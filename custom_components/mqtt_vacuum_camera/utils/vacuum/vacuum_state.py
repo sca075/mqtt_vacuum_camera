@@ -5,11 +5,11 @@ Version: 2025.6.0
 
 from __future__ import annotations
 
+from valetudo_map_parser.config.shared import CameraShared
 from valetudo_map_parser.config.types import LOGGER
 
 from ...const import NOT_STREAMING_STATES
 from ...utils.connection.connector import ValetudoConnector
-from valetudo_map_parser.config.shared import CameraShared
 
 
 class VacuumStateManager:
@@ -57,9 +57,12 @@ class VacuumStateManager:
         if not self.shared.vacuum_connection:
             return False
 
-        current_status = self.shared.vacuum_state
-
-        # Streaming logic from original camera.py
-        return current_status not in NOT_STREAMING_STATES or (
-            current_status == "docked" and not self.shared.vacuum_bat_charged
+        vacuum_status = self.shared.vacuum_state
+        stream_state_changed = vacuum_status not in NOT_STREAMING_STATES or (
+            vacuum_status == "docked" and not self.shared.vacuum_bat_charged
         )
+        if stream_state_changed:
+            self.shared.image_grab = True
+            self.shared.snapshot_take = False
+
+        return stream_state_changed

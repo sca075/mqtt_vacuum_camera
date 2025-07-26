@@ -4,26 +4,26 @@ Version: 2025.7.0
 """
 
 import asyncio
-from typing import Optional, Dict, Any
-from PIL import Image
+from typing import Any, Dict, Optional
 
+from PIL import Image
 import async_timeout
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.debounce import Debouncer
 from homeassistant.helpers.device_registry import DeviceInfo
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from valetudo_map_parser.config.shared import CameraShared, CameraSharedManager
-from valetudo_map_parser.config.types import DEFAULT_IMAGE_SIZE
 
-from .const import DOMAIN, DEFAULT_NAME, SENSOR_NO_DATA, LOGGER
 from .common import get_camera_device_info
+from .const import DEFAULT_NAME, DOMAIN, LOGGER, SENSOR_NO_DATA
+from .utils.camera.camera_processing import CameraProcessor
 from .utils.connection.connector import ValetudoConnector
 from .utils.connection.decompress import DecompressionManager
-from .utils.model import VacuumData, SensorData, CameraImageData
+from .utils.model import CameraImageData, SensorData, VacuumData
+from .utils.thread_pool import TaskQueue, ThreadPoolManager
 from .utils.vacuum.vacuum_state import VacuumStateManager
-from .utils.thread_pool import ThreadPoolManager
-from .utils.camera.camera_processing import CameraProcessor
 
 
 class SensorsCoordinator(DataUpdateCoordinator[VacuumData]):
@@ -56,17 +56,12 @@ class SensorsCoordinator(DataUpdateCoordinator[VacuumData]):
         self.connector: Optional[ValetudoConnector] = None
         self.in_sync_with_camera: bool = False
         self.sensor_data = SENSOR_NO_DATA
-        self.thread_pool = None
         # Initialize shared data and MQTT connector
         if shared:
             self.shared = shared
             self.file_name = shared.file_name
-        else:
-            self.shared, self.file_name = self._init_shared_data(self.vacuum_topic)
         if connector:
             self.connector = connector
-        else:
-            self.connector = self.start_up_mqtt()
         self.scheduled_refresh: asyncio.TimerHandle | None = None
 
     async def _async_update_data(self):
@@ -92,33 +87,6 @@ class SensorsCoordinator(DataUpdateCoordinator[VacuumData]):
                 raise UpdateFailed(f"Error fetching sensor data: {err}") from err
         else:
             return self.sensor_data
-
-    def _init_shared_data(
-        self, mqtt_listen_topic: str
-    ) -> tuple[Optional[CameraShared], Optional[str]]:
-        """
-        Initialize the shared data.
-        """
-        shared = None
-        file_name = None
-
-        if mqtt_listen_topic and not self.shared_manager:
-            file_name = mqtt_listen_topic.split("/")[1].lower()
-            self.shared_manager = CameraSharedManager(file_name, self.device_info)
-            self.thread_pool = ThreadPoolManager(file_name)
-            shared = self.shared_manager.get_instance()
-            LOGGER.debug("Camera %s Starting up..", file_name)
-
-        return shared, file_name
-
-    def start_up_mqtt(self) -> ValetudoConnector:
-        """
-        Initialize the MQTT Connector.
-        """
-        self.connector = ValetudoConnector(
-            self.vacuum_topic, self.hass, self.shared, self.is_rand256
-        )
-        return self.connector
 
     def update_shared_data(self, dev_info: DeviceInfo) -> tuple[CameraShared, str]:
         """
@@ -209,55 +177,45 @@ class CameraCoordinator(DataUpdateCoordinator[VacuumData]):
         self.is_rand256 = is_rand256
         self.file_name = vacuum_topic.split("/")[1].lower()
         self.current_image = None
-        self._prev_image = None
-        self._prev_data_type = None
+        self._prev_image = False
         self.device_entity: ConfigEntry = entry
         self.device_info: DeviceInfo = get_camera_device_info(hass, self.device_entity)
-        # Initialize shared data (from working code pattern)
+        self.task_async = TaskQueue()
+        # Initialize connector
+        if connector:
+            self.connector = connector
+        # Initialize shared data
         if shared:
             self.shared = shared
             self.shared.file_name = self.file_name
             self.shared.user_language = "en"  # Set default language
             self.shared.is_rand = is_rand256
-            self.shared.vacuum_state = "disconnected"
-        else:
-            self.shared_manager = CameraSharedManager(self.file_name, self.device_info)
-            self.shared = self.shared_manager.get_instance()
-            self.shared.file_name = self.file_name
-            self.shared.user_language = "en"  # Set default language
-            self.shared.is_rand = is_rand256
-            self.shared.vacuum_state = "disconnected"
-        self._unsub_dispatcher = async_dispatcher_connect(
-            hass,
-            f"{DOMAIN}_{self.file_name}_camera_update",
-            self._handle_mqtt_camera_event,
-        )
-
+            self.shared.vacuum_state = "docked"
+            # Initialize vacuum state manager (add after connector is created)
+            self.state_manager = VacuumStateManager(
+                shared_data=self.shared,
+                connector=self.connector,
+                file_name=self.file_name,
+            )
+            self.shared.image_grab = True
+            self.shared.snapshot_take = False
+            self.should_stream = True
         # Initialize thread pools (keep existing stable code)
         self.thread_pool = ThreadPoolManager(self.file_name)
 
-        # Initialize connector (from working code)
-        if connector:
-            self.connector = connector
-        else:
-            self.connector = ValetudoConnector(
-                vacuum_topic, hass, self.shared, is_rand256
-            )
         # Initialize decompression (from working code)
         self.decompression_manager = DecompressionManager.get_instance(self.file_name)
 
         # Initialize camera processor (for JSON to PIL processing)
-        self.processor = CameraProcessor(hass, self.shared)
-        # Initialize vacuum state manager (add after connector is created)
-        self.state_manager = VacuumStateManager(
-            shared_data=self.shared, connector=self.connector, file_name=self.file_name
+        self.processor = CameraProcessor(
+            hass, self.shared, self.decompression_manager, self.connector, None
         )
 
         # Coordinator init
         super().__init__(
             hass,
             LOGGER,
-            name=f"MQTT Vacuum Camera {vacuum_topic}",
+            name=f"MQTT Vacuum Camera {self.file_name}",
             update_interval=None,
             always_update=False,
             update_method=self._handle_mqtt_camera_event,
@@ -265,10 +223,44 @@ class CameraCoordinator(DataUpdateCoordinator[VacuumData]):
 
         # Mark as ready
         self._first_update = True
+        self.actual_data_type = None
         self._setup_complete = True
         self._mqtt_subscribed = False
 
+        # Setup dispatcher to listen for MQTT updates
+        self._unsub_dispatcher_ready = async_dispatcher_connect(
+            hass,
+            f"{DOMAIN}_{self.file_name}_update_ready",
+            self.async_process_update,
+        )
+        self._debouncer = Debouncer(
+            hass,
+            LOGGER,
+            cooldown=0.3,  # adjust the cooldown as needed
+            immediate=True,
+            function=self._handle_mqtt_camera_event,
+        )
+
         LOGGER.debug("Camera coordinator initialized for: %s", self.file_name)
+
+    async def async_process_update(self):
+        await self._debouncer.async_call()
+
+    def cleanup_all_dispatchers(self):
+        """Clean up all dispatcher connections."""
+        # Clean up coordinator's own dispatchers
+        if hasattr(self, "_unsub_dispatcher_ready") and self._unsub_dispatcher_ready:
+            self._unsub_dispatcher_ready()
+            self._unsub_dispatcher_ready = None
+
+        # Clean up processor's dispatchers
+        if hasattr(self, "processor") and self.processor:
+            if (
+                hasattr(self.processor, "unsub_dispatcher")
+                and self.processor.unsub_dispatcher
+            ):
+                self.processor.unsub_dispatcher()
+                self.processor.unsub_dispatcher = None
 
     @property
     def setup_complete(self) -> bool:
@@ -279,82 +271,30 @@ class CameraCoordinator(DataUpdateCoordinator[VacuumData]):
         """Get the current map image."""
         # If no image, return a gray image
         if not self.current_image:
-            return Image.new("RGB",
-                             (DEFAULT_IMAGE_SIZE.get("x"),
-                              DEFAULT_IMAGE_SIZE.get("y")),
-                             "gray")
+            return Image.new("RGB", (800, 600), "gray")
         return self.current_image
 
+    @callback
     async def _handle_mqtt_camera_event(self) -> None:
         """Handle camera update signal from MQTT connector."""
-        if self.is_rand256 and not self.shared.destinations:
-            self.shared.destinations = await self.connector.get_destinations()
-        LOGGER.debug("Received dispatcher signal for: %s", self.file_name)
-        if await self.async_should_stream():
-            payload, data_type = await self.connector.update_data(True)
-            if payload and data_type:
-                try:
-                    data = payload.payload if hasattr(payload, "payload") else payload
-                    parsed_json = await self.decompression_manager.decompress(
-                        data, data_type
-                    )
+        LOGGER.debug("Processor update received: %s", self.file_name)
+        self.should_stream = await self.async_should_stream()
+        self.current_image = self.processor.get_current_pil_image()
+        data = CameraImageData(
+            is_rand=self.is_rand256,
+            is_streaming=self.should_stream,
+        )
+        if (self.should_stream or not self._prev_image) or (
+            self.shared.frame_number != self.processor.get_frame_number()
+        ):
+            self._prev_image = True
+            return self.async_set_updated_data(VacuumData(camera=data))
+        return None
 
-                    self.current_image = (
-                        await self.processor.run_async_process_valetudo_data(
-                            parsed_json
-                        )
-                    )
-
-                    if self.current_image:
-                        self._prev_image = self.current_image.copy()
-                        self._prev_data_type = data_type
-                        data = CameraImageData(
-                            is_rand=self.is_rand256,
-                            data_type=data_type,
-                            image_width=self.current_image.width,
-                            image_height=self.current_image.height,
-                            success=True,
-                        )
-                        self.async_set_updated_data(VacuumData(camera=data))
-
-                        LOGGER.debug("Camera update pushed: %s", self.file_name)
-                        return
-
-                except RuntimeError as err:
-                    LOGGER.error(
-                        "Failed to process camera update for %s: %s",
-                        self.file_name,
-                        err,
-                    )
-
-        # No new data or failed update → update with last or minimal
-        if self._prev_image:
-            self.current_image = self._prev_image.copy()
-            self.async_set_updated_data(
-                VacuumData(
-                    camera=CameraImageData(
-                        data_type=self._prev_data_type,
-                        is_rand=self.is_rand256,
-                        success=False,
-                    )
-                )
-            )
-        else:
-            self.async_set_updated_data(
-                VacuumData(
-                    camera=CameraImageData(
-                        vacuum_topic=self.vacuum_topic,
-                        is_rand=self.is_rand256,
-                        success=False,
-                    )
-                )
-            )
-
-    async def async_should_stream(self):
+    async def async_should_stream(self) -> bool:
         """Determine if camera should stream based on vacuum state and new data."""
-        new_data = await self.connector.is_data_available()
         should_stream = await self.state_manager.update_vacuum_state()
-        return (should_stream and new_data) or not self._prev_image
+        return should_stream
 
     async def async_subscribe_mqtt(self) -> None:
         """Subscribe to MQTT topics."""
