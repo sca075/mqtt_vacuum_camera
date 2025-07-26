@@ -1,5 +1,6 @@
-from dataclasses import dataclass, field, asdict
-from typing import Optional, Dict, Any
+from dataclasses import asdict, dataclass, field
+from typing import Any, Dict, Optional
+
 from PIL import Image
 
 

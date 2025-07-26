@@ -5,11 +5,11 @@ Version: 2025.6.0
 
 from __future__ import annotations
 
+from valetudo_map_parser.config.shared import CameraShared
 from valetudo_map_parser.config.types import LOGGER
 
 from ...const import NOT_STREAMING_STATES
 from ...utils.connection.connector import ValetudoConnector
-from valetudo_map_parser.config.shared import CameraShared
 
 
 class VacuumStateManager:

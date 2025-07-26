@@ -8,20 +8,19 @@ from __future__ import annotations
 
 import os
 from typing import Any, Optional
-from PIL import Image
 
-from homeassistant.core import callback
+from PIL import Image
 from homeassistant.components.camera import CameraEntityFeature
 from homeassistant.const import CONF_UNIQUE_ID, MATCH_ALL
+from homeassistant.core import callback
 from homeassistant.helpers.debounce import Debouncer
 from homeassistant.helpers.device_registry import DeviceInfo as Dev_Info
 from homeassistant.helpers.entity import DeviceInfo as Entity_Info
 from homeassistant.helpers.storage import STORAGE_DIR
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from valetudo_map_parser.config.types import SnapshotStore
 from valetudo_map_parser.config.colors import ColorsManagement
+from valetudo_map_parser.config.types import SnapshotStore
 
-from .coordinator import CameraCoordinator
 from .common import get_vacuum_unique_id_from_mqtt_topic
 from .const import (
     ATTR_FRIENDLY_NAME,
@@ -33,6 +32,7 @@ from .const import (
     LOGGER,
     CameraModes,
 )
+from .coordinator import CameraCoordinator
 from .snapshots.snapshot import Snapshots
 from .utils.camera.obstacle_handler import ObstacleViewHandler
 
@@ -174,7 +174,6 @@ class MQTTVacuumCoordinatorEntity(CoordinatorEntity[CameraCoordinator]):
         # Unsubscribe from MQTT topics
         await self.coordinator.async_unsubscribe_mqtt()
         self.coordinator.cleanup_all_dispatchers()
-        self._obstacle_view_debouncer.async_cancel()
 
         LOGGER.debug("Camera entity removed from HA for: %s", self._file_name)
 
@@ -199,13 +198,13 @@ class MQTTVacuumCoordinatorEntity(CoordinatorEntity[CameraCoordinator]):
             # Use current PIL image or last available image for snapshot
             snapshot_image = pil_img if pil_img else self._last_image
             if snapshot_image:
-                LOGGER.debug(
-                    "Taking automatic snapshot for %s (snapshot_take flag set)",
-                    self._file_name,
-                )
-                self.hass.async_create_task(
-                     self.take_snapshot({}, snapshot_image), "take_snapshot"
-                )
+                # LOGGER.debug(
+                #     "Taking automatic snapshot for %s (snapshot_take flag set)",
+                #     self._file_name,
+                # )
+                # self.hass.async_create_task(
+                #      self.take_snapshot({}, snapshot_image), "take_snapshot"
+                # )
                 # Reset the flag after taking snapshot
                 self._shared.snapshot_take = False
 
@@ -217,11 +216,11 @@ class MQTTVacuumCoordinatorEntity(CoordinatorEntity[CameraCoordinator]):
                     self.coordinator.processor.get_processing_time()
                 )
                 self.Image = self.coordinator.processor.get_image_bytes()
-                self._last_image_time = self.coordinator.processor.last_image_time
+                self._last_image_time = self.coordinator.processor.get_last_image_time()
                 self._image_w = pil_img.width
                 self._image_h = pil_img.height
                 self._vac_json_available = "Success"
-                self.coordinator.processor.processing_lock = False
+                self.coordinator.processor.set_process_lock(False)
 
             except Exception as err:
                 LOGGER.error(

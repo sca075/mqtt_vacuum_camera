@@ -9,22 +9,23 @@ from __future__ import annotations
 
 import asyncio
 from datetime import datetime
-import time
 from io import BytesIO
+import time
 from typing import Any, Optional
 
 from PIL import Image
 import aiohttp
 from aiohttp.abc import HTTPException
+from homeassistant.core import callback
+from homeassistant.helpers.debounce import Debouncer
+from homeassistant.helpers.dispatcher import (
+    async_dispatcher_connect,
+    async_dispatcher_send,
+)
 from valetudo_map_parser.config.drawable import Drawable as Draw
 from valetudo_map_parser.config.types import Color, JsonType, PilPNG
 from valetudo_map_parser.hypfer_handler import HypferMapImageHandler
 from valetudo_map_parser.rand25_handler import ReImageHandler
-from homeassistant.core import callback
-from homeassistant.helpers.dispatcher import (
-    async_dispatcher_send,
-    async_dispatcher_connect,
-)
 
 from custom_components.mqtt_vacuum_camera.const import (
     DOMAIN,
@@ -76,14 +77,26 @@ class CameraProcessor:
 
         # Simple storage
         self.processing_lock = False
+        self._pending_update = False
         self._processing_time = 0
         self.camera_streaming = True
 
         self.unsub_dispatcher = async_dispatcher_connect(
             hass,
             f"{DOMAIN}_{self._file_name}_new_data",
-            self.async_handle_mqtt_update,
+            self.async_debounced_dispatcher,
         )
+
+        self._mqtt_debouncer = Debouncer(
+            hass,
+            LOGGER,
+            cooldown=0.1,  # adjust the cooldown as needed
+            immediate=True,
+            function=self.async_handle_mqtt_update,
+        )
+
+    async def async_debounced_dispatcher(self) -> None:
+        await self._mqtt_debouncer.async_call()
 
     async def async_process_valetudo_data(self, parsed_json: JsonType) -> PilPNG | None:
         """
@@ -295,31 +308,44 @@ class CameraProcessor:
         )
         return pil_img
 
-
     @callback
     async def async_handle_mqtt_update(self):
         """Handle the dispatcher signal for new MQTT data."""
         if self.processing_lock:
-            LOGGER.debug("Processing lock active, skipping update")
+            self._pending_update = True
+            LOGGER.info("%s: Processing lock active, skipping update", self._file_name)
             return
-        start_time = time.perf_counter()
-        LOGGER.info("Received Connector Update, starting processing")
-        if self._shared.is_rand and not self._shared.destinations:
-            self._shared.destinations = await self._connector.get_destinations()
+        try:
+            start_time = time.perf_counter()
+            self.set_process_lock(True)
+            LOGGER.info("%s: Processing Connector Update...", self._file_name)
+            if self._shared.is_rand and not self._shared.destinations:
+                self._shared.destinations = await self._connector.get_destinations()
 
-        payload, data_type = await self._connector.update_data(True)
-        if payload and data_type:
-            (
-                self.current_image_bytes,
-                self.current_image,
-            ) = await self.async_process_image_data(payload, data_type)
-            end_time = time.perf_counter()
-            self._processing_time = round(end_time - start_time, 2)
-            LOGGER.debug(
-                "%s: Image processing time: %r seconds",
+            payload, data_type = await self._connector.update_data(True)
+            if payload and data_type:
+                (
+                    self.current_image_bytes,
+                    self.current_image,
+                ) = await self.async_process_image_data(payload, data_type)
+                end_time = time.perf_counter()
+                self._processing_time = round(end_time - start_time, 2)
+                LOGGER.debug(
+                    "%s: Image processing time: %r seconds",
+                    self._file_name,
+                    self._processing_time,
+                )
+        except RuntimeError as e:
+            LOGGER.error(
+                "Error processing image data for %s: %s",
                 self._file_name,
-                self._processing_time,
+                e,
+                exc_info=True,
             )
+        finally:
+            if self._pending_update:
+                self._pending_update = False
+                await self.async_handle_mqtt_update()
             async_dispatcher_send(
                 self.hass,
                 f"{DOMAIN}_{self._file_name}_update_ready",
@@ -329,7 +355,6 @@ class CameraProcessor:
         """Process image data - simple and direct."""
         try:
             # Decompress data
-            self.processing_lock = True
             parsed_json = None
             if self._decompression_manager:
                 data = payload.payload if hasattr(payload, "payload") else payload
@@ -427,3 +452,11 @@ class CameraProcessor:
     def get_processing_time(self):
         """Get the processing time."""
         return self._processing_time
+
+    def set_process_lock(self, lock: bool):
+        """Set the processing lock."""
+        self.processing_lock = lock
+
+    def get_last_image_time(self):
+        """Get the last image time."""
+        return self.last_image_time

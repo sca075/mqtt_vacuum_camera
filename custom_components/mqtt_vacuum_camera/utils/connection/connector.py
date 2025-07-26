@@ -17,8 +17,8 @@ from custom_components.mqtt_vacuum_camera.common import (
     redact_ip_filter,
 )
 from custom_components.mqtt_vacuum_camera.const import (
-    DOMAIN,
     DECODED_TOPICS,
+    DOMAIN,
     LOGGER,
     NON_DECODED_TOPICS,
     CameraModes,

@@ -6,18 +6,15 @@ Version: 2025.7.1
 
 from __future__ import annotations
 
-
 from typing import Any, Self
 
 from homeassistant import config_entries, core
 from homeassistant.components.image import ImageEntity
 from homeassistant.helpers import config_validation as cv
 
+from .const import DOMAIN
 from .coordinator import CameraCoordinator
 from .entity import MQTTVacuumCoordinatorEntity
-from .const import (
-    DOMAIN,
-)
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 

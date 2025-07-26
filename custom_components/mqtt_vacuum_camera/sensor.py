@@ -16,9 +16,9 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.const import PERCENTAGE, UnitOfArea, UnitOfTime
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity import EntityCategory
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import CONF_VACUUM_IDENTIFIERS, DOMAIN, LOGGER, SENSOR_NO_DATA
 from .coordinator import SensorsCoordinator

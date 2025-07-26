@@ -835,8 +835,8 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         """Handle map trims save."""
         entry = self.camera_config.entry_id
         LOGGER.debug("Saving the map trims for %s", entry)
-        coordinator = self.hass.data[DOMAIN][entry]["coordinator"]
-
+        coordinators = self.hass.data[DOMAIN][entry]["coordinators"]
+        coordinator = coordinators["camera"]
         # Save current trims from coordinator
         new_trims = coordinator.shared.trims.to_dict()
         self.camera_options = {"trims_data": new_trims}

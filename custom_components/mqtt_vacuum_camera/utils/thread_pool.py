@@ -11,7 +11,7 @@ import concurrent.futures
 from functools import lru_cache
 import os
 import threading
-from typing import Awaitable, Callable, Dict, TypeVar, List
+from typing import Awaitable, Callable, Dict, List, TypeVar
 
 from ..const import LOGGER
 

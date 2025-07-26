@@ -4,25 +4,26 @@ Version: 2025.7.0
 """
 
 import asyncio
-from typing import Optional, Dict, Any
-from PIL import Image
+from typing import Any, Dict, Optional
 
+from PIL import Image
 import async_timeout
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.debounce import Debouncer
 from homeassistant.helpers.device_registry import DeviceInfo
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from valetudo_map_parser.config.shared import CameraShared, CameraSharedManager
 
-from .const import DOMAIN, DEFAULT_NAME, SENSOR_NO_DATA, LOGGER
 from .common import get_camera_device_info
+from .const import DEFAULT_NAME, DOMAIN, LOGGER, SENSOR_NO_DATA
+from .utils.camera.camera_processing import CameraProcessor
 from .utils.connection.connector import ValetudoConnector
 from .utils.connection.decompress import DecompressionManager
-from .utils.model import VacuumData, SensorData, CameraImageData
+from .utils.model import CameraImageData, SensorData, VacuumData
+from .utils.thread_pool import TaskQueue, ThreadPoolManager
 from .utils.vacuum.vacuum_state import VacuumStateManager
-from .utils.thread_pool import ThreadPoolManager, TaskQueue
-from .utils.camera.camera_processing import CameraProcessor
 
 
 class SensorsCoordinator(DataUpdateCoordinator[VacuumData]):
@@ -176,8 +177,7 @@ class CameraCoordinator(DataUpdateCoordinator[VacuumData]):
         self.is_rand256 = is_rand256
         self.file_name = vacuum_topic.split("/")[1].lower()
         self.current_image = None
-        self._prev_image = None
-        self._prev_data_type = None
+        self._prev_image = False
         self.device_entity: ConfigEntry = entry
         self.device_info: DeviceInfo = get_camera_device_info(hass, self.device_entity)
         self.task_async = TaskQueue()
@@ -231,24 +231,36 @@ class CameraCoordinator(DataUpdateCoordinator[VacuumData]):
         self._unsub_dispatcher_ready = async_dispatcher_connect(
             hass,
             f"{DOMAIN}_{self.file_name}_update_ready",
-            self._handle_mqtt_camera_event,
+            self.async_process_update,
+        )
+        self._debouncer = Debouncer(
+            hass,
+            LOGGER,
+            cooldown=0.3,  # adjust the cooldown as needed
+            immediate=True,
+            function=self._handle_mqtt_camera_event,
         )
 
         LOGGER.debug("Camera coordinator initialized for: %s", self.file_name)
 
+    async def async_process_update(self):
+        await self._debouncer.async_call()
+
     def cleanup_all_dispatchers(self):
         """Clean up all dispatcher connections."""
         # Clean up coordinator's own dispatchers
-        if hasattr(self, '_unsub_dispatcher_ready') and self._unsub_dispatcher_ready:
+        if hasattr(self, "_unsub_dispatcher_ready") and self._unsub_dispatcher_ready:
             self._unsub_dispatcher_ready()
             self._unsub_dispatcher_ready = None
 
         # Clean up processor's dispatchers
-        if hasattr(self, 'processor') and self.processor:
-            if hasattr(self.processor, 'unsub_dispatcher') and self.processor.unsub_dispatcher:
+        if hasattr(self, "processor") and self.processor:
+            if (
+                hasattr(self.processor, "unsub_dispatcher")
+                and self.processor.unsub_dispatcher
+            ):
                 self.processor.unsub_dispatcher()
                 self.processor.unsub_dispatcher = None
-
 
     @property
     def setup_complete(self) -> bool:
@@ -275,8 +287,7 @@ class CameraCoordinator(DataUpdateCoordinator[VacuumData]):
         if (self.should_stream or not self._prev_image) or (
             self.shared.frame_number != self.processor.get_frame_number()
         ):
-            self._prev_image = self.current_image.copy()
-            # LOGGER.debug("Camera manual update pushed: %s", self.file_name)
+            self._prev_image = True
             return self.async_set_updated_data(VacuumData(camera=data))
         return None
 
