@@ -10,6 +10,8 @@
 
 ## Current Release: [![GitHub Latest Release][releases_shield]][latest_release] [![GitHub All Releases][downloads_total_shield]][releases]
 
+# 2025.7.0 recal: If you did update the camera to this version please revert immediately to the previus version you were running. Really sorry for the incovininece.
+
 ![Screenshot 2023-12-27 at 13 37 57](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/4f1f76ee-b507-4fde-b1bd-32e6980873cb)
 
 
@@ -47,24 +49,18 @@ Unfotunatelly the planed release 2025.05.0 will not happen as per are still work
 
 Would be really appreciated your kind help and understanding.
 
-#### 2025.5.0 - **Refactoring and New Additions**
+#### 2025.8.0 - **Refactoring and New Additions**
 
 - This release will be postponed till below is completed and tested.
 - **Changes**
-  - (in progress) Improvements of the code structure.
   - Refactored the code to improve readability and maintainability.
   - Remove file operation routines not required for logging export.
 - **Features / Improvements :**
-  - (done) Improved rooms outlines, for non rectangular rooms shapes.
   - Enable loading and saving of maps via services by fully integrating with  [MapLoader](https://github.com/pkoehlers/maploader).
-  - (done) Enable selection of specific elements to display on the map..
-  - (postponed) Add options for Area and Floor management.
+  - Add options for Area and Floor management.
 - **Potential Fixes:**
   - Fix Obstacles view.
-  - Fix camera startup timeouts.
   - Fix the issue where the absence of a map causes the camera to malfunction.
-  - Fix the alpha colours of the elements.
-  - Implement a fully coordinated integration of the cameras and sensors.
 </details>
 
 

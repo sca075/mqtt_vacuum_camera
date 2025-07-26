@@ -18,7 +18,6 @@ from .entity import MQTTVacuumCoordinatorEntity
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
-
 async def async_setup_entry(
     hass: core.HomeAssistant,
     config_entry: config_entries.ConfigEntry,
@@ -47,6 +46,7 @@ class MQTTVacuumCamera(MQTTVacuumCoordinatorEntity, Camera):
     ) -> None:
         MQTTVacuumCoordinatorEntity.__init__(self, coordinator, device_info)
         Camera.__init__(self)
+        
         self.content_type = "image/png"
 
     @property
