@@ -1,5 +1,5 @@
 """Sensors for Rand256.
-Version: 2025.3.0b10
+Version: 2025.7.1
 """
 
 from __future__ import annotations
