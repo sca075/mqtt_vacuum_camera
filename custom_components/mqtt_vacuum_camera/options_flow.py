@@ -278,7 +278,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                 "draw_elements",
                 "segments_visibility",
             ],
-        )  #
+        )
 
     # pylint: disable=unused-argument
     async def async_step_colours(self, user_input=None) -> ConfigFlowResult:
@@ -327,7 +327,6 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
             menu_options=[
                 "download_logs",
                 "map_trims",
-                # "image_offset", # Temporarily disabled until drawings part is fixed
             ],
         )
 

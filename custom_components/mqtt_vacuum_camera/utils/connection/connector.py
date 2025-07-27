@@ -31,7 +31,6 @@ class RRMData:
     """Class for RRM data."""
 
     rrm_json: Any = None
-    # rrm_payload: Any = None
     rrm_destinations: Any = None
     mqtt_vac_re_stat: Any = None
     rrm_active_segments: List[Any] = field(default_factory=list)
@@ -134,7 +133,6 @@ class ValetudoConnector:
 
         payload = self.mqtt_data.img_payload[0]
         data_type = self.mqtt_data.img_payload[1]
-        # "Rand256" if self.is_rand256 else "Hypfer"
         LOGGER.debug(
             "%s: Updating data from MQTT. %s", self.connector_data.file_name, data_type
         )

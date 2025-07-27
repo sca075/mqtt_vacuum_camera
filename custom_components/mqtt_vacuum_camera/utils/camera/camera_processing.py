@@ -8,7 +8,6 @@ avoid the overload of the main_thread of Home Assistant.
 from __future__ import annotations
 
 import asyncio
-from asyncio import gather, get_event_loop
 import concurrent.futures
 from io import BytesIO
 from typing import Any
@@ -21,6 +20,7 @@ from valetudo_map_parser.config.types import Color, JsonType, PilPNG
 from valetudo_map_parser.hypfer_handler import HypferMapImageHandler
 from valetudo_map_parser.rand25_handler import ReImageHandler
 
+from custom_components.mqtt_vacuum_camera.utils.thread_pool import ThreadPoolManager
 from custom_components.mqtt_vacuum_camera.const import LOGGER, NOT_STREAMING_STATES
 from custom_components.mqtt_vacuum_camera.utils.files_operations import (
     async_get_active_user_language,
@@ -35,11 +35,12 @@ class CameraProcessor:
     CameraProcessor class to process the image data from the Vacuum Json data.
     """
 
-    def __init__(self, hass, camera_shared):
+    def __init__(self, hass, camera_shared, thread_pool: ThreadPoolManager):
         self.hass = hass
         self._map_handler = HypferMapImageHandler(camera_shared)
         self._re_handler = ReImageHandler(camera_shared)
         self._shared = camera_shared
+        self._thread_pool = thread_pool
         self._file_name = self._shared.file_name
         self._translations_path = self.hass.config.path(
             "custom_components/mqtt_vacuum_camera/translations/"
@@ -164,45 +165,24 @@ class CameraProcessor:
             return pil_img
         return None
 
-    def process_valetudo_data(self, parsed_json: JsonType):
+    def run_async_process_valetudo_data(self, parsed_json: JsonType):
         """Async function to process the image data from the Vacuum Json data."""
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
         try:
             if self._shared.is_rand:
-                result = loop.run_until_complete(
-                    self.async_process_rand256_data(parsed_json)
+                result = self._thread_pool.run_async_in_executor(
+                    "camera_processing",
+                    self.async_process_rand256_data,
+                    parsed_json,
                 )
             else:
-                result = loop.run_until_complete(
-                    self.async_process_valetudo_data(parsed_json)
+                result = self._thread_pool.run_async_in_executor(
+                    "camera_processing",
+                    self.async_process_valetudo_data,
+                    parsed_json,
                 )
-        finally:
-            loop.close()
-        return result
-
-    async def run_async_process_valetudo_data(
-        self, parsed_json: JsonType
-    ) -> PilPNG | None:
-        """Thread function to process the image data from the Vacuum Json data."""
-        num_processes = 1
-        parsed_json_list = [parsed_json for _ in range(num_processes)]
-        loop = get_event_loop()
-
-        with concurrent.futures.ThreadPoolExecutor(
-            max_workers=1, thread_name_prefix=f"{self._file_name}_camera_processing"
-        ) as executor:
-            tasks = [
-                loop.run_in_executor(executor, self.process_valetudo_data, parsed_json)
-                for parsed_json in parsed_json_list
-            ]
-            images = await gather(*tasks)
-
-        if isinstance(images, list) and len(images) > 0:
-            LOGGER.debug("%s: Camera frame processed.", self._file_name)
-            result = images[0]
-        else:
-            result = None
+        except RuntimeError as e:
+            LOGGER.error("Error processing image data: %s", str(e), exc_info=True)
+            return None
 
         return result
 
@@ -229,47 +209,22 @@ class CameraProcessor:
             )
         return pil_img
 
-    def process_status_text(
-        self, pil_img: PilPNG, color: Color, font: str, img_top: bool = True
-    ):
+    def run_async_draw_image_text(self, pil_img: PilPNG, color: Color):
         """Async function to process the image data from the Vacuum Json data."""
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         try:
-            result = loop.run_until_complete(
-                self.async_draw_image_text(pil_img, color, font, img_top)
+            result = self._thread_pool.run_async_in_executor(
+                "camera_processing",
+                self.async_draw_image_text,
+                pil_img,
+                color,
+                self._shared.vacuum_status_font,
+                self._shared.vacuum_status_position,
             )
-        finally:
-            loop.close()
-        return result
-
-    async def run_async_draw_image_text(self, pil_img: PilPNG, color: Color) -> PilPNG:
-        """Thread function to process the image data from the Vacuum Json data."""
-        num_processes = 1
-        pil_img_list = [pil_img for _ in range(num_processes)]
-        loop = get_event_loop()
-
-        with concurrent.futures.ThreadPoolExecutor(
-            max_workers=1, thread_name_prefix=f"{self._file_name}_camera_text"
-        ) as executor:
-            tasks = [
-                loop.run_in_executor(
-                    executor,
-                    self.process_status_text,
-                    pil_img,
-                    color,
-                    self._shared.vacuum_status_font,
-                    self._shared.vacuum_status_position,
-                )
-                for pil_img in pil_img_list
-            ]
-            images = await gather(*tasks)
-
-        if isinstance(images, list) and len(images) > 0:
-            result = images[0]
-        else:
-            result = None
-
+        except RuntimeError as e:
+            LOGGER.error("Error processing image data: %s", str(e), exc_info=True)
+            return None
         return result
 
     @staticmethod

@@ -5,8 +5,6 @@ Autor: @sca075"""
 from functools import partial
 
 from homeassistant.core import HomeAssistant, ServiceCall, SupportsResponse
-
-# from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import config_validation as cv
 import voluptuous as vol
 

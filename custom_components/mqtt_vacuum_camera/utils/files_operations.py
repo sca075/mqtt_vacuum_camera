@@ -331,9 +331,9 @@ async def async_clean_up_all_auto_crop_files(hass: HomeAssistant) -> None:
     for file_path in files_to_delete:
         try:
             os.remove(file_path)
-            print(f"Deleted: {file_path}")
+            LOGGER.debug("Deleted: %s", file_path)
         except Exception as e:
-            print(f"Error deleting {file_path}: {e}")
+            LOGGER.error("Error deleting %s: %s", file_path, e)
 
 
 async def async_reset_map_trims(hass: HomeAssistant, entity_list: list) -> bool:

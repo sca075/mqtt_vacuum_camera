@@ -10,10 +10,7 @@
 
 ## Current Release: [![GitHub Latest Release][releases_shield]][latest_release] [![GitHub All Releases][downloads_total_shield]][releases]
 
-# 2025.7.0 recal: If you did update the camera to this version please revert immediately to the previus version you were running. Really sorry for the incovininece.
-
 ![Screenshot 2023-12-27 at 13 37 57](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/4f1f76ee-b507-4fde-b1bd-32e6980873cb)
-
 
 # Valetudo Vacuums maps in Home Assistant was never so easy.
 
@@ -41,15 +38,11 @@ Our current focus is evolving beyond map rendering to provide full vacuum contro
 <details>
    <summary>Planned in the next Release</summary>
 
-In the last releases we did start to implement the Actions for Rand256 and Hypfer.
-We can now see the Obstacles Images when available, and somehow we start to organize the code. 
-The camera is stable and updated to all requirements of Home Assistant.
-Will be also time to take a brake and work in the background, so I do not expect unless required releases in January.
-Unfotunatelly the planed release 2025.05.0 will not happen as per are still work in progress.
-
 Would be really appreciated your kind help and understanding.
+The next release isn't planned yet, there are serius refactoring to do.
+If you want to contribute, please consider joining our efforts.
 
-#### 2025.8.0 - **Refactoring and New Additions**
+#### 2025.x.0 - **Refactoring and New Additions**
 
 - This release will be postponed till below is completed and tested.
 - **Changes**
@@ -58,9 +51,7 @@ Would be really appreciated your kind help and understanding.
 - **Features / Improvements :**
   - Enable loading and saving of maps via services by fully integrating with  [MapLoader](https://github.com/pkoehlers/maploader).
   - Add options for Area and Floor management.
-- **Potential Fixes:**
-  - Fix Obstacles view.
-  - Fix the issue where the absence of a map causes the camera to malfunction.
+  - Option to resize the Robot? maybe ;)
 </details>
 
 

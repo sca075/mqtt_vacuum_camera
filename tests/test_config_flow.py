@@ -1,10 +1,10 @@
+# from unittest.mock import patch
+from unittest import mock
+
 import pytest
 
 # from homeassistant import config_entries, core
 from custom_components.mqtt_vacuum_camera import config_flow
-
-# from unittest.mock import patch
-from unittest import mock
 
 
 @pytest.fixture

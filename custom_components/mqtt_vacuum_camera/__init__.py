@@ -17,12 +17,17 @@ from homeassistant.const import (
     Platform,
 )
 from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.reload import async_register_admin_service
 from homeassistant.helpers.storage import STORAGE_DIR
-from homeassistant.helpers.device_registry import DeviceInfo
 from valetudo_map_parser.config.shared import CameraShared, CameraSharedManager
 
-from .common import get_vacuum_device_info, get_vacuum_mqtt_topic, update_options
+from .common import (
+    get_camera_device_info,
+    get_vacuum_device_info,
+    get_vacuum_mqtt_topic,
+    update_options,
+)
 from .const import (
     CAMERA_STORAGE,
     CONF_VACUUM_CONFIG_ENTRY_ID,
@@ -32,19 +37,18 @@ from .const import (
     LOGGER,
 )
 from .coordinator import MQTTVacuumCoordinator
-from .utils.connection.connector import ValetudoConnector
-from .common import get_camera_device_info
 from .utils.camera.camera_services import (
     obstacle_view,
     reload_camera_config,
     reset_trims,
 )
+from .utils.connection.connector import ValetudoConnector
+from .utils.connection.decompress import DecompressionManager
 from .utils.files_operations import (
     async_get_translations_vacuum_id,
     async_rename_room_description,
 )
 from .utils.thread_pool import ThreadPoolManager
-from .utils.connection.decompress import DecompressionManager
 from .utils.vacuum.mqtt_vacuum_services import (
     async_register_vacuums_services,
     async_remove_vacuums_services,

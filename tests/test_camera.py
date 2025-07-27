@@ -1,8 +1,10 @@
 import socket
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
-from custom_components.mqtt_vacuum_camera.camera import ValetudoCamera
+
 from homeassistant.components.camera import Camera
+import pytest
+
+from custom_components.mqtt_vacuum_camera.camera import ValetudoCamera
 
 
 @pytest.fixture

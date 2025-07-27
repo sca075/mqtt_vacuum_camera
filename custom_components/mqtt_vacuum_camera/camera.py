@@ -86,14 +86,13 @@ class MQTTCamera(CoordinatorEntity, Camera):
         self.hass = coordinator.hass
         self._shared = coordinator.shared
         self._file_name = coordinator.file_name
-        self._state = "init"
         self._attr_model = "MQTT Vacuums"
         self._attr_brand = "MQTT Vacuum Camera"
         self._attr_name = "Camera"
         self._attr_is_on = True
         self._attr_motion_detection_enabled = False
         self._homeassistant_path = self.hass.config.path()  # get Home Assistant path
-        self._storage_path, self.snapshot_img, self.log_file = self._init_paths()
+        self._storage_path, self.log_file = self._init_paths()
         self._mqtt_listen_topic = coordinator.vacuum_topic
         self._attr_unique_id = device_info.get(
             CONF_UNIQUE_ID,
@@ -114,7 +113,6 @@ class MQTTCamera(CoordinatorEntity, Camera):
         self._init_clear_www_folder()
         self._last_image = None
         self._obstacle_image = None
-        self.auth_update_time = None
         self._dm = DecompressionManager.get_instance(self._file_name)
         LOGGER.debug(
             "%s: Initialized DecompressionManager for this vacuum", self._file_name
@@ -125,9 +123,9 @@ class MQTTCamera(CoordinatorEntity, Camera):
         # get the colours used in the maps.
         self._colours = ColorsManagement(self._shared)
         self._colours.set_initial_colours(device_info)
-        # Create the processor for the camera.
-        self.processor = CameraProcessor(self.hass, self._shared)
         self.thread_pool = ThreadPoolManager.get_instance(self._file_name)
+        # Create the processor for the camera.
+        self.processor = CameraProcessor(self.hass, self._shared, self.thread_pool)
         self._shared.image_grab = True
         # Listen to the vacuum.start event
         self.uns_event_vacuum_start = self.hass.bus.async_listen(
@@ -162,9 +160,8 @@ class MQTTCamera(CoordinatorEntity, Camera):
         storage_path = f"{self.hass.config.path(STORAGE_DIR)}/{CAMERA_STORAGE}"
         if not os.path.exists(storage_path):
             storage_path = f"{self._homeassistant_path}/{STORAGE_DIR}"
-        snapshot_img = f"{storage_path}/{self._file_name}.png"
         log_file = f"{storage_path}/{self._file_name}.zip"
-        return storage_path, snapshot_img, log_file
+        return storage_path, log_file
 
     async def async_added_to_hass(self) -> None:
         """Handle entity added to Home Assistant."""
