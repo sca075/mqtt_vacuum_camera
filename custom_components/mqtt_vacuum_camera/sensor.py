@@ -25,6 +25,7 @@ from .coordinator import MQTTVacuumCoordinator
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
+
 @dataclass(frozen=True)
 class VacuumSensorDescription(SensorEntityDescription):
     """A class that describes vacuum sensor entities."""

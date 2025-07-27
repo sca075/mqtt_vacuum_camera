@@ -387,7 +387,9 @@ class MQTTCamera(CoordinatorEntity, Camera):
         # Obstacle View Processing
         if self._shared.camera_mode == CameraModes.OBSTACLE_VIEW:
             if self._obstacle_image is not None:
-                self.Image = self._obstacle_image # this must be set for the camera_image() to work.
+                self.Image = (
+                    self._obstacle_image
+                )  # this must be set for the camera_image() to work.
                 return self._obstacle_image
 
         # Map View Processing
@@ -664,15 +666,17 @@ class MQTTCamera(CoordinatorEntity, Camera):
 
     async def _process_obstacle_event(self):
         """Process the latest obstacle event after debouncing."""
-        if not hasattr(self, '_latest_obstacle_event'):
-            LOGGER.debug("%s: No obstacle event data available for processing", self._file_name)
+        if not hasattr(self, "_latest_obstacle_event"):
+            LOGGER.debug(
+                "%s: No obstacle event data available for processing", self._file_name
+            )
             return
 
         event = self._latest_obstacle_event
         LOGGER.debug(
             "%s: Processing debounced obstacle event: %s",
             self._file_name,
-            str(event.data)
+            str(event.data),
         )
         await self.handle_obstacle_view(event)
 
@@ -770,7 +774,10 @@ class MQTTCamera(CoordinatorEntity, Camera):
             return await _set_map_view_mode("Obstacle View Exit Requested.")
 
         # Prevent processing if already in obstacle processing modes
-        if self._shared.camera_mode in [CameraModes.OBSTACLE_DOWNLOAD, CameraModes.OBSTACLE_SEARCH]:
+        if self._shared.camera_mode in [
+            CameraModes.OBSTACLE_DOWNLOAD,
+            CameraModes.OBSTACLE_SEARCH,
+        ]:
             LOGGER.debug(
                 "%s: Already processing obstacle view (mode: %s), ignoring request",
                 self._file_name,
@@ -778,12 +785,11 @@ class MQTTCamera(CoordinatorEntity, Camera):
             )
             return self.Image
 
-        if (
-            obstacles_data
-            and self._shared.camera_mode == CameraModes.MAP_VIEW
-        ):
+        if obstacles_data and self._shared.camera_mode == CameraModes.MAP_VIEW:
             if event.data.get("entity_id") != self.entity_id:
-                return await _set_camera_mode(CameraModes.MAP_VIEW, "Entity ID mismatch")
+                return await _set_camera_mode(
+                    CameraModes.MAP_VIEW, "Entity ID mismatch"
+                )
             await _set_camera_mode(
                 CameraModes.OBSTACLE_SEARCH, "Obstacle View Requested"
             )
@@ -815,8 +821,12 @@ class MQTTCamera(CoordinatorEntity, Camera):
                     # Download the image
                     try:
                         image_data = await asyncio.wait_for(
-                            fut=self.processor.download_image(nearest_obstacle["link"], DOWNLOAD_TIMEOUT),
-                            timeout=(DOWNLOAD_TIMEOUT + 1), # dead man switch, do not remove.
+                            fut=self.processor.download_image(
+                                nearest_obstacle["link"], DOWNLOAD_TIMEOUT
+                            ),
+                            timeout=(
+                                DOWNLOAD_TIMEOUT + 1
+                            ),  # dead man switch, do not remove.
                         )
                     except asyncio.TimeoutError:
                         LOGGER.warning("%s: Image download timed out.", self._file_name)
@@ -826,7 +836,9 @@ class MQTTCamera(CoordinatorEntity, Camera):
 
                     # Process the image if download was successful
                     if image_data is not None:
-                        await _set_camera_mode(CameraModes.OBSTACLE_VIEW, "Image downloaded successfully")
+                        await _set_camera_mode(
+                            CameraModes.OBSTACLE_VIEW, "Image downloaded successfully"
+                        )
                         try:
                             start_time = time.perf_counter()
                             # Open the downloaded image with PIL
@@ -845,7 +857,9 @@ class MQTTCamera(CoordinatorEntity, Camera):
                                     offset_func=None,
                                 )
                                 # Handle the case where async_resize_image returns an Image object instead of a tuple
-                                resize_result = await async_resize_image(params=resize_data)
+                                resize_result = await async_resize_image(
+                                    params=resize_data
+                                )
                                 if isinstance(resize_result, tuple):
                                     resized_image, _ = resize_result
                                 else:
