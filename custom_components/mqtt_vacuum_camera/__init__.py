@@ -53,6 +53,7 @@ from .utils.vacuum.mqtt_vacuum_services import (
 
 PLATFORMS = [Platform.CAMERA, Platform.SENSOR]
 
+
 def init_shared_data(
     mqtt_listen_topic: str,
     device_info: DeviceInfo,
@@ -119,7 +120,9 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
 
     is_rand256 = is_rand256_vacuum(vacuum_device)
 
-    data_coordinator = await init_coordinator(hass, entry, mqtt_topic_vacuum, is_rand256)
+    data_coordinator = await init_coordinator(
+        hass, entry, mqtt_topic_vacuum, is_rand256
+    )
 
     hass_data.update(
         {
@@ -210,9 +213,7 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
         await hass.async_block_till_done()
         return True
 
-    hass.bus.async_listen_once(
-        EVENT_HOMEASSISTANT_STOP, handle_homeassistant_stop
-    )
+    hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, handle_homeassistant_stop)
 
     # Make sure MQTT integration is enabled and the client is available
     if not await mqtt.async_wait_for_mqtt_client(hass):

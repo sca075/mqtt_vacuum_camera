@@ -2,6 +2,7 @@
 MQTT Vacuum Camera Coordinator.
 Version: 2025.7.1
 """
+
 from __future__ import annotations
 
 from datetime import timedelta

@@ -181,7 +181,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
             await self._mqtt.async_unsubscribe_from_topics()
 
         # Shutdown thread pool for this camera instance only
-        if hasattr(self, 'thread_pool') and self.thread_pool:
+        if hasattr(self, "thread_pool") and self.thread_pool:
             await self.thread_pool.shutdown_instance()
             LOGGER.debug("Thread pool for camera %s shut down", self._file_name)
 

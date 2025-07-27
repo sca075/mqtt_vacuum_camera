@@ -224,9 +224,13 @@ class ThreadPoolManager:
                     except Exception as e:
                         LOGGER.warning("Error shutting down pool %s: %s", pool_name, e)
 
-                LOGGER.debug("Thread pools for instance %s are now shutdown", self.vacuum_id)
+                LOGGER.debug(
+                    "Thread pools for instance %s are now shutdown", self.vacuum_id
+                )
             except Exception as e:
-                LOGGER.error("Error during thread pool shutdown for %s: %s", self.vacuum_id, e)
+                LOGGER.error(
+                    "Error during thread pool shutdown for %s: %s", self.vacuum_id, e
+                )
 
         # Clear this instance's pools
         self._pools.clear()
@@ -235,7 +239,9 @@ class ThreadPoolManager:
         with self._instances_lock:
             if self.vacuum_id in self._instances:
                 del self._instances[self.vacuum_id]
-                LOGGER.debug("Removed instance %s from instances dictionary", self.vacuum_id)
+                LOGGER.debug(
+                    "Removed instance %s from instances dictionary", self.vacuum_id
+                )
 
         # Clear the LRU cache to ensure fresh instances are created
         self.get_instance.cache_clear()
