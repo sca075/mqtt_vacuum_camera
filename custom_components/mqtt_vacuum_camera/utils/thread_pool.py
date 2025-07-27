@@ -202,6 +202,45 @@ class ThreadPoolManager:
         """
         return ThreadPoolManager(vacuum_id)
 
+    async def shutdown_instance(self):
+        """
+        Shutdown all thread pools for this specific instance only.
+        This is useful for individual camera reload/removal.
+        """
+        LOGGER.debug("Shutting down thread pools for instance: %s", self.vacuum_id)
+
+        # Collect all pools for this instance
+        pools_to_shutdown = list(self._pools.items())
+
+        # Shutdown all pools for this instance
+        if pools_to_shutdown:
+            try:
+                # Initiate shutdown for all pools without waiting
+                for pool_name, pool in pools_to_shutdown:
+                    LOGGER.debug("Shutdown for pool: %s", pool_name)
+                    try:
+                        # Use shutdown(wait=False) for immediate return
+                        pool.shutdown(wait=False)
+                    except Exception as e:
+                        LOGGER.warning("Error shutting down pool %s: %s", pool_name, e)
+
+                LOGGER.debug("Thread pools for instance %s are now shutdown", self.vacuum_id)
+            except Exception as e:
+                LOGGER.error("Error during thread pool shutdown for %s: %s", self.vacuum_id, e)
+
+        # Clear this instance's pools
+        self._pools.clear()
+
+        # Remove this instance from the class-level instances dictionary
+        with self._instances_lock:
+            if self.vacuum_id in self._instances:
+                del self._instances[self.vacuum_id]
+                LOGGER.debug("Removed instance %s from instances dictionary", self.vacuum_id)
+
+        # Clear the LRU cache to ensure fresh instances are created
+        self.get_instance.cache_clear()
+        LOGGER.info("Thread pools for instance %s cleared", self.vacuum_id)
+
     @classmethod
     async def shutdown_all(cls):
         """

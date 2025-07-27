@@ -5,19 +5,22 @@ Version: 2025.07.1
 
 from functools import partial
 import os
+from typing import Optional
 
 from homeassistant import config_entries, core
 from homeassistant.components import mqtt
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONF_UNIQUE_ID,
-    EVENT_HOMEASSISTANT_FINAL_WRITE,
+    EVENT_HOMEASSISTANT_STOP,
     SERVICE_RELOAD,
     Platform,
 )
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.reload import async_register_admin_service
 from homeassistant.helpers.storage import STORAGE_DIR
+from homeassistant.helpers.device_registry import DeviceInfo
+from valetudo_map_parser.config.shared import CameraShared, CameraSharedManager
 
 from .common import get_vacuum_device_info, get_vacuum_mqtt_topic, update_options
 from .const import (
@@ -29,6 +32,8 @@ from .const import (
     LOGGER,
 )
 from .coordinator import MQTTVacuumCoordinator
+from .utils.connection.connector import ValetudoConnector
+from .common import get_camera_device_info
 from .utils.camera.camera_services import (
     obstacle_view,
     reload_camera_config,
@@ -47,6 +52,45 @@ from .utils.vacuum.mqtt_vacuum_services import (
 )
 
 PLATFORMS = [Platform.CAMERA, Platform.SENSOR]
+
+def init_shared_data(
+    mqtt_listen_topic: str,
+    device_info: DeviceInfo,
+) -> tuple[Optional[CameraShared], Optional[str]]:
+    """
+    Initialize the shared data.
+    """
+    shared = None
+    file_name = None
+
+    if mqtt_listen_topic:
+        file_name = mqtt_listen_topic.split("/")[1].lower()
+        shared_manager = CameraSharedManager(file_name, device_info)
+        shared = shared_manager.get_instance()
+        LOGGER.debug("Camera %s Starting up..", file_name)
+
+    return shared, file_name
+
+
+async def start_up_mqtt(
+    hass, vacuum_topic: str, is_rand256: bool, shared: CameraShared
+) -> ValetudoConnector:
+    """
+    Initialize the MQTT Connector.
+    """
+    connector = ValetudoConnector(vacuum_topic, hass, shared, is_rand256)
+    await connector.async_subscribe_to_topics()
+    return connector
+
+
+async def init_coordinator(hass, entry, vacuum_topic, is_rand256):
+    device_info: DeviceInfo = get_camera_device_info(hass, entry)
+    shared, file_name = init_shared_data(vacuum_topic, device_info)
+    connector = await start_up_mqtt(hass, vacuum_topic, is_rand256, shared)
+    coordinator_entity = MQTTVacuumCoordinator(
+        hass, entry, vacuum_topic, is_rand256, connector, shared
+    )
+    return coordinator_entity
 
 
 async def options_update_listener(hass: core.HomeAssistant, config_entry: ConfigEntry):
@@ -75,7 +119,7 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
 
     is_rand256 = is_rand256_vacuum(vacuum_device)
 
-    data_coordinator = MQTTVacuumCoordinator(hass, entry, mqtt_topic_vacuum, is_rand256)
+    data_coordinator = await init_coordinator(hass, entry, mqtt_topic_vacuum, is_rand256)
 
     hass_data.update(
         {
@@ -129,9 +173,9 @@ async def async_unload_entry(
         entry_data = hass.data[DOMAIN].pop(entry.entry_id)
         entry_data["unsub_options_update_listener"]()
 
-        # Shutdown thread pool for this entry
+        # Shutdown thread pool for this entry only
         thread_pool = ThreadPoolManager.get_instance(entry.entry_id)
-        await thread_pool.shutdown_all()  # Shutdown all pools for this vacuum
+        await thread_pool.shutdown_instance()  # Shutdown pools only for this vacuum
         LOGGER.debug("Thread pools for %s shut down", entry.entry_id)
 
         # Remove services
@@ -162,27 +206,12 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
         # This will initialize the language cache only when needed
         # The optimization is now handled in room_manager.py
         await async_rename_room_description(hass, vacuum_entity_id)
-
-        # Shutdown all thread pools across all instances
         await ThreadPoolManager.shutdown_all()
-        LOGGER.debug("All thread pools shut down")
-
-        # Shutdown all decompression managers
-        try:
-            # Don't shut down the default instance during startup
-            # Each camera entity will create its own instance with its vacuum_id
-            # These will be properly shut down during unload_entry
-            LOGGER.debug(
-                "Skipping default DecompressionManager shutdown during startup"
-            )
-        except Exception as e:
-            LOGGER.error("Error with DecompressionManager: %s", e)
-
         await hass.async_block_till_done()
         return True
 
     hass.bus.async_listen_once(
-        EVENT_HOMEASSISTANT_FINAL_WRITE, handle_homeassistant_stop
+        EVENT_HOMEASSISTANT_STOP, handle_homeassistant_stop
     )
 
     # Make sure MQTT integration is enabled and the client is available

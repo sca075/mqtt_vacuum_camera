@@ -2,8 +2,8 @@
 MQTT Vacuum Camera Coordinator.
 Version: 2025.7.1
 """
+from __future__ import annotations
 
-import asyncio
 from datetime import timedelta
 from typing import Optional
 
@@ -28,6 +28,8 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         entry: ConfigEntry,
         vacuum_topic: str,
         rand256_vacuum: bool = False,
+        connector: Optional[ValetudoConnector] = None,
+        shared: Optional[CameraShared] = None,
         polling_interval: timedelta = timedelta(seconds=5),
     ):
         """Initialize the coordinator."""
@@ -44,15 +46,13 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         self.device_entity: ConfigEntry = entry
         self.device_info: DeviceInfo = get_camera_device_info(hass, self.device_entity)
         self.shared_manager: Optional[CameraSharedManager] = None
-        self.shared: Optional[CameraShared] = None
-        self.file_name: str = ""
-        self.connector: Optional[ValetudoConnector] = None
+        if shared:
+            self.shared = shared
+            self.shared.is_rand = self.is_rand256
+            self.file_name = shared.file_name
+        self.connector = connector
         self.in_sync_with_camera: bool = False
         self.sensor_data = SENSOR_NO_DATA
-        # Initialize shared data and MQTT connector
-        self.shared, self.file_name = self._init_shared_data(self.vacuum_topic)
-        self.start_up_mqtt()
-        self.scheduled_refresh: asyncio.TimerHandle | None = None
 
     async def _async_update_data(self):
         """
@@ -77,60 +77,6 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
                 raise UpdateFailed(f"Error fetching sensor data: {err}") from err
         else:
             return self.sensor_data
-
-    def _init_shared_data(
-        self, mqtt_listen_topic: str
-    ) -> tuple[Optional[CameraShared], Optional[str]]:
-        """
-        Initialize the shared data.
-        """
-        shared = None
-        file_name = None
-
-        if mqtt_listen_topic and not self.shared_manager:
-            file_name = mqtt_listen_topic.split("/")[1].lower()
-            self.shared_manager = CameraSharedManager(file_name, self.device_info)
-            shared = self.shared_manager.get_instance()
-            LOGGER.debug("Camera %s Starting up..", file_name)
-
-        return shared, file_name
-
-    def start_up_mqtt(self) -> ValetudoConnector:
-        """
-        Initialize the MQTT Connector.
-        """
-        self.connector = ValetudoConnector(
-            self.vacuum_topic, self.hass, self.shared, self.is_rand256
-        )
-        return self.connector
-
-    def update_shared_data(self, dev_info: DeviceInfo) -> tuple[CameraShared, str]:
-        """
-        Create or update the instance of the shared data.
-        """
-        self.shared_manager.update_shared_data(dev_info)
-        self.shared = self.shared_manager.get_instance()
-        self.shared.file_name = self.file_name
-        self.shared.device_info = dev_info
-        self.shared.is_rand = self.is_rand256
-        self.in_sync_with_camera = True
-        return self.shared, self.file_name
-
-    async def async_update_camera_data(self, process: bool = True):
-        """
-        Fetch data from the MQTT topics.
-        """
-        try:
-            async with async_timeout.timeout(10):
-                # Fetch and process maps data from the MQTT connector
-                return await self.connector.update_data(process)
-        except Exception as err:
-            LOGGER.error(
-                "Error communicating with MQTT or processing data: %s",
-                err,
-                exc_info=True,
-            )
-            raise UpdateFailed(f"Error communicating with MQTT: {err}") from err
 
     async def async_update_sensor_data(self, sensor_data):
         """Update the sensor data format before sending to the sensors."""
