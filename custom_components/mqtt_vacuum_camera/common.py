@@ -1,6 +1,6 @@
 """
 Common functions for the MQTT Vacuum Camera integration.
-Version: 2025.3.0b1
+Version: 2025.7.1b0
 """
 
 from __future__ import annotations

@@ -1,7 +1,7 @@
 """
 Language Cache for MQTT Vacuum Camera.
 This module provides caching for user language data to reduce I/O operations.
-Version: 2025.5.0
+Version: 2025.7.1b0
 """
 
 from __future__ import annotations

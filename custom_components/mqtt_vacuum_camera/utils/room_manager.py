@@ -1,7 +1,7 @@
 """
 Room Manager for MQTT Vacuum Camera.
 This module provides optimized room renaming operations.
-Version: 2025.5.0
+Version: 2025.7.1b0
 """
 
 from __future__ import annotations

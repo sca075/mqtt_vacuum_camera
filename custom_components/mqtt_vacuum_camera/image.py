@@ -1,7 +1,7 @@
 """
 MQTT Vacuum Camera Entity
 Camera just handles PIL to bytes conversion, coordinator does all processing.
-Version: 2025.7.1
+Version: 2025.7.1b0
 """
 
 from __future__ import annotations

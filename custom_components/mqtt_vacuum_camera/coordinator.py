@@ -222,8 +222,6 @@ class CameraCoordinator(DataUpdateCoordinator[VacuumData]):
         )
 
         # Mark as ready
-        self._first_update = True
-        self.actual_data_type = None
         self._setup_complete = True
         self._mqtt_subscribed = False
 

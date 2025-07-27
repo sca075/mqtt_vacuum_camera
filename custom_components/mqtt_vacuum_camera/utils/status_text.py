@@ -1,5 +1,5 @@
 """
-Version: 2025.6.0
+Version: 2025.7.1b0
 Status text of the vacuum cleaners.
 Clas to handle the status text of the vacuum cleaners.
 """

@@ -1,3 +1,8 @@
+"""
+Data model for MQTT Vacuum Camera.
+Version: 2025.7.1
+"""
+
 from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, Optional
 

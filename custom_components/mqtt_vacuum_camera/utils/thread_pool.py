@@ -1,7 +1,7 @@
 """
 Thread Pool Manager for MQTT Vacuum Camera.
 This module provides a persistent thread pool for image processing operations.
-Version: 2025.6.0
+Version: 2025.7.1b0
 """
 
 from __future__ import annotations

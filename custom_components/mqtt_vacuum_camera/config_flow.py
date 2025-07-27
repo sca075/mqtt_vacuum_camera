@@ -4,7 +4,7 @@ IMPORTANT: Maintain code when adding new options to the camera
 it will be mandatory to update const.py and common.py update_options.
 Format of the new constants must be CONST_NAME = "const_name" update also
 sting.json and en.json please.
-Version: 2025.3.0b1
+Version: 2025.7.1b0
 """
 
 import os

@@ -1,6 +1,6 @@
 """
 Obstacle View Handler Module
-Version: 2025.6.0
+Version: 2025.7.1b0
 This module handles obstacle view functionality for the MQTT Vacuum Camera.
 Extracted from camera.py to improve modularity and maintainability.
 """

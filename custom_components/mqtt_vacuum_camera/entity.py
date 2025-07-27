@@ -229,7 +229,6 @@ class MQTTVacuumCoordinatorEntity(CoordinatorEntity[CameraCoordinator]):
                     err,
                 )
                 self._vac_json_available = "Error"
-                self._processing = False
         else:
             # Image backup
             if (
@@ -247,7 +246,7 @@ class MQTTVacuumCoordinatorEntity(CoordinatorEntity[CameraCoordinator]):
                 "No PIL image available from coordinator for: %s", self._file_name
             )
         self.async_write_ha_state()
-        return self.camera_image(self._image_w, self._image_h)
+        return self.async_camera_image(self._image_w, self._image_h)
 
     @property
     def name(self) -> str:
@@ -278,7 +277,7 @@ class MQTTVacuumCoordinatorEntity(CoordinatorEntity[CameraCoordinator]):
     @property
     def supported_features(self) -> int:
         """Return supported features."""
-        return CameraEntityFeature.ON_OFF | CameraEntityFeature.STREAM
+        return CameraEntityFeature.ON_OFF
 
     @property
     def extra_state_attributes(self) -> dict:
@@ -299,7 +298,7 @@ class MQTTVacuumCoordinatorEntity(CoordinatorEntity[CameraCoordinator]):
         device_info = Dev_Info if Dev_Info else Entity_Info
         return device_info(identifiers=self._identifiers)
 
-    def camera_image(
+    def async_camera_image(
         self, width: Optional[int] = None, height: Optional[int] = None
     ) -> Optional[bytes]:
         """Camera Image"""
