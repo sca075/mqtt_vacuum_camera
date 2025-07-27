@@ -23,9 +23,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import CONF_VACUUM_IDENTIFIERS, DOMAIN, LOGGER, SENSOR_NO_DATA
 from .coordinator import MQTTVacuumCoordinator
 
-SCAN_INTERVAL = timedelta(seconds=2)
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
-
 
 @dataclass(frozen=True)
 class VacuumSensorDescription(SensorEntityDescription):
@@ -56,7 +54,7 @@ SENSOR_TYPES = {
     ),
     "consumable_filter": VacuumSensorDescription(
         native_unit_of_measurement=UnitOfTime.HOURS,
-        key="filter",
+        key="filter_life",
         icon="mdi:air-filter",
         name="Filter",
         state_class=SensorStateClass.MEASUREMENT,
@@ -203,17 +201,6 @@ class VacuumSensor(CoordinatorEntity, SensorEntity):
         await super().async_will_remove_from_hass()
 
     @callback
-    async def async_update(self):
-        """Update the sensor's state."""
-        if self.coordinator.last_update_success:
-            await self.async_handle_coordinator_update()
-
-    @property
-    def should_poll(self) -> bool:
-        """Indicate if the sensor should poll for updates."""
-        return True
-
-    @callback
     async def _extract_attributes(self):
         """Return state attributes with valid values."""
         data = self.coordinator.sensor_data
@@ -228,7 +215,7 @@ class VacuumSensor(CoordinatorEntity, SensorEntity):
         }
 
     @callback
-    async def async_handle_coordinator_update(self):
+    def _handle_coordinator_update(self):
         """Fetch the latest state from the coordinator and update the sensor."""
         data = self.coordinator.sensor_data
         if data is None:

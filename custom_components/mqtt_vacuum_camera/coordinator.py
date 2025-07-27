@@ -29,7 +29,7 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         entry: ConfigEntry,
         vacuum_topic: str,
         rand256_vacuum: bool = False,
-        polling_interval: timedelta = timedelta(seconds=3),
+        polling_interval: timedelta = timedelta(seconds=5),
     ):
         """Initialize the coordinator."""
         super().__init__(
@@ -37,6 +37,7 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
             LOGGER,
             name=DEFAULT_NAME,
             update_interval=polling_interval,
+            update_method=self._async_update_data,
         )
         self.hass: HomeAssistant = hass
         self.vacuum_topic: str = vacuum_topic
@@ -53,14 +54,6 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         self.shared, self.file_name = self._init_shared_data(self.vacuum_topic)
         self.start_up_mqtt()
         self.scheduled_refresh: asyncio.TimerHandle | None = None
-
-    def schedule_refresh(self) -> None:
-        """Schedule coordinator refresh after 1 second."""
-        if self.scheduled_refresh:
-            self.scheduled_refresh.cancel()
-        self.scheduled_refresh = async_call_later(
-            self.hass, 1, lambda: asyncio.create_task(self.async_refresh())
-        )
 
     async def _async_update_data(self):
         """
