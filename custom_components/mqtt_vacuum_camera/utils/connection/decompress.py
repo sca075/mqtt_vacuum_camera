@@ -1,10 +1,11 @@
 """
 Decompression Manager for MQTT Vacuum Camera.
-Version: 2025.6.0
+Version: 2025.5.0
 """
 
 from __future__ import annotations
 
+import asyncio
 import json
 from typing import Any, Dict, Optional
 
@@ -19,14 +20,14 @@ def _safe_zlib_decompress(data: bytes) -> str:
     try:
         return isal_zlib.decompress(data).decode()
     except Exception as e:
-        raise ValueError(f"Invalid Hypfer payload: {e}") from e
+        raise ValueError(f"Invalid Hypfer payload: {e}")
 
 
 def _safe_gzip_decompress(data: bytes) -> bytes:
     try:
         return igzip.decompress(data)
     except Exception as e:
-        raise ValueError(f"Invalid Rand256 payload: {e}") from e
+        raise ValueError(f"Invalid Rand256 payload: {e}")
 
 
 class DecompressionManager:
@@ -35,21 +36,21 @@ class DecompressionManager:
     _instances: Dict[str, DecompressionManager] = {}
 
     @classmethod
-    def get_instance(cls, file_name: str) -> DecompressionManager:
-        if file_name not in cls._instances:
+    def get_instance(cls, vacuum_id: str) -> DecompressionManager:
+        if vacuum_id not in cls._instances:
             instance = super().__new__(cls)
-            instance._init(file_name)
-            cls._instances[file_name] = instance
-        return cls._instances[file_name]
+            instance._init(vacuum_id)
+            cls._instances[vacuum_id] = instance
+        return cls._instances[vacuum_id]
 
-    def _init(self, file_name: str) -> None:
-        self.vacuum_id = file_name
-        self._thread_pool = ThreadPoolManager(file_name)
+    def _init(self, vacuum_id: str) -> None:
+        self.vacuum_id = vacuum_id
+        self._thread_pool = ThreadPoolManager(vacuum_id)
         self._parser = RRMapParser()
-        LOGGER.debug(f"Initialized DecompressionManager for vacuum: {file_name}")
+        LOGGER.debug(f"Initialized DecompressionManager for vacuum: {vacuum_id}")
 
     async def decompress(
-        self, payload: bytes = None, data_type: str = None
+        self, topic: str = None, payload: bytes = None, data_type: str = None
     ) -> Optional[Any]:
         """Process a payload and return the result."""
         # If no parameters provided, use the last stored payload
@@ -81,3 +82,8 @@ class DecompressionManager:
         except Exception as e:
             LOGGER.error(f"{self.vacuum_id}: Error processing payload: {e}")
             return None
+
+    async def shutdown(self) -> None:
+        await self._thread_pool.shutdown("decompression")
+        if self.vacuum_id in DecompressionManager._instances:
+            del DecompressionManager._instances[self.vacuum_id]

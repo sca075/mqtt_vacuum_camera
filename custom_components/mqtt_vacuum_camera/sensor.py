@@ -16,12 +16,12 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.const import PERCENTAGE, UnitOfArea, UnitOfTime
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity import EntityCategory
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import CONF_VACUUM_IDENTIFIERS, DOMAIN, LOGGER, SENSOR_NO_DATA
-from .coordinator import SensorsCoordinator
+from .coordinator import MQTTVacuumCoordinator
 
 SCAN_INTERVAL = timedelta(seconds=2)
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
@@ -177,14 +177,14 @@ SENSOR_TYPES = {
 }
 
 
-class VacuumSensor(CoordinatorEntity[SensorsCoordinator], SensorEntity):
+class VacuumSensor(CoordinatorEntity, SensorEntity):
     """Representation of a vacuum sensor."""
 
     entity_description: VacuumSensorDescription
 
     def __init__(
         self,
-        coordinator: SensorsCoordinator,
+        coordinator: MQTTVacuumCoordinator,
         description: VacuumSensorDescription,
         sensor_type: str,
         vacuum_identifier,
@@ -201,6 +201,12 @@ class VacuumSensor(CoordinatorEntity[SensorsCoordinator], SensorEntity):
     async def async_will_remove_from_hass(self) -> None:
         """Handle entity removal from Home Assistant."""
         await super().async_will_remove_from_hass()
+
+    @callback
+    async def async_update(self):
+        """Update the sensor's state."""
+        if self.coordinator.last_update_success:
+            await self.async_handle_coordinator_update()
 
     @property
     def should_poll(self) -> bool:
@@ -222,7 +228,7 @@ class VacuumSensor(CoordinatorEntity[SensorsCoordinator], SensorEntity):
         }
 
     @callback
-    def _handle_coordinator_update(self):
+    async def async_handle_coordinator_update(self):
         """Fetch the latest state from the coordinator and update the sensor."""
         data = self.coordinator.sensor_data
         if data is None:
@@ -282,8 +288,7 @@ def process_timestamp(native_value):
 
 async def async_setup_entry(hass: HomeAssistant, config_entry, async_add_entities):
     """Set up vacuum sensors based on a config entry."""
-    coordinators = hass.data[DOMAIN][config_entry.entry_id]["coordinators"]
-    sensor_coordinator = coordinators["sensors"]
+    coordinator = hass.data[DOMAIN][config_entry.entry_id]["coordinator"]
     vacuum_identifier = hass.data[DOMAIN][config_entry.entry_id][
         CONF_VACUUM_IDENTIFIERS
     ]
@@ -291,8 +296,6 @@ async def async_setup_entry(hass: HomeAssistant, config_entry, async_add_entitie
     sensors = []
     for sensor_type, description in SENSOR_TYPES.items():
         sensors.append(
-            VacuumSensor(
-                sensor_coordinator, description, sensor_type, vacuum_identifier
-            )
+            VacuumSensor(coordinator, description, sensor_type, vacuum_identifier)
         )
     async_add_entities(sensors, update_before_add=False)

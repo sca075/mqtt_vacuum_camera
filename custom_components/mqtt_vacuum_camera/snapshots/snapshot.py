@@ -1,5 +1,6 @@
 """Snapshot Version: 2025.3.0b0"""
 
+import asyncio
 import logging
 import os
 import shutil
@@ -42,19 +43,12 @@ class Snapshots:
                 return hass.config.path(STORAGE_DIR)
         return storage_path
 
-    def process_snapshot(self, image_data: PilPNG, json_data: Any = None) -> None:
+    def process_snapshot(self, json_data: Any, image_data: PilPNG) -> None:
         """Process the snapshot synchronously.
 
         This function is called from the thread pool.
         Stores both the JSON data and the image.
         """
-        # Validate image data before processing
-        if image_data is None:
-            _LOGGER.warning(
-                "%s: Cannot process snapshot - no image data provided", self.file_name
-            )
-            return
-
         try:
             # Store JSON data if provided
             if json_data and not isinstance(json_data, bool):
@@ -101,5 +95,14 @@ class Snapshots:
         # Run the snapshot processing in the thread pool
         # The ThreadPoolManager will automatically use a shared pool for this vacuum
         return await thread_pool.run_in_executor(
-            "snapshot", self.process_snapshot, pil_img, json_data
+            "snapshot", self.process_snapshot, json_data, pil_img
         )
+
+    async def shutdown(self) -> None:
+        """Shutdown the snapshot thread pool.
+
+        This should be called when the camera is unloaded or when Home Assistant is shutting down.
+        """
+        _LOGGER.debug("%s: Shutting down snapshot thread pool", self.file_name)
+        thread_pool = ThreadPoolManager.get_instance()
+        await thread_pool.shutdown(f"{self.file_name}_snapshot")
