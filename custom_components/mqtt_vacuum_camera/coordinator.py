@@ -26,25 +26,26 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
     def __init__(
         self,
         hass: HomeAssistant,
-        entry: ConfigEntry,
+        original_entry: ConfigEntry,
         vacuum_topic: str,
         rand256_vacuum: bool = False,
         connector: Optional[ValetudoConnector] = None,
         shared: Optional[CameraShared] = None,
-        polling_interval: timedelta = timedelta(seconds=5),
+        polling_interval: timedelta = timedelta(seconds=10),
     ):
         """Initialize the coordinator."""
         super().__init__(
             hass,
             LOGGER,
             name=DEFAULT_NAME,
+            config_entry=original_entry,
             update_interval=polling_interval,
             update_method=self._async_update_data,
         )
         self.hass: HomeAssistant = hass
         self.vacuum_topic: str = vacuum_topic
         self.is_rand256: bool = rand256_vacuum
-        self.device_entity: ConfigEntry = entry
+        self.device_entity: ConfigEntry = original_entry
         self.device_info: DeviceInfo = get_camera_device_info(hass, self.device_entity)
         self.shared_manager: Optional[CameraSharedManager] = None
         if shared:

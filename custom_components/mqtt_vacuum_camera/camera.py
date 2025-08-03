@@ -90,6 +90,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         self._attr_brand = "MQTT Vacuum Camera"
         self._attr_name = "Camera"
         self._attr_is_on = True
+        self.content_type = "image/png"
         self._attr_motion_detection_enabled = False
         self._homeassistant_path = self.hass.config.path()  # get Home Assistant path
         self._storage_path, self.log_file = self._init_paths()

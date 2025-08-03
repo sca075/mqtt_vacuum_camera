@@ -18,7 +18,7 @@ from aiohttp.abc import HTTPException
 from valetudo_map_parser.config.drawable import Drawable as Draw
 from valetudo_map_parser.config.types import Color, JsonType, PilPNG
 from valetudo_map_parser.hypfer_handler import HypferMapImageHandler
-from valetudo_map_parser.rand25_handler import ReImageHandler
+from valetudo_map_parser.rand256_handler import ReImageHandler
 
 from custom_components.mqtt_vacuum_camera.utils.thread_pool import ThreadPoolManager
 from custom_components.mqtt_vacuum_camera.const import LOGGER, NOT_STREAMING_STATES
