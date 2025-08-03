@@ -1,14 +1,23 @@
 [releases_shield]: https://img.shields.io/github/release/sca075/mqtt_vacuum_camera.svg?style=popout
 [latest_release]: https://github.com/sca075/mqtt_vacuum_camera/releases/latest
+
 [releases]: https://github.com/sca075/mqtt_vacuum_camera/releases
 [downloads_total_shield]: https://img.shields.io/github/downloads/sca075/mqtt_vacuum_camera/total
+
+[community_forum_shield]: https://img.shields.io/static/v1.svg?label=%20&message=Forum&style=popout&color=41bdf5&logo=HomeAssistant&logoColor=white
+[community_forum]: https://community.home-assistant.io/t/valetudo-vacuums-map-camera-for-home-assistant/600182/19
+
+[paypal_me_shield]: https://img.shields.io/static/v1.svg?label=%20&message=PayPal.Me&logo=paypal
+[paypal_me]: https://paypal.me/gsca075
+
 
 # MQTT Vacuum's Camera
 <p align="center">
   <img width="256" alt="logo@2x" src="https://github.com/sca075/mqtt_vacuum_camera/assets/82227818/0c623494-2844-4ed9-a246-0ad27f32503e">
 </p>
 
-## Current Release: [![GitHub Latest Release][releases_shield]][latest_release] [![GitHub All Releases][downloads_total_shield]][releases]
+
+## Current Release: [![GitHub Latest Release][releases_shield]][latest_release] [![GitHub All Releases][downloads_total_shield]][releases] [![Community Forum][community_forum_shield]][community_forum] [![PayPal.Me][paypal_me_shield]][paypal_me]
 
 ![Screenshot 2023-12-27 at 13 37 57](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/4f1f76ee-b507-4fde-b1bd-32e6980873cb)
 
@@ -94,7 +103,7 @@ If you want to contribute, please consider joining our efforts.
 [![Open HACS repository in Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=sca075&repository=mqtt_vacuum_camera&category=integration)
 
 The instructions in [here](./docs/install.md) show detailed steps and will help to set up the camera also without HACS (manual setup).
-Our setup guide also includes **important** informations on how to setup the [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
+Our setup guide also includes **important** informations on how to set up the [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
 
 
 ### Limitations and Compatibility:
@@ -121,7 +130,7 @@ For further details on how the camera operates and how you can contribute, refer
 
 ### Notes:
 - This integration is developed and tested using a PI4 with Home Assistant OS fully updated [to the last version](https://www.home-assistant.io/faq/release/), this allows us to confirm that the component is working properly with Home Assistant. Tested also on ProxMox and Docker Supervised "production" enviroment (fully setup home installation).
-### Tanks to:
+### Thanks to:
 - [@PiotrMachowski](https://github.com/PiotrMachowski) inspiring this integration and his amazing work.
 - [@billyourself](https://github.com/billyourself) for providing us the data and motivation to evolve this project.
 - [@Skeletorjus](https://github.com/Skeletorjus) that using this integration gave us several ideas to improve it.
