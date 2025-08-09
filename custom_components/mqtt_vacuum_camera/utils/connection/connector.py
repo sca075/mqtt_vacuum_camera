@@ -1,14 +1,16 @@
 """
 Consolidated ValetudoConnector with grouped data.
-Last Updated on version: 2025.3.0b2
+Last Updated on version: 2025.8.0
 """
 
+from collections import deque
 from dataclasses import dataclass, field
 import json
 from typing import Any, Dict, List
 
 from homeassistant.components import mqtt
 from homeassistant.core import EventOrigin, HomeAssistant, callback
+from homeassistant.helpers.dispatcher import async_dispatcher_send
 from valetudo_map_parser.config.types import RoomStore
 
 from custom_components.mqtt_vacuum_camera.common import (
@@ -17,6 +19,7 @@ from custom_components.mqtt_vacuum_camera.common import (
 )
 from custom_components.mqtt_vacuum_camera.const import (
     DECODED_TOPICS,
+    DOMAIN,
     LOGGER,
     NON_DECODED_TOPICS,
     CameraModes,
@@ -69,6 +72,8 @@ class ConnectorData:
     data_in: bool = False
     file_name: str = ""
     room_store: Any = None
+    payload_queue: deque = field(default_factory=lambda: deque(maxlen=5))
+    processing_in_progress: bool = False
 
 
 @dataclass
@@ -107,6 +112,7 @@ class ValetudoConnector:
             command_topic=command_topic,
             mqtt_hass_vacuum=mqtt_hass_vacuum,
             shared=camera_shared,
+            is_rrm=is_rand256,
         )
         self.connector_data = ConnectorData(
             hass=hass,
@@ -133,14 +139,12 @@ class ValetudoConnector:
 
         payload = self.mqtt_data.img_payload[0]
         data_type = self.mqtt_data.img_payload[1]
-        LOGGER.debug(
+        LOGGER.info(
             "%s: Updating data from MQTT. %s", self.connector_data.file_name, data_type
         )
         if payload and process:
             # Await the result once the worker processes the task
             result = payload
-            self.config.is_rrm = self.is_rand256
-            self.connector_data.data_in = True
 
             LOGGER.info(
                 "%s: Sending of %s payload Complete.",
@@ -235,9 +239,66 @@ class ValetudoConnector:
             self.connector_data.file_name,
         )
 
-        self.mqtt_data.img_payload = [msg, "Hypfer"]
-        self.connector_data.data_in = True
-        self.connector_data.ignore_data = False
+        payload_data = [msg, "Hypfer"]
+        await self._handle_payload_dispatch_or_queue(payload_data)
+
+    async def _handle_payload_dispatch_or_queue(self, payload_data: list) -> None:
+        """Handle payload dispatching or queuing based on processing state."""
+        # If not processing, send first payload directly
+        if not self.connector_data.processing_in_progress:
+            self.mqtt_data.img_payload = payload_data
+            self.connector_data.data_in = True
+            self.connector_data.ignore_data = False
+            self.connector_data.processing_in_progress = True
+
+            # Dispatch first payload directly
+            async_dispatcher_send(
+                self.connector_data.hass,
+                f"{DOMAIN}_{self.connector_data.file_name}_new_data",
+            )
+        else:
+            # Processing in progress - add to queue
+            self.connector_data.payload_queue.appendleft(payload_data)
+            self.connector_data.data_in = True
+
+    async def processing_complete(self) -> None:
+        """Called by camera when processing is complete."""
+        LOGGER.debug(
+            "%s: Processing complete. Queue size: %d",
+            self.connector_data.file_name,
+            len(self.connector_data.payload_queue),
+        )
+        # Check if there are more payloads in queue
+        if self.connector_data.payload_queue:
+            # Get the latest payload (most recent)
+            payload_data = self.connector_data.payload_queue.pop()
+            self.mqtt_data.img_payload = payload_data
+            # Keep processing_in_progress = True
+
+            LOGGER.debug(
+                "%s: Processing next payload from queue. Queue size: %d",
+                self.connector_data.file_name,
+                len(self.connector_data.payload_queue),
+            )
+
+            # Dispatch next payload to camera
+            LOGGER.debug(
+                "%s: Dispatching next payload from queue.",
+                self.connector_data.file_name,
+            )
+            self.connector_data.ignore_data = False
+            self.connector_data.data_in = True
+            async_dispatcher_send(
+                self.connector_data.hass,
+                f"{DOMAIN}_{self.connector_data.file_name}_new_data",
+            )
+        else:
+            # Queue is empty - stop processing
+            self.connector_data.processing_in_progress = False
+            self.connector_data.data_in = False
+            LOGGER.debug(
+                "%s: Queue empty - processing complete", self.connector_data.file_name
+            )
 
     async def _hypfer_handle_status_payload(self, state) -> None:
         """Handle Hypfer status payload."""
@@ -294,17 +355,20 @@ class ValetudoConnector:
             self.connector_data.file_name,
         )
 
-        self.mqtt_data.img_payload = [msg, "Rand256"]
+        payload_data = [msg, "Rand256"]
+
+        # Handle Rand256 specific setup
         if self.mqtt_data.mqtt_vac_connect_state == "disconnected":
             self.mqtt_data.mqtt_vac_connect_state = "ready"
-        self.connector_data.data_in = True
-        self.connector_data.ignore_data = False
+
         if self.config.do_it_once:
             await self.publish_to_broker(
                 f"{self.config.mqtt_topic}/custom_command",
                 {"command": "get_destinations"},
             )
             self.config.do_it_once = False
+
+        await self._handle_payload_dispatch_or_queue(payload_data)
 
     async def rand256_handle_statuses(self, msg) -> None:
         """Handle Rand256 statuses."""
@@ -393,7 +457,6 @@ class ValetudoConnector:
             return msg.payload
         except (ValueError, TypeError) as e:
             LOGGER.warning("Error during payload decoding: %r", e)
-            raise
 
     async def publish_to_broker(
         self, cust_topic: str, cust_payload: dict, retain: bool = False

@@ -4,6 +4,7 @@ import asyncio
 import logging
 import os
 import shutil
+import json as json_lib
 
 from homeassistant.helpers.storage import STORAGE_DIR
 from valetudo_map_parser.config.types import Any, PilPNG, SnapshotStore
@@ -28,6 +29,7 @@ class Snapshots:
         self.file_name = self._shared.file_name
         self.snapshot_img = f"{self.storage_path}/{self.file_name}.png"
         self._first_run = True
+        self._thread_pool = ThreadPoolManager.get_instance(self.file_name)
 
     @staticmethod
     def confirm_storage_path(hass) -> str:
@@ -57,8 +59,6 @@ class Snapshots:
                     self.storage_path, f"{self.file_name}.json"
                 )
                 with open(json_file_path, "w", encoding="utf-8") as f:
-                    import json as json_lib
-
                     json_lib.dump(json_data, f)
                 _LOGGER.debug("%s: JSON data saved to storage", self.file_name)
 
@@ -89,20 +89,8 @@ class Snapshots:
 
     async def run_async_take_snapshot(self, json_data: Any, pil_img: PilPNG) -> None:
         """Process the image snapshot using the thread pool manager."""
-        # Get the thread pool manager instance for this vacuum
-        thread_pool = ThreadPoolManager(self.file_name)
 
-        # Run the snapshot processing in the thread pool
-        # The ThreadPoolManager will automatically use a shared pool for this vacuum
-        return await thread_pool.run_in_executor(
-            "snapshot", self.process_snapshot, json_data, pil_img
+        return await self._thread_pool.run_in_executor(
+            "camera_snapshot", self.process_snapshot, json_data, pil_img
         )
 
-    async def shutdown(self) -> None:
-        """Shutdown the snapshot thread pool.
-
-        This should be called when the camera is unloaded or when Home Assistant is shutting down.
-        """
-        _LOGGER.debug("%s: Shutting down snapshot thread pool", self.file_name)
-        thread_pool = ThreadPoolManager.get_instance()
-        await thread_pool.shutdown(f"{self.file_name}_snapshot")
