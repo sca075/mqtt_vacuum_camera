@@ -1,6 +1,6 @@
 """
 Multiprocessing module
-Version: 2025.3.0b1
+Version: 2025.8.0
 This module provide the image multiprocessing in order to
 avoid the overload of the main_thread of Home Assistant.
 """
@@ -84,9 +84,6 @@ class CameraProcessor:
                     )
 
                 self._shared.current_room = self._map_handler.get_robot_position()
-                self._shared.map_rooms = self._map_handler.room_propriety
-                if self._shared.map_rooms:
-                    LOGGER.debug("%s: State attributes rooms updated", self._file_name)
                 if not self._shared.image_size:
                     self._shared.image_size = self._map_handler.get_img_size()
 
@@ -165,17 +162,17 @@ class CameraProcessor:
             return pil_img
         return None
 
-    def run_async_process_valetudo_data(self, parsed_json: JsonType):
+    async def run_async_process_valetudo_data(self, parsed_json: JsonType):
         """Async function to process the image data from the Vacuum Json data."""
         try:
             if self._shared.is_rand:
-                result = self._thread_pool.run_async_in_executor(
+                result = await self._thread_pool.run_async_in_executor(
                     "camera_processing",
                     self.async_process_rand256_data,
                     parsed_json,
                 )
             else:
-                result = self._thread_pool.run_async_in_executor(
+                result = await self._thread_pool.run_async_in_executor(
                     "camera_processing",
                     self.async_process_valetudo_data,
                     parsed_json,
@@ -215,7 +212,7 @@ class CameraProcessor:
         asyncio.set_event_loop(loop)
         try:
             result = self._thread_pool.run_async_in_executor(
-                "camera_processing",
+                "text_processing",
                 self.async_draw_image_text,
                 pil_img,
                 color,
