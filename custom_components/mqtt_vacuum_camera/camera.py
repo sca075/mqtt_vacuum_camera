@@ -177,16 +177,22 @@ class MQTTCamera(CoordinatorEntity, Camera):
         log_file = f"{storage_path}/{self._file_name}.zip"
         return storage_path, log_file
 
-    def cleanup_all_dispatchers(self):
+    async def async_cleanup_all(self):
         """Clean up all dispatcher connections."""
         # Clean up coordinator's own dispatchers
         if self._unsubscribe_new_data:
             self._unsubscribe_new_data()
             self._unsubscribe_new_data = None
+        if self.uns_event_vacuum_start:
+            self.uns_event_vacuum_start()
+        if self.uns_event_obstacle_coordinates:
+            self.uns_event_obstacle_coordinates()
+        if self._obstacle_view_debouncer:
+            self._obstacle_view_debouncer.async_shutdown()
+
 
     async def async_added_to_hass(self) -> None:
         """Handle entity added to Home Assistant."""
-        # self._should_poll = True
         self._shared.camera_mode = CameraModes.MAP_VIEW
         self.async_schedule_update_ha_state(True)
 
@@ -194,7 +200,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         """Handle entity removal from Home Assistant."""
         await super().async_will_remove_from_hass()
 
-        self.cleanup_all_dispatchers()
+        await self.async_cleanup_all()
 
         # Stop idle mode helper
         if self._idle_update_interval:
@@ -243,7 +249,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         updated_status = self._shared.vacuum_state
         self._attr_is_streaming = (
             updated_status not in NOT_STREAMING_STATES
-            or not self._shared.vacuum_bat_charged
+            or not self._shared.battery_charged
         )
         return self._attr_is_streaming
 
@@ -330,7 +336,6 @@ class MQTTCamera(CoordinatorEntity, Camera):
     @callback
     async def async_update(self):
         """Camera Frame Update."""
-
         # Obstacle View Processing
         if self._shared.camera_mode == CameraModes.OBSTACLE_VIEW:
             if self._obstacle_image is not None:
@@ -349,33 +354,25 @@ class MQTTCamera(CoordinatorEntity, Camera):
         await self._update_vacuum_state()
         process_data = await self._mqtt.is_data_available()
         if process_data and (self._shared.camera_mode == CameraModes.MAP_VIEW):
+            LOGGER.info("%s: Processing image data.", self._file_name)
             # to calculate the cycle time for frame adjustment.
             start_time = time.perf_counter()
-            # if the vacuum is working, or it is the first image.
-            if self.is_streaming:
-                self._shared.image_grab = True
-                self._shared.snapshot_take = False
-                self._shared.frame_number = self.processor.get_frame_number()
             # Record the time when we receive image data
             self._image_receive_time = time.time()
+            # Initialize variables
+            self._mqtt.connector_payload.processing_in_progress = True
             parsed_json = None
             data_type = None
             is_a_test = False
             try:
                 # Process the parsed JSON data
                 parsed_json, is_a_test, data_type = await self._process_parsed_json()
-            except ValueError:
-                self._vac_json_available = "Error"
-                pil_img = await self.async_empty_if_no_data()
-                self.Image = await self.async_pil_to_bytes(pil_img)
-                s = self.camera_image(self._image_w, self._image_h)
-                return s
-            finally:
-                # Just in case, let's check that the data is available.
+
+                # Process the image if we have valid JSON data
                 if parsed_json is not None:
+                    LOGGER.debug("%s: Processing image json data.", self._file_name)
                     if not self._shared.destinations and data_type == "Rand256":
                         self._shared.destinations = await self._mqtt.get_destinations()
-                    self._processing = True
                     pil_img = await self.processor.run_async_process_valetudo_data(
                         parsed_json
                     )
@@ -387,17 +384,14 @@ class MQTTCamera(CoordinatorEntity, Camera):
 
                     # update the image
                     self.Image = await self.async_pil_to_bytes(pil_img)
-                    self._processing = False
-                    # Signal processing complete to allow next payload
-                    await self._mqtt.processing_complete()
+
                     # Update frame interval based on total processing time if we have a received timestamp
                     if self._image_receive_time is not None:
                         self._update_frame_interval_from_receive_time(
                             self._image_receive_time
                         )
                         self._image_receive_time = None  # Reset for next cycle
-                    # Schedule an update to reflect the new image
-                    self.async_schedule_update_ha_state(force_refresh=False)
+
                     LOGGER.debug(
                         "%s: Image processing complete. Scheduling update.",
                         self._file_name,
@@ -408,24 +402,35 @@ class MQTTCamera(CoordinatorEntity, Camera):
                         and self._shared.camera_mode == CameraModes.MAP_VIEW
                     ):
                         self._image_bk = self.Image
+                        await self._take_snapshot(parsed_json, pil_img)
+                        self._shared.snapshot_take= False
                     elif (
                         self._shared.camera_mode == CameraModes.MAP_VIEW
                         and self._shared.vacuum_state != "docked"
                     ):
                         self._image_bk = None
-                    await self._take_snapshot(parsed_json, pil_img)
-                    total_time = time.perf_counter() - start_time
+                    total_time = round(time.perf_counter() - start_time, 2)
                     LOGGER.debug(
-                        "%s: Image processing complete in %r seconds. Snapshot taken.",
+                        "%s: Image processing complete in %r seconds. Snapshot not taken.",
                         self._file_name,
                         total_time,
                     )
+                    # self.async_schedule_update_ha_state(force_refresh=False)
                 else:
                     LOGGER.info(
                         "%s: Image not processed. Returning not updated image.",
                         self._file_name,
                     )
                     self._attr_frame_interval = 0.2
+
+            except ValueError:
+                self._vac_json_available = "Error"
+                pil_img = await self.async_empty_if_no_data()
+                self.Image = await self.async_pil_to_bytes(pil_img)
+            finally:
+                # Always signal processing complete to prevent blocking
+                await self._mqtt.processing_complete()
+                self.async_schedule_update_ha_state(force_refresh=False)
 
         return self.camera_image(self._image_w, self._image_h)
 
@@ -437,39 +442,36 @@ class MQTTCamera(CoordinatorEntity, Camera):
 
     async def _idle_mode_update(self, now):
         """Helper function that runs every 3 seconds to update vacuum state in idle mode."""
+        other_frames = len(self._mqtt.connector_payload.queue) != 0
         # Update vacuum state continuously
         await self._update_vacuum_state()
+        if self.is_streaming or other_frames:
+            self._shared.image_grab = True
+            self._shared.snapshot_take = False
+            self._shared.frame_number = self.processor.get_frame_number()
         self.extra_state_attributes.update(self._shared.generate_attributes())
-
-        # Check if vacuum is docked or disconnected
-        vacuum_state = self._shared.vacuum_state
-        vacuum_connected = self._shared.vacuum_connection
-
-        if vacuum_state in NOT_STREAMING_STATES or not vacuum_connected:
-            if not self._is_idle:
+        # if the vacuum is working, or it is the first image.
+        if not self.is_streaming or not self._shared.vacuum_connection:
+            if not self._is_idle and not other_frames:
                 LOGGER.debug(
                     "%s: Entering idle mode - vacuum state: %s",
                     self._file_name,
-                    vacuum_state,
+                    self._shared.vacuum_state,
                 )
                 self._is_idle = True
                 # Send last processed image
                 if self._last_image is not None:
                     LOGGER.debug(f"{self._file_name}: Idle last image.")
                     self.Image = await self.async_pil_to_bytes(self._last_image)
+
         else:
             if self._is_idle:
                 LOGGER.debug(
                     "%s: Exiting idle mode - vacuum state: %s",
                     self._file_name,
-                    vacuum_state,
+                    self._shared.vacuum_state,
                 )
                 self._is_idle = False
-                # Start accepting new payloads from connector
-                if hasattr(self._mqtt, "connector_data"):
-                    self._mqtt.connector_data.ignore_data = False
-                    # Reset processing state when exiting idle mode
-                    self._mqtt.connector_data.processing_in_progress = False
 
     async def _update_vacuum_state(self):
         """Update vacuum state based on MQTT data."""
@@ -509,10 +511,10 @@ class MQTTCamera(CoordinatorEntity, Camera):
 
         # Get data from MQTT and decompress it
         parsed_json = None
-        payload, data_type = await self._mqtt.update_data(self._shared.image_grab)
+        payload, data_type = await self._mqtt.update_data(True)
         if payload and data_type:
             data = payload.payload if hasattr(payload, "payload") else payload
-            parsed_json = await self._dm.decompress(self._file_name, data, data_type)
+            parsed_json = await self._dm.decompress(data, data_type)
         if not parsed_json:
             self._vac_json_available = "Error"
             raise ValueError("No parsed JSON data")

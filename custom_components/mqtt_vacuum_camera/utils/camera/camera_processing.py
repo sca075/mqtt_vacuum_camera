@@ -20,12 +20,12 @@ from valetudo_map_parser.config.types import Color, JsonType, PilPNG
 from valetudo_map_parser.hypfer_handler import HypferMapImageHandler
 from valetudo_map_parser.rand256_handler import ReImageHandler
 
-from custom_components.mqtt_vacuum_camera.utils.thread_pool import ThreadPoolManager
 from custom_components.mqtt_vacuum_camera.const import LOGGER, NOT_STREAMING_STATES
 from custom_components.mqtt_vacuum_camera.utils.files_operations import (
     async_get_active_user_language,
 )
 from custom_components.mqtt_vacuum_camera.utils.status_text import StatusText
+from custom_components.mqtt_vacuum_camera.utils.thread_pool import ThreadPoolManager
 
 LOGGER.propagate = True
 
@@ -206,12 +206,10 @@ class CameraProcessor:
             )
         return pil_img
 
-    def run_async_draw_image_text(self, pil_img: PilPNG, color: Color):
+    async def run_async_draw_image_text(self, pil_img: PilPNG, color: Color):
         """Async function to process the image data from the Vacuum Json data."""
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
         try:
-            result = self._thread_pool.run_async_in_executor(
+            result = await self._thread_pool.run_async_in_executor(
                 "text_processing",
                 self.async_draw_image_text,
                 pil_img,

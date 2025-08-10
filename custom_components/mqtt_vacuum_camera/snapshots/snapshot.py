@@ -4,13 +4,14 @@ import asyncio
 import logging
 import os
 import shutil
-import json as json_lib
+
 
 from homeassistant.helpers.storage import STORAGE_DIR
 from valetudo_map_parser.config.types import Any, PilPNG, SnapshotStore
 
 from ..const import CAMERA_STORAGE
 from ..utils.thread_pool import ThreadPoolManager
+from ..utils.files_operations import async_write_json_to_disk
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -45,7 +46,7 @@ class Snapshots:
                 return hass.config.path(STORAGE_DIR)
         return storage_path
 
-    def process_snapshot(self, json_data: Any, image_data: PilPNG) -> None:
+    async def process_snapshot(self, json_data: Any, image_data: PilPNG) -> None:
         """Process the snapshot synchronously.
 
         This function is called from the thread pool.
@@ -58,8 +59,7 @@ class Snapshots:
                 json_file_path = os.path.join(
                     self.storage_path, f"{self.file_name}.json"
                 )
-                with open(json_file_path, "w", encoding="utf-8") as f:
-                    json_lib.dump(json_data, f)
+                await async_write_json_to_disk(json_file_path, json_data)
                 _LOGGER.debug("%s: JSON data saved to storage", self.file_name)
 
             # Save image ready for snapshot
@@ -67,7 +67,7 @@ class Snapshots:
 
             # Copy the image to WWW if enabled
             if self._shared.enable_snapshots and os.path.isfile(self.snapshot_img):
-                shutil.copy(
+                await asyncio.to_thread(shutil.copy,
                     os.path.join(self.storage_path, f"{self.file_name}.png"),
                     os.path.join(
                         self._directory_path, "www", f"snapshot_{self.file_name}.png"
@@ -90,7 +90,7 @@ class Snapshots:
     async def run_async_take_snapshot(self, json_data: Any, pil_img: PilPNG) -> None:
         """Process the image snapshot using the thread pool manager."""
 
-        return await self._thread_pool.run_in_executor(
+        return await self._thread_pool.run_async_in_executor(
             "camera_snapshot", self.process_snapshot, json_data, pil_img
         )
 
