@@ -10,7 +10,6 @@ from typing import Any, Dict, List
 
 from homeassistant.components import mqtt
 from homeassistant.core import EventOrigin, HomeAssistant, callback
-from homeassistant.helpers.dispatcher import async_dispatcher_send
 from valetudo_map_parser.config.types import RoomStore
 
 from custom_components.mqtt_vacuum_camera.common import (
@@ -19,7 +18,6 @@ from custom_components.mqtt_vacuum_camera.common import (
 )
 from custom_components.mqtt_vacuum_camera.const import (
     DECODED_TOPICS,
-    DOMAIN,
     LOGGER,
     NON_DECODED_TOPICS,
     CameraModes,
@@ -77,6 +75,7 @@ class ConnectorData:
 @dataclass
 class ConnectorPayload:
     """Class for connector data."""
+
     queue: deque = field(default_factory=lambda: deque(maxlen=5))
     processing_in_progress: bool = False
     previous_vacuum_state: str = ""
@@ -207,7 +206,7 @@ class ValetudoConnector:
         """Return the active segments used only for Rand256."""
         return list(self.rrm_data.rrm_active_segments)
 
-    async def is_data_available(self) -> bool:
+    def is_data_available(self) -> bool:
         """Check and return the data availability."""
         return bool(self.connector_data.data_in)
 
@@ -255,8 +254,6 @@ class ValetudoConnector:
             self.connector_payload.processing_in_progress,
         )
 
-
-
         # If not processing, send payload directly
         if not self.connector_payload.processing_in_progress:
             self.mqtt_data.img_payload = payload_data
@@ -267,12 +264,6 @@ class ValetudoConnector:
             LOGGER.debug(
                 "%s: Dispatching payload directly",
                 self.connector_data.file_name,
-            )
-
-            # Dispatch payload directly
-            async_dispatcher_send(
-                self.connector_data.hass,
-                f"{DOMAIN}_{self.connector_data.file_name}_new_data",
             )
         else:
             # Camera is processing - add to queue (deque automatically handles maxlen=5)
@@ -311,10 +302,6 @@ class ValetudoConnector:
             LOGGER.debug(
                 "%s: Dispatching next payload from queue.",
                 self.connector_data.file_name,
-            )
-            async_dispatcher_send(
-                self.connector_data.hass,
-                f"{DOMAIN}_{self.connector_data.file_name}_new_data",
             )
         else:
             # Queue is empty - now set processing to False

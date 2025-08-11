@@ -5,13 +5,12 @@ import logging
 import os
 import shutil
 
-
 from homeassistant.helpers.storage import STORAGE_DIR
 from valetudo_map_parser.config.types import Any, PilPNG, SnapshotStore
 
 from ..const import CAMERA_STORAGE
-from ..utils.thread_pool import ThreadPoolManager
 from ..utils.files_operations import async_write_json_to_disk
+from ..utils.thread_pool import ThreadPoolManager
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -67,7 +66,8 @@ class Snapshots:
 
             # Copy the image to WWW if enabled
             if self._shared.enable_snapshots and os.path.isfile(self.snapshot_img):
-                await asyncio.to_thread(shutil.copy,
+                await asyncio.to_thread(
+                    shutil.copy,
                     os.path.join(self.storage_path, f"{self.file_name}.png"),
                     os.path.join(
                         self._directory_path, "www", f"snapshot_{self.file_name}.png"
@@ -93,4 +93,3 @@ class Snapshots:
         return await self._thread_pool.run_async_in_executor(
             "camera_snapshot", self.process_snapshot, json_data, pil_img
         )
-

@@ -96,11 +96,6 @@ class CameraProcessor:
                         self._shared.frame_number
                         != self._map_handler.get_frame_number()
                     ):
-                        self._shared.image_grab = False
-                        LOGGER.info(
-                            "Suspended the camera data processing for: %s.",
-                            self._file_name,
-                        )
                         # take a snapshot
                         self._shared.snapshot_take = True
             return pil_img
