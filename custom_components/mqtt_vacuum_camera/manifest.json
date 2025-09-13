@@ -1,18 +1,15 @@
 {
-  "domain": "mqtt_vacuum_camera",
-  "name": "MQTT Vacuum Camera",
-  "codeowners": [
-    "@sca075"
-  ],
-  "config_flow": true,
-  "dependencies": [
-    "mqtt"
-  ],
-  "documentation": "https://github.com/sca075/mqtt_vacuum_camera",
-  "iot_class": "local_polling",
-  "issue_tracker": "https://github.com/sca075/mqtt_vacuum_camera/issues",
-  "requirements": [
-    "valetudo_map_parser==0.1.9b67"
-  ],
-  "version": "2025.8.0b2"
+    "domain": "mqtt_vacuum_camera",
+    "name": "MQTT Vacuum Camera",
+    "after_dependencies": [],
+    "codeowners": ["@sca075"],
+    "config_flow": true,
+    "dependencies": ["mqtt"],
+    "documentation": "https://github.com/sca075/mqtt_vacuum_camera",
+    "integration_type": "device",
+    "iot_class": "local_push",
+    "issue_tracker": "https://github.com/sca075/mqtt_vacuum_camera/issues",
+    "loggers": ["mqtt_vacuum_camera"],
+    "requirements": ["valetudo_map_parser==0.1.10b7"],
+    "version": "2025.9.0"
 }
