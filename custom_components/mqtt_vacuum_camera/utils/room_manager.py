@@ -254,8 +254,14 @@ class RoomManager:
                 color_key = f"color_room_{j}"
                 if j < len(room_list):
                     room_id, room_info = room_list[j]
-                    # Get the room name; if missing, fallback to a default name
-                    room_name = room_info.get("name", f"Room {room_id}")
+                    # Only update when we have structured room info; otherwise skip
+                    if not isinstance(room_info, (dict, RoomInfo)):
+                        continue
+                    room_name = (
+                        room_info.get("name")
+                        if isinstance(room_info, dict)
+                        else room_info.name
+                    ) or f"Room {room_id}"
                     data_description[color_key] = (
                         f"### **RoomID {room_id} {room_name}**"
                     )
@@ -279,7 +285,14 @@ class RoomManager:
                 alpha_room_key = f"alpha_room_{j}"
                 if j < len(room_list):
                     room_id, room_info = room_list[j]
-                    room_name = room_info.get("name", f"Room {room_id}")
+                    # Only update when we have structured room info; otherwise skip
+                    if not isinstance(room_info, (dict, RoomInfo)):
+                        continue
+                    room_name = (
+                        room_info.get("name")
+                        if isinstance(room_info, dict)
+                        else room_info.name
+                    ) or f"Room {room_id}"
                     alpha_data[alpha_room_key] = f"RoomID {room_id} {room_name}"
                 else:
                     # Use default description or empty string if no room data

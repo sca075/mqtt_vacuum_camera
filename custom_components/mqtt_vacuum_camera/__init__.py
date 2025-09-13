@@ -3,6 +3,7 @@ MQTT Vacuum Camera.
 Version: 2025.07.1
 """
 
+import asyncio
 from functools import partial
 import os
 from typing import Optional
@@ -21,6 +22,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.reload import async_register_admin_service
 from homeassistant.helpers.storage import STORAGE_DIR
 from valetudo_map_parser.config.shared import CameraShared, CameraSharedManager
+from valetudo_map_parser import get_default_font_path
 
 from .common import (
     get_camera_device_info,
@@ -54,11 +56,15 @@ from .utils.vacuum.mqtt_vacuum_services import (
     async_remove_vacuums_services,
     is_rand256_vacuum,
 )
+from .utils.files_operations import (
+    async_get_active_user_language,
+)
 
 PLATFORMS = [Platform.CAMERA, Platform.SENSOR]
 
 
 def init_shared_data(
+    hass: core.HomeAssistant,
     mqtt_listen_topic: str,
     device_info: DeviceInfo,
 ) -> tuple[Optional[CameraShared], Optional[str]]:
@@ -70,8 +76,9 @@ def init_shared_data(
 
     if mqtt_listen_topic:
         file_name = mqtt_listen_topic.split("/")[1].lower()
-        shared_manager = CameraSharedManager(file_name, device_info)
+        shared_manager = CameraSharedManager(file_name, dict(device_info))
         shared = shared_manager.get_instance()
+        shared.vacuum_status_font = f"{get_default_font_path()}/FiraSans.ttf"
         LOGGER.debug("Camera %s Starting up..", file_name)
 
     return shared, file_name
@@ -90,7 +97,8 @@ async def start_up_mqtt(
 
 async def init_coordinator(hass, entry, vacuum_topic, is_rand256):
     device_info: DeviceInfo = get_camera_device_info(hass, entry)
-    shared, file_name = init_shared_data(vacuum_topic, device_info)
+    shared, file_name = init_shared_data(hass, vacuum_topic, device_info)
+    shared.user_language = await async_get_active_user_language(hass)
     connector = await start_up_mqtt(hass, vacuum_topic, is_rand256, shared)
     coordinator_entity = MQTTVacuumCoordinator(
         hass, entry, vacuum_topic, is_rand256, connector, shared
@@ -212,9 +220,15 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
         LOGGER.debug("Writing down the rooms data for %s.", vacuum_entity_id)
         # This will initialize the language cache only when needed
         # The optimization is now handled in room_manager.py
-        await async_rename_room_description(hass, vacuum_entity_id)
+        try:
+            await asyncio.wait_for(
+                async_rename_room_description(hass, vacuum_entity_id), timeout=2.0
+            )
+        except asyncio.TimeoutError as e:
+            LOGGER.warning("Room rename timed out during shutdown: %s", e)
         await ThreadPoolManager.shutdown_all()
         await hass.async_block_till_done()
+        LOGGER.info("Home Assistant stopped. Mqtt Vacuum Camera exit complete.")
         return True
 
     hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, handle_homeassistant_stop)

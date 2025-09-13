@@ -506,6 +506,7 @@ ATTR_ZONES = "zones"
 ATTR_POINTS = "points"
 ATTR_OBSTACLES = "obstacles"
 ATTR_CAMERA_MODE = "camera_mode"
+ATTR_IMAGE_LAST_UPDATED = "image_last_updated"
 
 DOWNLOAD_TIMEOUT = 6
 

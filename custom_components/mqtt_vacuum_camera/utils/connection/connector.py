@@ -1,9 +1,8 @@
 """
 Consolidated ValetudoConnector with grouped data.
-Last Updated on version: 2025.8.0
+Last Updated on version: 2025.9.0
 """
 
-from collections import deque
 from dataclasses import dataclass, field
 import json
 from typing import Any, Dict, List
@@ -76,7 +75,6 @@ class ConnectorData:
 class ConnectorPayload:
     """Class for connector data."""
 
-    queue: deque = field(default_factory=lambda: deque(maxlen=5))
     processing_in_progress: bool = False
     previous_vacuum_state: str = ""
 
@@ -145,12 +143,14 @@ class ValetudoConnector:
 
         payload = self.mqtt_data.img_payload[0]
         data_type = self.mqtt_data.img_payload[1]
-        LOGGER.info(
+        LOGGER.debug(
             "%s: Updating data from MQTT. %s", self.connector_data.file_name, data_type
         )
         if payload and process:
             # Await the result once the worker processes the task
             result = payload
+            self.config.is_rrm = self.is_rand256
+            self.connector_data.data_in = True
 
             LOGGER.info(
                 "%s: Sending of %s payload Complete.",
@@ -165,6 +165,8 @@ class ValetudoConnector:
             self.config.mqtt_topic,
             self.mqtt_data.mqtt_vac_stat,
         )
+        self.connector_data.ignore_data = True
+        self.connector_data.data_in = False
         self.config.is_rrm = False
         return None, data_type
 
@@ -183,8 +185,8 @@ class ValetudoConnector:
             )
             return "error"
         if self.is_rand256 and self.rrm_data.mqtt_vac_re_stat:
-            return str(self.rrm_data.mqtt_vac_re_stat)
-        return str(self.mqtt_data.mqtt_vac_stat)
+            return str(self.rrm_data.mqtt_vac_re_stat).lower()
+        return str(self.mqtt_data.mqtt_vac_stat).lower()
 
     async def get_vacuum_error(self) -> str:
         """Return the vacuum error."""
@@ -196,9 +198,12 @@ class ValetudoConnector:
 
     async def get_vacuum_connection_state(self) -> bool:
         """Return the vacuum connection state."""
-        return self.mqtt_data.mqtt_vac_connect_state == "ready"
+        self.config.shared.vacuum_connection = bool(
+            self.mqtt_data.mqtt_vac_connect_state == "ready"
+        )
+        return self.config.shared.vacuum_connection
 
-    async def get_destinations(self) -> Any:
+    def get_destinations(self) -> Any:
         """Return the destinations used only for Rand256."""
         return self.rrm_data.rrm_destinations
 
@@ -243,73 +248,9 @@ class ValetudoConnector:
             self.connector_data.file_name,
         )
 
-        payload_data = [msg, "Hypfer"]
-        await self._handle_payload_dispatch_or_queue(payload_data)
-
-    async def _handle_payload_dispatch_or_queue(self, payload_data: list) -> None:
-        """Handle payload dispatching or queuing based on processing state."""
-        LOGGER.debug(
-            "%s: Handle payload - processing_in_progress: %s",
-            self.connector_data.file_name,
-            self.connector_payload.processing_in_progress,
-        )
-
-        # If not processing, send payload directly
-        if not self.connector_payload.processing_in_progress:
-            self.mqtt_data.img_payload = payload_data
-            self.connector_data.data_in = True
-            self.connector_data.ignore_data = False
-            # DON'T set processing_in_progress here - camera will do it!
-
-            LOGGER.debug(
-                "%s: Dispatching payload directly",
-                self.connector_data.file_name,
-            )
-        else:
-            # Camera is processing - add to queue (deque automatically handles maxlen=5)
-            self.connector_payload.queue.appendleft(payload_data)  # Add newest (left)
-            LOGGER.debug(
-                "%s: Processing in progress. Queued new payload. Queue size: %d",
-                self.connector_data.file_name,
-                len(self.connector_payload.queue),
-            )
-
-    async def processing_complete(self) -> None:
-        """Called by camera when processing is complete."""
-        LOGGER.debug(
-            "%s: Processing complete. Queue size: %d",
-            self.connector_data.file_name,
-            len(self.connector_payload.queue),
-        )
-
-        # Check if there are more payloads in queue
-        if self.connector_payload.queue:
-            # Get the oldest payload (FIFO order)
-            payload_data = self.connector_payload.queue.pop()  # Get from right (oldest)
-            self.mqtt_data.img_payload = payload_data
-            self.connector_data.data_in = True
-            self.connector_data.ignore_data = False
-            # Keep processing_in_progress = True for next payload
-            self.connector_payload.processing_in_progress = True
-
-            LOGGER.debug(
-                "%s: Processing next payload from queue. Queue size: %d",
-                self.connector_data.file_name,
-                len(self.connector_payload.queue),
-            )
-
-            # Dispatch next payload to camera
-            LOGGER.debug(
-                "%s: Dispatching next payload from queue.",
-                self.connector_data.file_name,
-            )
-        else:
-            # Queue is empty - now set processing to False
-            self.connector_payload.processing_in_progress = False
-            self.connector_data.data_in = False
-            LOGGER.debug(
-                "%s: Queue empty - processing complete", self.connector_data.file_name
-            )
+        self.mqtt_data.img_payload = [msg, "Hypfer"]
+        self.connector_data.data_in = True
+        self.connector_data.ignore_data = False
 
     async def _hypfer_handle_status_payload(self, state) -> None:
         """Handle Hypfer status payload."""
@@ -366,12 +307,11 @@ class ValetudoConnector:
             self.connector_data.file_name,
         )
 
-        payload_data = [msg, "Rand256"]
-
-        # Handle Rand256 specific setup
+        self.mqtt_data.img_payload = [msg, "Rand256"]
         if self.mqtt_data.mqtt_vac_connect_state == "disconnected":
             self.mqtt_data.mqtt_vac_connect_state = "ready"
-
+        self.connector_data.data_in = True
+        self.connector_data.ignore_data = False
         if self.config.do_it_once:
             await self.publish_to_broker(
                 f"{self.config.mqtt_topic}/custom_command",
@@ -379,34 +319,13 @@ class ValetudoConnector:
             )
             self.config.do_it_once = False
 
-        await self._handle_payload_dispatch_or_queue(payload_data)
-
     async def rand256_handle_statuses(self, msg) -> None:
         """Handle Rand256 statuses."""
         temp_payload = msg.payload
         if temp_payload:
             tmp_data = json.loads(temp_payload)
-            new_state = tmp_data.get("state", None)
-            self.rrm_data.mqtt_vac_re_stat = new_state
+            self.rrm_data.mqtt_vac_re_stat = tmp_data.get("state", None)
             self.mqtt_data.mqtt_vac_battery_level = tmp_data.get("battery_level", None)
-
-            # Check if state changed
-            if new_state:
-                previous_state = self.connector_payload.previous_vacuum_state
-                if new_state != previous_state:
-                    LOGGER.debug(
-                        "%s: Vacuum state changed from %s to %s",
-                        self.connector_data.file_name,
-                        previous_state,
-                        new_state,
-                    )
-                    # Update state and handle change
-                    self.mqtt_data.mqtt_vac_stat = new_state
-                    self.connector_payload.previous_vacuum_state = new_state
-                else:
-                    # Just update the state without triggering change handler
-                    self.mqtt_data.mqtt_vac_stat = new_state
-
             if (
                 self.mqtt_data.mqtt_vac_stat != "docked"
                 or int(self.mqtt_data.mqtt_vac_battery_level) <= 100
@@ -438,6 +357,10 @@ class ValetudoConnector:
                 if room_index is not None:
                     rrm_active_segments[room_index] = 1
             self.config.shared.rand256_active_zone = rrm_active_segments
+        if command_status.get("command", None) == "zoned_cleanup":
+            LOGGER.debug("Zoned cleanup: %s", command_status)
+            zone_coordinates = command_status.get("zone_coordinates", [])
+            self.config.shared.rand256_zone_coordinates = zone_coordinates
 
     async def async_fire_event_restart_camera(
         self, event_text: str = "event_vacuum_start", data: str = ""
