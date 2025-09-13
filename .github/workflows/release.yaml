@@ -16,7 +16,7 @@ jobs:
       id-token: write
     steps:
       - name: Download repo
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v5.0.0
 
       - name: Adjust version number
         shell: bash
@@ -33,6 +33,6 @@ jobs:
 
 
       - name: Upload zip to release
-        uses: softprops/action-gh-release@v2.3.2
+        uses: softprops/action-gh-release@v2.3.3
         with:
           files: ${{ github.workspace }}/custom_components/${{ env.COMPONENT_NAME }}/${{ env.COMPONENT_NAME }}.zip
