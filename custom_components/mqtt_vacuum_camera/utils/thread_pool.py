@@ -56,8 +56,7 @@ class ThreadPoolManager:
             ),  # 2 workers
             "camera": 1,
             "camera_processing": 1,
-            "text_processing": 1,
-            "camera_snapshot": 1,
+            "snapshot": 1,
         }
 
         for name, workers in pool_configs.items():

@@ -1,6 +1,6 @@
 """
 Multiprocessing module
-Version: 2025.8.0
+Version: 2025.3.0b1
 This module provide the image multiprocessing in order to
 avoid the overload of the main_thread of Home Assistant.
 """
@@ -18,14 +18,14 @@ from aiohttp.abc import HTTPException
 from valetudo_map_parser.config.drawable import Drawable as Draw
 from valetudo_map_parser.config.types import Color, JsonType, PilPNG
 from valetudo_map_parser.hypfer_handler import HypferMapImageHandler
-from valetudo_map_parser.rand256_handler import ReImageHandler
+from valetudo_map_parser.rand25_handler import ReImageHandler
 
+from custom_components.mqtt_vacuum_camera.utils.thread_pool import ThreadPoolManager
 from custom_components.mqtt_vacuum_camera.const import LOGGER, NOT_STREAMING_STATES
 from custom_components.mqtt_vacuum_camera.utils.files_operations import (
     async_get_active_user_language,
 )
 from custom_components.mqtt_vacuum_camera.utils.status_text import StatusText
-from custom_components.mqtt_vacuum_camera.utils.thread_pool import ThreadPoolManager
 
 LOGGER.propagate = True
 
@@ -84,6 +84,9 @@ class CameraProcessor:
                     )
 
                 self._shared.current_room = self._map_handler.get_robot_position()
+                self._shared.map_rooms = self._map_handler.room_propriety
+                if self._shared.map_rooms:
+                    LOGGER.debug("%s: State attributes rooms updated", self._file_name)
                 if not self._shared.image_size:
                     self._shared.image_size = self._map_handler.get_img_size()
 
@@ -96,6 +99,11 @@ class CameraProcessor:
                         self._shared.frame_number
                         != self._map_handler.get_frame_number()
                     ):
+                        self._shared.image_grab = False
+                        LOGGER.info(
+                            "Suspended the camera data processing for: %s.",
+                            self._file_name,
+                        )
                         # take a snapshot
                         self._shared.snapshot_take = True
             return pil_img
@@ -157,17 +165,17 @@ class CameraProcessor:
             return pil_img
         return None
 
-    async def run_async_process_valetudo_data(self, parsed_json: JsonType):
+    def run_async_process_valetudo_data(self, parsed_json: JsonType):
         """Async function to process the image data from the Vacuum Json data."""
         try:
             if self._shared.is_rand:
-                result = await self._thread_pool.run_async_in_executor(
+                result = self._thread_pool.run_async_in_executor(
                     "camera_processing",
                     self.async_process_rand256_data,
                     parsed_json,
                 )
             else:
-                result = await self._thread_pool.run_async_in_executor(
+                result = self._thread_pool.run_async_in_executor(
                     "camera_processing",
                     self.async_process_valetudo_data,
                     parsed_json,
@@ -201,11 +209,13 @@ class CameraProcessor:
             )
         return pil_img
 
-    async def run_async_draw_image_text(self, pil_img: PilPNG, color: Color):
+    def run_async_draw_image_text(self, pil_img: PilPNG, color: Color):
         """Async function to process the image data from the Vacuum Json data."""
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
         try:
-            result = await self._thread_pool.run_async_in_executor(
-                "text_processing",
+            result = self._thread_pool.run_async_in_executor(
+                "camera_processing",
                 self.async_draw_image_text,
                 pil_img,
                 color,
