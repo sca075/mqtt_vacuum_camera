@@ -45,8 +45,9 @@ for a seamless user experience.
 
 Our current focus is evolving beyond map rendering to provide full vacuum control, ensuring a reliable, complete integration for all Valetudo-based vacuums, while continuously improving the user experience through regular updates.  
 <details>
-   <summary>Planned in the next Release</summary>
+   <summary>Updated status of the project on Date: 2025.9.24.</summary>
 
+Since the 2025.7.1 release we’ve been focused on a complete refactoring of both the library and the custom component to ensure stability and prevent potential issues for Home Assistant users. We know this has delayed new releases, but our priority is making sure the integration is safe, reliable, and easy to use for everyone — which is exactly why so many of you chose it in the first place.
 Would be really appreciated your kind help and understanding.
 The next release isn't planned yet, there are serius refactoring to do.
 If you want to contribute, please consider joining our efforts.
@@ -59,8 +60,10 @@ If you want to contribute, please consider joining our efforts.
   - Remove file operation routines not required for logging export.
 - **Features / Improvements :**
   - Enable loading and saving of maps via services by fully integrating with  [MapLoader](https://github.com/pkoehlers/maploader).
-  - Add options for Area and Floor management.
-  - Option to resize the Robot? maybe ;)
+  - Add options for Area and Floor management rooms renaming and trims settings stored.
+  - Option to resize the Robot -> will be available..
+- **Braking Cahnges**
+  - No more auto snaphot, as it is possible to manage those aith actions/scrips from HA directly. 
 </details>
 
 
