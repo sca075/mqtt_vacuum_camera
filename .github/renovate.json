@@ -1,5 +1,5 @@
 {
-  "branchPrefix": "camera_dev/",
+  "branchPrefix": "dev/",
   "dryRun": "full",
   "username": "renovate-release",
   "gitAuthor": "Renovate Bot <bot@renovateapp.com>",
