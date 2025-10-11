@@ -1,13 +1,12 @@
 """
 Room Manager for MQTT Vacuum Camera.
 This module provides optimized room renaming operations.
-Version: 2025.5.0
+Version: 2025.10.0
 """
 
 from __future__ import annotations
 
 import asyncio
-import copy
 from dataclasses import dataclass
 import json
 import logging
@@ -22,6 +21,46 @@ from ..const import CAMERA_STORAGE
 from .language_cache import LanguageCache
 
 _LOGGER = logging.getLogger(__name__)
+
+# Default room colors from en.json (module-level constant)
+_DEFAULT_ROOM_COLORS = {
+    "color_room_0": "[135, 206, 250]",  # Floor/Room 1
+    "color_room_1": "[176, 226, 255]",  # Room 2
+    "color_room_2": "[165, 105, 18]",  # Room 3
+    "color_room_3": "[164, 211, 238]",  # Room 4
+    "color_room_4": "[141, 182, 205]",  # Room 5
+    "color_room_5": "[96, 123, 139]",  # Room 6
+    "color_room_6": "[224, 255, 255]",  # Room 7
+    "color_room_7": "[209, 238, 238]",  # Room 8
+    "color_room_8": "[180, 205, 205]",  # Room 9
+    "color_room_9": "[122, 139, 139]",  # Room 10
+    "color_room_10": "[175, 238, 238]",  # Room 11
+    "color_room_11": "[84, 153, 199]",  # Room 12
+    "color_room_12": "[133, 193, 233]",  # Room 13
+    "color_room_13": "[245, 176, 65]",  # Room 14
+    "color_room_14": "[82, 190, 128]",  # Room 15
+    "color_room_15": "[72, 201, 176]",  # Room 16
+}
+
+# Default room descriptions (module-level constant)
+_DEFAULT_ROOM_DESCRIPTIONS = {
+    "color_room_0": "Room 1",
+    "color_room_1": "Room 2",
+    "color_room_2": "Room 3",
+    "color_room_3": "Room 4",
+    "color_room_4": "Room 5",
+    "color_room_5": "Room 6",
+    "color_room_6": "Room 7",
+    "color_room_7": "Room 8",
+    "color_room_8": "Room 9",
+    "color_room_9": "Room 10",
+    "color_room_10": "Room 11",
+    "color_room_11": "Room 12",
+    "color_room_12": "Room 13",
+    "color_room_13": "Room 14",
+    "color_room_14": "Room 15",
+    "color_room_15": "Room 16",
+}
 
 
 @dataclass
@@ -59,9 +98,6 @@ class RoomManager:
             return
 
         json_path = f"{self.hass.config.path(STORAGE_DIR, CAMERA_STORAGE)}/rooms_colours_description.json"
-        _LOGGER.debug("Writing vacuum_id: %s to %s", vacuum_id, json_path)
-
-        # Data to be written
         data = {"vacuum_id": vacuum_id}
 
         # Write data to a JSON file
@@ -183,52 +219,20 @@ class RoomManager:
         if data is None:
             return None
 
-        # Make a deep copy to avoid mutating the cached object
-        modified_data = copy.deepcopy(data)
-
-        # Ensure the base structure exists
-        options = modified_data.setdefault("options", {})
-        step = options.setdefault("step", {})
-
-        # Default room colors from en.json
-        default_room_colors = {
-            "color_room_0": "[135, 206, 250]",  # Floor/Room 1
-            "color_room_1": "[176, 226, 255]",  # Room 2
-            "color_room_2": "[165, 105, 18]",  # Room 3
-            "color_room_3": "[164, 211, 238]",  # Room 4
-            "color_room_4": "[141, 182, 205]",  # Room 5
-            "color_room_5": "[96, 123, 139]",  # Room 6
-            "color_room_6": "[224, 255, 255]",  # Room 7
-            "color_room_7": "[209, 238, 238]",  # Room 8
-            "color_room_8": "[180, 205, 205]",  # Room 9
-            "color_room_9": "[122, 139, 139]",  # Room 10
-            "color_room_10": "[175, 238, 238]",  # Room 11
-            "color_room_11": "[84, 153, 199]",  # Room 12
-            "color_room_12": "[133, 193, 233]",  # Room 13
-            "color_room_13": "[245, 176, 65]",  # Room 14
-            "color_room_14": "[82, 190, 128]",  # Room 15
-            "color_room_15": "[72, 201, 176]",  # Room 16
-        }
-
-        # Default room descriptions
-        default_room_descriptions = {
-            "color_room_0": "Room 1",
-            "color_room_1": "Room 2",
-            "color_room_2": "Room 3",
-            "color_room_3": "Room 4",
-            "color_room_4": "Room 5",
-            "color_room_5": "Room 6",
-            "color_room_6": "Room 7",
-            "color_room_7": "Room 8",
-            "color_room_8": "Room 9",
-            "color_room_9": "Room 10",
-            "color_room_10": "Room 11",
-            "color_room_11": "Room 12",
-            "color_room_12": "Room 13",
-            "color_room_13": "Room 14",
-            "color_room_14": "Room 15",
-            "color_room_15": "Room 16",
-        }
+        # Create a new dict with shallow copies of top-level keys
+        # Only copy the nested structure we need to modify
+        modified_data = {**data}
+        if "options" in data:
+            modified_data["options"] = {**data["options"]}
+            if "step" in data["options"]:
+                modified_data["options"]["step"] = {**data["options"]["step"]}
+                step = modified_data["options"]["step"]
+            else:
+                step = modified_data["options"]["step"] = {}
+            options = modified_data["options"]
+        else:
+            options = modified_data["options"] = {}
+            step = options["step"] = {}
 
         # Modify the "data_description" keys for rooms_colours_1 and rooms_colours_2
         for i in range(1, 3):
@@ -244,8 +248,8 @@ class RoomManager:
             data_section = room_section.setdefault("data", {})
             for j in range(start_index, end_index):
                 color_key = f"color_room_{j}"
-                if color_key not in data_section and color_key in default_room_colors:
-                    data_section[color_key] = default_room_colors[color_key]
+                if color_key not in data_section and color_key in _DEFAULT_ROOM_COLORS:
+                    data_section[color_key] = _DEFAULT_ROOM_COLORS[color_key]
 
             # Ensure data_description section exists
             data_description = room_section.setdefault("data_description", {})
@@ -267,7 +271,7 @@ class RoomManager:
                     )
                 else:
                     # Use default description or empty string if no room data
-                    data_description[color_key] = default_room_descriptions.get(
+                    data_description[color_key] = _DEFAULT_ROOM_DESCRIPTIONS.get(
                         color_key, ""
                     )
 
@@ -296,7 +300,7 @@ class RoomManager:
                     alpha_data[alpha_room_key] = f"RoomID {room_id} {room_name}"
                 else:
                     # Use default description or empty string if no room data
-                    alpha_data[alpha_room_key] = default_room_descriptions.get(
+                    alpha_data[alpha_room_key] = _DEFAULT_ROOM_DESCRIPTIONS.get(
                         f"color_room_{j}", ""
                     )
 
@@ -312,7 +316,6 @@ class RoomManager:
         """
         try:
             await asyncio.to_thread(self._write_json, file_path, data)
-            _LOGGER.debug("Successfully wrote translation file: %s", file_path)
         except Exception as e:
             _LOGGER.warning(
                 "Error writing translation file %s: %s",

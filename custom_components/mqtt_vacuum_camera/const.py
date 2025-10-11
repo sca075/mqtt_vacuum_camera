@@ -1,5 +1,5 @@
 """Constants for the mqtt_vacuum_camera integration.
-Last Updated on version: 2025.3.0b2
+Last Updated on version: 2025.10.0
 """
 
 from enum import Enum
@@ -496,7 +496,6 @@ ATTR_VACUUM_BATTERY = "vacuum_battery"
 ATTR_VACUUM_POSITION = "vacuum_position"
 ATTR_VACUUM_TOPIC = "vacuum_topic"
 ATTR_VACUUM_STATUS = "vacuum_status"
-ATTR_JSON_DATA = "json_data"
 ATTR_VACUUM_JSON_ID = "vacuum_json_id"
 ATTR_CALIBRATION_POINTS = "calibration_points"
 ATTR_SNAPSHOT = "snapshot"
@@ -506,9 +505,12 @@ ATTR_ZONES = "zones"
 ATTR_POINTS = "points"
 ATTR_OBSTACLES = "obstacles"
 ATTR_CAMERA_MODE = "camera_mode"
-ATTR_IMAGE_LAST_UPDATED = "image_last_updated"
 
+# Timings (shared constants; wiring will be done later with no behavior change today)
 DOWNLOAD_TIMEOUT = 6
+CAMERA_SCAN_INTERVAL_S = 3.0
+RENDER_TIMEOUT_S = 2.9
+FRAME_INTERVAL_S = 0.2
 
 
 class CameraModes(str, Enum):

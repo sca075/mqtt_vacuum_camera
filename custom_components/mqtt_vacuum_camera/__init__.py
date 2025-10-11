@@ -1,6 +1,6 @@
 """
 MQTT Vacuum Camera.
-Version: 2025.07.1
+Version: 2025.10.0
 """
 
 import asyncio
@@ -21,8 +21,8 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.reload import async_register_admin_service
 from homeassistant.helpers.storage import STORAGE_DIR
-from valetudo_map_parser.config.shared import CameraShared, CameraSharedManager
 from valetudo_map_parser import get_default_font_path
+from valetudo_map_parser.config.shared import CameraShared, CameraSharedManager
 
 from .common import (
     get_camera_device_info,
@@ -45,8 +45,8 @@ from .utils.camera.camera_services import (
     reset_trims,
 )
 from .utils.connection.connector import ValetudoConnector
-from .utils.connection.decompress import DecompressionManager
 from .utils.files_operations import (
+    async_get_active_user_language,
     async_get_translations_vacuum_id,
     async_rename_room_description,
 )
@@ -55,9 +55,6 @@ from .utils.vacuum.mqtt_vacuum_services import (
     async_register_vacuums_services,
     async_remove_vacuums_services,
     is_rand256_vacuum,
-)
-from .utils.files_operations import (
-    async_get_active_user_language,
 )
 
 PLATFORMS = [Platform.CAMERA, Platform.SENSOR]
@@ -79,7 +76,6 @@ def init_shared_data(
         shared_manager = CameraSharedManager(file_name, dict(device_info))
         shared = shared_manager.get_instance()
         shared.vacuum_status_font = f"{get_default_font_path()}/FiraSans.ttf"
-        LOGGER.debug("Camera %s Starting up..", file_name)
 
     return shared, file_name
 
@@ -180,7 +176,6 @@ async def async_unload_entry(
         unload_platform = PLATFORMS
     else:
         unload_platform = [Platform.CAMERA]
-    LOGGER.debug("Platforms to unload: %s", unload_platform)
     if unload_ok := await hass.config_entries.async_unload_platforms(
         entry, unload_platform
     ):
@@ -191,7 +186,6 @@ async def async_unload_entry(
         # Shutdown thread pool for this entry only
         thread_pool = ThreadPoolManager.get_instance(entry.entry_id)
         await thread_pool.shutdown_instance()  # Shutdown pools only for this vacuum
-        LOGGER.debug("Thread pools for %s shut down", entry.entry_id)
 
         # Remove services
         if not hass.data[DOMAIN]:
@@ -211,13 +205,10 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
         LOGGER.info("Home Assistant is stopping. Writing down the rooms data.")
         storage = hass.config.path(STORAGE_DIR, CAMERA_STORAGE)
         if not os.path.exists(storage):
-            LOGGER.debug("Storage path: %s do not exists. Aborting!", storage)
             return False
         vacuum_entity_id = await async_get_translations_vacuum_id(storage)
         if not vacuum_entity_id:
-            LOGGER.debug("No vacuum room data found. Aborting!")
             return False
-        LOGGER.debug("Writing down the rooms data for %s.", vacuum_entity_id)
         # This will initialize the language cache only when needed
         # The optimization is now handled in room_manager.py
         try:

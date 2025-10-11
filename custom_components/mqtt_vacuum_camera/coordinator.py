@@ -1,6 +1,6 @@
 """
 MQTT Vacuum Camera Coordinator.
-Version: 2025.8.0
+Version: 2025.10.0
 """
 
 from __future__ import annotations

@@ -4,7 +4,7 @@ IMPORTANT: Maintain code when adding new options to the camera
 it will be mandatory to update const.py and common.py update_options.
 Format of the new constants must be CONST_NAME = "const_name" update also
 sting.json and en.json please.
-Version: 2025.3.0b1
+Version: 2025.10.0
 """
 
 import os
@@ -90,7 +90,6 @@ class MQTTCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             # create the path for storing the snapshots.
             storage_path = f"{self.hass.config.path(STORAGE_DIR)}/{CAMERA_STORAGE}"
             if not os.path.exists(storage_path):
-                LOGGER.debug("Creating the %s path.", storage_path)
                 try:
                     os.mkdir(storage_path)
                 except FileExistsError as e:
@@ -101,8 +100,6 @@ class MQTTCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     LOGGER.error(
                         "Error %s creating the path %s", e, storage_path, exc_info=True
                     )
-            else:
-                LOGGER.debug("Storage %s path found.", storage_path)
             # Finally set up the entry.
             _, vacuum_device = get_vacuum_device_info(
                 self.data[CONF_VACUUM_CONFIG_ENTRY_ID], self.hass
