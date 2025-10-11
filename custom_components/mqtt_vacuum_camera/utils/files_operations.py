@@ -4,13 +4,12 @@ Common functions for the MQTT Vacuum Camera integration.
 Those functions are used to store and retrieve user data from the Home Assistant storage.
 The data will be stored locally in the Home Assistant in .storage/valetudo_camera directory.
 Author: @sca075
-Version: 2025.3.0b0
+Version: 2025.10.0
 """
 
 from __future__ import annotations
 
 import asyncio
-from concurrent.futures import ThreadPoolExecutor
 import glob
 import json
 import os
@@ -303,9 +302,7 @@ def extract_core_entity_ids(entity_ids: list[str]) -> list[str]:
 
 async def async_list_files(pattern: str) -> List[str]:
     """List files matching the pattern asynchronously."""
-    loop = asyncio.get_event_loop()
-    with ThreadPoolExecutor() as pool:
-        return await loop.run_in_executor(pool, glob.glob, pattern)
+    return await asyncio.to_thread(glob.glob, pattern)
 
 
 async def get_trims_files_names(path: str, entity_ids: list[str]) -> list[str]:

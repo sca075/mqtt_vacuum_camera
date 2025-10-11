@@ -1,6 +1,6 @@
 """
 Common functions for the MQTT Vacuum Camera integration.
-Version: 2025.3.0b1
+Version: 2025.10.0
 """
 
 from __future__ import annotations
@@ -141,7 +141,6 @@ def is_rand256_vacuum(vacuum_device: DeviceEntry) -> bool:
     # Check if the software version contains "valetudo" (for Hypfer) or something else for Rand256
     sof_version = str(vacuum_device.sw_version)
     if (sof_version.lower()).startswith("valetudo"):
-        LOGGER.debug("No Sensors to startup!")
         return False  # This is a Hypfer vacuum (Valetudo)
     return True
 

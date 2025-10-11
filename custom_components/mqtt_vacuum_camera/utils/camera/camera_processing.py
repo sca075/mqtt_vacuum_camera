@@ -15,17 +15,12 @@ from typing import Any
 from PIL import Image
 import aiohttp
 from aiohttp.abc import HTTPException
-from valetudo_map_parser.config.drawable import Drawable as Draw
-from valetudo_map_parser.config.types import Color, JsonType, PilPNG
+from valetudo_map_parser.config.types import JsonType, PilPNG
 from valetudo_map_parser.hypfer_handler import HypferMapImageHandler
-from valetudo_map_parser.rand25_handler import ReImageHandler
+from valetudo_map_parser.rand256_handler import ReImageHandler
 
-from custom_components.mqtt_vacuum_camera.utils.thread_pool import ThreadPoolManager
 from custom_components.mqtt_vacuum_camera.const import LOGGER, NOT_STREAMING_STATES
-from custom_components.mqtt_vacuum_camera.utils.files_operations import (
-    async_get_active_user_language,
-)
-from custom_components.mqtt_vacuum_camera.utils.status_text import StatusText
+from custom_components.mqtt_vacuum_camera.utils.thread_pool import ThreadPoolManager
 
 LOGGER.propagate = True
 
@@ -41,11 +36,8 @@ class CameraProcessor:
         self._re_handler = ReImageHandler(camera_shared)
         self._shared = camera_shared
         self._thread_pool = thread_pool
+        self.data = {}
         self._file_name = self._shared.file_name
-        self._translations_path = self.hass.config.path(
-            "custom_components/mqtt_vacuum_camera/translations/"
-        )
-        self._status_text = StatusText(self.hass, self._shared)
 
     async def async_process_valetudo_data(self, parsed_json: JsonType) -> PilPNG | None:
         """
@@ -54,42 +46,15 @@ class CameraProcessor:
         :return pil_img:
         """
         if parsed_json is not None:
-            pil_img = await self._map_handler.async_get_image_from_json(
-                m_json=parsed_json,
+            pil_img, data = await self._map_handler.async_get_image(
+                m_json=parsed_json, bytes_format=True
             )
 
             if self._shared.export_svg:
                 self._shared.export_svg = False
 
             if pil_img is not None:
-                if self._shared.map_rooms is None:
-                    self._shared.map_rooms = (
-                        await self._map_handler.async_get_rooms_attributes()
-                    )
-                    if self._shared.map_rooms:
-                        LOGGER.debug(
-                            "%s: State attributes rooms updated", self._file_name
-                        )
-
-                if self._shared.attr_calibration_points is None:
-                    self._shared.attr_calibration_points = (
-                        self._map_handler.get_calibration_data()
-                    )
-
-                self._shared.vac_json_id = self._map_handler.get_json_id()
-
-                if not self._shared.charger_position:
-                    self._shared.charger_position = (
-                        self._map_handler.get_charger_position()
-                    )
-
-                self._shared.current_room = self._map_handler.get_robot_position()
-                self._shared.map_rooms = self._map_handler.room_propriety
-                if self._shared.map_rooms:
-                    LOGGER.debug("%s: State attributes rooms updated", self._file_name)
-                if not self._shared.image_size:
-                    self._shared.image_size = self._map_handler.get_img_size()
-
+                self.data = data
                 update_vac_state = self._shared.vacuum_state
                 if not self._shared.snapshot_take and (
                     update_vac_state in NOT_STREAMING_STATES
@@ -100,14 +65,7 @@ class CameraProcessor:
                         != self._map_handler.get_frame_number()
                     ):
                         self._shared.image_grab = False
-                        LOGGER.info(
-                            "Suspended the camera data processing for: %s.",
-                            self._file_name,
-                        )
-                        # take a snapshot
-                        self._shared.snapshot_take = True
             return pil_img
-        LOGGER.debug("%s: No Json, returned None.", self._file_name)
         return None
 
     async def async_process_rand256_data(self, parsed_json: JsonType) -> PilPNG | None:
@@ -117,55 +75,23 @@ class CameraProcessor:
         :return: pil_img
         """
         if parsed_json is not None:
-            pil_img = await self._re_handler.get_image_from_rrm(
+            pil_img, data = await self._re_handler.async_get_image(
                 m_json=parsed_json,
                 destinations=self._shared.destinations,
+                bytes_format=True,
             )
-
             if pil_img is not None:
-                if self._shared.map_rooms is None:
-                    destinations = self._shared.destinations
-                    if destinations is not None:
-                        (
-                            self._shared.map_rooms,
-                            self._shared.map_pred_zones,
-                            self._shared.map_pred_points,
-                        ) = await self._re_handler.get_rooms_attributes(destinations)
-                    if self._shared.map_rooms:
-                        LOGGER.debug(
-                            "%s: State attributes rooms updated", self._file_name
-                        )
-
-                if self._shared.attr_calibration_points is None:
-                    self._shared.attr_calibration_points = (
-                        self._re_handler.get_calibration_data(self._shared.image_rotate)
-                    )
-
-                self._shared.vac_json_id = self._re_handler.get_json_id()
-
-                if not self._shared.charger_position:
-                    self._shared.charger_position = (
-                        self._re_handler.get_charger_position()
-                    )
-                self._shared.current_room = self._re_handler.get_robot_position()
-                if not self._shared.image_size:
-                    self._shared.image_size = self._re_handler.get_img_size()
-
+                self.data = data
                 update_vac_state = self._shared.vacuum_state
                 if not self._shared.snapshot_take and (
                     update_vac_state in NOT_STREAMING_STATES
                 ):
                     # suspend image processing if we are at the next frame.
-                    LOGGER.info(
-                        "Suspended the camera data processing for: %s.", self._file_name
-                    )
-                    # take a snapshot
-                    self._shared.snapshot_take = True
                     self._shared.image_grab = False
             return pil_img
         return None
 
-    def run_async_process_valetudo_data(self, parsed_json: JsonType):
+    def run_process_valetudo_data(self, parsed_json: JsonType):
         """Async function to process the image data from the Vacuum Json data."""
         try:
             if self._shared.is_rand:
@@ -190,43 +116,6 @@ class CameraProcessor:
         """Get the frame number."""
         return self._map_handler.get_frame_number() - 2
 
-    # Functions to Thread the image text processing.
-    async def async_draw_image_text(
-        self, pil_img: PilPNG, color: Color, font: str, img_top: bool = True
-    ) -> PilPNG:
-        """Draw text on the image."""
-        if self._shared.user_language is None:
-            self._shared.user_language = await async_get_active_user_language(self.hass)
-        if pil_img is not None:
-            text, size = self._status_text.get_status_text(pil_img)
-            Draw.status_text(
-                image=pil_img,
-                size=size,
-                color=color,
-                status=text,
-                path_font=font,
-                position=img_top,
-            )
-        return pil_img
-
-    def run_async_draw_image_text(self, pil_img: PilPNG, color: Color):
-        """Async function to process the image data from the Vacuum Json data."""
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        try:
-            result = self._thread_pool.run_async_in_executor(
-                "camera_processing",
-                self.async_draw_image_text,
-                pil_img,
-                color,
-                self._shared.vacuum_status_font,
-                self._shared.vacuum_status_position,
-            )
-        except RuntimeError as e:
-            LOGGER.error("Error processing image data: %s", str(e), exc_info=True)
-            return None
-        return result
-
     @staticmethod
     async def download_image(url: str, set_timeout: int = 6):
         """
@@ -245,7 +134,6 @@ class CameraProcessor:
                 async with session.get(url) as response:
                     if response.status == 200:
                         obstacle_image = await response.read()
-                        LOGGER.debug("Image downloaded successfully!")
                         return obstacle_image
                     raise HTTPException(
                         text="Failed to download the Obstacle image.",
@@ -262,21 +150,16 @@ class CameraProcessor:
             LOGGER.error("Error downloading image: %s", e, exc_info=True)
             return None
 
-    # noinspection PyTypeChecker
     async def async_open_image(self, obstacle_image: Any) -> Image.Image:
-        """
-        Asynchronously open an image file using a thread pool.
-        Args:
-            obstacle_image (Any): image file bytes or jpeg format.
+        """Asynchronously open an image file using a temporary 1-worker pool."""
 
-        Returns:
-            Image.Image: PIL image.
-        """
-        executor = concurrent.futures.ThreadPoolExecutor(
+        def open_image(image_data: Any) -> Image.Image:
+            return Image.open(BytesIO(image_data))
+
+        # obstacle_image
+        with concurrent.futures.ThreadPoolExecutor(
             max_workers=1, thread_name_prefix=f"{self._file_name}_camera"
-        )
-        loop = asyncio.get_running_loop()
-        pil_img = await loop.run_in_executor(
-            executor, Image.open, BytesIO(obstacle_image)
-        )
-        return pil_img
+        ) as ex:
+            fut = ex.submit(open_image, obstacle_image)
+            result = await asyncio.wrap_future(fut)
+        return result
