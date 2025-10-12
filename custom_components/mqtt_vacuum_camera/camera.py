@@ -11,9 +11,8 @@ from io import BytesIO
 import math
 import os
 import time
-from typing import Any, Optional
+from typing import Optional
 
-from PIL import Image
 from homeassistant import config_entries, core
 from homeassistant.components.camera import Camera, CameraEntityFeature
 from homeassistant.const import CONF_UNIQUE_ID, MATCH_ALL
@@ -167,6 +166,10 @@ class MQTTCamera(CoordinatorEntity, Camera):
     async def async_added_to_hass(self) -> None:
         """Handle entity added to Home Assistant."""
         self._should_poll = True
+        _start_image = self._shared.last_image
+        self.Image = await self.hass.async_add_executor_job(
+                self.pil_to_bytes, _start_image, "Start Up"
+            )
         self._shared.camera_mode = CameraModes.MAP_VIEW
         self.async_schedule_update_ha_state(True)
 
@@ -230,12 +233,13 @@ class MQTTCamera(CoordinatorEntity, Camera):
         :return bool always False as this is not in use in this implementation"""
         return False
 
+    # noinspection PyUnusedLocal
     def camera_image(
         self, width: Optional[int] = None, height: Optional[int] = None
     ) -> Optional[bytes]:
         """Camera Image"""
         if self._shared.binary_image is None:
-            return self.pil_to_bytes(self._shared.last_image)
+            return self.Image
         width, height = self.processor.data["image"]["size"]
         return self.processor.data["image"]["binary"]
 
@@ -334,7 +338,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
                     )
                 except asyncio.TimeoutError:
                     LOGGER.warning("%s: Time out in redering!", self._file_name)
-                    return
+                    return self.camera_image(self._image_w, self._image_h)
         return self.camera_image(self._image_w, self._image_h)
 
     async def _process_parsed_json(self, test_mode: bool = False):
@@ -355,9 +359,6 @@ class MQTTCamera(CoordinatorEntity, Camera):
 
         # Get data from MQTT and decompress it
         parsed_json = None
-        LOGGER.debug(
-            "%s: Check shared data. %s", self._file_name, self._shared.image_grab
-        )
         payload, data_type = await self._mqtt.update_data(self._shared.image_grab)
         if payload and data_type:
             data = payload.payload if hasattr(payload, "payload") else payload
@@ -391,7 +392,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         """Thread function to process the image data using persistent thread pool."""
         try:
             result = await self.thread_pool.run_in_executor(
-                "camera",
+                "camera_processing",
                 self.pil_to_bytes,
                 pil_img,
                 image_id,
