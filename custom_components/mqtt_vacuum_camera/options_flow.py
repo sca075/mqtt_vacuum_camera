@@ -1,6 +1,6 @@
 """
 Options flow handler for MQTT Vacuum Camera integration.
-Last Updated on version: 2025.3.0b2
+Last Updated on version: 2025.10.0
 """
 
 from copy import deepcopy
@@ -18,7 +18,7 @@ from homeassistant.helpers.selector import (
     SelectSelectorConfig,
     SelectSelectorMode,
 )
-from valetudo_map_parser.config.types import RoomStore
+from valetudo_map_parser.config.types import RoomStore, LOGGER
 import voluptuous as vol
 
 from .common import extract_file_name, update_options
@@ -52,7 +52,7 @@ from .const import (
     CONF_OFFSET_LEFT,
     CONF_OFFSET_RIGHT,
     CONF_OFFSET_TOP,
-    CONF_SNAPSHOTS_ENABLE,
+    CONF_ROBOT_SIZE,
     CONF_VAC_STAT,
     CONF_VAC_STAT_FONT,
     CONF_VAC_STAT_POS,
@@ -70,9 +70,11 @@ from .const import (
     ROOM_FLAGS,
     ROTATION_VALUES,
     TEXT_SIZE_VALUES,
+    ROBOT_SIZE_VALUES,
+    DEFAULT_ROOMS_NAMES,
 )
 from .snapshots.log_files import run_async_save_logs
-from .utils.files_operations import async_del_file, async_rename_room_description
+from .utils.files_operations import async_del_file
 
 
 # noinspection PyTypeChecker
@@ -90,6 +92,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         self.file_name = extract_file_name(self.unique_id)
         self.is_alpha_enabled = False
         self.number_of_rooms = DEFAULT_ROOMS
+        self.rooms_placeholders = DEFAULT_ROOMS_NAMES
         LOGGER.debug(
             "Options edit in progress.. options before edit: %s",
             dict(self.backup_options),
@@ -98,6 +101,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         if len(options_values) > 0:
             self.config_dict: NumberSelectorConfig = ALPHA_VALUES
             config_size: NumberSelectorConfig = TEXT_SIZE_VALUES
+            robot_size_selector: NumberSelectorConfig = ROBOT_SIZE_VALUES
             font_selector = SelectSelectorConfig(
                 options=FONTS_AVAILABLE,
                 mode=SelectSelectorMode.DROPDOWN,
@@ -131,9 +135,9 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                         default=config_entry.options.get("auto_zoom"),
                     ): BooleanSelector(),
                     vol.Optional(
-                        CONF_SNAPSHOTS_ENABLE,
-                        default=config_entry.options.get(CONF_SNAPSHOTS_ENABLE, True),
-                    ): BooleanSelector(),
+                        CONF_ROBOT_SIZE,
+                        default=config_entry.options.get("robot_size"),
+                    ): NumberSelector(robot_size_selector),
                 }
             )
             self.image_schema_2 = vol.Schema(
@@ -253,6 +257,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
 
         rooms_data = RoomStore(self.file_name)
         self.number_of_rooms = rooms_data.get_rooms_count()
+        self.rooms_placeholders = rooms_data.room_names
         LOGGER.debug("Rooms count: %s", self.number_of_rooms)
         if (
             not isinstance(self.number_of_rooms, int)
@@ -289,10 +294,10 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
             case 1:
                 menu_options.append("floor_only")
             case n if 1 < n <= 8:
-                menu_options.extend(["rooms_colours_1", "rename_translations"])
+                menu_options.extend(["rooms_colours_1"])
             case _:
                 menu_options.extend(
-                    ["rooms_colours_1", "rooms_colours_2", "rename_translations"]
+                    ["rooms_colours_1", "rooms_colours_2"]
                 )
 
         if self.is_alpha_enabled:
@@ -354,7 +359,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                     "aspect_ratio": user_input.get(CONF_ASPECT_RATIO),
                     "zoom_lock_ratio": user_input.get(CONF_ZOOM_LOCK_RATIO),
                     "auto_zoom": user_input.get(CONF_AUTO_ZOOM),
-                    "enable_www_snapshots": user_input.get(CONF_SNAPSHOTS_ENABLE),
+                    "robot_size": user_input.get(CONF_ROBOT_SIZE),
                 }
             )
             return await self.async_step_opt_save()
@@ -504,7 +509,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         return self.async_show_form(
             step_id="draw_elements",
             data_schema=vol.Schema(fields),
-            description_placeholders=self.camera_options,
+            description_placeholders=self.rooms_placeholders,
         )
 
     async def async_step_segments_visibility(
@@ -530,7 +535,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         return self.async_show_form(
             step_id="segments_visibility",
             data_schema=vol.Schema(fields),
-            description_placeholders=self.camera_options,
+            description_placeholders=self.rooms_placeholders,
         )
 
     async def async_step_base_colours(
@@ -657,7 +662,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         return self.async_show_form(
             step_id="rooms_colours_1",
             data_schema=vol.Schema(fields),
-            description_placeholders=self.camera_options,
+            description_placeholders=self.rooms_placeholders,
         )
 
     async def async_step_rooms_colours_2(
@@ -694,7 +699,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         return self.async_show_form(
             step_id="rooms_colours_2",
             data_schema=vol.Schema(fields),
-            description_placeholders=self.camera_options,
+            description_placeholders=self.rooms_placeholders,
         )
 
     async def async_step_alpha_floor(self, user_input: Optional[Dict[str, Any]] = None):
@@ -715,7 +720,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         return self.async_show_form(
             step_id="alpha_floor",
             data_schema=vol.Schema(fields),
-            description_placeholders=self.camera_options,
+            description_placeholders=self.rooms_placeholders,
         )
 
     async def async_step_alpha_2(self, user_input: Optional[Dict[str, Any]] = None):
@@ -748,7 +753,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         return self.async_show_form(
             step_id="alpha_2",
             data_schema=vol.Schema(fields),
-            description_placeholders=self.camera_options,
+            description_placeholders=self.rooms_placeholders,
         )
 
     async def async_step_alpha_3(self, user_input: Optional[Dict[str, Any]] = None):
@@ -775,7 +780,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         return self.async_show_form(
             step_id="alpha_3",
             data_schema=vol.Schema(fields),
-            description_placeholders=self.camera_options,
+            description_placeholders=self.rooms_placeholders,
         )
 
     # pylint: disable=unused-argument
@@ -798,18 +803,6 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         return await self.async_step_opt_save()
 
     # Other Advanced Steps
-    # pylint: disable=unused-argument
-    async def async_step_rename_translations(self, user_input=None):
-        """Handle translation renaming."""
-        LOGGER.debug("Renaming the translations.")
-        if self.backup_options:
-            if self.hass:
-                # This will initialize the language cache only when needed
-                # The optimization is now handled in room_manager.py
-                await async_rename_room_description(self.hass, self.file_name)
-                self.camera_options = self.backup_options
-            return await self.async_step_opt_save()
-        return self.async_show_form(step_id="rename_translations")
 
     # pylint: disable=unused-argument
     async def async_step_reset_map_trims(self, user_input=None):

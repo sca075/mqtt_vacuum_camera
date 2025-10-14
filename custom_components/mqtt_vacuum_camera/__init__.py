@@ -203,20 +203,6 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
     async def handle_homeassistant_stop(event):
         """Handle Home Assistant stop event."""
         LOGGER.info("Home Assistant is stopping. Writing down the rooms data.")
-        storage = hass.config.path(STORAGE_DIR, CAMERA_STORAGE)
-        if not os.path.exists(storage):
-            return False
-        vacuum_entity_id = await async_get_translations_vacuum_id(storage)
-        if not vacuum_entity_id:
-            return False
-        # This will initialize the language cache only when needed
-        # The optimization is now handled in room_manager.py
-        try:
-            await asyncio.wait_for(
-                async_rename_room_description(hass, vacuum_entity_id), timeout=2.0
-            )
-        except asyncio.TimeoutError as e:
-            LOGGER.warning("Room rename timed out during shutdown: %s", e)
         await ThreadPoolManager.shutdown_all()
         await hass.async_block_till_done()
         LOGGER.info("Home Assistant stopped. Mqtt Vacuum Camera exit complete.")
@@ -298,6 +284,33 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
             LOGGER.debug("Migration data: %s", dict(new_options))
             hass.config_entries.async_update_entry(
                 config_entry, version=3.3, data=new_data, options=new_options
+            )
+            LOGGER.info(
+                "Migration to config entry version %s successful",
+                config_entry.version,
+            )
+            return True
+    if config_entry.version >= 3.3:
+        LOGGER.info("Migrating config entry from version %s", config_entry.version)
+        old_data = {**config_entry.data}
+        new_data = {"vacuum_config_entry": old_data["vacuum_config_entry"]}
+        LOGGER.debug(dict(new_data))
+        old_options = {**config_entry.options}
+        if len(old_options) != 0:
+            # Remove deprecated options
+            old_options.pop("enable_www_snapshots", None)
+            old_options.pop("get_svg_file", None)
+            # Add new options with defaults
+            tmp_option = {
+                "robot_size": 25,
+            }
+            # Merge tmp_option into old_options
+            old_options.update(tmp_option)
+            # Now process with update_options
+            new_options = await update_options(old_options, {})
+            LOGGER.debug("Migration data: %s", dict(new_options))
+            hass.config_entries.async_update_entry(
+                config_entry, version=3.4, data=new_data, options=new_options
             )
             LOGGER.info(
                 "Migration to config entry version %s successful",

@@ -109,11 +109,12 @@ async def update_options(bk_options, new_options):
     Keep track of the modified options.
     Returns updated options after editing in Config_Flow.
     """
+    from .const import DEFAULT_VALUES
 
     keys_to_update = KEYS_TO_UPDATE
     try:
         updated_options = {
-            key: new_options[key] if key in new_options else bk_options[key]
+            key: new_options.get(key, bk_options.get(key, DEFAULT_VALUES.get(key)))
             for key in keys_to_update
         }
     except KeyError as e:
