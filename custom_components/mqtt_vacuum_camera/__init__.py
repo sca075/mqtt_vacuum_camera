@@ -7,6 +7,7 @@ import asyncio
 from functools import partial
 import os
 from typing import Optional
+import zipfile
 
 from homeassistant import config_entries, core
 from homeassistant.components import mqtt
@@ -292,6 +293,22 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
             return True
     if config_entry.version >= 3.3:
         LOGGER.info("Migrating config entry from version %s", config_entry.version)
+
+        # Restore translation files from backup ZIP
+        try:
+            translations_dir = os.path.join(os.path.dirname(__file__), "translations")
+            backup_zip = os.path.join(os.path.dirname(__file__), "translations_backup.zip")
+
+            if os.path.exists(backup_zip):
+                LOGGER.info("Restoring translation files from backup")
+                with zipfile.ZipFile(backup_zip, 'r') as zip_ref:
+                    zip_ref.extractall(os.path.dirname(__file__))
+                LOGGER.info("Translation files restored successfully")
+            else:
+                LOGGER.warning("Translation backup file not found, skipping restoration")
+        except Exception as e:
+            LOGGER.error("Failed to restore translation files: %s", e)
+
         old_data = {**config_entry.data}
         new_data = {"vacuum_config_entry": old_data["vacuum_config_entry"]}
         LOGGER.debug(dict(new_data))

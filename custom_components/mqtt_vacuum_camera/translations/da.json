@@ -91,12 +91,13 @@
           "auto_zoom": "Aktivér automatisk zoom",
           "zoom_lock_ratio": "Bevar proportioner.",
           "aspect_ratio": "Billedeproportioner.",
-          "enable_www_snapshots": "Eksporter PNG snapshots."
+          "robot_size": "Robotstørrelse"
         },
         "data_description": {
           "rotate_image": "Grader 0, 90, 180, 270",
           "margins": "Automatisk margenbeskæring i pixels.",
-          "aspect_ratio": "Billedeproportioner."
+          "aspect_ratio": "Billedeproportioner.",
+          "robot_size": "Robotstørrelse i pixels 8-25"
         },
         "description": "Kamera billede indstillinger",
         "title": "Billedeindstillinger"
@@ -167,38 +168,38 @@
         "title": "Segmentsynlighed",
         "description": "Konfigurer hvilke rumssegmenter der er synlige på kortet",
         "data": {
-          "disable_room_1": "Skjul rum 1",
-          "disable_room_2": "Skjul rum 2",
-          "disable_room_3": "Skjul rum 3",
-          "disable_room_4": "Skjul rum 4",
-          "disable_room_5": "Skjul rum 5",
-          "disable_room_6": "Skjul rum 6",
-          "disable_room_7": "Skjul rum 7",
-          "disable_room_8": "Skjul rum 8",
-          "disable_room_9": "Skjul rum 9",
-          "disable_room_10": "Skjul rum 10",
-          "disable_room_11": "Skjul rum 11",
-          "disable_room_12": "Skjul rum 12",
-          "disable_room_13": "Skjul rum 13",
-          "disable_room_14": "Skjul rum 14",
-          "disable_room_15": "Skjul rum 15"
+          "disable_room_1": "Skjul rum 1 {room_0_name}",
+          "disable_room_2": "Skjul rum 2 {room_1_name}",
+          "disable_room_3": "Skjul rum 3 {room_2_name}",
+          "disable_room_4": "Skjul rum 4 {room_3_name}",
+          "disable_room_5": "Skjul rum 5 {room_4_name}",
+          "disable_room_6": "Skjul rum 6 {room_5_name}",
+          "disable_room_7": "Skjul rum 7 {room_6_name}",
+          "disable_room_8": "Skjul rum 8 {room_7_name}",
+          "disable_room_9": "Skjul rum 9 {room_8_name}",
+          "disable_room_10": "Skjul rum 10 {room_9_name}",
+          "disable_room_11": "Skjul rum 11 {room_10_name}",
+          "disable_room_12": "Skjul rum 12 {room_11_name}",
+          "disable_room_13": "Skjul rum 13 {room_12_name}",
+          "disable_room_14": "Skjul rum 14 {room_13_name}",
+          "disable_room_15": "Skjul rum 15 {room_14_name}"
         },
         "data_description": {
-          "disable_room_1": "Når aktiveret, vil rum 1 ikke blive vist på kortet",
-          "disable_room_2": "Når aktiveret, vil rum 2 ikke blive vist på kortet",
-          "disable_room_3": "Når aktiveret, vil rum 3 ikke blive vist på kortet",
-          "disable_room_4": "Når aktiveret, vil rum 4 ikke blive vist på kortet",
-          "disable_room_5": "Når aktiveret, vil rum 5 ikke blive vist på kortet",
-          "disable_room_6": "Når aktiveret, vil rum 6 ikke blive vist på kortet",
-          "disable_room_7": "Når aktiveret, vil rum 7 ikke blive vist på kortet",
-          "disable_room_8": "Når aktiveret, vil rum 8 ikke blive vist på kortet",
-          "disable_room_9": "Når aktiveret, vil rum 9 ikke blive vist på kortet",
-          "disable_room_10": "Når aktiveret, vil rum 10 ikke blive vist på kortet",
-          "disable_room_11": "Når aktiveret, vil rum 11 ikke blive vist på kortet",
-          "disable_room_12": "Når aktiveret, vil rum 12 ikke blive vist på kortet",
-          "disable_room_13": "Når aktiveret, vil rum 13 ikke blive vist på kortet",
-          "disable_room_14": "Når aktiveret, vil rum 14 ikke blive vist på kortet",
-          "disable_room_15": "Når aktiveret, vil rum 15 ikke blive vist på kortet"
+          "disable_room_1": "Når aktiveret, vil rum 1 {room_0_name} ikke blive vist på kortet",
+          "disable_room_2": "Når aktiveret, vil rum 2 {room_1_name} ikke blive vist på kortet",
+          "disable_room_3": "Når aktiveret, vil rum 3 {room_2_name} ikke blive vist på kortet",
+          "disable_room_4": "Når aktiveret, vil rum 4 {room_3_name} ikke blive vist på kortet",
+          "disable_room_5": "Når aktiveret, vil rum 5 {room_4_name} ikke blive vist på kortet",
+          "disable_room_6": "Når aktiveret, vil rum 6 {room_5_name} ikke blive vist på kortet",
+          "disable_room_7": "Når aktiveret, vil rum 7 {room_6_name} ikke blive vist på kortet",
+          "disable_room_8": "Når aktiveret, vil rum 8 {room_7_name} ikke blive vist på kortet",
+          "disable_room_9": "Når aktiveret, vil rum 9 {room_8_name} ikke blive vist på kortet",
+          "disable_room_10": "Når aktiveret, vil rum 10 {room_9_name} ikke blive vist på kortet",
+          "disable_room_11": "Når aktiveret, vil rum 11 {room_10_name} ikke blive vist på kortet",
+          "disable_room_12": "Når aktiveret, vil rum 12 {room_11_name} ikke blive vist på kortet",
+          "disable_room_13": "Når aktiveret, vil rum 13 {room_12_name} ikke blive vist på kortet",
+          "disable_room_14": "Når aktiveret, vil rum 14 {room_13_name} ikke blive vist på kortet",
+          "disable_room_15": "Når aktiveret, vil rum 15 {room_14_name} ikke blive vist på kortet"
         }
       },
       "base_colours": {
@@ -263,14 +264,14 @@
           "add_room_1_alpha": "Indstil gennemsigtighed:"
         },
         "data_description": {
-          "color_room_0": "Rum 1",
-          "color_room_1": "Rum 2",
-          "color_room_2": "Rum 3",
-          "color_room_3": "Rum 4",
-          "color_room_4": "Rum 5",
-          "color_room_5": "Rum 6",
-          "color_room_6": "Rum 7",
-          "color_room_7": "Rum 8"
+          "color_room_0": "### **{room_0_name} Farve**",
+          "color_room_1": "### **{room_1_name} Farve**",
+          "color_room_2": "### **{room_2_name} Farve**",
+          "color_room_3": "### **{room_3_name} Farve**",
+          "color_room_4": "### **{room_4_name} Farve**",
+          "color_room_5": "### **{room_5_name} Farve**",
+          "color_room_6": "### **{room_6_name} Farve**",
+          "color_room_7": "### **{room_7_name} Farve**"
         },
         "description": "Kamerafarve indstillinger.",
         "title": "Rum 1 til 8 farver"
@@ -288,14 +289,14 @@
           "add_room_2_alpha": "Indstil gennemsigtighed:"
         },
         "data_description": {
-          "color_room_8": "Rum 9",
-          "color_room_9": "Rum 10",
-          "color_room_10": "Rum 11",
-          "color_room_11": "Rum 12",
-          "color_room_12": "Rum 13",
-          "color_room_13": "Rum 14",
-          "color_room_14": "Rum 15",
-          "color_room_15": "Rum 16"
+          "color_room_8": "### **{room_8_name} Farve**",
+          "color_room_9": "### **{room_9_name} Farve**",
+          "color_room_10": "### **{room_10_name} Farve**",
+          "color_room_11": "### **{room_11_name} Farve**",
+          "color_room_12": "### **{room_12_name} Farve**",
+          "color_room_13": "### **{room_13_name} Farve**",
+          "color_room_14": "### **{room_14_name} Farve**",
+          "color_room_15": "### **{room_15_name} Farve**"
         },
         "description": "Kamerafarve indstillinger.",
         "title": "Rum 9 til 15 farver"
@@ -307,28 +308,28 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "Rum 1",
-          "alpha_room_1": "Rum 2",
-          "alpha_room_2": "Rum 3",
-          "alpha_room_3": "Rum 4",
-          "alpha_room_4": "Rum 5",
-          "alpha_room_5": "Rum 6",
-          "alpha_room_6": "Rum 7",
-          "alpha_room_7": "Rum 8"
+          "alpha_room_0": "### **{room_0_name} Alfa**",
+          "alpha_room_1": "### **{room_1_name} Alfa**",
+          "alpha_room_2": "### **{room_2_name} Alfa**",
+          "alpha_room_3": "### **{room_3_name} Alfa**",
+          "alpha_room_4": "### **{room_4_name} Alfa**",
+          "alpha_room_5": "### **{room_5_name} Alfa**",
+          "alpha_room_6": "### **{room_6_name} Alfa**",
+          "alpha_room_7": "### **{room_7_name} Alfa**"
         },
         "description": "Kameraindstillinger. Alpha 2",
         "title": "Alphakanal Rumfarver"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "Rum 9",
-          "alpha_room_9": "Rum 10",
-          "alpha_room_10": "Rum 11",
-          "alpha_room_11": "Rum 12",
-          "alpha_room_12": "Rum 13",
-          "alpha_room_13": "Rum 14",
-          "alpha_room_14": "Rum 15",
-          "alpha_room_15": "Rum 16"
+          "alpha_room_8": "### **{room_8_name} Alfa**",
+          "alpha_room_9": "### **{room_9_name} Alfa**",
+          "alpha_room_10": "### **{room_10_name} Alfa**",
+          "alpha_room_11": "### **{room_11_name} Alfa**",
+          "alpha_room_12": "### **{room_12_name} Alfa**",
+          "alpha_room_13": "### **{room_13_name} Alfa**",
+          "alpha_room_14": "### **{room_14_name} Alfa**",
+          "alpha_room_15": "### **{room_15_name} Alfa**"
         },
         "description": "Kameraindstillinger. Alpha 3",
         "title": "Alphakanal rumfarver"

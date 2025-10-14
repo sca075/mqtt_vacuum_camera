@@ -91,12 +91,13 @@
           "auto_zoom": "Włącz Automatyczne Powiększenie",
           "zoom_lock_ratio": "Zablokuj Proporcje.",
           "aspect_ratio": "Proporcje Obrazu.",
-          "enable_www_snapshots": "Eksportuj zrzuty PNG."
+          "robot_size": "Rozmiar robota"
         },
         "data_description": {
           "rotate_image": "Stopnie 0, 90, 180, 270",
           "margins": "Automatyczne przycinanie marginesów w pikselach.",
-          "aspect_ratio": "Proporcje Obrazu."
+          "aspect_ratio": "Proporcje Obrazu.",
+          "robot_size": "Rozmiar robota w pikselach 8-25"
         },
         "description": "Opcje obrazu kamery",
         "title": "Opcje Obrazu"
@@ -167,38 +168,38 @@
         "title": "Widoczność Segmentów",
         "description": "Konfiguruj, które segmenty pokojów są widoczne na mapie",
         "data": {
-          "disable_room_1": "Ukryj Pokój 1",
-          "disable_room_2": "Ukryj Pokój 2",
-          "disable_room_3": "Ukryj Pokój 3",
-          "disable_room_4": "Ukryj Pokój 4",
-          "disable_room_5": "Ukryj Pokój 5",
-          "disable_room_6": "Ukryj Pokój 6",
-          "disable_room_7": "Ukryj Pokój 7",
-          "disable_room_8": "Ukryj Pokój 8",
-          "disable_room_9": "Ukryj Pokój 9",
-          "disable_room_10": "Ukryj Pokój 10",
-          "disable_room_11": "Ukryj Pokój 11",
-          "disable_room_12": "Ukryj Pokój 12",
-          "disable_room_13": "Ukryj Pokój 13",
-          "disable_room_14": "Ukryj Pokój 14",
-          "disable_room_15": "Ukryj Pokój 15"
+          "disable_room_1": "Ukryj Pokój 1 {room_0_name}",
+          "disable_room_2": "Ukryj Pokój 2 {room_1_name}",
+          "disable_room_3": "Ukryj Pokój 3 {room_2_name}",
+          "disable_room_4": "Ukryj Pokój 4 {room_3_name}",
+          "disable_room_5": "Ukryj Pokój 5 {room_4_name}",
+          "disable_room_6": "Ukryj Pokój 6 {room_5_name}",
+          "disable_room_7": "Ukryj Pokój 7 {room_6_name}",
+          "disable_room_8": "Ukryj Pokój 8 {room_7_name}",
+          "disable_room_9": "Ukryj Pokój 9 {room_8_name}",
+          "disable_room_10": "Ukryj Pokój 10 {room_9_name}",
+          "disable_room_11": "Ukryj Pokój 11 {room_10_name}",
+          "disable_room_12": "Ukryj Pokój 12 {room_11_name}",
+          "disable_room_13": "Ukryj Pokój 13 {room_12_name}",
+          "disable_room_14": "Ukryj Pokój 14 {room_13_name}",
+          "disable_room_15": "Ukryj Pokój 15 {room_14_name}"
         },
         "data_description": {
-          "disable_room_1": "Gdy włączone, Pokój 1 nie będzie wyświetlany na mapie",
-          "disable_room_2": "Gdy włączone, Pokój 2 nie będzie wyświetlany na mapie",
-          "disable_room_3": "Gdy włączone, Pokój 3 nie będzie wyświetlany na mapie",
-          "disable_room_4": "Gdy włączone, Pokój 4 nie będzie wyświetlany na mapie",
-          "disable_room_5": "Gdy włączone, Pokój 5 nie będzie wyświetlany na mapie",
-          "disable_room_6": "Gdy włączone, Pokój 6 nie będzie wyświetlany na mapie",
-          "disable_room_7": "Gdy włączone, Pokój 7 nie będzie wyświetlany na mapie",
-          "disable_room_8": "Gdy włączone, Pokój 8 nie będzie wyświetlany na mapie",
-          "disable_room_9": "Gdy włączone, Pokój 9 nie będzie wyświetlany na mapie",
-          "disable_room_10": "Gdy włączone, Pokój 10 nie będzie wyświetlany na mapie",
-          "disable_room_11": "Gdy włączone, Pokój 11 nie będzie wyświetlany na mapie",
-          "disable_room_12": "Gdy włączone, Pokój 12 nie będzie wyświetlany na mapie",
-          "disable_room_13": "Gdy włączone, Pokój 13 nie będzie wyświetlany na mapie",
-          "disable_room_14": "Gdy włączone, Pokój 14 nie będzie wyświetlany na mapie",
-          "disable_room_15": "Gdy włączone, Pokój 15 nie będzie wyświetlany na mapie"
+          "disable_room_1": "Gdy włączone, Pokój 1 {room_0_name} nie będzie wyświetlany na mapie",
+          "disable_room_2": "Gdy włączone, Pokój 2 {room_1_name} nie będzie wyświetlany na mapie",
+          "disable_room_3": "Gdy włączone, Pokój 3 {room_2_name} nie będzie wyświetlany na mapie",
+          "disable_room_4": "Gdy włączone, Pokój 4 {room_3_name} nie będzie wyświetlany na mapie",
+          "disable_room_5": "Gdy włączone, Pokój 5 {room_4_name} nie będzie wyświetlany na mapie",
+          "disable_room_6": "Gdy włączone, Pokój 6 {room_5_name} nie będzie wyświetlany na mapie",
+          "disable_room_7": "Gdy włączone, Pokój 7 {room_6_name} nie będzie wyświetlany na mapie",
+          "disable_room_8": "Gdy włączone, Pokój 8 {room_7_name} nie będzie wyświetlany na mapie",
+          "disable_room_9": "Gdy włączone, Pokój 9 {room_8_name} nie będzie wyświetlany na mapie",
+          "disable_room_10": "Gdy włączone, Pokój 10 {room_9_name} nie będzie wyświetlany na mapie",
+          "disable_room_11": "Gdy włączone, Pokój 11 {room_10_name} nie będzie wyświetlany na mapie",
+          "disable_room_12": "Gdy włączone, Pokój 12 {room_11_name} nie będzie wyświetlany na mapie",
+          "disable_room_13": "Gdy włączone, Pokój 13 {room_12_name} nie będzie wyświetlany na mapie",
+          "disable_room_14": "Gdy włączone, Pokój 14 {room_13_name} nie będzie wyświetlany na mapie",
+          "disable_room_15": "Gdy włączone, Pokój 15 {room_14_name} nie będzie wyświetlany na mapie"
         }
       },
       "base_colours": {
@@ -263,14 +264,14 @@
           "add_room_1_alpha": "Konfiguruj Przezroczystość:"
         },
         "data_description": {
-          "color_room_0": "Pokój 1",
-          "color_room_1": "Pokój 2",
-          "color_room_2": "Pokój 3",
-          "color_room_3": "Pokój 4",
-          "color_room_4": "Pokój 5",
-          "color_room_5": "Pokój 6",
-          "color_room_6": "Pokój 7",
-          "color_room_7": "Pokój 8"
+          "color_room_0": "### **{room_0_name} Kolor**",
+          "color_room_1": "### **{room_1_name} Kolor**",
+          "color_room_2": "### **{room_2_name} Kolor**",
+          "color_room_3": "### **{room_3_name} Kolor**",
+          "color_room_4": "### **{room_4_name} Kolor**",
+          "color_room_5": "### **{room_5_name} Kolor**",
+          "color_room_6": "### **{room_6_name} Kolor**",
+          "color_room_7": "### **{room_7_name} Kolor**"
         },
         "description": "Opcje kolorów kamery.",
         "title": "Kolory Pokojów 1 do 8"
@@ -288,14 +289,14 @@
           "add_room_2_alpha": "Konfiguruj Przezroczystość:"
         },
         "data_description": {
-          "color_room_8": "Pokój 9",
-          "color_room_9": "Pokój 10",
-          "color_room_10": "Pokój 11",
-          "color_room_11": "Pokój 12",
-          "color_room_12": "Pokój 13",
-          "color_room_13": "Pokój 14",
-          "color_room_14": "Pokój 15",
-          "color_room_15": "Pokój 16"
+          "color_room_8": "### **{room_8_name} Kolor**",
+          "color_room_9": "### **{room_9_name} Kolor**",
+          "color_room_10": "### **{room_10_name} Kolor**",
+          "color_room_11": "### **{room_11_name} Kolor**",
+          "color_room_12": "### **{room_12_name} Kolor**",
+          "color_room_13": "### **{room_13_name} Kolor**",
+          "color_room_14": "### **{room_14_name} Kolor**",
+          "color_room_15": "### **{room_15_name} Kolor**"
         },
         "description": "Opcje kolorów kamery.",
         "title": "Kolory Pokojów 9 do 15"
@@ -307,28 +308,28 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "Pokój 1",
-          "alpha_room_1": "Pokój 2",
-          "alpha_room_2": "Pokój 3",
-          "alpha_room_3": "Pokój 4",
-          "alpha_room_4": "Pokój 5",
-          "alpha_room_5": "Pokój 6",
-          "alpha_room_6": "Pokój 7",
-          "alpha_room_7": "Pokój 8"
+          "alpha_room_0": "### **{room_0_name} Alpha**",
+          "alpha_room_1": "### **{room_1_name} Alpha**",
+          "alpha_room_2": "### **{room_2_name} Alpha**",
+          "alpha_room_3": "### **{room_3_name} Alpha**",
+          "alpha_room_4": "### **{room_4_name} Alpha**",
+          "alpha_room_5": "### **{room_5_name} Alpha**",
+          "alpha_room_6": "### **{room_6_name} Alpha**",
+          "alpha_room_7": "### **{room_7_name} Alpha**"
         },
         "description": "Opcje kamery. Alpha 2",
         "title": "Kanał Alpha Kolorów Pokojów"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "Pokój 9",
-          "alpha_room_9": "Pokój 10",
-          "alpha_room_10": "Pokój 11",
-          "alpha_room_11": "Pokój 12",
-          "alpha_room_12": "Pokój 13",
-          "alpha_room_13": "Pokój 14",
-          "alpha_room_14": "Pokój 15",
-          "alpha_room_15": "Pokój 16"
+          "alpha_room_8": "### **{room_8_name} Alpha**",
+          "alpha_room_9": "### **{room_9_name} Alpha**",
+          "alpha_room_10": "### **{room_10_name} Alpha**",
+          "alpha_room_11": "### **{room_11_name} Alpha**",
+          "alpha_room_12": "### **{room_12_name} Alpha**",
+          "alpha_room_13": "### **{room_13_name} Alpha**",
+          "alpha_room_14": "### **{room_14_name} Alpha**",
+          "alpha_room_15": "### **{room_15_name} Alpha**"
         },
         "description": "Opcje kamery. Alpha 3",
         "title": "Kanał Alpha Kolorów Pokojów"

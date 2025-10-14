@@ -91,12 +91,13 @@
           "auto_zoom": "Habilitar Zoom Automático",
           "zoom_lock_ratio": "Bloquear Relación de Aspecto.",
           "aspect_ratio": "Relación de Aspecto de la Imagen.",
-          "enable_www_snapshots": "Exportar capturas PNG."
+          "robot_size": "Tamaño del robot"
         },
         "data_description": {
           "rotate_image": "Grado 0, 90, 180, 270",
           "margins": "Recortar automáticamente los márgenes en píxeles.",
-          "aspect_ratio": "Relación de Aspecto de la Imagen."
+          "aspect_ratio": "Relación de Aspecto de la Imagen.",
+          "robot_size": "Tamaño del robot en píxeles 8-25"
         },
         "description": "Opciones de Imagen de la Cámara",
         "title": "Opciones de Imagen"
@@ -167,38 +168,38 @@
         "title": "Visibilidad de Segmentos",
         "description": "Configurar qué segmentos de habitación son visibles en el mapa",
         "data": {
-          "disable_room_1": "Ocultar Habitación 1",
-          "disable_room_2": "Ocultar Habitación 2",
-          "disable_room_3": "Ocultar Habitación 3",
-          "disable_room_4": "Ocultar Habitación 4",
-          "disable_room_5": "Ocultar Habitación 5",
-          "disable_room_6": "Ocultar Habitación 6",
-          "disable_room_7": "Ocultar Habitación 7",
-          "disable_room_8": "Ocultar Habitación 8",
-          "disable_room_9": "Ocultar Habitación 9",
-          "disable_room_10": "Ocultar Habitación 10",
-          "disable_room_11": "Ocultar Habitación 11",
-          "disable_room_12": "Ocultar Habitación 12",
-          "disable_room_13": "Ocultar Habitación 13",
-          "disable_room_14": "Ocultar Habitación 14",
-          "disable_room_15": "Ocultar Habitación 15"
+          "disable_room_1": "Ocultar Habitación 1 {room_0_name}",
+          "disable_room_2": "Ocultar Habitación 2 {room_1_name}",
+          "disable_room_3": "Ocultar Habitación 3 {room_2_name}",
+          "disable_room_4": "Ocultar Habitación 4 {room_3_name}",
+          "disable_room_5": "Ocultar Habitación 5 {room_4_name}",
+          "disable_room_6": "Ocultar Habitación 6 {room_5_name}",
+          "disable_room_7": "Ocultar Habitación 7 {room_6_name}",
+          "disable_room_8": "Ocultar Habitación 8 {room_7_name}",
+          "disable_room_9": "Ocultar Habitación 9 {room_8_name}",
+          "disable_room_10": "Ocultar Habitación 10 {room_9_name}",
+          "disable_room_11": "Ocultar Habitación 11 {room_10_name}",
+          "disable_room_12": "Ocultar Habitación 12 {room_11_name}",
+          "disable_room_13": "Ocultar Habitación 13 {room_12_name}",
+          "disable_room_14": "Ocultar Habitación 14 {room_13_name}",
+          "disable_room_15": "Ocultar Habitación 15 {room_14_name}"
         },
         "data_description": {
-          "disable_room_1": "Cuando está habilitado, la Habitación 1 no se mostrará en el mapa",
-          "disable_room_2": "Cuando está habilitado, la Habitación 2 no se mostrará en el mapa",
-          "disable_room_3": "Cuando está habilitado, la Habitación 3 no se mostrará en el mapa",
-          "disable_room_4": "Cuando está habilitado, la Habitación 4 no se mostrará en el mapa",
-          "disable_room_5": "Cuando está habilitado, la Habitación 5 no se mostrará en el mapa",
-          "disable_room_6": "Cuando está habilitado, la Habitación 6 no se mostrará en el mapa",
-          "disable_room_7": "Cuando está habilitado, la Habitación 7 no se mostrará en el mapa",
-          "disable_room_8": "Cuando está habilitado, la Habitación 8 no se mostrará en el mapa",
-          "disable_room_9": "Cuando está habilitado, la Habitación 9 no se mostrará en el mapa",
-          "disable_room_10": "Cuando está habilitado, la Habitación 10 no se mostrará en el mapa",
-          "disable_room_11": "Cuando está habilitado, la Habitación 11 no se mostrará en el mapa",
-          "disable_room_12": "Cuando está habilitado, la Habitación 12 no se mostrará en el mapa",
-          "disable_room_13": "Cuando está habilitado, la Habitación 13 no se mostrará en el mapa",
-          "disable_room_14": "Cuando está habilitado, la Habitación 14 no se mostrará en el mapa",
-          "disable_room_15": "Cuando está habilitado, la Habitación 15 no se mostrará en el mapa"
+          "disable_room_1": "Cuando está habilitado, la Habitación 1 {room_0_name} no se mostrará en el mapa",
+          "disable_room_2": "Cuando está habilitado, la Habitación 2 {room_1_name} no se mostrará en el mapa",
+          "disable_room_3": "Cuando está habilitado, la Habitación 3 {room_2_name} no se mostrará en el mapa",
+          "disable_room_4": "Cuando está habilitado, la Habitación 4 {room_3_name} no se mostrará en el mapa",
+          "disable_room_5": "Cuando está habilitado, la Habitación 5 {room_4_name} no se mostrará en el mapa",
+          "disable_room_6": "Cuando está habilitado, la Habitación 6 {room_5_name} no se mostrará en el mapa",
+          "disable_room_7": "Cuando está habilitado, la Habitación 7 {room_6_name} no se mostrará en el mapa",
+          "disable_room_8": "Cuando está habilitado, la Habitación 8 {room_7_name} no se mostrará en el mapa",
+          "disable_room_9": "Cuando está habilitado, la Habitación 9 {room_8_name} no se mostrará en el mapa",
+          "disable_room_10": "Cuando está habilitado, la Habitación 10 {room_9_name} no se mostrará en el mapa",
+          "disable_room_11": "Cuando está habilitado, la Habitación 11 {room_10_name} no se mostrará en el mapa",
+          "disable_room_12": "Cuando está habilitado, la Habitación 12 {room_11_name} no se mostrará en el mapa",
+          "disable_room_13": "Cuando está habilitado, la Habitación 13 {room_12_name} no se mostrará en el mapa",
+          "disable_room_14": "Cuando está habilitado, la Habitación 14 {room_13_name} no se mostrará en el mapa",
+          "disable_room_15": "Cuando está habilitado, la Habitación 15 {room_14_name} no se mostrará en el mapa"
         }
       },
       "base_colours": {
@@ -263,14 +264,14 @@
           "add_room_1_alpha": "Configurar Transparencia:"
         },
         "data_description": {
-          "color_room_0": "Habitación 1",
-          "color_room_1": "Habitación 2",
-          "color_room_2": "Habitación 3",
-          "color_room_3": "Habitación 4",
-          "color_room_4": "Habitación 5",
-          "color_room_5": "Habitación 6",
-          "color_room_6": "Habitación 7",
-          "color_room_7": "Habitación 8"
+          "color_room_0": "### **{room_0_name} Color**",
+          "color_room_1": "### **{room_1_name} Color**",
+          "color_room_2": "### **{room_2_name} Color**",
+          "color_room_3": "### **{room_3_name} Color**",
+          "color_room_4": "### **{room_4_name} Color**",
+          "color_room_5": "### **{room_5_name} Color**",
+          "color_room_6": "### **{room_6_name} Color**",
+          "color_room_7": "### **{room_7_name} Color**"
         },
         "description": "Opciones de Colores de Cámara.",
         "title": "Colores de Habitaciones 1 a 8"
@@ -288,14 +289,14 @@
           "add_room_2_alpha": "Configurar Transparencia:"
         },
         "data_description": {
-          "color_room_8": "Habitación 9",
-          "color_room_9": "Habitación 10",
-          "color_room_10": "Habitación 11",
-          "color_room_11": "Habitación 12",
-          "color_room_12": "Habitación 13",
-          "color_room_13": "Habitación 14",
-          "color_room_14": "Habitación 15",
-          "color_room_15": "Habitación 16"
+          "color_room_8": "### **{room_8_name} Color**",
+          "color_room_9": "### **{room_9_name} Color**",
+          "color_room_10": "### **{room_10_name} Color**",
+          "color_room_11": "### **{room_11_name} Color**",
+          "color_room_12": "### **{room_12_name} Color**",
+          "color_room_13": "### **{room_13_name} Color**",
+          "color_room_14": "### **{room_14_name} Color**",
+          "color_room_15": "### **{room_15_name} Color**"
         },
         "description": "Opciones de Colores de Cámara.",
         "title": "Colores de Habitaciones 9 a 15"
@@ -307,28 +308,28 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "Habitación 1",
-          "alpha_room_1": "Habitación 2",
-          "alpha_room_2": "Habitación 3",
-          "alpha_room_3": "Habitación 4",
-          "alpha_room_4": "Habitación 5",
-          "alpha_room_5": "Habitación 6",
-          "alpha_room_6": "Habitación 7",
-          "alpha_room_7": "Habitación 8"
+          "alpha_room_0": "### **{room_0_name} Alpha**",
+          "alpha_room_1": "### **{room_1_name} Alpha**",
+          "alpha_room_2": "### **{room_2_name} Alpha**",
+          "alpha_room_3": "### **{room_3_name} Alpha**",
+          "alpha_room_4": "### **{room_4_name} Alpha**",
+          "alpha_room_5": "### **{room_5_name} Alpha**",
+          "alpha_room_6": "### **{room_6_name} Alpha**",
+          "alpha_room_7": "### **{room_7_name} Alpha**"
         },
         "description": "Opciones de Cámara. Alpha 2",
         "title": "Canal Alpha Colores de Habitaciones"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "Habitación 9",
-          "alpha_room_9": "Habitación 10",
-          "alpha_room_10": "Habitación 11",
-          "alpha_room_11": "Habitación 12",
-          "alpha_room_12": "Habitación 13",
-          "alpha_room_13": "Habitación 14",
-          "alpha_room_14": "Habitación 15",
-          "alpha_room_15": "Habitación 16"
+          "alpha_room_8": "### **{room_8_name} Alpha**",
+          "alpha_room_9": "### **{room_9_name} Alpha**",
+          "alpha_room_10": "### **{room_10_name} Alpha**",
+          "alpha_room_11": "### **{room_11_name} Alpha**",
+          "alpha_room_12": "### **{room_12_name} Alpha**",
+          "alpha_room_13": "### **{room_13_name} Alpha**",
+          "alpha_room_14": "### **{room_14_name} Alpha**",
+          "alpha_room_15": "### **{room_15_name} Alpha**"
         },
         "description": "Opciones de Cámara. Alpha 3",
         "title": "Canal Alpha Colores de Habitaciones"

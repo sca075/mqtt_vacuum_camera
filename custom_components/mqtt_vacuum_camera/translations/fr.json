@@ -91,12 +91,13 @@
           "auto_zoom": "Activer le zoom automatique",
           "zoom_lock_ratio": "Verrouiller le rapport hauteur/largeur.",
           "aspect_ratio": "Rapport hauteur/largeur de l'image.",
-          "enable_www_snapshots": "Exporter des instantanés PNG."
+          "robot_size": "Taille du robot"
         },
         "data_description": {
           "rotate_image": "Degré 0, 90, 180, 270",
           "margins": "Marges de recadrage automatique en pixels.",
-          "aspect_ratio": "Rapport hauteur/largeur de l'image."
+          "aspect_ratio": "Rapport hauteur/largeur de l'image.",
+          "robot_size": "Taille du robot en pixels 8-25"
         },
         "description": "Options de l'image de la caméra",
         "title": "Options d'image"
@@ -167,38 +168,38 @@
         "title": "Visibilité des Segments",
         "description": "Configurer quels segments de pièce sont visibles sur la carte",
         "data": {
-          "disable_room_1": "Masquer Pièce 1",
-          "disable_room_2": "Masquer Pièce 2",
-          "disable_room_3": "Masquer Pièce 3",
-          "disable_room_4": "Masquer Pièce 4",
-          "disable_room_5": "Masquer Pièce 5",
-          "disable_room_6": "Masquer Pièce 6",
-          "disable_room_7": "Masquer Pièce 7",
-          "disable_room_8": "Masquer Pièce 8",
-          "disable_room_9": "Masquer Pièce 9",
-          "disable_room_10": "Masquer Pièce 10",
-          "disable_room_11": "Masquer Pièce 11",
-          "disable_room_12": "Masquer Pièce 12",
-          "disable_room_13": "Masquer Pièce 13",
-          "disable_room_14": "Masquer Pièce 14",
-          "disable_room_15": "Masquer Pièce 15"
+          "disable_room_1": "Masquer Pièce 1 {room_0_name}",
+          "disable_room_2": "Masquer Pièce 2 {room_1_name}",
+          "disable_room_3": "Masquer Pièce 3 {room_2_name}",
+          "disable_room_4": "Masquer Pièce 4 {room_3_name}",
+          "disable_room_5": "Masquer Pièce 5 {room_4_name}",
+          "disable_room_6": "Masquer Pièce 6 {room_5_name}",
+          "disable_room_7": "Masquer Pièce 7 {room_6_name}",
+          "disable_room_8": "Masquer Pièce 8 {room_7_name}",
+          "disable_room_9": "Masquer Pièce 9 {room_8_name}",
+          "disable_room_10": "Masquer Pièce 10 {room_9_name}",
+          "disable_room_11": "Masquer Pièce 11 {room_10_name}",
+          "disable_room_12": "Masquer Pièce 12 {room_11_name}",
+          "disable_room_13": "Masquer Pièce 13 {room_12_name}",
+          "disable_room_14": "Masquer Pièce 14 {room_13_name}",
+          "disable_room_15": "Masquer Pièce 15 {room_14_name}"
         },
         "data_description": {
-          "disable_room_1": "Lorsque activé, la Pièce 1 ne sera pas affichée sur la carte",
-          "disable_room_2": "Lorsque activé, la Pièce 2 ne sera pas affichée sur la carte",
-          "disable_room_3": "Lorsque activé, la Pièce 3 ne sera pas affichée sur la carte",
-          "disable_room_4": "Lorsque activé, la Pièce 4 ne sera pas affichée sur la carte",
-          "disable_room_5": "Lorsque activé, la Pièce 5 ne sera pas affichée sur la carte",
-          "disable_room_6": "Lorsque activé, la Pièce 6 ne sera pas affichée sur la carte",
-          "disable_room_7": "Lorsque activé, la Pièce 7 ne sera pas affichée sur la carte",
-          "disable_room_8": "Lorsque activé, la Pièce 8 ne sera pas affichée sur la carte",
-          "disable_room_9": "Lorsque activé, la Pièce 9 ne sera pas affichée sur la carte",
-          "disable_room_10": "Lorsque activé, la Pièce 10 ne sera pas affichée sur la carte",
-          "disable_room_11": "Lorsque activé, la Pièce 11 ne sera pas affichée sur la carte",
-          "disable_room_12": "Lorsque activé, la Pièce 12 ne sera pas affichée sur la carte",
-          "disable_room_13": "Lorsque activé, la Pièce 13 ne sera pas affichée sur la carte",
-          "disable_room_14": "Lorsque activé, la Pièce 14 ne sera pas affichée sur la carte",
-          "disable_room_15": "Lorsque activé, la Pièce 15 ne sera pas affichée sur la carte"
+          "disable_room_1": "Lorsque activé, la Pièce 1 {room_0_name} ne sera pas affichée sur la carte",
+          "disable_room_2": "Lorsque activé, la Pièce 2 {room_1_name} ne sera pas affichée sur la carte",
+          "disable_room_3": "Lorsque activé, la Pièce 3 {room_2_name} ne sera pas affichée sur la carte",
+          "disable_room_4": "Lorsque activé, la Pièce 4 {room_3_name} ne sera pas affichée sur la carte",
+          "disable_room_5": "Lorsque activé, la Pièce 5 {room_4_name} ne sera pas affichée sur la carte",
+          "disable_room_6": "Lorsque activé, la Pièce 6 {room_5_name} ne sera pas affichée sur la carte",
+          "disable_room_7": "Lorsque activé, la Pièce 7 {room_6_name} ne sera pas affichée sur la carte",
+          "disable_room_8": "Lorsque activé, la Pièce 8 {room_7_name} ne sera pas affichée sur la carte",
+          "disable_room_9": "Lorsque activé, la Pièce 9 {room_8_name} ne sera pas affichée sur la carte",
+          "disable_room_10": "Lorsque activé, la Pièce 10 {room_9_name} ne sera pas affichée sur la carte",
+          "disable_room_11": "Lorsque activé, la Pièce 11 {room_10_name} ne sera pas affichée sur la carte",
+          "disable_room_12": "Lorsque activé, la Pièce 12 {room_11_name} ne sera pas affichée sur la carte",
+          "disable_room_13": "Lorsque activé, la Pièce 13 {room_12_name} ne sera pas affichée sur la carte",
+          "disable_room_14": "Lorsque activé, la Pièce 14 {room_13_name} ne sera pas affichée sur la carte",
+          "disable_room_15": "Lorsque activé, la Pièce 15 {room_14_name} ne sera pas affichée sur la carte"
         }
       },
       "base_colours": {
@@ -263,14 +264,14 @@
           "add_room_1_alpha": "Configurer la transparence:"
         },
         "data_description": {
-          "color_room_0": "Pièce 1",
-          "color_room_1": "Pièce 2",
-          "color_room_2": "Pièce 3",
-          "color_room_3": "Pièce 4",
-          "color_room_4": "Pièce 5",
-          "color_room_5": "Pièce 6",
-          "color_room_6": "Pièce 7",
-          "color_room_7": "Pièce 8"
+          "color_room_0": "### **{room_0_name} Couleur**",
+          "color_room_1": "### **{room_1_name} Couleur**",
+          "color_room_2": "### **{room_2_name} Couleur**",
+          "color_room_3": "### **{room_3_name} Couleur**",
+          "color_room_4": "### **{room_4_name} Couleur**",
+          "color_room_5": "### **{room_5_name} Couleur**",
+          "color_room_6": "### **{room_6_name} Couleur**",
+          "color_room_7": "### **{room_7_name} Couleur**"
         },
         "description": "Options de couleurs de la caméra.",
         "title": "Couleurs des pièces de 1 à 8"
@@ -288,14 +289,14 @@
           "add_room_2_alpha": "Configurer la transparence:"
         },
         "data_description": {
-          "color_room_8": "Pièce 9",
-          "color_room_9": "Pièce 10",
-          "color_room_10": "Pièce 11",
-          "color_room_11": "Pièce 12",
-          "color_room_12": "Pièce 13",
-          "color_room_13": "Pièce 14",
-          "color_room_14": "Pièce 15",
-          "color_room_15": "Pièce 16"
+          "color_room_8": "### **{room_8_name} Couleur**",
+          "color_room_9": "### **{room_9_name} Couleur**",
+          "color_room_10": "### **{room_10_name} Couleur**",
+          "color_room_11": "### **{room_11_name} Couleur**",
+          "color_room_12": "### **{room_12_name} Couleur**",
+          "color_room_13": "### **{room_13_name} Couleur**",
+          "color_room_14": "### **{room_14_name} Couleur**",
+          "color_room_15": "### **{room_15_name} Couleur**"
         },
         "description": "Options de couleurs de la caméra.",
         "title": "Couleurs des pièces de 9 à 15"
@@ -307,28 +308,28 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "Pièce 1",
-          "alpha_room_1": "Pièce 2",
-          "alpha_room_2": "Pièce 3",
-          "alpha_room_3": "Pièce 4",
-          "alpha_room_4": "Pièce 5",
-          "alpha_room_5": "Pièce 6",
-          "alpha_room_6": "Pièce 7",
-          "alpha_room_7": "Pièce 8"
+          "alpha_room_0": "### **{room_0_name} Alpha**",
+          "alpha_room_1": "### **{room_1_name} Alpha**",
+          "alpha_room_2": "### **{room_2_name} Alpha**",
+          "alpha_room_3": "### **{room_3_name} Alpha**",
+          "alpha_room_4": "### **{room_4_name} Alpha**",
+          "alpha_room_5": "### **{room_5_name} Alpha**",
+          "alpha_room_6": "### **{room_6_name} Alpha**",
+          "alpha_room_7": "### **{room_7_name} Alpha**"
         },
         "description": "Options de la caméra. Alpha 2",
         "title": "Canal Alpha Couleurs des Pièces"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "Pièce 9",
-          "alpha_room_9": "Pièce 10",
-          "alpha_room_10": "Pièce 11",
-          "alpha_room_11": "Pièce 12",
-          "alpha_room_12": "Pièce 13",
-          "alpha_room_13": "Pièce 14",
-          "alpha_room_14": "Pièce 15",
-          "alpha_room_15": "Pièce 16"
+          "alpha_room_8": "### **{room_8_name} Alpha**",
+          "alpha_room_9": "### **{room_9_name} Alpha**",
+          "alpha_room_10": "### **{room_10_name} Alpha**",
+          "alpha_room_11": "### **{room_11_name} Alpha**",
+          "alpha_room_12": "### **{room_12_name} Alpha**",
+          "alpha_room_13": "### **{room_13_name} Alpha**",
+          "alpha_room_14": "### **{room_14_name} Alpha**",
+          "alpha_room_15": "### **{room_15_name} Alpha**"
         },
         "description": "Options de la caméra. Alpha 3",
         "title": "Canal Alpha Couleurs des Pièces"
