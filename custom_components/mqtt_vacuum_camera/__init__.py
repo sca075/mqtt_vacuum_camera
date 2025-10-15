@@ -3,7 +3,6 @@ MQTT Vacuum Camera.
 Version: 2025.10.0
 """
 
-import asyncio
 from functools import partial
 import os
 from typing import Optional
@@ -21,7 +20,6 @@ from homeassistant.const import (
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.reload import async_register_admin_service
-from homeassistant.helpers.storage import STORAGE_DIR
 from valetudo_map_parser import get_default_font_path
 from valetudo_map_parser.config.shared import CameraShared, CameraSharedManager
 
