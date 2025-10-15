@@ -291,7 +291,7 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
                 config_entry.version,
             )
             return True
-    if config_entry.version >= 3.3:
+    if config_entry.version == 3.3:
         LOGGER.info("Migrating config entry from version %s", config_entry.version)
 
         # Restore translation files from backup ZIP (run in executor to avoid blocking)
