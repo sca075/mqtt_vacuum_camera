@@ -18,7 +18,7 @@ from homeassistant.helpers.selector import (
     SelectSelectorConfig,
     SelectSelectorMode,
 )
-from valetudo_map_parser.config.types import RoomStore, LOGGER
+from valetudo_map_parser.config.types import RoomStore
 import voluptuous as vol
 
 from .common import extract_file_name, update_options

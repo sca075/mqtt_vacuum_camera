@@ -168,21 +168,21 @@
         "title": "رؤية الغرف",
         "description": "تكوين أقسام الغرف المرئية على الخريطة",
         "data": {
-          "disable_room_1": "إخفاء الغرفة 1 {room_0_name}",
-          "disable_room_2": "إخفاء الغرفة 2 {room_1_name}",
-          "disable_room_3": "إخفاء الغرفة 3 {room_2_name}",
-          "disable_room_4": "إخفاء الغرفة 4 {room_3_name}",
-          "disable_room_5": "إخفاء الغرفة 5 {room_4_name}",
-          "disable_room_6": "إخفاء الغرفة 6 {room_5_name}",
-          "disable_room_7": "إخفاء الغرفة 7 {room_6_name}",
-          "disable_room_8": "إخفاء الغرفة 8 {room_7_name}",
-          "disable_room_9": "إخفاء الغرفة 9 {room_8_name}",
-          "disable_room_10": "إخفاء الغرفة 10 {room_9_name}",
-          "disable_room_11": "إخفاء الغرفة 11 {room_10_name}",
-          "disable_room_12": "إخفاء الغرفة 12 {room_11_name}",
-          "disable_room_13": "إخفاء الغرفة 13 {room_12_name}",
-          "disable_room_14": "إخفاء الغرفة 14 {room_13_name}",
-          "disable_room_15": "إخفاء الغرفة 15 {room_14_name}"
+          "disable_room_1": "إخفاء الغرفة 1",
+          "disable_room_2": "إخفاء الغرفة 2",
+          "disable_room_3": "إخفاء الغرفة 3",
+          "disable_room_4": "إخفاء الغرفة 4",
+          "disable_room_5": "إخفاء الغرفة 5",
+          "disable_room_6": "إخفاء الغرفة 6",
+          "disable_room_7": "إخفاء الغرفة 7",
+          "disable_room_8": "إخفاء الغرفة 8",
+          "disable_room_9": "إخفاء الغرفة 9",
+          "disable_room_10": "إخفاء الغرفة 10",
+          "disable_room_11": "إخفاء الغرفة 11",
+          "disable_room_12": "إخفاء الغرفة 12",
+          "disable_room_13": "إخفاء الغرفة 13",
+          "disable_room_14": "إخفاء الغرفة 14",
+          "disable_room_15": "إخفاء الغرفة 15"
         },
         "data_description": {
           "disable_room_1": "عند التفعيل، لن تظهر الغرفة 1 {room_0_name} على الخريطة",
@@ -261,7 +261,7 @@
           "color_room_5": "[96, 123, 139]",
           "color_room_6": "[224, 255, 255]",
           "color_room_7": "[209, 238, 238]",
-          "add_room_1_alpha": "Configure Transparency:"
+          "add_room_1_alpha": "تكوين الشفافية:"
         },
         "data_description": {
           "color_room_0": "### **{room_0_name} لون**",
@@ -273,8 +273,8 @@
           "color_room_6": "### **{room_6_name} لون**",
           "color_room_7": "### **{room_7_name} لون**"
         },
-        "description": "Camera Colours Options.",
-        "title": "Rooms 1 to 8 Colours"
+        "description": "خيارات ألوان الكاميرا.",
+        "title": "ألوان الغرف من 1 إلى 8"
       },
       "rooms_colours_2": {
         "data": {
@@ -286,7 +286,7 @@
           "color_room_13": "[245, 176, 65]",
           "color_room_14": "[82, 190, 128]",
           "color_room_15": "[72, 201, 176]",
-          "add_room_2_alpha": "Configure Transparency:"
+          "add_room_2_alpha": "تكوين الشفافية:"
         },
         "data_description": {
           "color_room_8": "### **{room_8_name} لون**",
@@ -298,12 +298,12 @@
           "color_room_14": "### **{room_14_name} لون**",
           "color_room_15": "### **{room_15_name} لون**"
         },
-        "description": "Camera Colours Options.",
-        "title": "Rooms 9 to 15 Colours"
+        "description": "خيارات ألوان الكاميرا.",
+        "title": "ألوان الغرف من 9 إلى 15"
       },
       "alpha_floor": {
         "data": {
-          "alpha_room_0": "Floor Color"
+          "alpha_room_0": "لون الأرضية"
         }
       },
       "alpha_2": {
@@ -317,8 +317,8 @@
           "alpha_room_6": "قطاع {room_6_name} شفافية",
           "alpha_room_7": "قطاع {room_7_name} شفافية"
         },
-        "description": "Camera Options. Alpha 2",
-        "title": "Alpha Chanel Rooms Colours"
+        "description": "خيارات الكاميرا. ألفا 2",
+        "title": "قناة ألفا لألوان الغرف"
       },
       "alpha_3": {
         "data": {
@@ -331,8 +331,8 @@
           "alpha_room_14": "قطاع {room_14_name} شفافية",
           "alpha_room_15": "قطاع {room_15_name} شفافية"
         },
-        "description": "Camera Options. Alpha 3",
-        "title": "Alpha Chanel Rooms Colours"
+        "description": "خيارات الكاميرا. ألفا 3",
+        "title": "قناة ألفا لألوان الغرف"
       }
     }
   },

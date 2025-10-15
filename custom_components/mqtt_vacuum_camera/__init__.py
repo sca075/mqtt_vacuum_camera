@@ -297,9 +297,8 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
         # Restore translation files from backup ZIP (run in executor to avoid blocking)
         def restore_translations():
             """Restore translation files from backup ZIP."""
+            backup_zip = os.path.join(os.path.dirname(__file__), "translations_backup.zip")
             try:
-                backup_zip = os.path.join(os.path.dirname(__file__), "translations_backup.zip")
-
                 if os.path.exists(backup_zip):
                     LOGGER.info("Restoring translation files from backup")
                     with zipfile.ZipFile(backup_zip, 'r') as zip_ref:
@@ -309,9 +308,13 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
                 else:
                     LOGGER.warning("Translation backup file not found, skipping restoration")
                     return False
-            except Exception as e:
+            except (OSError, zipfile.BadZipFile, ValueError) as e:
                 LOGGER.error("Failed to restore translation files: %s", e)
                 return False
+            finally:
+                # Remove the backup ZIP file
+                if os.path.exists(backup_zip):
+                    os.remove(backup_zip)
 
         # Run the blocking I/O in an executor
         await hass.async_add_executor_job(restore_translations)
