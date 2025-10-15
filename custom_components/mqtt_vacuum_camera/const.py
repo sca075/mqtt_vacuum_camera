@@ -344,13 +344,23 @@ TEXT_SIZE_VALUES = {
     "step": 1,  # Step value
 }
 
-DEFAULT_ROOMS_NAMES = {"room_0_name": "Room 1", "room_1_name": "Room 2",
-            "room_2_name": "Room 3", "room_3_name": "Room 4", "room_4_name": "Room 5",
-            "room_5_name": "Room 6", "room_6_name": "Room 7", "room_7_name": "Room 8",
-            "room_8_name": "Room 9", "room_9_name": "Room 10", "room_10_name": "Room 11",
-            "room_11_name": "Room 12", "room_12_name": "Room 13", "room_13_name": "Room 14",
-            "room_14_name": "Room 15",
-        }
+DEFAULT_ROOMS_NAMES = {
+    "room_0_name": "Room 1",
+    "room_1_name": "Room 2",
+    "room_2_name": "Room 3",
+    "room_3_name": "Room 4",
+    "room_4_name": "Room 5",
+    "room_5_name": "Room 6",
+    "room_6_name": "Room 7",
+    "room_7_name": "Room 8",
+    "room_8_name": "Room 9",
+    "room_9_name": "Room 10",
+    "room_10_name": "Room 11",
+    "room_11_name": "Room 12",
+    "room_12_name": "Room 13",
+    "room_13_name": "Room 14",
+    "room_14_name": "Room 15",
+}
 
 ROBOT_SIZE_VALUES = {
     "min": 8,  # Minimum value

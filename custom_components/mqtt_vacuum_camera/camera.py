@@ -168,8 +168,8 @@ class MQTTCamera(CoordinatorEntity, Camera):
         self._should_poll = True
         _start_image = self._shared.last_image
         self.Image = await self.hass.async_add_executor_job(
-                self.pil_to_bytes, _start_image, "Start Up"
-            )
+            self.pil_to_bytes, _start_image, "Start Up"
+        )
         self._shared.camera_mode = CameraModes.MAP_VIEW
         self.async_schedule_update_ha_state(True)
 

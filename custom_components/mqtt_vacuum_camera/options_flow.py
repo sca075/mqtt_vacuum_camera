@@ -59,6 +59,7 @@ from .const import (
     CONF_VAC_STAT_SIZE,
     CONF_ZOOM_LOCK_RATIO,
     DEFAULT_ROOMS,
+    DEFAULT_ROOMS_NAMES,
     DOMAIN,
     DRAW_FLAGS,
     FONTS_AVAILABLE,
@@ -67,11 +68,10 @@ from .const import (
     IS_ALPHA_R2,
     LOGGER,
     RATIO_VALUES,
+    ROBOT_SIZE_VALUES,
     ROOM_FLAGS,
     ROTATION_VALUES,
     TEXT_SIZE_VALUES,
-    ROBOT_SIZE_VALUES,
-    DEFAULT_ROOMS_NAMES,
 )
 from .snapshots.log_files import run_async_save_logs
 from .utils.files_operations import async_del_file
@@ -257,7 +257,9 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
 
         rooms_data = RoomStore(self.file_name)
         self.number_of_rooms = rooms_data.get_rooms_count()
-        self.rooms_placeholders = rooms_data.room_names
+        self.rooms_placeholders = (
+            rooms_data.room_names if rooms_data.room_names else DEFAULT_ROOMS_NAMES
+        )
         LOGGER.debug("Rooms count: %s", self.number_of_rooms)
         if (
             not isinstance(self.number_of_rooms, int)
@@ -296,9 +298,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
             case n if 1 < n <= 8:
                 menu_options.extend(["rooms_colours_1"])
             case _:
-                menu_options.extend(
-                    ["rooms_colours_1", "rooms_colours_2"]
-                )
+                menu_options.extend(["rooms_colours_1", "rooms_colours_2"])
 
         if self.is_alpha_enabled:
             menu_options.append("transparency")
