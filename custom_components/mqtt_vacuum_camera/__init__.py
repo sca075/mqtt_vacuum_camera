@@ -300,48 +300,50 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
             backup_zip = os.path.join(
                 os.path.dirname(__file__), "translations_backup.zip"
             )
+
+            if not os.path.exists(backup_zip):
+                LOGGER.warning(
+                    "Translation backup file not found, skipping restoration"
+                )
+                return False
+
             try:
-                if os.path.exists(backup_zip):
-                    LOGGER.info("Restoring translation files from backup")
-                    extract_path = os.path.abspath(os.path.dirname(__file__))
+                LOGGER.info("Restoring translation files from backup")
+                base_dir = os.path.realpath(os.path.dirname(__file__))
 
-                    with zipfile.ZipFile(backup_zip, "r") as zip_ref:
-                        # Validate all paths before extraction to prevent zip slip attacks
-                        for member in zip_ref.namelist():
-                            member_path = os.path.abspath(
-                                os.path.join(extract_path, member)
+                with zipfile.ZipFile(backup_zip, "r") as zip_ref:
+                    for member in zip_ref.infolist():
+                        name = member.filename
+
+                        # Block absolute paths
+                        if os.path.isabs(name):
+                            LOGGER.error("Security: Blocked absolute path in zip: %s", name)
+                            return False
+
+                        # Resolve the destination path
+                        dest = os.path.realpath(os.path.join(base_dir, name))
+
+                        # Ensure extraction stays within target directory
+                        if not dest.startswith(base_dir + os.sep):
+                            LOGGER.error(
+                                "Security: Blocked path traversal attempt in zip: %s", name
                             )
-                            # Ensure the resolved path is within the target directory
-                            if not member_path.startswith(extract_path):
-                                LOGGER.error(
-                                    "Security: Blocked path traversal attempt in zip: %s",
-                                    member,
-                                )
-                                return False
-                            # Block absolute paths
-                            if os.path.isabs(member):
-                                LOGGER.error(
-                                    "Security: Blocked absolute path in zip: %s", member
-                                )
-                                return False
+                            return False
 
-                        # All paths validated, safe to extract
-                        zip_ref.extractall(extract_path)
+                        # Extract this member safely
+                        zip_ref.extract(member, base_dir)
 
-                    LOGGER.info("Translation files restored successfully")
-                    return True
-                else:
-                    LOGGER.warning(
-                        "Translation backup file not found, skipping restoration"
-                    )
-                    return False
+                LOGGER.info("Translation files restored successfully")
+
+                # Only delete backup on successful restoration
+                if os.path.exists(backup_zip):
+                    os.remove(backup_zip)
+
+                return True
+
             except (OSError, zipfile.BadZipFile, ValueError) as e:
                 LOGGER.error("Failed to restore translation files: %s", e)
                 return False
-            finally:
-                # Remove the backup ZIP file
-                if os.path.exists(backup_zip):
-                    os.remove(backup_zip)
 
         # Run the blocking I/O in an executor
         await hass.async_add_executor_job(restore_translations)
