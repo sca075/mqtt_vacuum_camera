@@ -308,28 +308,28 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "### **{room_0_name} アルファ**",
-          "alpha_room_1": "### **{room_1_name} アルファ**",
-          "alpha_room_2": "### **{room_2_name} アルファ**",
-          "alpha_room_3": "### **{room_3_name} アルファ**",
-          "alpha_room_4": "### **{room_4_name} アルファ**",
-          "alpha_room_5": "### **{room_5_name} アルファ**",
-          "alpha_room_6": "### **{room_6_name} アルファ**",
-          "alpha_room_7": "### **{room_7_name} アルファ**"
+          "alpha_room_0": "セグメント {room_0_name} アルファ",
+          "alpha_room_1": "セグメント {room_1_name} アルファ",
+          "alpha_room_2": "セグメント {room_2_name} アルファ",
+          "alpha_room_3": "セグメント {room_3_name} アルファ",
+          "alpha_room_4": "セグメント {room_4_name} アルファ",
+          "alpha_room_5": "セグメント {room_5_name} アルファ",
+          "alpha_room_6": "セグメント {room_6_name} アルファ",
+          "alpha_room_7": "セグメント {room_7_name} アルファ"
         },
         "description": "カメラオプション。アルファ2",
         "title": "部屋の色のアルファチャンネル"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "### **{room_8_name} アルファ**",
-          "alpha_room_9": "### **{room_9_name} アルファ**",
-          "alpha_room_10": "### **{room_10_name} アルファ**",
-          "alpha_room_11": "### **{room_11_name} アルファ**",
-          "alpha_room_12": "### **{room_12_name} アルファ**",
-          "alpha_room_13": "### **{room_13_name} アルファ**",
-          "alpha_room_14": "### **{room_14_name} アルファ**",
-          "alpha_room_15": "### **{room_15_name} アルファ**"
+          "alpha_room_8": "セグメント {room_8_name} アルファ",
+          "alpha_room_9": "セグメント {room_9_name} アルファ",
+          "alpha_room_10": "セグメント {room_10_name} アルファ",
+          "alpha_room_11": "セグメント {room_11_name} アルファ",
+          "alpha_room_12": "セグメント {room_12_name} アルファ",
+          "alpha_room_13": "セグメント {room_13_name} アルファ",
+          "alpha_room_14": "セグメント {room_14_name} アルファ",
+          "alpha_room_15": "セグメント {room_15_name} アルファ"
         },
         "description": "カメラオプション。アルファ3",
         "title": "部屋の色のアルファチャンネル"

@@ -308,28 +308,28 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "### **{room_0_name} Альфа**",
-          "alpha_room_1": "### **{room_1_name} Альфа**",
-          "alpha_room_2": "### **{room_2_name} Альфа**",
-          "alpha_room_3": "### **{room_3_name} Альфа**",
-          "alpha_room_4": "### **{room_4_name} Альфа**",
-          "alpha_room_5": "### **{room_5_name} Альфа**",
-          "alpha_room_6": "### **{room_6_name} Альфа**",
-          "alpha_room_7": "### **{room_7_name} Альфа**"
+          "alpha_room_0": "Сегмент {room_0_name} Альфа",
+          "alpha_room_1": "Сегмент {room_1_name} Альфа",
+          "alpha_room_2": "Сегмент {room_2_name} Альфа",
+          "alpha_room_3": "Сегмент {room_3_name} Альфа",
+          "alpha_room_4": "Сегмент {room_4_name} Альфа",
+          "alpha_room_5": "Сегмент {room_5_name} Альфа",
+          "alpha_room_6": "Сегмент {room_6_name} Альфа",
+          "alpha_room_7": "Сегмент {room_7_name} Альфа"
         },
         "description": "Параметры камеры. Альфа 2",
         "title": "Альфа-канал цветов комнат"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "### **{room_8_name} Альфа**",
-          "alpha_room_9": "### **{room_9_name} Альфа**",
-          "alpha_room_10": "### **{room_10_name} Альфа**",
-          "alpha_room_11": "### **{room_11_name} Альфа**",
-          "alpha_room_12": "### **{room_12_name} Альфа**",
-          "alpha_room_13": "### **{room_13_name} Альфа**",
-          "alpha_room_14": "### **{room_14_name} Альфа**",
-          "alpha_room_15": "### **{room_15_name} Альфа**"
+          "alpha_room_8": "Сегмент {room_8_name} Альфа",
+          "alpha_room_9": "Сегмент {room_9_name} Альфа",
+          "alpha_room_10": "Сегмент {room_10_name} Альфа",
+          "alpha_room_11": "Сегмент {room_11_name} Альфа",
+          "alpha_room_12": "Сегмент {room_12_name} Альфа",
+          "alpha_room_13": "Сегмент {room_13_name} Альфа",
+          "alpha_room_14": "Сегмент {room_14_name} Альфа",
+          "alpha_room_15": "Сегмент {room_15_name} Альфа"
         },
         "description": "Параметры камеры. Альфа 3",
         "title": "Альфа-канал цветов комнат"

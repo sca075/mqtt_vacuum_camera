@@ -308,28 +308,28 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "### **{room_0_name} Alpha**",
-          "alpha_room_1": "### **{room_1_name} Alpha**",
-          "alpha_room_2": "### **{room_2_name} Alpha**",
-          "alpha_room_3": "### **{room_3_name} Alpha**",
-          "alpha_room_4": "### **{room_4_name} Alpha**",
-          "alpha_room_5": "### **{room_5_name} Alpha**",
-          "alpha_room_6": "### **{room_6_name} Alpha**",
-          "alpha_room_7": "### **{room_7_name} Alpha**"
+          "alpha_room_0": "Segment {room_0_name} Alpha",
+          "alpha_room_1": "Segment {room_1_name} Alpha",
+          "alpha_room_2": "Segment {room_2_name} Alpha",
+          "alpha_room_3": "Segment {room_3_name} Alpha",
+          "alpha_room_4": "Segment {room_4_name} Alpha",
+          "alpha_room_5": "Segment {room_5_name} Alpha",
+          "alpha_room_6": "Segment {room_6_name} Alpha",
+          "alpha_room_7": "Segment {room_7_name} Alpha"
         },
         "description": "Options de la caméra. Alpha 2",
         "title": "Canal Alpha Couleurs des Pièces"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "### **{room_8_name} Alpha**",
-          "alpha_room_9": "### **{room_9_name} Alpha**",
-          "alpha_room_10": "### **{room_10_name} Alpha**",
-          "alpha_room_11": "### **{room_11_name} Alpha**",
-          "alpha_room_12": "### **{room_12_name} Alpha**",
-          "alpha_room_13": "### **{room_13_name} Alpha**",
-          "alpha_room_14": "### **{room_14_name} Alpha**",
-          "alpha_room_15": "### **{room_15_name} Alpha**"
+          "alpha_room_8": "Segment {room_8_name} Alpha",
+          "alpha_room_9": "Segment {room_9_name} Alpha",
+          "alpha_room_10": "Segment {room_10_name} Alpha",
+          "alpha_room_11": "Segment {room_11_name} Alpha",
+          "alpha_room_12": "Segment {room_12_name} Alpha",
+          "alpha_room_13": "Segment {room_13_name} Alpha",
+          "alpha_room_14": "Segment {room_14_name} Alpha",
+          "alpha_room_15": "Segment {room_15_name} Alpha"
         },
         "description": "Options de la caméra. Alpha 3",
         "title": "Canal Alpha Couleurs des Pièces"

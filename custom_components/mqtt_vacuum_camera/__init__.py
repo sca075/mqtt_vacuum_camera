@@ -294,20 +294,27 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
     if config_entry.version >= 3.3:
         LOGGER.info("Migrating config entry from version %s", config_entry.version)
 
-        # Restore translation files from backup ZIP
-        try:
-            translations_dir = os.path.join(os.path.dirname(__file__), "translations")
-            backup_zip = os.path.join(os.path.dirname(__file__), "translations_backup.zip")
+        # Restore translation files from backup ZIP (run in executor to avoid blocking)
+        def restore_translations():
+            """Restore translation files from backup ZIP."""
+            try:
+                backup_zip = os.path.join(os.path.dirname(__file__), "translations_backup.zip")
 
-            if os.path.exists(backup_zip):
-                LOGGER.info("Restoring translation files from backup")
-                with zipfile.ZipFile(backup_zip, 'r') as zip_ref:
-                    zip_ref.extractall(os.path.dirname(__file__))
-                LOGGER.info("Translation files restored successfully")
-            else:
-                LOGGER.warning("Translation backup file not found, skipping restoration")
-        except Exception as e:
-            LOGGER.error("Failed to restore translation files: %s", e)
+                if os.path.exists(backup_zip):
+                    LOGGER.info("Restoring translation files from backup")
+                    with zipfile.ZipFile(backup_zip, 'r') as zip_ref:
+                        zip_ref.extractall(os.path.dirname(__file__))
+                    LOGGER.info("Translation files restored successfully")
+                    return True
+                else:
+                    LOGGER.warning("Translation backup file not found, skipping restoration")
+                    return False
+            except Exception as e:
+                LOGGER.error("Failed to restore translation files: %s", e)
+                return False
+
+        # Run the blocking I/O in an executor
+        await hass.async_add_executor_job(restore_translations)
 
         old_data = {**config_entry.data}
         new_data = {"vacuum_config_entry": old_data["vacuum_config_entry"]}

@@ -308,28 +308,28 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "### **{room_0_name} شفافية**",
-          "alpha_room_1": "### **{room_1_name} شفافية**",
-          "alpha_room_2": "### **{room_2_name} شفافية**",
-          "alpha_room_3": "### **{room_3_name} شفافية**",
-          "alpha_room_4": "### **{room_4_name} شفافية**",
-          "alpha_room_5": "### **{room_5_name} شفافية**",
-          "alpha_room_6": "### **{room_6_name} شفافية**",
-          "alpha_room_7": "### **{room_7_name} شفافية**"
+          "alpha_room_0": "قطاع {room_0_name} شفافية",
+          "alpha_room_1": "قطاع {room_1_name} شفافية",
+          "alpha_room_2": "قطاع {room_2_name} شفافية",
+          "alpha_room_3": "قطاع {room_3_name} شفافية",
+          "alpha_room_4": "قطاع {room_4_name} شفافية",
+          "alpha_room_5": "قطاع {room_5_name} شفافية",
+          "alpha_room_6": "قطاع {room_6_name} شفافية",
+          "alpha_room_7": "قطاع {room_7_name} شفافية"
         },
         "description": "Camera Options. Alpha 2",
         "title": "Alpha Chanel Rooms Colours"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "### **{room_8_name} شفافية**",
-          "alpha_room_9": "### **{room_9_name} شفافية**",
-          "alpha_room_10": "### **{room_10_name} شفافية**",
-          "alpha_room_11": "### **{room_11_name} شفافية**",
-          "alpha_room_12": "### **{room_12_name} شفافية**",
-          "alpha_room_13": "### **{room_13_name} شفافية**",
-          "alpha_room_14": "### **{room_14_name} شفافية**",
-          "alpha_room_15": "### **{room_15_name} شفافية**"
+          "alpha_room_8": "قطاع {room_8_name} شفافية",
+          "alpha_room_9": "قطاع {room_9_name} شفافية",
+          "alpha_room_10": "قطاع {room_10_name} شفافية",
+          "alpha_room_11": "قطاع {room_11_name} شفافية",
+          "alpha_room_12": "قطاع {room_12_name} شفافية",
+          "alpha_room_13": "قطاع {room_13_name} شفافية",
+          "alpha_room_14": "قطاع {room_14_name} شفافية",
+          "alpha_room_15": "قطاع {room_15_name} شفافية"
         },
         "description": "Camera Options. Alpha 3",
         "title": "Alpha Chanel Rooms Colours"

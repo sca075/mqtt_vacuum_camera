@@ -308,28 +308,28 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "### **{room_0_name} 透明度**",
-          "alpha_room_1": "### **{room_1_name} 透明度**",
-          "alpha_room_2": "### **{room_2_name} 透明度**",
-          "alpha_room_3": "### **{room_3_name} 透明度**",
-          "alpha_room_4": "### **{room_4_name} 透明度**",
-          "alpha_room_5": "### **{room_5_name} 透明度**",
-          "alpha_room_6": "### **{room_6_name} 透明度**",
-          "alpha_room_7": "### **{room_7_name} 透明度**"
+          "alpha_room_0": "區段 {room_0_name} 透明度",
+          "alpha_room_1": "區段 {room_1_name} 透明度",
+          "alpha_room_2": "區段 {room_2_name} 透明度",
+          "alpha_room_3": "區段 {room_3_name} 透明度",
+          "alpha_room_4": "區段 {room_4_name} 透明度",
+          "alpha_room_5": "區段 {room_5_name} 透明度",
+          "alpha_room_6": "區段 {room_6_name} 透明度",
+          "alpha_room_7": "區段 {room_7_name} 透明度"
         },
         "description": "相機選項。透明度 2",
         "title": "房間顏色透明度通道"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "### **{room_8_name} 透明度**",
-          "alpha_room_9": "### **{room_9_name} 透明度**",
-          "alpha_room_10": "### **{room_10_name} 透明度**",
-          "alpha_room_11": "### **{room_11_name} 透明度**",
-          "alpha_room_12": "### **{room_12_name} 透明度**",
-          "alpha_room_13": "### **{room_13_name} 透明度**",
-          "alpha_room_14": "### **{room_14_name} 透明度**",
-          "alpha_room_15": "### **{room_15_name} 透明度**"
+          "alpha_room_8": "區段 {room_8_name} 透明度",
+          "alpha_room_9": "區段 {room_9_name} 透明度",
+          "alpha_room_10": "區段 {room_10_name} 透明度",
+          "alpha_room_11": "區段 {room_11_name} 透明度",
+          "alpha_room_12": "區段 {room_12_name} 透明度",
+          "alpha_room_13": "區段 {room_13_name} 透明度",
+          "alpha_room_14": "區段 {room_14_name} 透明度",
+          "alpha_room_15": "區段 {room_15_name} 透明度"
         },
         "description": "相機選項。透明度 3",
         "title": "房間顏色透明度通道"
