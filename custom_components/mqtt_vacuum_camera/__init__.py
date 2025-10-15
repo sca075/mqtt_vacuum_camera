@@ -296,15 +296,38 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
 
         # Restore translation files from backup ZIP (run in executor to avoid blocking)
         def restore_translations():
-            """Restore translation files from backup ZIP."""
+            """Restore translation files from backup ZIP with path traversal protection."""
             backup_zip = os.path.join(
                 os.path.dirname(__file__), "translations_backup.zip"
             )
             try:
                 if os.path.exists(backup_zip):
                     LOGGER.info("Restoring translation files from backup")
+                    extract_path = os.path.abspath(os.path.dirname(__file__))
+
                     with zipfile.ZipFile(backup_zip, "r") as zip_ref:
-                        zip_ref.extractall(os.path.dirname(__file__))
+                        # Validate all paths before extraction to prevent zip slip attacks
+                        for member in zip_ref.namelist():
+                            member_path = os.path.abspath(
+                                os.path.join(extract_path, member)
+                            )
+                            # Ensure the resolved path is within the target directory
+                            if not member_path.startswith(extract_path):
+                                LOGGER.error(
+                                    "Security: Blocked path traversal attempt in zip: %s",
+                                    member,
+                                )
+                                return False
+                            # Block absolute paths
+                            if os.path.isabs(member):
+                                LOGGER.error(
+                                    "Security: Blocked absolute path in zip: %s", member
+                                )
+                                return False
+
+                        # All paths validated, safe to extract
+                        zip_ref.extractall(extract_path)
+
                     LOGGER.info("Translation files restored successfully")
                     return True
                 else:
