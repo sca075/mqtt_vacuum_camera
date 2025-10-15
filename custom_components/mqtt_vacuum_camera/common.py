@@ -1,6 +1,6 @@
 """
 Common functions for the MQTT Vacuum Camera integration.
-Version: 2025.3.0b1
+Version: 2025.10.0
 """
 
 from __future__ import annotations
@@ -109,11 +109,12 @@ async def update_options(bk_options, new_options):
     Keep track of the modified options.
     Returns updated options after editing in Config_Flow.
     """
+    from .const import DEFAULT_VALUES
 
     keys_to_update = KEYS_TO_UPDATE
     try:
         updated_options = {
-            key: new_options[key] if key in new_options else bk_options[key]
+            key: new_options.get(key, bk_options.get(key, DEFAULT_VALUES.get(key)))
             for key in keys_to_update
         }
     except KeyError as e:
@@ -141,7 +142,6 @@ def is_rand256_vacuum(vacuum_device: DeviceEntry) -> bool:
     # Check if the software version contains "valetudo" (for Hypfer) or something else for Rand256
     sof_version = str(vacuum_device.sw_version)
     if (sof_version.lower()).startswith("valetudo"):
-        LOGGER.debug("No Sensors to startup!")
         return False  # This is a Hypfer vacuum (Valetudo)
     return True
 

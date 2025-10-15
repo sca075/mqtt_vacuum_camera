@@ -1,5 +1,5 @@
 """Constants for the mqtt_vacuum_camera integration.
-Last Updated on version: 2025.3.0b2
+Last Updated on version: 2025.10.0
 """
 
 from enum import Enum
@@ -39,8 +39,7 @@ CONF_VACUUM_CONNECTION_STRING = "vacuum_map"
 CONF_VACUUM_ENTITY_ID = "vacuum_entity"
 CONF_VACUUM_CONFIG_ENTRY_ID = "vacuum_config_entry"
 CONF_VACUUM_IDENTIFIERS = "vacuum_identifiers"
-CONF_SNAPSHOTS_ENABLE = "enable_www_snapshots"
-CONF_EXPORT_SVG = "get_svg_file"
+CONF_ROBOT_SIZE = "robot_size"
 CONF_AUTO_ZOOM = "auto_zoom"
 CONF_ZOOM_LOCK_RATIO = "zoom_lock_ratio"
 CONF_TRIMS_SAVE = "save_trims"
@@ -158,10 +157,9 @@ DEFAULT_VALUES = {
     "vac_status_font": "custom_components/mqtt_vacuum_camera/utils/fonts/FiraSans.ttf",
     "vac_status_size": 50,
     "vac_status_position": True,
-    "get_svg_file": False,
+    "robot_size": 25,
     "save_trims": True,
     "trims_data": {"trim_left": 0, "trim_up": 0, "trim_right": 0, "trim_down": 0},
-    "enable_www_snapshots": False,
     "disable_floor": False,
     "disable_wall": False,
     "disable_robot": False,
@@ -255,8 +253,7 @@ KEYS_TO_UPDATE = [
     "vac_status_size",
     "vac_status_position",
     "vac_status_font",
-    "get_svg_file",
-    "enable_www_snapshots",
+    "robot_size",
     "disable_floor",
     "disable_wall",
     "disable_robot",
@@ -344,6 +341,30 @@ ALPHA_VALUES = {
 TEXT_SIZE_VALUES = {
     "min": 5,  # Minimum value
     "max": 51,  # Maximum value
+    "step": 1,  # Step value
+}
+
+DEFAULT_ROOMS_NAMES = {
+    "room_0_name": "Room 1",
+    "room_1_name": "Room 2",
+    "room_2_name": "Room 3",
+    "room_3_name": "Room 4",
+    "room_4_name": "Room 5",
+    "room_5_name": "Room 6",
+    "room_6_name": "Room 7",
+    "room_7_name": "Room 8",
+    "room_8_name": "Room 9",
+    "room_9_name": "Room 10",
+    "room_10_name": "Room 11",
+    "room_11_name": "Room 12",
+    "room_12_name": "Room 13",
+    "room_13_name": "Room 14",
+    "room_14_name": "Room 15",
+}
+
+ROBOT_SIZE_VALUES = {
+    "min": 8,  # Minimum value
+    "max": 25,  # Maximum value
     "step": 1,  # Step value
 }
 
@@ -496,7 +517,6 @@ ATTR_VACUUM_BATTERY = "vacuum_battery"
 ATTR_VACUUM_POSITION = "vacuum_position"
 ATTR_VACUUM_TOPIC = "vacuum_topic"
 ATTR_VACUUM_STATUS = "vacuum_status"
-ATTR_JSON_DATA = "json_data"
 ATTR_VACUUM_JSON_ID = "vacuum_json_id"
 ATTR_CALIBRATION_POINTS = "calibration_points"
 ATTR_SNAPSHOT = "snapshot"
@@ -507,7 +527,11 @@ ATTR_POINTS = "points"
 ATTR_OBSTACLES = "obstacles"
 ATTR_CAMERA_MODE = "camera_mode"
 
+# Timings (shared constants; wiring will be done later with no behavior change today)
 DOWNLOAD_TIMEOUT = 6
+CAMERA_SCAN_INTERVAL_S = 3.0
+RENDER_TIMEOUT_S = 2.9
+FRAME_INTERVAL_S = 0.2
 
 
 class CameraModes(str, Enum):

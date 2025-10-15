@@ -1,5 +1,5 @@
 """Sensors for Rand256.
-Version: 2025.7.1
+Version: 2025.10.0
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import CONF_VACUUM_IDENTIFIERS, DOMAIN, LOGGER, SENSOR_NO_DATA
+from .const import CONF_VACUUM_IDENTIFIERS, DOMAIN, SENSOR_NO_DATA
 from .coordinator import MQTTVacuumCoordinator
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
@@ -270,7 +270,6 @@ def process_timestamp(native_value):
 
         return utc_time
     except ValueError:
-        LOGGER.debug("Invalid timestamp: %s", native_value)
         return None
 
 

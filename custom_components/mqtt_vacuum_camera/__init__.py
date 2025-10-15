@@ -1,11 +1,12 @@
 """
 MQTT Vacuum Camera.
-Version: 2025.07.1
+Version: 2025.10.0
 """
 
 from functools import partial
 import os
 from typing import Optional
+import zipfile
 
 from homeassistant import config_entries, core
 from homeassistant.components import mqtt
@@ -19,7 +20,7 @@ from homeassistant.const import (
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.reload import async_register_admin_service
-from homeassistant.helpers.storage import STORAGE_DIR
+from valetudo_map_parser import get_default_font_path
 from valetudo_map_parser.config.shared import CameraShared, CameraSharedManager
 
 from .common import (
@@ -43,8 +44,8 @@ from .utils.camera.camera_services import (
     reset_trims,
 )
 from .utils.connection.connector import ValetudoConnector
-from .utils.connection.decompress import DecompressionManager
 from .utils.files_operations import (
+    async_get_active_user_language,
     async_get_translations_vacuum_id,
     async_rename_room_description,
 )
@@ -59,6 +60,7 @@ PLATFORMS = [Platform.CAMERA, Platform.SENSOR]
 
 
 def init_shared_data(
+    hass: core.HomeAssistant,
     mqtt_listen_topic: str,
     device_info: DeviceInfo,
 ) -> tuple[Optional[CameraShared], Optional[str]]:
@@ -70,9 +72,9 @@ def init_shared_data(
 
     if mqtt_listen_topic:
         file_name = mqtt_listen_topic.split("/")[1].lower()
-        shared_manager = CameraSharedManager(file_name, device_info)
+        shared_manager = CameraSharedManager(file_name, dict(device_info))
         shared = shared_manager.get_instance()
-        LOGGER.debug("Camera %s Starting up..", file_name)
+        shared.vacuum_status_font = f"{get_default_font_path()}/FiraSans.ttf"
 
     return shared, file_name
 
@@ -90,7 +92,8 @@ async def start_up_mqtt(
 
 async def init_coordinator(hass, entry, vacuum_topic, is_rand256):
     device_info: DeviceInfo = get_camera_device_info(hass, entry)
-    shared, file_name = init_shared_data(vacuum_topic, device_info)
+    shared, file_name = init_shared_data(hass, vacuum_topic, device_info)
+    shared.user_language = await async_get_active_user_language(hass)
     connector = await start_up_mqtt(hass, vacuum_topic, is_rand256, shared)
     coordinator_entity = MQTTVacuumCoordinator(
         hass, entry, vacuum_topic, is_rand256, connector, shared
@@ -172,7 +175,6 @@ async def async_unload_entry(
         unload_platform = PLATFORMS
     else:
         unload_platform = [Platform.CAMERA]
-    LOGGER.debug("Platforms to unload: %s", unload_platform)
     if unload_ok := await hass.config_entries.async_unload_platforms(
         entry, unload_platform
     ):
@@ -183,7 +185,6 @@ async def async_unload_entry(
         # Shutdown thread pool for this entry only
         thread_pool = ThreadPoolManager.get_instance(entry.entry_id)
         await thread_pool.shutdown_instance()  # Shutdown pools only for this vacuum
-        LOGGER.debug("Thread pools for %s shut down", entry.entry_id)
 
         # Remove services
         if not hass.data[DOMAIN]:
@@ -201,20 +202,9 @@ async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
     async def handle_homeassistant_stop(event):
         """Handle Home Assistant stop event."""
         LOGGER.info("Home Assistant is stopping. Writing down the rooms data.")
-        storage = hass.config.path(STORAGE_DIR, CAMERA_STORAGE)
-        if not os.path.exists(storage):
-            LOGGER.debug("Storage path: %s do not exists. Aborting!", storage)
-            return False
-        vacuum_entity_id = await async_get_translations_vacuum_id(storage)
-        if not vacuum_entity_id:
-            LOGGER.debug("No vacuum room data found. Aborting!")
-            return False
-        LOGGER.debug("Writing down the rooms data for %s.", vacuum_entity_id)
-        # This will initialize the language cache only when needed
-        # The optimization is now handled in room_manager.py
-        await async_rename_room_description(hass, vacuum_entity_id)
         await ThreadPoolManager.shutdown_all()
         await hass.async_block_till_done()
+        LOGGER.info("Home Assistant stopped. Mqtt Vacuum Camera exit complete.")
         return True
 
     hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, handle_homeassistant_stop)
@@ -293,6 +283,88 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
             LOGGER.debug("Migration data: %s", dict(new_options))
             hass.config_entries.async_update_entry(
                 config_entry, version=3.3, data=new_data, options=new_options
+            )
+            LOGGER.info(
+                "Migration to config entry version %s successful",
+                config_entry.version,
+            )
+            return True
+    if config_entry.version == 3.3:
+        LOGGER.info("Migrating config entry from version %s", config_entry.version)
+
+        # Restore translation files from backup ZIP (run in executor to avoid blocking)
+        def restore_translations():
+            """Restore translation files from backup ZIP with path traversal protection."""
+            backup_zip = os.path.join(
+                os.path.dirname(__file__), "translations_backup.zip"
+            )
+
+            if not os.path.exists(backup_zip):
+                LOGGER.warning(
+                    "Translation backup file not found, skipping restoration"
+                )
+                return False
+
+            try:
+                LOGGER.info("Restoring translation files from backup")
+                base_dir = os.path.realpath(os.path.dirname(__file__))
+
+                with zipfile.ZipFile(backup_zip, "r") as zip_ref:
+                    for member in zip_ref.infolist():
+                        name = member.filename
+
+                        # Block absolute paths
+                        if os.path.isabs(name):
+                            LOGGER.error("Security: Blocked absolute path in zip: %s", name)
+                            return False
+
+                        # Resolve the destination path
+                        dest = os.path.realpath(os.path.join(base_dir, name))
+
+                        # Ensure extraction stays within target directory
+                        if not dest.startswith(base_dir + os.sep):
+                            LOGGER.error(
+                                "Security: Blocked path traversal attempt in zip: %s", name
+                            )
+                            return False
+
+                        # Extract this member safely
+                        zip_ref.extract(member, base_dir)
+
+                LOGGER.info("Translation files restored successfully")
+
+                # Only delete backup on successful restoration
+                if os.path.exists(backup_zip):
+                    os.remove(backup_zip)
+
+                return True
+
+            except (OSError, zipfile.BadZipFile, ValueError) as e:
+                LOGGER.error("Failed to restore translation files: %s", e)
+                return False
+
+        # Run the blocking I/O in an executor
+        await hass.async_add_executor_job(restore_translations)
+
+        old_data = {**config_entry.data}
+        new_data = {"vacuum_config_entry": old_data["vacuum_config_entry"]}
+        LOGGER.debug(dict(new_data))
+        old_options = {**config_entry.options}
+        if len(old_options) != 0:
+            # Remove deprecated options
+            old_options.pop("enable_www_snapshots", None)
+            old_options.pop("get_svg_file", None)
+            # Add new options with defaults
+            tmp_option = {
+                "robot_size": 25,
+            }
+            # Merge tmp_option into old_options
+            old_options.update(tmp_option)
+            # Now process with update_options
+            new_options = await update_options(old_options, {})
+            LOGGER.debug("Migration data: %s", dict(new_options))
+            hass.config_entries.async_update_entry(
+                config_entry, version=3.4, data=new_data, options=new_options
             )
             LOGGER.info(
                 "Migration to config entry version %s successful",

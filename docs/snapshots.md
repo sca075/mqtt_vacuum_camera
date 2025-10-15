@@ -1,88 +1,67 @@
-### Snapshots ###
+### Snapshots
 
-***Category:*** Camera Configuration - Image Options - Export PNG Snapshot.
+This page explains how to create and manage snapshots (PNG images) of the vacuum map.
 
-***Default:***  Enabled
+Status: The built‑in “Export PNG Snapshot” option is deprecated. We recommend using Home Assistant’s camera.snapshot service via automations or scripts. This keeps the integration lightweight and lets you fully control when snapshots are taken.
 
-**Waring: Please keep in mind that the snapshot image will be not automatically deleted from your WWW folder while the
-PNG export is enable**
+Where snapshots are stored
+- Save snapshots to /config/www so they are served via /local in Lovelace.
+- Example path: /www/snapshot_my_vacuum.png → accessible at /local/snapshot_my_vacuum.png
 
-The snapshots images are automatically stored in www (local) folder of HA, by default this function is enable.
-The Camera take a snapshot of the maps when the vacuum is "idle", "docked" or in "error" state if this option is enabled.
-It is possible to disable the PNG export from the camera options thanks [@gunjambi](https://github.com/gunjambi)
-as soon this option is OFF the PNG will be deleted from the WWW folder.
-
-![Screenshot 2024-03-13 at 17 19 15](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/3ab2558b-1ec6-4703-8024-2662d3637206)
-
-When the vacuum battery get empty because of an error during a cleaning cycle, or in different conditions as per the below example.
-If the option is enable will be possible to create an automation to send the screenshot to your mobile. 
-When using the below example HA editor please edit the automation in yaml because the snapshot attribute (used in this example)
-provides boolean values True or False.
-HA editor will translate to "True" (string) from the UI editor, home assistant will not notify you in this case.
-
-**Warning: Please keep in mind that the snapshot image will be not automatically deleted from your WWW folder while the
-PNG export is enabl)**
-
-```
-
-alias: vacuum notification
-description: ""
+Quick start: recommended automations
+1) Snapshot when cleaning starts
+```yaml
+alias: Vacuum map snapshot on cleaning
 trigger:
   - platform: state
-    entity_id:
-      - camera.v1_your_vacuum_camera
-    attribute: snapshot
-    from: false
-    to: true
-condition: []
+    entity_id: vacuum.my_robot
+    to: cleaning
 action:
-  - service: notify.mobile_app_your_phone
+  - service: camera.snapshot
+    target:
+      entity_id: camera.mqtt_vacuum_camera
     data:
-      message: Vacuum {{states("vacuum.valetudo_your_vacuum")}}
-      data:
-        image: /local/snapshot_your_vacuum.png
-mode: single
-
+      filename: "www/snapshot_vacuum.png"
 ```
 
-*Aside the image, this function store also a zip file with diagnostic data, we filter the data relative to this integration from the HA logs and those data are stored only if the
-log debug function in HA is active ***(we don't store any data in the www folder if the you do not log the data and export them)***.
-
-![Screenshot 2023-10-03 at 06 55 36](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/6aedcdd3-6f39-4b11-8c0f-6da99f5490e9)
-
-Once enabled the Debug log in the home assistant GUI home assistant collect the logs of the camera and other intregrations and add-on's in the instance.
-
-## Example Home Assistant log. ##
-```log
-2024-01-26 09:27:39.930 DEBUG (MainThread) [custom_components.valetudo_vacuum_camera.camera] glossyhardtofindnarwhal System CPU usage stat (1/2): 0.0%
-2024-01-26 09:27:39.930 INFO (MainThread) [custom_components.valetudo_vacuum_camera.camera] glossyhardtofindnarwhal: Image not processed. Returning not updated image.
-2024-01-26 09:27:39.935 DEBUG (MainThread) [custom_components.valetudo_vacuum_camera.camera] glossyhardtofindnarwhal System CPU usage stat (2/2): 0.0%
-2024-01-26 09:27:39.935 DEBUG (MainThread) [custom_components.valetudo_vacuum_camera.camera] glossyhardtofindnarwhal Camera Memory usage in GB: 0.93, 11.98% of Total.
-***2024-01-26 09:27:59.524 ERROR (MainThread) [homeassistant.components.androidtv.media_player] Failed to execute an ADB command. ADB connection re-establishing attempt in the next update. Error: Reading from 192.1**.1**.2**:5555 timed out (9.0 seconds)
-2024-01-26 09:28:01.524 WARNING (MainThread) [androidtv.adb_manager.adb_manager_async] Couldn't connect to 192.1**.1**.2**:5555.  TcpTimeoutException: Connecting to 192.1**.1**.2**:5555 timed out (1.0 seconds)
-2024-01-26 09:28:02.967 WARNING (MainThread) [custom_components.localtuya.common] [204...991] Failed to connect to 192.1**.1**.1**: [Errno 113] Connect call failed ('192.1**.1**.1**', 6668)**
-2024-01-26 09:28:37.649 INFO (MainThread) [custom_components.valetudo_vacuum_camera.valetudo.MQTT.connector] Received valetudo/GlossyHardToFindNarwhal image data from MQTT
-2024-01-26 09:28:39.943 INFO (MainThread) [custom_components.valetudo_vacuum_camera.valetudo.MQTT.connector] No data from valetudo/GlossyHardToFindNarwhal or vacuum docked
+2) Snapshot when docked (post‑clean)
+```yaml
+a lias: Vacuum map snapshot on docked
+trigger:
+  - platform: state
+    entity_id: vacuum.my_robot
+    from: cleaning
+    to: docked
+action:
+  - service: camera.snapshot
+    target:
+      entity_id: camera.mqtt_vacuum_camera
+    data:
+      filename: "www/snapshot_vacuum_docked.png"
 ```
 
-The filtered logs are in a zip file that will be created in the .storage of the home assistant, this file will be not acceseble on the .config folder unless you select the oprtion to export the logs from the Camera Options.
-
-![Screenshot 2024-01-26 at 10 01 40](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/4d4fb7e3-16a5-4994-9f61-ad71c50ddb61)
-
-And then download it with the file editor of your coise or via SAMBA add-on.
-
-![Screenshot 2023-10-03 at 06 58 36](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/363881f5-bca6-462f-80d8-9a6351bcf285)
-
-The filtered logs will be as per the example below not containing other integrations or add-on logs such as androidtv, custom_components.localtuya (see above) only the custom_components.valetudo_vacuum_camera logs are exported.. 
-
-## Example Valetudo Camera log. ##
-```log
-2024-01-26 09:27:39.930 DEBUG (MainThread) [custom_components.valetudo_vacuum_camera.camera] glossyhardtofindnarwhal System CPU usage stat (1/2): 0.0%
-2024-01-26 09:27:39.930 INFO (MainThread) [custom_components.valetudo_vacuum_camera.camera] glossyhardtofindnarwhal: Image not processed. Returning not updated image.
-2024-01-26 09:27:39.935 DEBUG (MainThread) [custom_components.valetudo_vacuum_camera.camera] glossyhardtofindnarwhal System CPU usage stat (2/2): 0.0%
-2024-01-26 09:27:39.935 DEBUG (MainThread) [custom_components.valetudo_vacuum_camera.camera] glossyhardtofindnarwhal Camera Memory usage in GB: 0.93, 11.98% of Total.
-2024-01-26 09:28:37.649 INFO (MainThread) [custom_components.valetudo_vacuum_camera.valetudo.MQTT.connector] Received valetudo/GlossyHardToFindNarwhal image data from MQTT
-2024-01-26 09:28:39.943 INFO (MainThread) [custom_components.valetudo_vacuum_camera.valetudo.MQTT.connector] No data from valetudo/GlossyHardToFindNarwhal or vacuum docked
+3) Periodic snapshot (every 10 minutes)
+```yaml
+alias: Periodic vacuum map snapshot
+trigger:
+  - platform: time_pattern
+    minutes: "/10"
+action:
+  - service: camera.snapshot
+    target:
+      entity_id: camera.mqtt_vacuum_camera
+    data:
+      filename: "www/snapshots/map_{{ now().strftime('%Y%m%d_%H%M%S') }}.png"
 ```
 
+Notes and tips
+- Files in /config/www are still auto‑deleted by Home Assistant when the integration is reloaded; rotate or clean them with your own automations if needed.
+- You can include the snapshot in notifications by referencing the /local URL.
 
+Legacy behavior (older releases)
+- Older versions exposed an “Export PNG Snapshot” option (default: enabled) to drop a PNG into /config/www when the vacuum was idle/docked/error.
+- If you still use that option, remember: images aren’t auto‑deleted from /config/www. Disable the option if you no longer want automatic snapshots.
+
+Diagnostics log export (optional)
+- When HA debug logging is enabled, a filtered zip of integration logs can be exported from Camera Options. These logs include only this integration’s entries.
+- This is optional and unrelated to snapshots via automations.

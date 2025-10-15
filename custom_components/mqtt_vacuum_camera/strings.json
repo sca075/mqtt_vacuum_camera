@@ -91,12 +91,13 @@
           "auto_zoom": "Enable Auto Zoom",
           "zoom_lock_ratio": "Lock Aspect Ratio.",
           "aspect_ratio": "Image Aspect Ratio.",
-          "enable_www_snapshots": "Export PNG snapshots."
+          "robot_size": "Size of the Robot."
         },
         "data_description": {
           "rotate_image": "Degree 0, 90, 180, 270",
           "margins": "Auto Trim Margins in pixels.",
-          "aspect_ratio": "Image Aspect Ratio."
+          "aspect_ratio": "Image Aspect Ratio.",
+          "robot_size": "Size of the Robot in pixels 8-25."
         },
         "description": "Camera Image Options",
         "title": "Image Options"
@@ -184,21 +185,21 @@
           "disable_room_15": "Hide Room 15"
         },
         "data_description": {
-          "disable_room_1": "When enabled, Room 1 will not be shown on the map",
-          "disable_room_2": "When enabled, Room 2 will not be shown on the map",
-          "disable_room_3": "When enabled, Room 3 will not be shown on the map",
-          "disable_room_4": "When enabled, Room 4 will not be shown on the map",
-          "disable_room_5": "When enabled, Room 5 will not be shown on the map",
-          "disable_room_6": "When enabled, Room 6 will not be shown on the map",
-          "disable_room_7": "When enabled, Room 7 will not be shown on the map",
-          "disable_room_8": "When enabled, Room 8 will not be shown on the map",
-          "disable_room_9": "When enabled, Room 9 will not be shown on the map",
-          "disable_room_10": "When enabled, Room 10 will not be shown on the map",
-          "disable_room_11": "When enabled, Room 11 will not be shown on the map",
-          "disable_room_12": "When enabled, Room 12 will not be shown on the map",
-          "disable_room_13": "When enabled, Room 13 will not be shown on the map",
-          "disable_room_14": "When enabled, Room 14 will not be shown on the map",
-          "disable_room_15": "When enabled, Room 15 will not be shown on the map"
+          "disable_room_1": "When enabled, Room 1 {room_0_name} will not be shown on the map",
+          "disable_room_2": "When enabled, Room 2 {room_1_name} will not be shown on the map",
+          "disable_room_3": "When enabled, Room 3 {room_2_name} will not be shown on the map",
+          "disable_room_4": "When enabled, Room 4 {room_3_name} will not be shown on the map",
+          "disable_room_5": "When enabled, Room 5 {room_4_name} will not be shown on the map",
+          "disable_room_6": "When enabled, Room 6 {room_5_name} will not be shown on the map",
+          "disable_room_7": "When enabled, Room 7 {room_6_name} will not be shown on the map",
+          "disable_room_8": "When enabled, Room 8 {room_7_name} will not be shown on the map",
+          "disable_room_9": "When enabled, Room 9 {room_8_name} will not be shown on the map",
+          "disable_room_10": "When enabled, Room 10 {room_9_name} will not be shown on the map",
+          "disable_room_11": "When enabled, Room 11 {room_10_name} will not be shown on the map",
+          "disable_room_12": "When enabled, Room 12 {room_11_name} will not be shown on the map",
+          "disable_room_13": "When enabled, Room 13 {room_12_name} will not be shown on the map",
+          "disable_room_14": "When enabled, Room 14 {room_13_name} will not be shown on the map",
+          "disable_room_15": "When enabled, Room 15 {room_14_name} will not be shown on the map"
         }
       },
       "base_colours": {
@@ -263,14 +264,14 @@
           "add_room_1_alpha": "Configure Transparency:"
         },
         "data_description": {
-          "color_room_0": "Room 1",
-          "color_room_1": "Room 2",
-          "color_room_2": "Room 3",
-          "color_room_3": "Room 4",
-          "color_room_4": "Room 5",
-          "color_room_5": "Room 6",
-          "color_room_6": "Room 7",
-          "color_room_7": "Room 8"
+          "color_room_0": "### **{room_0_name} Color**",
+          "color_room_1": "### **{room_1_name} Color**",
+          "color_room_2": "### **{room_2_name} Color**",
+          "color_room_3": "### **{room_3_name} Color**",
+          "color_room_4": "### **{room_4_name} Color**",
+          "color_room_5": "### **{room_5_name} Color**",
+          "color_room_6": "### **{room_6_name} Color**",
+          "color_room_7": "### **{room_7_name} Color**"
         },
         "description": "Camera Colours Options.",
         "title": "Rooms 1 to 8 Colours"
@@ -288,14 +289,14 @@
           "add_room_2_alpha": "Configure Transparency:"
         },
         "data_description": {
-          "color_room_8": "Room 9",
-          "color_room_9": "Room 10",
-          "color_room_10": "Room 11",
-          "color_room_11": "Room 12",
-          "color_room_12": "Room 13",
-          "color_room_13": "Room 14",
-          "color_room_14": "Room 15",
-          "color_room_15": "Room 16"
+          "color_room_8": "### **{room_8_name} Color**",
+          "color_room_9": "### **{room_9_name} Color**",
+          "color_room_10": "### **{room_10_name} Color**",
+          "color_room_11": "### **{room_11_name} Color**",
+          "color_room_12": "### **{room_12_name} Color**",
+          "color_room_13": "### **{room_13_name} Color**",
+          "color_room_14": "### **{room_14_name} Color**",
+          "color_room_15": "### **{room_15_name} Color**"
         },
         "description": "Camera Colours Options.",
         "title": "Rooms 9 to 15 Colours"
@@ -307,28 +308,28 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "Room 1",
-          "alpha_room_1": "Room 2",
-          "alpha_room_2": "Room 3",
-          "alpha_room_3": "Room 4",
-          "alpha_room_4": "Room 5",
-          "alpha_room_5": "Room 6",
-          "alpha_room_6": "Room 7",
-          "alpha_room_7": "Room 8"
+          "alpha_room_0": "### **{room_0_name} Alpha**",
+          "alpha_room_1": "### **{room_1_name} Alpha**",
+          "alpha_room_2": "### **{room_2_name} Alpha**",
+          "alpha_room_3": "### **{room_3_name} Alpha**",
+          "alpha_room_4": "### **{room_4_name} Alpha**",
+          "alpha_room_5": "### **{room_5_name} Alpha**",
+          "alpha_room_6": "### **{room_6_name} Alpha**",
+          "alpha_room_7": "### **{room_7_name} Alpha**"
         },
         "description": "Camera Options. Alpha 2",
         "title": "Alpha Chanel Rooms Colours"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "Room 9",
-          "alpha_room_9": "Room 10",
-          "alpha_room_10": "Room 11",
-          "alpha_room_11": "Room 12",
-          "alpha_room_12": "Room 13",
-          "alpha_room_13": "Room 14",
-          "alpha_room_14": "Room 15",
-          "alpha_room_15": "Room 16"
+          "alpha_room_8": "### **{room_8_name} Alpha**",
+          "alpha_room_9": "### **{room_9_name} Alpha**",
+          "alpha_room_10": "### **{room_10_name} Alpha**",
+          "alpha_room_11": "### **{room_11_name} Alpha**",
+          "alpha_room_12": "### **{room_12_name} Alpha**",
+          "alpha_room_13": "### **{room_13_name} Alpha**",
+          "alpha_room_14": "### **{room_14_name} Alpha**",
+          "alpha_room_15": "### **{room_15_name} Alpha**"
         },
         "description": "Camera Options. Alpha 3",
         "title": "Alpha Chanel Rooms Colours"

@@ -91,12 +91,13 @@
           "auto_zoom": "Abilita Zoom Automatico",
           "zoom_lock_ratio": "Blocca Rapporto Aspetto.",
           "aspect_ratio": "Rapporto Aspetto Immagine.",
-          "enable_www_snapshots": "Esporta istantanee PNG."
+          "robot_size": "Dimensione del robot"
         },
         "data_description": {
           "rotate_image": "Gradi 0, 90, 180, 270",
           "margins": "Ritaglio automatico margini in pixel.",
-          "aspect_ratio": "Rapporto Aspetto Immagine."
+          "aspect_ratio": "Rapporto Aspetto Immagine.",
+          "robot_size": "Dimensione del robot in pixel 8-25"
         },
         "description": "Opzioni immagine fotocamera",
         "title": "Opzioni Immagine"
@@ -184,21 +185,21 @@
           "disable_room_15": "Nascondi Stanza 15"
         },
         "data_description": {
-          "disable_room_1": "Quando abilitato, la Stanza 1 non sarà mostrata sulla mappa",
-          "disable_room_2": "Quando abilitato, la Stanza 2 non sarà mostrata sulla mappa",
-          "disable_room_3": "Quando abilitato, la Stanza 3 non sarà mostrata sulla mappa",
-          "disable_room_4": "Quando abilitato, la Stanza 4 non sarà mostrata sulla mappa",
-          "disable_room_5": "Quando abilitato, la Stanza 5 non sarà mostrata sulla mappa",
-          "disable_room_6": "Quando abilitato, la Stanza 6 non sarà mostrata sulla mappa",
-          "disable_room_7": "Quando abilitato, la Stanza 7 non sarà mostrata sulla mappa",
-          "disable_room_8": "Quando abilitato, la Stanza 8 non sarà mostrata sulla mappa",
-          "disable_room_9": "Quando abilitato, la Stanza 9 non sarà mostrata sulla mappa",
-          "disable_room_10": "Quando abilitato, la Stanza 10 non sarà mostrata sulla mappa",
-          "disable_room_11": "Quando abilitato, la Stanza 11 non sarà mostrata sulla mappa",
-          "disable_room_12": "Quando abilitato, la Stanza 12 non sarà mostrata sulla mappa",
-          "disable_room_13": "Quando abilitato, la Stanza 13 non sarà mostrata sulla mappa",
-          "disable_room_14": "Quando abilitato, la Stanza 14 non sarà mostrata sulla mappa",
-          "disable_room_15": "Quando abilitato, la Stanza 15 non sarà mostrata sulla mappa"
+          "disable_room_1": "Quando abilitato, la Stanza 1 {room_0_name} non sarà mostrata sulla mappa",
+          "disable_room_2": "Quando abilitato, la Stanza 2 {room_1_name} non sarà mostrata sulla mappa",
+          "disable_room_3": "Quando abilitato, la Stanza 3 {room_2_name} non sarà mostrata sulla mappa",
+          "disable_room_4": "Quando abilitato, la Stanza 4 {room_3_name} non sarà mostrata sulla mappa",
+          "disable_room_5": "Quando abilitato, la Stanza 5 {room_4_name} non sarà mostrata sulla mappa",
+          "disable_room_6": "Quando abilitato, la Stanza 6 {room_5_name} non sarà mostrata sulla mappa",
+          "disable_room_7": "Quando abilitato, la Stanza 7 {room_6_name} non sarà mostrata sulla mappa",
+          "disable_room_8": "Quando abilitato, la Stanza 8 {room_7_name} non sarà mostrata sulla mappa",
+          "disable_room_9": "Quando abilitato, la Stanza 9 {room_8_name} non sarà mostrata sulla mappa",
+          "disable_room_10": "Quando abilitato, la Stanza 10 {room_9_name} non sarà mostrata sulla mappa",
+          "disable_room_11": "Quando abilitato, la Stanza 11 {room_10_name} non sarà mostrata sulla mappa",
+          "disable_room_12": "Quando abilitato, la Stanza 12 {room_11_name} non sarà mostrata sulla mappa",
+          "disable_room_13": "Quando abilitato, la Stanza 13 {room_12_name} non sarà mostrata sulla mappa",
+          "disable_room_14": "Quando abilitato, la Stanza 14 {room_13_name} non sarà mostrata sulla mappa",
+          "disable_room_15": "Quando abilitato, la Stanza 15 {room_14_name} non sarà mostrata sulla mappa"
         }
       },
       "base_colours": {
@@ -263,14 +264,14 @@
           "add_room_1_alpha": "Configura Trasparenza:"
         },
         "data_description": {
-          "color_room_0": "Stanza 1",
-          "color_room_1": "Stanza 2",
-          "color_room_2": "Stanza 3",
-          "color_room_3": "Stanza 4",
-          "color_room_4": "Stanza 5",
-          "color_room_5": "Stanza 6",
-          "color_room_6": "Stanza 7",
-          "color_room_7": "Stanza 8"
+          "color_room_0": "### **{room_0_name} Colore**",
+          "color_room_1": "### **{room_1_name} Colore**",
+          "color_room_2": "### **{room_2_name} Colore**",
+          "color_room_3": "### **{room_3_name} Colore**",
+          "color_room_4": "### **{room_4_name} Colore**",
+          "color_room_5": "### **{room_5_name} Colore**",
+          "color_room_6": "### **{room_6_name} Colore**",
+          "color_room_7": "### **{room_7_name} Colore**"
         },
         "description": "Opzioni colori fotocamera.",
         "title": "Colori Stanze da 1 a 8"
@@ -288,14 +289,14 @@
           "add_room_2_alpha": "Configura Trasparenza:"
         },
         "data_description": {
-          "color_room_8": "Stanza 9",
-          "color_room_9": "Stanza 10",
-          "color_room_10": "Stanza 11",
-          "color_room_11": "Stanza 12",
-          "color_room_12": "Stanza 13",
-          "color_room_13": "Stanza 14",
-          "color_room_14": "Stanza 15",
-          "color_room_15": "Stanza 16"
+          "color_room_8": "### **{room_8_name} Colore**",
+          "color_room_9": "### **{room_9_name} Colore**",
+          "color_room_10": "### **{room_10_name} Colore**",
+          "color_room_11": "### **{room_11_name} Colore**",
+          "color_room_12": "### **{room_12_name} Colore**",
+          "color_room_13": "### **{room_13_name} Colore**",
+          "color_room_14": "### **{room_14_name} Colore**",
+          "color_room_15": "### **{room_15_name} Colore**"
         },
         "description": "Opzioni colori fotocamera.",
         "title": "Colori Stanze da 9 a 15"
@@ -307,28 +308,28 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "Stanza 1",
-          "alpha_room_1": "Stanza 2",
-          "alpha_room_2": "Stanza 3",
-          "alpha_room_3": "Stanza 4",
-          "alpha_room_4": "Stanza 5",
-          "alpha_room_5": "Stanza 6",
-          "alpha_room_6": "Stanza 7",
-          "alpha_room_7": "Stanza 8"
+          "alpha_room_0": "Segmento {room_0_name} Alpha",
+          "alpha_room_1": "Segmento {room_1_name} Alpha",
+          "alpha_room_2": "Segmento {room_2_name} Alpha",
+          "alpha_room_3": "Segmento {room_3_name} Alpha",
+          "alpha_room_4": "Segmento {room_4_name} Alpha",
+          "alpha_room_5": "Segmento {room_5_name} Alpha",
+          "alpha_room_6": "Segmento {room_6_name} Alpha",
+          "alpha_room_7": "Segmento {room_7_name} Alpha"
         },
         "description": "Opzioni fotocamera. Alpha 2",
         "title": "Canale Alpha Colori Stanze"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "Stanza 9",
-          "alpha_room_9": "Stanza 10",
-          "alpha_room_10": "Stanza 11",
-          "alpha_room_11": "Stanza 12",
-          "alpha_room_12": "Stanza 13",
-          "alpha_room_13": "Stanza 14",
-          "alpha_room_14": "Stanza 15",
-          "alpha_room_15": "Stanza 16"
+          "alpha_room_8": "Segmento {room_8_name} Alpha",
+          "alpha_room_9": "Segmento {room_9_name} Alpha",
+          "alpha_room_10": "Segmento {room_10_name} Alpha",
+          "alpha_room_11": "Segmento {room_11_name} Alpha",
+          "alpha_room_12": "Segmento {room_12_name} Alpha",
+          "alpha_room_13": "Segmento {room_13_name} Alpha",
+          "alpha_room_14": "Segmento {room_14_name} Alpha",
+          "alpha_room_15": "Segmento {room_15_name} Alpha"
         },
         "description": "Opzioni fotocamera. Alpha 3",
         "title": "Canale Alpha Colori Stanze"

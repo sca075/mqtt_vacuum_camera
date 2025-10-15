@@ -91,12 +91,13 @@
           "auto_zoom": "啟用自動縮放",
           "zoom_lock_ratio": "鎖定縱橫比。",
           "aspect_ratio": "圖像縱橫比。",
-          "enable_www_snapshots": "導出 PNG 快照。"
+          "robot_size": "機器人大小"
         },
         "data_description": {
           "rotate_image": "度數 0, 90, 180, 270",
           "margins": "自動邊距裁剪（像素）。",
-          "aspect_ratio": "圖像縱橫比。"
+          "aspect_ratio": "圖像縱橫比。",
+          "robot_size": "機器人大小（像素）8-25"
         },
         "description": "相機圖像選項",
         "title": "圖像選項"
@@ -184,21 +185,21 @@
           "disable_room_15": "隱藏房間 15"
         },
         "data_description": {
-          "disable_room_1": "啟用時，房間 1 將不會顯示在地圖上",
-          "disable_room_2": "啟用時，房間 2 將不會顯示在地圖上",
-          "disable_room_3": "啟用時，房間 3 將不會顯示在地圖上",
-          "disable_room_4": "啟用時，房間 4 將不會顯示在地圖上",
-          "disable_room_5": "啟用時，房間 5 將不會顯示在地圖上",
-          "disable_room_6": "啟用時，房間 6 將不會顯示在地圖上",
-          "disable_room_7": "啟用時，房間 7 將不會顯示在地圖上",
-          "disable_room_8": "啟用時，房間 8 將不會顯示在地圖上",
-          "disable_room_9": "啟用時，房間 9 將不會顯示在地圖上",
-          "disable_room_10": "啟用時，房間 10 將不會顯示在地圖上",
-          "disable_room_11": "啟用時，房間 11 將不會顯示在地圖上",
-          "disable_room_12": "啟用時，房間 12 將不會顯示在地圖上",
-          "disable_room_13": "啟用時，房間 13 將不會顯示在地圖上",
-          "disable_room_14": "啟用時，房間 14 將不會顯示在地圖上",
-          "disable_room_15": "啟用時，房間 15 將不會顯示在地圖上"
+          "disable_room_1": "啟用時，房間 1 {room_0_name} 將不會顯示在地圖上",
+          "disable_room_2": "啟用時，房間 2 {room_1_name} 將不會顯示在地圖上",
+          "disable_room_3": "啟用時，房間 3 {room_2_name} 將不會顯示在地圖上",
+          "disable_room_4": "啟用時，房間 4 {room_3_name} 將不會顯示在地圖上",
+          "disable_room_5": "啟用時，房間 5 {room_4_name} 將不會顯示在地圖上",
+          "disable_room_6": "啟用時，房間 6 {room_5_name} 將不會顯示在地圖上",
+          "disable_room_7": "啟用時，房間 7 {room_6_name} 將不會顯示在地圖上",
+          "disable_room_8": "啟用時，房間 8 {room_7_name} 將不會顯示在地圖上",
+          "disable_room_9": "啟用時，房間 9 {room_8_name} 將不會顯示在地圖上",
+          "disable_room_10": "啟用時，房間 10 {room_9_name} 將不會顯示在地圖上",
+          "disable_room_11": "啟用時，房間 11 {room_10_name} 將不會顯示在地圖上",
+          "disable_room_12": "啟用時，房間 12 {room_11_name} 將不會顯示在地圖上",
+          "disable_room_13": "啟用時，房間 13 {room_12_name} 將不會顯示在地圖上",
+          "disable_room_14": "啟用時，房間 14 {room_13_name} 將不會顯示在地圖上",
+          "disable_room_15": "啟用時，房間 15 {room_14_name} 將不會顯示在地圖上"
         }
       },
       "base_colours": {
@@ -263,14 +264,14 @@
           "add_room_1_alpha": "配置透明度："
         },
         "data_description": {
-          "color_room_0": "房間 1",
-          "color_room_1": "房間 2",
-          "color_room_2": "房間 3",
-          "color_room_3": "房間 4",
-          "color_room_4": "房間 5",
-          "color_room_5": "房間 6",
-          "color_room_6": "房間 7",
-          "color_room_7": "房間 8"
+          "color_room_0": "### **{room_0_name} 顏色**",
+          "color_room_1": "### **{room_1_name} 顏色**",
+          "color_room_2": "### **{room_2_name} 顏色**",
+          "color_room_3": "### **{room_3_name} 顏色**",
+          "color_room_4": "### **{room_4_name} 顏色**",
+          "color_room_5": "### **{room_5_name} 顏色**",
+          "color_room_6": "### **{room_6_name} 顏色**",
+          "color_room_7": "### **{room_7_name} 顏色**"
         },
         "description": "相機顏色選項。",
         "title": "房間 1 至 8 顏色"
@@ -288,14 +289,14 @@
           "add_room_2_alpha": "配置透明度："
         },
         "data_description": {
-          "color_room_8": "房間 9",
-          "color_room_9": "房間 10",
-          "color_room_10": "房間 11",
-          "color_room_11": "房間 12",
-          "color_room_12": "房間 13",
-          "color_room_13": "房間 14",
-          "color_room_14": "房間 15",
-          "color_room_15": "房間 16"
+          "color_room_8": "### **{room_8_name} 顏色**",
+          "color_room_9": "### **{room_9_name} 顏色**",
+          "color_room_10": "### **{room_10_name} 顏色**",
+          "color_room_11": "### **{room_11_name} 顏色**",
+          "color_room_12": "### **{room_12_name} 顏色**",
+          "color_room_13": "### **{room_13_name} 顏色**",
+          "color_room_14": "### **{room_14_name} 顏色**",
+          "color_room_15": "### **{room_15_name} 顏色**"
         },
         "description": "相機顏色選項。",
         "title": "房間 9 至 15 顏色"
@@ -307,28 +308,28 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "房間 1",
-          "alpha_room_1": "房間 2",
-          "alpha_room_2": "房間 3",
-          "alpha_room_3": "房間 4",
-          "alpha_room_4": "房間 5",
-          "alpha_room_5": "房間 6",
-          "alpha_room_6": "房間 7",
-          "alpha_room_7": "房間 8"
+          "alpha_room_0": "區段 {room_0_name} 透明度",
+          "alpha_room_1": "區段 {room_1_name} 透明度",
+          "alpha_room_2": "區段 {room_2_name} 透明度",
+          "alpha_room_3": "區段 {room_3_name} 透明度",
+          "alpha_room_4": "區段 {room_4_name} 透明度",
+          "alpha_room_5": "區段 {room_5_name} 透明度",
+          "alpha_room_6": "區段 {room_6_name} 透明度",
+          "alpha_room_7": "區段 {room_7_name} 透明度"
         },
         "description": "相機選項。透明度 2",
         "title": "房間顏色透明度通道"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "房間 9",
-          "alpha_room_9": "房間 10",
-          "alpha_room_10": "房間 11",
-          "alpha_room_11": "房間 12",
-          "alpha_room_12": "房間 13",
-          "alpha_room_13": "房間 14",
-          "alpha_room_14": "房間 15",
-          "alpha_room_15": "房間 16"
+          "alpha_room_8": "區段 {room_8_name} 透明度",
+          "alpha_room_9": "區段 {room_9_name} 透明度",
+          "alpha_room_10": "區段 {room_10_name} 透明度",
+          "alpha_room_11": "區段 {room_11_name} 透明度",
+          "alpha_room_12": "區段 {room_12_name} 透明度",
+          "alpha_room_13": "區段 {room_13_name} 透明度",
+          "alpha_room_14": "區段 {room_14_name} 透明度",
+          "alpha_room_15": "區段 {room_15_name} 透明度"
         },
         "description": "相機選項。透明度 3",
         "title": "房間顏色透明度通道"

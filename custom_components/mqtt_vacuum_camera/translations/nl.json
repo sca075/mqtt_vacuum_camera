@@ -91,12 +91,13 @@
           "auto_zoom": "Automatisch zoomen inschakelen",
           "zoom_lock_ratio": "Beeldverhouding vergrendelen.",
           "aspect_ratio": "Beeldverhouding.",
-          "enable_www_snapshots": "PNG-snapshots exporteren."
+          "robot_size": "Robotgrootte"
         },
         "data_description": {
           "rotate_image": "Graden 0, 90, 180, 270",
           "margins": "Automatisch marges bijsnijden in pixels.",
-          "aspect_ratio": "Beeldverhouding."
+          "aspect_ratio": "Beeldverhouding.",
+          "robot_size": "Robotgrootte in pixels 8-25"
         },
         "description": "Camera beeldopties",
         "title": "Beeldopties"
@@ -184,21 +185,21 @@
           "disable_room_15": "Kamer 15 verbergen"
         },
         "data_description": {
-          "disable_room_1": "Wanneer ingeschakeld, wordt Kamer 1 niet weergegeven op de kaart",
-          "disable_room_2": "Wanneer ingeschakeld, wordt Kamer 2 niet weergegeven op de kaart",
-          "disable_room_3": "Wanneer ingeschakeld, wordt Kamer 3 niet weergegeven op de kaart",
-          "disable_room_4": "Wanneer ingeschakeld, wordt Kamer 4 niet weergegeven op de kaart",
-          "disable_room_5": "Wanneer ingeschakeld, wordt Kamer 5 niet weergegeven op de kaart",
-          "disable_room_6": "Wanneer ingeschakeld, wordt Kamer 6 niet weergegeven op de kaart",
-          "disable_room_7": "Wanneer ingeschakeld, wordt Kamer 7 niet weergegeven op de kaart",
-          "disable_room_8": "Wanneer ingeschakeld, wordt Kamer 8 niet weergegeven op de kaart",
-          "disable_room_9": "Wanneer ingeschakeld, wordt Kamer 9 niet weergegeven op de kaart",
-          "disable_room_10": "Wanneer ingeschakeld, wordt Kamer 10 niet weergegeven op de kaart",
-          "disable_room_11": "Wanneer ingeschakeld, wordt Kamer 11 niet weergegeven op de kaart",
-          "disable_room_12": "Wanneer ingeschakeld, wordt Kamer 12 niet weergegeven op de kaart",
-          "disable_room_13": "Wanneer ingeschakeld, wordt Kamer 13 niet weergegeven op de kaart",
-          "disable_room_14": "Wanneer ingeschakeld, wordt Kamer 14 niet weergegeven op de kaart",
-          "disable_room_15": "Wanneer ingeschakeld, wordt Kamer 15 niet weergegeven op de kaart"
+          "disable_room_1": "Wanneer ingeschakeld, wordt Kamer 1 {room_0_name} niet weergegeven op de kaart",
+          "disable_room_2": "Wanneer ingeschakeld, wordt Kamer 2 {room_1_name} niet weergegeven op de kaart",
+          "disable_room_3": "Wanneer ingeschakeld, wordt Kamer 3 {room_2_name} niet weergegeven op de kaart",
+          "disable_room_4": "Wanneer ingeschakeld, wordt Kamer 4 {room_3_name} niet weergegeven op de kaart",
+          "disable_room_5": "Wanneer ingeschakeld, wordt Kamer 5 {room_4_name} niet weergegeven op de kaart",
+          "disable_room_6": "Wanneer ingeschakeld, wordt Kamer 6 {room_5_name} niet weergegeven op de kaart",
+          "disable_room_7": "Wanneer ingeschakeld, wordt Kamer 7 {room_6_name} niet weergegeven op de kaart",
+          "disable_room_8": "Wanneer ingeschakeld, wordt Kamer 8 {room_7_name} niet weergegeven op de kaart",
+          "disable_room_9": "Wanneer ingeschakeld, wordt Kamer 9 {room_8_name} niet weergegeven op de kaart",
+          "disable_room_10": "Wanneer ingeschakeld, wordt Kamer 10 {room_9_name} niet weergegeven op de kaart",
+          "disable_room_11": "Wanneer ingeschakeld, wordt Kamer 11 {room_10_name} niet weergegeven op de kaart",
+          "disable_room_12": "Wanneer ingeschakeld, wordt Kamer 12 {room_11_name} niet weergegeven op de kaart",
+          "disable_room_13": "Wanneer ingeschakeld, wordt Kamer 13 {room_12_name} niet weergegeven op de kaart",
+          "disable_room_14": "Wanneer ingeschakeld, wordt Kamer 14 {room_13_name} niet weergegeven op de kaart",
+          "disable_room_15": "Wanneer ingeschakeld, wordt Kamer 15 {room_14_name} niet weergegeven op de kaart"
         }
       },
       "base_colours": {
@@ -263,14 +264,14 @@
           "add_room_1_alpha": "Transparantie configureren:"
         },
         "data_description": {
-          "color_room_0": "Kamer 1",
-          "color_room_1": "Kamer 2",
-          "color_room_2": "Kamer 3",
-          "color_room_3": "Kamer 4",
-          "color_room_4": "Kamer 5",
-          "color_room_5": "Kamer 6",
-          "color_room_6": "Kamer 7",
-          "color_room_7": "Kamer 8"
+          "color_room_0": "### **{room_0_name} Kleur**",
+          "color_room_1": "### **{room_1_name} Kleur**",
+          "color_room_2": "### **{room_2_name} Kleur**",
+          "color_room_3": "### **{room_3_name} Kleur**",
+          "color_room_4": "### **{room_4_name} Kleur**",
+          "color_room_5": "### **{room_5_name} Kleur**",
+          "color_room_6": "### **{room_6_name} Kleur**",
+          "color_room_7": "### **{room_7_name} Kleur**"
         },
         "description": "Camera kleuropties.",
         "title": "Kamers 1 tot 8 kleuren"
@@ -288,14 +289,14 @@
           "add_room_2_alpha": "Transparantie configureren:"
         },
         "data_description": {
-          "color_room_8": "Kamer 9",
-          "color_room_9": "Kamer 10",
-          "color_room_10": "Kamer 11",
-          "color_room_11": "Kamer 12",
-          "color_room_12": "Kamer 13",
-          "color_room_13": "Kamer 14",
-          "color_room_14": "Kamer 15",
-          "color_room_15": "Kamer 16"
+          "color_room_8": "### **{room_8_name} Kleur**",
+          "color_room_9": "### **{room_9_name} Kleur**",
+          "color_room_10": "### **{room_10_name} Kleur**",
+          "color_room_11": "### **{room_11_name} Kleur**",
+          "color_room_12": "### **{room_12_name} Kleur**",
+          "color_room_13": "### **{room_13_name} Kleur**",
+          "color_room_14": "### **{room_14_name} Kleur**",
+          "color_room_15": "### **{room_15_name} Kleur**"
         },
         "description": "Camera kleuropties.",
         "title": "Kamers 9 tot 15 kleuren"
@@ -307,28 +308,28 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "Kamer 1",
-          "alpha_room_1": "Kamer 2",
-          "alpha_room_2": "Kamer 3",
-          "alpha_room_3": "Kamer 4",
-          "alpha_room_4": "Kamer 5",
-          "alpha_room_5": "Kamer 6",
-          "alpha_room_6": "Kamer 7",
-          "alpha_room_7": "Kamer 8"
+          "alpha_room_0": "Segment {room_0_name} Alpha",
+          "alpha_room_1": "Segment {room_1_name} Alpha",
+          "alpha_room_2": "Segment {room_2_name} Alpha",
+          "alpha_room_3": "Segment {room_3_name} Alpha",
+          "alpha_room_4": "Segment {room_4_name} Alpha",
+          "alpha_room_5": "Segment {room_5_name} Alpha",
+          "alpha_room_6": "Segment {room_6_name} Alpha",
+          "alpha_room_7": "Segment {room_7_name} Alpha"
         },
         "description": "Camera opties. Alpha 2",
         "title": "Alpha kanaal kamerkleuren"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "Kamer 9",
-          "alpha_room_9": "Kamer 10",
-          "alpha_room_10": "Kamer 11",
-          "alpha_room_11": "Kamer 12",
-          "alpha_room_12": "Kamer 13",
-          "alpha_room_13": "Kamer 14",
-          "alpha_room_14": "Kamer 15",
-          "alpha_room_15": "Kamer 16"
+          "alpha_room_8": "Segment {room_8_name} Alpha",
+          "alpha_room_9": "Segment {room_9_name} Alpha",
+          "alpha_room_10": "Segment {room_10_name} Alpha",
+          "alpha_room_11": "Segment {room_11_name} Alpha",
+          "alpha_room_12": "Segment {room_12_name} Alpha",
+          "alpha_room_13": "Segment {room_13_name} Alpha",
+          "alpha_room_14": "Segment {room_14_name} Alpha",
+          "alpha_room_15": "Segment {room_15_name} Alpha"
         },
         "description": "Camera opties. Alpha 3",
         "title": "Alpha kanaal kamerkleuren"

@@ -91,12 +91,13 @@
           "auto_zoom": "Povolit Automatický Zoom",
           "zoom_lock_ratio": "Zamknout Poměr Stran.",
           "aspect_ratio": "Poměr Stran Obrazu.",
-          "enable_www_snapshots": "Exportovat PNG snímky."
+          "robot_size": "Velikost robota"
         },
         "data_description": {
           "rotate_image": "Stupeň 0, 90, 180, 270",
           "margins": "Automatické ořezání okrajů v pixelech.",
-          "aspect_ratio": "Poměr Stran Obrazu."
+          "aspect_ratio": "Poměr Stran Obrazu.",
+          "robot_size": "Velikost robota v pixelech 8-25"
         },
         "description": "Možnosti Obrazu Kamery",
         "title": "Možnosti Obrazu"
@@ -184,21 +185,21 @@
           "disable_room_15": "Skrýt Místnost 15"
         },
         "data_description": {
-          "disable_room_1": "Když je povoleno, Místnost 1 nebude zobrazena na mapě",
-          "disable_room_2": "Když je povoleno, Místnost 2 nebude zobrazena na mapě",
-          "disable_room_3": "Když je povoleno, Místnost 3 nebude zobrazena na mapě",
-          "disable_room_4": "Když je povoleno, Místnost 4 nebude zobrazena na mapě",
-          "disable_room_5": "Když je povoleno, Místnost 5 nebude zobrazena na mapě",
-          "disable_room_6": "Když je povoleno, Místnost 6 nebude zobrazena na mapě",
-          "disable_room_7": "Když je povoleno, Místnost 7 nebude zobrazena na mapě",
-          "disable_room_8": "Když je povoleno, Místnost 8 nebude zobrazena na mapě",
-          "disable_room_9": "Když je povoleno, Místnost 9 nebude zobrazena na mapě",
-          "disable_room_10": "Když je povoleno, Místnost 10 nebude zobrazena na mapě",
-          "disable_room_11": "Když je povoleno, Místnost 11 nebude zobrazena na mapě",
-          "disable_room_12": "Když je povoleno, Místnost 12 nebude zobrazena na mapě",
-          "disable_room_13": "Když je povoleno, Místnost 13 nebude zobrazena na mapě",
-          "disable_room_14": "Když je povoleno, Místnost 14 nebude zobrazena na mapě",
-          "disable_room_15": "Když je povoleno, Místnost 15 nebude zobrazena na mapě"
+          "disable_room_1": "Když je povoleno, Místnost 1 {room_0_name} nebude zobrazena na mapě",
+          "disable_room_2": "Když je povoleno, Místnost 2 {room_1_name} nebude zobrazena na mapě",
+          "disable_room_3": "Když je povoleno, Místnost 3 {room_2_name} nebude zobrazena na mapě",
+          "disable_room_4": "Když je povoleno, Místnost 4 {room_3_name} nebude zobrazena na mapě",
+          "disable_room_5": "Když je povoleno, Místnost 5 {room_4_name} nebude zobrazena na mapě",
+          "disable_room_6": "Když je povoleno, Místnost 6 {room_5_name} nebude zobrazena na mapě",
+          "disable_room_7": "Když je povoleno, Místnost 7 {room_6_name} nebude zobrazena na mapě",
+          "disable_room_8": "Když je povoleno, Místnost 8 {room_7_name} nebude zobrazena na mapě",
+          "disable_room_9": "Když je povoleno, Místnost 9 {room_8_name} nebude zobrazena na mapě",
+          "disable_room_10": "Když je povoleno, Místnost 10 {room_9_name} nebude zobrazena na mapě",
+          "disable_room_11": "Když je povoleno, Místnost 11 {room_10_name} nebude zobrazena na mapě",
+          "disable_room_12": "Když je povoleno, Místnost 12 {room_11_name} nebude zobrazena na mapě",
+          "disable_room_13": "Když je povoleno, Místnost 13 {room_12_name} nebude zobrazena na mapě",
+          "disable_room_14": "Když je povoleno, Místnost 14 {room_13_name} nebude zobrazena na mapě",
+          "disable_room_15": "Když je povoleno, Místnost 15 {room_14_name} nebude zobrazena na mapě"
         }
       },
       "base_colours": {
@@ -263,14 +264,14 @@
           "add_room_1_alpha": "Konfigurace Průhlednosti:"
         },
         "data_description": {
-          "color_room_0": "Místnost 1",
-          "color_room_1": "Místnost 2",
-          "color_room_2": "Místnost 3",
-          "color_room_3": "Místnost 4",
-          "color_room_4": "Místnost 5",
-          "color_room_5": "Místnost 6",
-          "color_room_6": "Místnost 7",
-          "color_room_7": "Místnost 8"
+          "color_room_0": "### **{room_0_name} Barva**",
+          "color_room_1": "### **{room_1_name} Barva**",
+          "color_room_2": "### **{room_2_name} Barva**",
+          "color_room_3": "### **{room_3_name} Barva**",
+          "color_room_4": "### **{room_4_name} Barva**",
+          "color_room_5": "### **{room_5_name} Barva**",
+          "color_room_6": "### **{room_6_name} Barva**",
+          "color_room_7": "### **{room_7_name} Barva**"
         },
         "description": "Možnosti Barev Kamery.",
         "title": "Barvy Místností 1 až 8"
@@ -288,14 +289,14 @@
           "add_room_2_alpha": "Konfigurace Průhlednosti:"
         },
         "data_description": {
-          "color_room_8": "Místnost 9",
-          "color_room_9": "Místnost 10",
-          "color_room_10": "Místnost 11",
-          "color_room_11": "Místnost 12",
-          "color_room_12": "Místnost 13",
-          "color_room_13": "Místnost 14",
-          "color_room_14": "Místnost 15",
-          "color_room_15": "Místnost 16"
+          "color_room_8": "### **{room_8_name} Barva**",
+          "color_room_9": "### **{room_9_name} Barva**",
+          "color_room_10": "### **{room_10_name} Barva**",
+          "color_room_11": "### **{room_11_name} Barva**",
+          "color_room_12": "### **{room_12_name} Barva**",
+          "color_room_13": "### **{room_13_name} Barva**",
+          "color_room_14": "### **{room_14_name} Barva**",
+          "color_room_15": "### **{room_15_name} Barva**"
         },
         "description": "Možnosti Barev Kamery.",
         "title": "Barvy Místností 9 až 15"
@@ -307,28 +308,28 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "Místnost 1",
-          "alpha_room_1": "Místnost 2",
-          "alpha_room_2": "Místnost 3",
-          "alpha_room_3": "Místnost 4",
-          "alpha_room_4": "Místnost 5",
-          "alpha_room_5": "Místnost 6",
-          "alpha_room_6": "Místnost 7",
-          "alpha_room_7": "Místnost 8"
+          "alpha_room_0": "Segment {room_0_name} Alfa",
+          "alpha_room_1": "Segment {room_1_name} Alfa",
+          "alpha_room_2": "Segment {room_2_name} Alfa",
+          "alpha_room_3": "Segment {room_3_name} Alfa",
+          "alpha_room_4": "Segment {room_4_name} Alfa",
+          "alpha_room_5": "Segment {room_5_name} Alfa",
+          "alpha_room_6": "Segment {room_6_name} Alfa",
+          "alpha_room_7": "Segment {room_7_name} Alfa"
         },
         "description": "Možnosti Kamery. Alpha 2",
         "title": "Alpha Kanál Barev Místností"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "Místnost 9",
-          "alpha_room_9": "Místnost 10",
-          "alpha_room_10": "Místnost 11",
-          "alpha_room_11": "Místnost 12",
-          "alpha_room_12": "Místnost 13",
-          "alpha_room_13": "Místnost 14",
-          "alpha_room_14": "Místnost 15",
-          "alpha_room_15": "Místnost 16"
+          "alpha_room_8": "Segment {room_8_name} Alfa",
+          "alpha_room_9": "Segment {room_9_name} Alfa",
+          "alpha_room_10": "Segment {room_10_name} Alfa",
+          "alpha_room_11": "Segment {room_11_name} Alfa",
+          "alpha_room_12": "Segment {room_12_name} Alfa",
+          "alpha_room_13": "Segment {room_13_name} Alfa",
+          "alpha_room_14": "Segment {room_14_name} Alfa",
+          "alpha_room_15": "Segment {room_15_name} Alfa"
         },
         "description": "Možnosti Kamery. Alpha 3",
         "title": "Alpha Kanál Barev Místností"

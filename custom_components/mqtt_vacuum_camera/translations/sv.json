@@ -91,12 +91,13 @@
           "auto_zoom": "Aktivera automatisk zoom",
           "zoom_lock_ratio": "Lås bildförhållande.",
           "aspect_ratio": "Bildförhållande.",
-          "enable_www_snapshots": "Exportera PNG-ögonblicksbilder."
+          "robot_size": "Robotstorlek"
         },
         "data_description": {
           "rotate_image": "Grader 0, 90, 180, 270",
           "margins": "Automatisk marginalbeskärning i pixlar.",
-          "aspect_ratio": "Bildförhållande."
+          "aspect_ratio": "Bildförhållande.",
+          "robot_size": "Robotstorlek i pixlar 8-25"
         },
         "description": "Kamera bildalternativ",
         "title": "Bildalternativ"
@@ -184,21 +185,21 @@
           "disable_room_15": "Dölj rum 15"
         },
         "data_description": {
-          "disable_room_1": "När aktiverad kommer rum 1 inte att visas på kartan",
-          "disable_room_2": "När aktiverad kommer rum 2 inte att visas på kartan",
-          "disable_room_3": "När aktiverad kommer rum 3 inte att visas på kartan",
-          "disable_room_4": "När aktiverad kommer rum 4 inte att visas på kartan",
-          "disable_room_5": "När aktiverad kommer rum 5 inte att visas på kartan",
-          "disable_room_6": "När aktiverad kommer rum 6 inte att visas på kartan",
-          "disable_room_7": "När aktiverad kommer rum 7 inte att visas på kartan",
-          "disable_room_8": "När aktiverad kommer rum 8 inte att visas på kartan",
-          "disable_room_9": "När aktiverad kommer rum 9 inte att visas på kartan",
-          "disable_room_10": "När aktiverad kommer rum 10 inte att visas på kartan",
-          "disable_room_11": "När aktiverad kommer rum 11 inte att visas på kartan",
-          "disable_room_12": "När aktiverad kommer rum 12 inte att visas på kartan",
-          "disable_room_13": "När aktiverad kommer rum 13 inte att visas på kartan",
-          "disable_room_14": "När aktiverad kommer rum 14 inte att visas på kartan",
-          "disable_room_15": "När aktiverad kommer rum 15 inte att visas på kartan"
+          "disable_room_1": "När aktiverad kommer rum 1 {room_0_name} inte att visas på kartan",
+          "disable_room_2": "När aktiverad kommer rum 2 {room_1_name} inte att visas på kartan",
+          "disable_room_3": "När aktiverad kommer rum 3 {room_2_name} inte att visas på kartan",
+          "disable_room_4": "När aktiverad kommer rum 4 {room_3_name} inte att visas på kartan",
+          "disable_room_5": "När aktiverad kommer rum 5 {room_4_name} inte att visas på kartan",
+          "disable_room_6": "När aktiverad kommer rum 6 {room_5_name} inte att visas på kartan",
+          "disable_room_7": "När aktiverad kommer rum 7 {room_6_name} inte att visas på kartan",
+          "disable_room_8": "När aktiverad kommer rum 8 {room_7_name} inte att visas på kartan",
+          "disable_room_9": "När aktiverad kommer rum 9 {room_8_name} inte att visas på kartan",
+          "disable_room_10": "När aktiverad kommer rum 10 {room_9_name} inte att visas på kartan",
+          "disable_room_11": "När aktiverad kommer rum 11 {room_10_name} inte att visas på kartan",
+          "disable_room_12": "När aktiverad kommer rum 12 {room_11_name} inte att visas på kartan",
+          "disable_room_13": "När aktiverad kommer rum 13 {room_12_name} inte att visas på kartan",
+          "disable_room_14": "När aktiverad kommer rum 14 {room_13_name} inte att visas på kartan",
+          "disable_room_15": "När aktiverad kommer rum 15 {room_14_name} inte att visas på kartan"
         }
       },
       "base_colours": {
@@ -263,14 +264,14 @@
           "add_room_1_alpha": "Konfigurera transparens:"
         },
         "data_description": {
-          "color_room_0": "Rum 1",
-          "color_room_1": "Rum 2",
-          "color_room_2": "Rum 3",
-          "color_room_3": "Rum 4",
-          "color_room_4": "Rum 5",
-          "color_room_5": "Rum 6",
-          "color_room_6": "Rum 7",
-          "color_room_7": "Rum 8"
+          "color_room_0": "### **{room_0_name} Färg**",
+          "color_room_1": "### **{room_1_name} Färg**",
+          "color_room_2": "### **{room_2_name} Färg**",
+          "color_room_3": "### **{room_3_name} Färg**",
+          "color_room_4": "### **{room_4_name} Färg**",
+          "color_room_5": "### **{room_5_name} Färg**",
+          "color_room_6": "### **{room_6_name} Färg**",
+          "color_room_7": "### **{room_7_name} Färg**"
         },
         "description": "Kamera färgalternativ.",
         "title": "Rum 1 till 8 färger"
@@ -288,14 +289,14 @@
           "add_room_2_alpha": "Konfigurera transparens:"
         },
         "data_description": {
-          "color_room_8": "Rum 9",
-          "color_room_9": "Rum 10",
-          "color_room_10": "Rum 11",
-          "color_room_11": "Rum 12",
-          "color_room_12": "Rum 13",
-          "color_room_13": "Rum 14",
-          "color_room_14": "Rum 15",
-          "color_room_15": "Rum 16"
+          "color_room_8": "### **{room_8_name} Färg**",
+          "color_room_9": "### **{room_9_name} Färg**",
+          "color_room_10": "### **{room_10_name} Färg**",
+          "color_room_11": "### **{room_11_name} Färg**",
+          "color_room_12": "### **{room_12_name} Färg**",
+          "color_room_13": "### **{room_13_name} Färg**",
+          "color_room_14": "### **{room_14_name} Färg**",
+          "color_room_15": "### **{room_15_name} Färg**"
         },
         "description": "Kamera färgalternativ.",
         "title": "Rum 9 till 15 färger"
@@ -307,28 +308,28 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "Rum 1",
-          "alpha_room_1": "Rum 2",
-          "alpha_room_2": "Rum 3",
-          "alpha_room_3": "Rum 4",
-          "alpha_room_4": "Rum 5",
-          "alpha_room_5": "Rum 6",
-          "alpha_room_6": "Rum 7",
-          "alpha_room_7": "Rum 8"
+          "alpha_room_0": "Segment {room_0_name} Alpha",
+          "alpha_room_1": "Segment {room_1_name} Alpha",
+          "alpha_room_2": "Segment {room_2_name} Alpha",
+          "alpha_room_3": "Segment {room_3_name} Alpha",
+          "alpha_room_4": "Segment {room_4_name} Alpha",
+          "alpha_room_5": "Segment {room_5_name} Alpha",
+          "alpha_room_6": "Segment {room_6_name} Alpha",
+          "alpha_room_7": "Segment {room_7_name} Alpha"
         },
         "description": "Kameraalternativ. Alpha 2",
         "title": "Alpha-kanal rumsfärger"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "Rum 9",
-          "alpha_room_9": "Rum 10",
-          "alpha_room_10": "Rum 11",
-          "alpha_room_11": "Rum 12",
-          "alpha_room_12": "Rum 13",
-          "alpha_room_13": "Rum 14",
-          "alpha_room_14": "Rum 15",
-          "alpha_room_15": "Rum 16"
+          "alpha_room_8": "Segment {room_8_name} Alpha",
+          "alpha_room_9": "Segment {room_9_name} Alpha",
+          "alpha_room_10": "Segment {room_10_name} Alpha",
+          "alpha_room_11": "Segment {room_11_name} Alpha",
+          "alpha_room_12": "Segment {room_12_name} Alpha",
+          "alpha_room_13": "Segment {room_13_name} Alpha",
+          "alpha_room_14": "Segment {room_14_name} Alpha",
+          "alpha_room_15": "Segment {room_15_name} Alpha"
         },
         "description": "Kameraalternativ. Alpha 3",
         "title": "Alpha-kanal rumsfärger"

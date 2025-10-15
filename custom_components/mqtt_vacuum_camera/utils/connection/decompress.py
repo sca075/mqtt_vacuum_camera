@@ -1,16 +1,15 @@
 """
 Decompression Manager for MQTT Vacuum Camera.
-Version: 2025.5.0
+Version: 2025.10.0
 """
 
 from __future__ import annotations
 
-import asyncio
 import json
 from typing import Any, Dict, Optional
 
 from isal import igzip, isal_zlib  # pylint: disable=I1101
-from valetudo_map_parser.config.rand25_parser import RRMapParser
+from valetudo_map_parser.config.rand256_parser import RRMapParser
 
 from custom_components.mqtt_vacuum_camera.const import LOGGER
 from custom_components.mqtt_vacuum_camera.utils.thread_pool import ThreadPoolManager
@@ -82,8 +81,3 @@ class DecompressionManager:
         except Exception as e:
             LOGGER.error(f"{self.vacuum_id}: Error processing payload: {e}")
             return None
-
-    async def shutdown(self) -> None:
-        await self._thread_pool.shutdown("decompression")
-        if self.vacuum_id in DecompressionManager._instances:
-            del DecompressionManager._instances[self.vacuum_id]

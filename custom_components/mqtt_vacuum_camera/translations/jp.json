@@ -91,12 +91,13 @@
           "auto_zoom": "自動ズームを有効にする",
           "zoom_lock_ratio": "アスペクト比をロック。",
           "aspect_ratio": "画像のアスペクト比。",
-          "enable_www_snapshots": "PNGスナップショットをエクスポート。"
+          "robot_size": "ロボットのサイズ"
         },
         "data_description": {
           "rotate_image": "度数 0, 90, 180, 270",
           "margins": "ピクセル単位の自動余白トリミング。",
-          "aspect_ratio": "画像のアスペクト比。"
+          "aspect_ratio": "画像のアスペクト比。",
+          "robot_size": "ロボットのサイズ（ピクセル）8-25"
         },
         "description": "カメラ画像オプション",
         "title": "画像オプション"
@@ -167,38 +168,38 @@
         "title": "セグメント表示",
         "description": "マップ上に表示する部屋セグメントの設定",
         "data": {
-          "disable_room_1": "部屋1を非表示",
-          "disable_room_2": "部屋2を非表示",
-          "disable_room_3": "部屋3を非表示",
-          "disable_room_4": "部屋4を非表示",
-          "disable_room_5": "部屋5を非表示",
-          "disable_room_6": "部屋6を非表示",
-          "disable_room_7": "部屋7を非表示",
-          "disable_room_8": "部屋8を非表示",
-          "disable_room_9": "部屋9を非表示",
-          "disable_room_10": "部屋10を非表示",
-          "disable_room_11": "部屋11を非表示",
-          "disable_room_12": "部屋12を非表示",
-          "disable_room_13": "部屋13を非表示",
-          "disable_room_14": "部屋14を非表示",
-          "disable_room_15": "部屋15を非表示"
+          "disable_room_1": "部屋1 を非表示",
+          "disable_room_2": "部屋2 を非表示",
+          "disable_room_3": "部屋3 を非表示",
+          "disable_room_4": "部屋4 を非表示",
+          "disable_room_5": "部屋5 を非表示",
+          "disable_room_6": "部屋6 を非表示",
+          "disable_room_7": "部屋7 を非表示",
+          "disable_room_8": "部屋8 を非表示",
+          "disable_room_9": "部屋9 を非表示",
+          "disable_room_10": "部屋10 を非表示",
+          "disable_room_11": "部屋11 を非表示",
+          "disable_room_12": "部屋12 を非表示",
+          "disable_room_13": "部屋13 を非表示",
+          "disable_room_14": "部屋14 を非表示",
+          "disable_room_15": "部屋15 を非表示"
         },
         "data_description": {
-          "disable_room_1": "有効にすると、部屋1はマップに表示されません",
-          "disable_room_2": "有効にすると、部屋2はマップに表示されません",
-          "disable_room_3": "有効にすると、部屋3はマップに表示されません",
-          "disable_room_4": "有効にすると、部屋4はマップに表示されません",
-          "disable_room_5": "有効にすると、部屋5はマップに表示されません",
-          "disable_room_6": "有効にすると、部屋6はマップに表示されません",
-          "disable_room_7": "有効にすると、部屋7はマップに表示されません",
-          "disable_room_8": "有効にすると、部屋8はマップに表示されません",
-          "disable_room_9": "有効にすると、部屋9はマップに表示されません",
-          "disable_room_10": "有効にすると、部屋10はマップに表示されません",
-          "disable_room_11": "有効にすると、部屋11はマップに表示されません",
-          "disable_room_12": "有効にすると、部屋12はマップに表示されません",
-          "disable_room_13": "有効にすると、部屋13はマップに表示されません",
-          "disable_room_14": "有効にすると、部屋14はマップに表示されません",
-          "disable_room_15": "有効にすると、部屋15はマップに表示されません"
+          "disable_room_1": "有効にすると、部屋1 {room_0_name} はマップに表示されません",
+          "disable_room_2": "有効にすると、部屋2 {room_1_name} はマップに表示されません",
+          "disable_room_3": "有効にすると、部屋3 {room_2_name} はマップに表示されません",
+          "disable_room_4": "有効にすると、部屋4 {room_3_name} はマップに表示されません",
+          "disable_room_5": "有効にすると、部屋5 {room_4_name} はマップに表示されません",
+          "disable_room_6": "有効にすると、部屋6 {room_5_name} はマップに表示されません",
+          "disable_room_7": "有効にすると、部屋7 {room_6_name} はマップに表示されません",
+          "disable_room_8": "有効にすると、部屋8 {room_7_name} はマップに表示されません",
+          "disable_room_9": "有効にすると、部屋9 {room_8_name} はマップに表示されません",
+          "disable_room_10": "有効にすると、部屋10 {room_9_name} はマップに表示されません",
+          "disable_room_11": "有効にすると、部屋11 {room_10_name} はマップに表示されません",
+          "disable_room_12": "有効にすると、部屋12 {room_11_name} はマップに表示されません",
+          "disable_room_13": "有効にすると、部屋13 {room_12_name} はマップに表示されません",
+          "disable_room_14": "有効にすると、部屋14 {room_13_name} はマップに表示されません",
+          "disable_room_15": "有効にすると、部屋15 {room_14_name} はマップに表示されません"
         }
       },
       "base_colours": {
@@ -263,14 +264,14 @@
           "add_room_1_alpha": "透明度の設定:"
         },
         "data_description": {
-          "color_room_0": "部屋1",
-          "color_room_1": "部屋2",
-          "color_room_2": "部屋3",
-          "color_room_3": "部屋4",
-          "color_room_4": "部屋5",
-          "color_room_5": "部屋6",
-          "color_room_6": "部屋7",
-          "color_room_7": "部屋8"
+          "color_room_0": "### **{room_0_name} 色**",
+          "color_room_1": "### **{room_1_name} 色**",
+          "color_room_2": "### **{room_2_name} 色**",
+          "color_room_3": "### **{room_3_name} 色**",
+          "color_room_4": "### **{room_4_name} 色**",
+          "color_room_5": "### **{room_5_name} 色**",
+          "color_room_6": "### **{room_6_name} 色**",
+          "color_room_7": "### **{room_7_name} 色**"
         },
         "description": "カメラの色オプション。",
         "title": "部屋1から8の色"
@@ -288,14 +289,14 @@
           "add_room_2_alpha": "透明度の設定:"
         },
         "data_description": {
-          "color_room_8": "部屋9",
-          "color_room_9": "部屋10",
-          "color_room_10": "部屋11",
-          "color_room_11": "部屋12",
-          "color_room_12": "部屋13",
-          "color_room_13": "部屋14",
-          "color_room_14": "部屋15",
-          "color_room_15": "部屋16"
+          "color_room_8": "### **{room_8_name} 色**",
+          "color_room_9": "### **{room_9_name} 色**",
+          "color_room_10": "### **{room_10_name} 色**",
+          "color_room_11": "### **{room_11_name} 色**",
+          "color_room_12": "### **{room_12_name} 色**",
+          "color_room_13": "### **{room_13_name} 色**",
+          "color_room_14": "### **{room_14_name} 色**",
+          "color_room_15": "### **{room_15_name} 色**"
         },
         "description": "カメラの色オプション。",
         "title": "部屋9から15の色"
@@ -307,28 +308,28 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "部屋1",
-          "alpha_room_1": "部屋2",
-          "alpha_room_2": "部屋3",
-          "alpha_room_3": "部屋4",
-          "alpha_room_4": "部屋5",
-          "alpha_room_5": "部屋6",
-          "alpha_room_6": "部屋7",
-          "alpha_room_7": "部屋8"
+          "alpha_room_0": "セグメント {room_0_name} アルファ",
+          "alpha_room_1": "セグメント {room_1_name} アルファ",
+          "alpha_room_2": "セグメント {room_2_name} アルファ",
+          "alpha_room_3": "セグメント {room_3_name} アルファ",
+          "alpha_room_4": "セグメント {room_4_name} アルファ",
+          "alpha_room_5": "セグメント {room_5_name} アルファ",
+          "alpha_room_6": "セグメント {room_6_name} アルファ",
+          "alpha_room_7": "セグメント {room_7_name} アルファ"
         },
         "description": "カメラオプション。アルファ2",
         "title": "部屋の色のアルファチャンネル"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "部屋9",
-          "alpha_room_9": "部屋10",
-          "alpha_room_10": "部屋11",
-          "alpha_room_11": "部屋12",
-          "alpha_room_12": "部屋13",
-          "alpha_room_13": "部屋14",
-          "alpha_room_14": "部屋15",
-          "alpha_room_15": "部屋16"
+          "alpha_room_8": "セグメント {room_8_name} アルファ",
+          "alpha_room_9": "セグメント {room_9_name} アルファ",
+          "alpha_room_10": "セグメント {room_10_name} アルファ",
+          "alpha_room_11": "セグメント {room_11_name} アルファ",
+          "alpha_room_12": "セグメント {room_12_name} アルファ",
+          "alpha_room_13": "セグメント {room_13_name} アルファ",
+          "alpha_room_14": "セグメント {room_14_name} アルファ",
+          "alpha_room_15": "セグメント {room_15_name} アルファ"
         },
         "description": "カメラオプション。アルファ3",
         "title": "部屋の色のアルファチャンネル"
