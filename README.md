@@ -10,6 +10,9 @@
 [paypal_me_shield]: https://img.shields.io/static/v1.svg?label=%20&message=PayPal.Me&logo=paypal
 [paypal_me]: https://paypal.me/gsca075
 
+[discord_shield]: https://img.shields.io/badge/Discord-Join%20Chat-5865F2?logo=discord&logoColor=white
+[discord_channel]: https://discord.gg/AubW7kQ6F6
+
 
 # MQTT Vacuum's Camera
 <p align="center">
@@ -17,14 +20,16 @@
 </p>
 
 
-## Current Release: [![GitHub Latest Release][releases_shield]][latest_release] [![GitHub All Releases][downloads_total_shield]][releases] [![Community Forum][community_forum_shield]][community_forum] [![PayPal.Me][paypal_me_shield]][paypal_me]
-
+## Current Release: [![GitHub Latest Release][releases_shield]][latest_release] [![GitHub All Releases][downloads_total_shield]][releases] [![Community Forum][community_forum_shield]][community_forum] [![PayPal.Me][paypal_me_shield]][paypal_me] [![Discord_Shield]][discord_channel]
 ![Screenshot 2023-12-27 at 13 37 57](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/4f1f76ee-b507-4fde-b1bd-32e6980873cb)
 
 # Valetudo Vacuums maps in Home Assistant was never so easy.
 
 **About:**
 Extract the maps of Vacuum Cleaners connected via MQTT to Home Assistant such as Valetudo [Hypfer](https://valetudo.cloud/) or [RE(rand256)](https://github.com/rand256/valetudo) firmwares, [easy setup](./docs/install.md) thanks to [HACS](https://hacs.xyz/)  and guided Home Assistant GUI configuration.
+
+### 💬 Join our Discord Community
+[![Discord](https://img.shields.io/badge/Discord-Join%20Chat-5865F2?logo=discord&logoColor=white)](https://discord.gg/AubW7kQ6F6)
 
 **What it is:**
 
@@ -44,27 +49,6 @@ This includes real-time map extraction, sensor data (when not provided), and con
 for a seamless user experience.
 
 Our current focus is evolving beyond map rendering to provide full vacuum control, ensuring a reliable, complete integration for all Valetudo-based vacuums, while continuously improving the user experience through regular updates.  
-<details>
-   <summary>Updated status of the project on Date: 2025.9.24.</summary>
-
-Since the 2025.7.1 release we’ve been focused on a complete refactoring of both the library and the custom component to ensure stability and prevent potential issues for Home Assistant users. We know this has delayed new releases, but our priority is making sure the integration is safe, reliable, and easy to use for everyone — which is exactly why so many of you chose it in the first place.
-Would be really appreciated your kind help and understanding.
-The next release isn't planned yet, there are serius refactoring to do.
-If you want to contribute, please consider joining our efforts.
-
-#### 2025.x.0 - **Refactoring and New Additions**
-
-- This release will be postponed till below is completed and tested.
-- **Changes**
-  - Refactored the code to improve readability and maintainability.
-  - Remove file operation routines not required for logging export.
-- **Features / Improvements :**
-  - Enable loading and saving of maps via services by fully integrating with  [MapLoader](https://github.com/pkoehlers/maploader).
-  - Add options for Area and Floor management rooms renaming and trims settings stored.
-  - Option to resize the Robot -> will be available..
-- **Braking Cahnges**
-  - No more auto snaphot, as it is possible to manage those aith actions/scrips from HA directly. 
-</details>
 
 
 ### Features:
@@ -74,7 +58,7 @@ If you want to contribute, please consider joining our efforts.
 2) Supported languages (English, Arabic, Chinese, Czech, Dutch, French, German, Italian, Japanese, Polish, Norwegian, Russian, Spanish, Swedish).
 3) **Automatically Generate the calibration points for the lovelace-xiaomi-vacuum-map-card** to ensure full compatibility to this user-friendly card.
 4) **Automatically Generate rooms based configuration when vacuum support this functionality**, this will allow you to configure the rooms quickly on the [lovelace-xiaomi-vacuum-map-card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
-5) **The camera take automatically [snapshots](./docs/snapshots.md) (when the vacuum idle/ error / docked)**. It is also possible to save a snapshot using the Action from Home Assistant with the file name and location you want to use. By the default the snapshot is saved in the www folder of Home Assistant. If the snapshot is disabled from Image Options the png will be deleted automatically.
+5) **The camera take [snapshots](./docs/snapshots.md) using the Action from Home Assistant with the file name and location you want to use.**
    ```
    service: camera.snapshot
    target:
@@ -91,13 +75,12 @@ If you want to contribute, please consider joining our efforts.
    - It is possible to **display on the image the vacuum status**, this option add a vacuum status text at the top left of the image. Status and room where the vacuum is will be display on the text filed.
 7) This integration make possible to **render multiple vacuums** as per each camera will be named with the vacuum name (example: vacuum.robot1 = camera.robot1_camera.. vacuum.robotx = camera.robotx_camera)
 8) The camera as all cameras in HA **supports the ON/OFF service**, it is possible to *suspend and resume the camera streem as desired*.
-9) In the attributes is possible to get on what room the vacuum is.
-10) No Go, Virtual Walls, Zone Clean, Active Segments and Obstacles are draw on the map when available.
+9) In the attributes is possible to get on what room the vacuum is. It is also shown on the status text.
+10) No Go, Virtual Walls, Zone Clean, Active Segments and Obstacles are draw on the map when available. You can disable them from the image options.
 11) [Auto Zooming the room (segment)](./docs/auto_zoom.md) when the vacuum is cleaning it.
-12) Support Actions "reload" and "reset_trims" implemented for changing the camera settings without restarting Home Assistant.
-13) Rand256 sensors are pre-configured from the integration, this will allow you to have all the sensors available in Home Assistant.
-14) Added the [**Actions**](./docs/actions.md) for Rand256 / Hypfer to control the vacuums without to format the MQTT messages.
-15) [Obstacles](./docs/obstacles_detection.md) are displayed on the map when available. When the vacuum support  ```ObstaclesImage``` is also possible to view the obstacles images.
+12) Rand256 sensors are pre-configured from the integration, this will allow you to have all the sensors available in Home Assistant.
+13) Added the [**Actions**](./docs/actions.md) for Rand256 / Hypfer to control the vacuums without to format the MQTT messages.
+14) [Obstacles](./docs/obstacles_detection.md) are displayed on the map when available. When the vacuum support  ```ObstaclesImage``` is also possible to view the obstacles images.
 </details>
 
 
@@ -124,6 +107,7 @@ Your support in making this component compatible with all environments is greatl
 For further details on how the camera operates and how you can contribute, refer to the Wiki section of this project. Your patience and assistance are crucial as we strive toward our goal of universal compatibility.
 
 #### Compatibility:
+- All 64bit systems are supported, but 32bit systems are not supported anymore sing 2025.10.0.
 - PI3 4GB: The camera is working on PI3 4GB, anyhow no chance there to run two vacuums cameras at the same time.
 - PI4 4GB: The camera is working on PI4 4GB, anyhow run two vacuums cameras at the same time isn't advised even if possible.
 - All Vacuums with Valetudo Hypfer or Rand256 firmware are supported.
@@ -134,11 +118,5 @@ For further details on how the camera operates and how you can contribute, refer
 ### Notes:
 - This integration is developed and tested using a PI4 with Home Assistant OS fully updated [to the last version](https://www.home-assistant.io/faq/release/), this allows us to confirm that the component is working properly with Home Assistant. Tested also on ProxMox and Docker Supervised "production" enviroment (fully setup home installation).
 ### Thanks to:
-- [@PiotrMachowski](https://github.com/PiotrMachowski) inspiring this integration and his amazing work.
-- [@billyourself](https://github.com/billyourself) for providing us the data and motivation to evolve this project.
-- [@Skeletorjus](https://github.com/Skeletorjus) that using this integration gave us several ideas to improve it.
-- [@rohankapoorcom](https://github.com/rohankapoorcom) autor of the v1.4.0 that make really easy to set up this integration.
-- [@gunjambi](https://github.com/gunjambi) that found a solution to re-draw the robot and also implemented the snapshots png to be enabled or disabled from the options.
-- [@T0ytoy](https://github.com/T0ytoy) for the superb cooperation in testing our Camera that improved [using the threading](https://github.com/sca075/valetudo_vacuum_camera/discussions/71).
-- [@borgqueenx](https://github.com/borgqueenx) for the great cooperation in testing our Camera and helping us to improve it, [see more here](https://github.com/sca075/mqtt_vacuum_camera/discussions/296#:~:text=Edit-,borgqueenx,-2%20weeks%20ago)
-- And to all of you using this integration and reporting any issues, improvements and vacuums used with it.
+All of you that are using this integration and reporting any issues, improvements and vacuums used with it.
+To each one of you, a big thank you for your support, understanding and feedbacks.
