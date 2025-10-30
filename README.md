@@ -28,9 +28,6 @@
 **About:**
 Extract the maps of Vacuum Cleaners connected via MQTT to Home Assistant such as Valetudo [Hypfer](https://valetudo.cloud/) or [RE(rand256)](https://github.com/rand256/valetudo) firmwares, [easy setup](./docs/install.md) thanks to [HACS](https://hacs.xyz/)  and guided Home Assistant GUI configuration.
 
-### 💬 Join our Discord Community
-[![Discord](https://img.shields.io/badge/Discord-Join%20Chat-5865F2?logo=discord&logoColor=white)](https://discord.gg/AubW7kQ6F6)
-
 **What it is:**
 
 ❗This is an _unofficial_ repo and is not created, maintained, or in any sense linked to [valetudo.cloud](https://valetudo.cloud)
@@ -107,7 +104,7 @@ Your support in making this component compatible with all environments is greatl
 For further details on how the camera operates and how you can contribute, refer to the Wiki section of this project. Your patience and assistance are crucial as we strive toward our goal of universal compatibility.
 
 #### Compatibility:
-- All 64bit systems are supported, but 32bit systems are not supported anymore sing 2025.10.0.
+- All 64bit systems are supported, **32bit systems are not supported anymore** since 2025.10.0.
 - PI3 4GB: The camera is working on PI3 4GB, anyhow no chance there to run two vacuums cameras at the same time.
 - PI4 4GB: The camera is working on PI4 4GB, anyhow run two vacuums cameras at the same time isn't advised even if possible.
 - All Vacuums with Valetudo Hypfer or Rand256 firmware are supported.
