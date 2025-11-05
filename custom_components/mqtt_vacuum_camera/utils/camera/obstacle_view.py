@@ -129,7 +129,7 @@ class ObstacleView:
         await self.handle_obstacle_view(event)
 
     @staticmethod
-    async def find_nearest_obstacle(
+    def find_nearest_obstacle(
         x: int,
         y: int,
         obstacles: list[dict[str, Any]],
@@ -149,6 +149,10 @@ class ObstacleView:
         Returns:
             The nearest obstacle dictionary or None if no obstacle found within range
         """
+        if height <= 0 or width <= 0:
+            LOGGER.warning("Invalid image dimensions: width=%d, height=%d", width, height)
+            return None
+
         nearest_obstacle = None
         min_distance = round(65 * (width / height))
 
@@ -164,8 +168,7 @@ class ObstacleView:
             obstacle_x = obstacle_point["x"]
             obstacle_y = obstacle_point["y"]
 
-            # Calculate Euclidean distance
-            distance = math.sqrt((x - obstacle_x) ** 2 + (y - obstacle_y) ** 2)
+            distance = math.hypot(x - obstacle_x, y - obstacle_y)
 
             if distance < min_distance:
                 min_distance = distance
@@ -224,8 +227,7 @@ class ObstacleView:
         if mode == CameraModes.OBSTACLE_VIEW:
             self._shared.image_grab = False
             self._processing = True
-
-        if mode == CameraModes.MAP_VIEW:
+        elif mode == CameraModes.MAP_VIEW:
             self._obstacle_image = None
             self._processing = False
             self._shared.image_grab = True
@@ -302,7 +304,7 @@ class ObstacleView:
         )
 
         # Find the nearest obstacle
-        nearest_obstacle = await self.find_nearest_obstacle(
+        nearest_obstacle = self.find_nearest_obstacle(
             coord_x,
             coord_y,
             self._shared.obstacles_data,
