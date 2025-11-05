@@ -20,6 +20,7 @@ from valetudo_map_parser.config.utils import ResizeParams, async_resize_image
 from custom_components.mqtt_vacuum_camera.const import (
     DOWNLOAD_TIMEOUT,
     LOGGER,
+    OBSTACLE_SEARCH_RADIUS_MULTIPLIER,
     CameraModes,
 )
 
@@ -154,7 +155,7 @@ class ObstacleView:
             return None
 
         nearest_obstacle = None
-        min_distance = round(65 * (width / height))
+        min_distance = round(OBSTACLE_SEARCH_RADIUS_MULTIPLIER * (width / height))
 
         LOGGER.debug(
             "Finding in the nearest %d pixels obstacle to coordinates: %d, %d",
