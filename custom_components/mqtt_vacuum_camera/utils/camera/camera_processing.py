@@ -65,6 +65,7 @@ class CameraProcessor:
                         != self._map_handler.get_frame_number()
                     ):
                         self._shared.image_grab = False
+                        self._map_handler.update_trims()
             return pil_img
         return None
 
@@ -88,6 +89,7 @@ class CameraProcessor:
                 ):
                     # suspend image processing if we are at the next frame.
                     self._shared.image_grab = False
+                    self._re_handler.update_trims()
             return pil_img
         return None
 

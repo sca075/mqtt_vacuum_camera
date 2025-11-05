@@ -230,7 +230,7 @@ class ObstacleView:
             self._processing = False
             self._shared.image_grab = True
 
-        log_msg = f"%s: Camera Mode Change to %s"
+        log_msg = "%s: Camera Mode Change to %s"
         if reason:
             log_msg += ", %s"
             LOGGER.debug(log_msg, self._file_name, self._shared.camera_mode, reason)
