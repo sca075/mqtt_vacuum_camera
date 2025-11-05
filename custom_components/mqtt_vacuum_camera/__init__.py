@@ -28,6 +28,7 @@ from .common import (
     get_vacuum_device_info,
     get_vacuum_mqtt_topic,
     update_options,
+    is_rand256_vacuum,
 )
 from .const import (
     CAMERA_STORAGE,
@@ -53,7 +54,6 @@ from .utils.thread_pool import ThreadPoolManager
 from .utils.vacuum.mqtt_vacuum_services import (
     async_register_vacuums_services,
     async_remove_vacuums_services,
-    is_rand256_vacuum,
 )
 
 PLATFORMS = [Platform.CAMERA, Platform.SENSOR]

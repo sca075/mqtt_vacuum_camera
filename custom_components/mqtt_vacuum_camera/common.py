@@ -141,7 +141,10 @@ def is_rand256_vacuum(vacuum_device: DeviceEntry) -> bool:
     """
     # Check if the software version contains "valetudo" (for Hypfer) or something else for Rand256
     sof_version = str(vacuum_device.sw_version)
-    if (sof_version.lower()).startswith("valetudo"):
+    manufacturer = str(vacuum_device.manufacturer)
+    if (sof_version.lower()).startswith("valetudo") or (
+        manufacturer.lower()
+    ).startswith("valetudo"):
         return False  # This is a Hypfer vacuum (Valetudo)
     return True
 
