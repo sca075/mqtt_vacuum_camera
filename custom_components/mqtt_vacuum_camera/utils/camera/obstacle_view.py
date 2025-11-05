@@ -1,6 +1,6 @@
 """
 Obstacle View Manager
-Version: 2025.10.0
+Version: 2025.11.0
 This module handles obstacle detection, image download, and rendering
 for vacuums with ObstacleImagesCapability (e.g., Dreame vacuums).
 """
@@ -8,6 +8,7 @@ for vacuums with ObstacleImagesCapability (e.g., Dreame vacuums).
 from __future__ import annotations
 
 import asyncio
+from dataclasses import dataclass
 import math
 from typing import Any, Callable, Optional
 
@@ -25,6 +26,18 @@ from custom_components.mqtt_vacuum_camera.const import (
 )
 
 
+@dataclass
+class ObstacleViewContext:
+    """Context object containing dependencies for ObstacleView."""
+
+    hass: HomeAssistant
+    shared: CameraShared
+    file_name: str
+    download_image_func: Callable
+    open_image_func: Callable
+    pil_to_bytes_func: Callable
+
+
 class ObstacleView:
     """
     Manages obstacle view functionality for vacuum cameras.
@@ -37,33 +50,20 @@ class ObstacleView:
     - Managing camera mode transitions between MAP_VIEW and OBSTACLE_VIEW
     """
 
-    def __init__(
-        self,
-        hass: HomeAssistant,
-        shared: CameraShared,
-        file_name: str,
-        download_image_func: Callable,
-        open_image_func: Callable,
-        pil_to_bytes_func: Callable,
-    ):
+    def __init__(self, context: ObstacleViewContext):
         """
         Initialize the ObstacleView manager.
 
         Args:
-            hass: Home Assistant instance
-            shared: Shared camera data
-            file_name: Camera file name for logging
-            download_image_func: Function to download images (from CameraProcessor)
-            open_image_func: Function to open PIL images (from CameraProcessor)
-            pil_to_bytes_func: Function to convert PIL images to bytes
+            context: ObstacleViewContext containing all dependencies
         """
-        self.hass = hass
-        self._shared = shared
-        self._file_name = file_name
+        self.hass = context.hass
+        self._shared = context.shared
+        self._file_name = context.file_name
         self._entity_id: Optional[str] = None
-        self._download_image = download_image_func
-        self._open_image = open_image_func
-        self._pil_to_bytes = pil_to_bytes_func
+        self._download_image = context.download_image_func
+        self._open_image = context.open_image_func
+        self._pil_to_bytes = context.pil_to_bytes_func
 
         # State management
         self._obstacle_image: Optional[bytes] = None
@@ -151,11 +151,15 @@ class ObstacleView:
             The nearest obstacle dictionary or None if no obstacle found within range
         """
         if height <= 0 or width <= 0:
-            LOGGER.warning("Invalid image dimensions: width=%d, height=%d", width, height)
+            LOGGER.warning(
+                "Invalid image dimensions: width=%d, height=%d", width, height
+            )
             return None
 
         nearest_obstacle = None
-        min_distance = round(OBSTACLE_SEARCH_RADIUS_MULTIPLIER * (width / height))
+        min_distance = max(
+            1, round(OBSTACLE_SEARCH_RADIUS_MULTIPLIER * (width / height))
+        )
 
         LOGGER.debug(
             "Finding in the nearest %d pixels obstacle to coordinates: %d, %d",

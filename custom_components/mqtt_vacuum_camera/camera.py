@@ -35,7 +35,7 @@ from .const import (
     CameraModes,
 )
 from .utils.camera.camera_processing import CameraProcessor
-from .utils.camera.obstacle_view import ObstacleView
+from .utils.camera.obstacle_view import ObstacleView, ObstacleViewContext
 from .utils.connection.decompress import DecompressionManager
 from .utils.files_operations import async_load_file
 from .utils.thread_pool import ThreadPoolManager
@@ -114,7 +114,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
             "event_vacuum_start", self.handle_vacuum_start
         )
         # Initialize ObstacleView manager
-        self.obstacle_view = ObstacleView(
+        obstacle_context = ObstacleViewContext(
             hass=self.hass,
             shared=self._shared,
             file_name=self._file_name,
@@ -122,6 +122,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
             open_image_func=self.processor.async_open_image,
             pil_to_bytes_func=self.run_async_pil_to_bytes,
         )
+        self.obstacle_view = ObstacleView(obstacle_context)
 
     def _init_clear_www_folder(self):
         """Remove PNG and ZIP's stored in HA config WWW"""
