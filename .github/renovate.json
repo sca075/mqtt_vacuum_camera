@@ -11,6 +11,16 @@
     "renovate-tests/cocoapods1",
     "renovate-tests/gomod1"
   ],
+  "regexManagers": [
+    {
+      "fileMatch": ["(^|/)manifest\\.json$"],
+      "matchStrings": [
+        "\"requirements\":\\s*\\[\\s*\"(?<depName>valetudo_map_parser)==(?<currentValue>[^\"]+)\""
+      ],
+      "datasourceTemplate": "pypi",
+      "versioningTemplate": "pep440"
+    }
+  ],
   "packageRules": [
     {
       "description": "lockFileMaintenance",
@@ -24,6 +34,14 @@
       ],
       "dependencyDashboardApproval": false,
       "stabilityDays": 0
+    },
+    {
+      "description": "Auto-update valetudo_map_parser in manifest.json",
+      "matchDatasources": ["pypi"],
+      "matchPackageNames": ["valetudo_map_parser"],
+      "automerge": false,
+      "dependencyDashboardApproval": false,
+      "ignoreUnstable": true
     }
   ]
 }
