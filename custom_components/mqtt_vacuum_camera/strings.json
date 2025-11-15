@@ -400,6 +400,15 @@
     },
     "zone_list_length": {
       "message": "The 'Zone' must have at least 1 item that contain a list of 4 integers."
+    },
+    "mqtt_service_not_found": {
+      "message": "MQTT integration is not available. Please ensure MQTT is configured."
+    },
+    "mqtt_publish_failed": {
+      "message": "Failed to publish command to vacuum via MQTT."
+    },
+    "invalid_mqtt_data": {
+      "message": "Invalid data format for MQTT command."
     }
   }
 }

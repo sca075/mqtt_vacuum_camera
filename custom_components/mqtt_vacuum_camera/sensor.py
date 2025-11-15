@@ -34,6 +34,7 @@ class VacuumSensorDescription(SensorEntityDescription):
     parent_key: str = None
     keys: list[str] = None
     value: Callable = None
+    native_unit_of_measurement: str = None
 
 
 SENSOR_TYPES = {
