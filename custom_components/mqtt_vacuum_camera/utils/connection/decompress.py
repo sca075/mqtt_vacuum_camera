@@ -8,7 +8,7 @@ from __future__ import annotations
 import json
 from typing import Any, Dict, Optional
 
-from isal import igzip, isal_zlib  # pylint: disable=I1101
+from isal import igzip, isal_zlib  # pylint: disable=c-extension-no-member
 from valetudo_map_parser.config.rand256_parser import RRMapParser
 
 from custom_components.mqtt_vacuum_camera.const import LOGGER
@@ -16,44 +16,68 @@ from custom_components.mqtt_vacuum_camera.utils.thread_pool import ThreadPoolMan
 
 
 def _safe_zlib_decompress(data: bytes) -> str:
+    """Decompress Hypfer payload using zlib."""
     try:
         return isal_zlib.decompress(data).decode()
     except Exception as e:
-        raise ValueError(f"Invalid Hypfer payload: {e}")
+        raise ValueError(f"Invalid Hypfer payload: {e}") from e
 
 
 def _safe_gzip_decompress(data: bytes) -> bytes:
+    """Decompress Rand256 payload using gzip."""
     try:
         return igzip.decompress(data)
     except Exception as e:
-        raise ValueError(f"Invalid Rand256 payload: {e}")
+        raise ValueError(f"Invalid Rand256 payload: {e}") from e
 
 
 class DecompressionManager:
+    """
+    Manages decompression of MQTT payloads for vacuum map data.
+
+    Singleton per vacuum_id to ensure thread pool reuse.
+    """
+
     __slots__ = ("vacuum_id", "_thread_pool", "_parser", "_last_payload")
 
     _instances: Dict[str, DecompressionManager] = {}
 
-    @classmethod
-    def get_instance(cls, vacuum_id: str) -> DecompressionManager:
+    def __new__(cls, vacuum_id: str) -> DecompressionManager:
+        """Create or return existing instance for the given vacuum_id."""
         if vacuum_id not in cls._instances:
             instance = super().__new__(cls)
-            instance._init(vacuum_id)
             cls._instances[vacuum_id] = instance
         return cls._instances[vacuum_id]
 
-    def _init(self, vacuum_id: str) -> None:
+    def __init__(self, vacuum_id: str) -> None:
+        """Initialize the decompression manager (only runs once per vacuum_id)."""
+        # Skip initialization if already initialized
+        if hasattr(self, "vacuum_id"):
+            return
+
         self.vacuum_id = vacuum_id
         self._thread_pool = ThreadPoolManager(vacuum_id)
         self._parser = RRMapParser()
-        LOGGER.debug(f"Initialized DecompressionManager for vacuum: {vacuum_id}")
+        LOGGER.debug("Initialized DecompressionManager for vacuum: %s", vacuum_id)
+
+    @classmethod
+    def get_instance(cls, vacuum_id: str) -> DecompressionManager:
+        """Get or create a DecompressionManager instance for the given vacuum_id."""
+        return cls(vacuum_id)
 
     async def decompress(
-        self, topic: str = None, payload: bytes = None, data_type: str = None
+        self, payload: bytes = None, data_type: str = None
     ) -> Optional[Any]:
-        """Process a payload and return the result."""
-        # If no parameters provided, use the last stored payload
-        # If no payload, return None
+        """
+        Decompress and parse MQTT payload.
+
+        Args:
+            payload: Raw MQTT payload bytes
+            data_type: Type of data ("Hypfer" or "Rand256")
+
+        Returns:
+            Parsed JSON data or None if processing fails
+        """
         if not payload:
             return None
 
@@ -68,16 +92,17 @@ class DecompressionManager:
                     "decompression", _safe_zlib_decompress, payload
                 )
                 return json.loads(raw)
-            elif data_type == "Rand256":
+
+            if data_type == "Rand256":
                 decompressed = await self._thread_pool.run_in_executor(
                     "decompression", _safe_gzip_decompress, payload
                 )
                 return await self._thread_pool.run_in_executor(
                     "decompression", self._parser.parse_data, decompressed, True
                 )
-            else:
-                LOGGER.warning(f"{self.vacuum_id}: Unknown data type: {data_type}")
-                return None
-        except Exception as e:
-            LOGGER.error(f"{self.vacuum_id}: Error processing payload: {e}")
+
+            LOGGER.warning("%s: Unknown data type: %s", self.vacuum_id, data_type)
+            return None
+        except ValueError as e:
+            LOGGER.warning("%s: Invalid payload: %s", self.vacuum_id, e)
             return None

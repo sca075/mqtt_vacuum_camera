@@ -534,7 +534,9 @@ RENDER_TIMEOUT_S = 2.9
 FRAME_INTERVAL_S = 0.2
 
 # Obstacle detection
-OBSTACLE_SEARCH_RADIUS_MULTIPLIER = 65  # Multiplier for obstacle search radius calculation
+OBSTACLE_SEARCH_RADIUS_MULTIPLIER = (
+    65  # Multiplier for obstacle search radius calculation
+)
 
 
 class CameraModes(str, Enum):

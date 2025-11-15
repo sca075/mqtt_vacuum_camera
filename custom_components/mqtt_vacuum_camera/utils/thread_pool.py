@@ -1,3 +1,8 @@
+"""
+Thread Pool Manager for MQTT Vacuum Camera.
+Provides bounded executors with queue management and concurrency control.
+"""
+
 from __future__ import annotations
 
 import asyncio
@@ -15,6 +20,13 @@ R = TypeVar("R")
 
 
 class BoundedExecutor:
+    """
+    A bounded thread pool executor that keeps only the most recent jobs.
+
+    When the queue is full, drops the oldest job to make room for new ones.
+    Tracks submission, execution, and drop statistics.
+    """
+
     def __init__(self, max_workers: int, max_queue: int = 3, name: str = "default"):
         self._exec = ThreadPoolExecutor(
             max_workers=max_workers, thread_name_prefix=name
@@ -51,7 +63,12 @@ class BoundedExecutor:
             self._q.task_done()
 
     def submit_latest(self, fn, *args, **kwargs) -> Future:
-        # Always prefer latest: if queue full, drop the oldest and enqueue the new one
+        """
+        Submit a job, dropping the oldest if queue is full.
+
+        Returns:
+            Future that will contain the result or exception
+        """
         fut: Future = Future()
         with self._stats_lock:
             self._submitted += 1
@@ -59,9 +76,7 @@ class BoundedExecutor:
             self._q.put_nowait((fn, args, kwargs, fut))
         except Full:
             try:
-                old_fn, old_args, old_kwargs, old_promise = (
-                    self._q.get_nowait()
-                )  # drop oldest
+                _, _, _, old_promise = self._q.get_nowait()  # drop oldest
                 self._q.task_done()
                 # Signal the dropped future so awaiters don't hang
                 try:
@@ -78,6 +93,7 @@ class BoundedExecutor:
         return fut
 
     def stats(self) -> dict:
+        """Get executor statistics (submitted, dropped, executed, queue size)."""
         with self._stats_lock:
             return {
                 "name": self._name,
@@ -89,6 +105,7 @@ class BoundedExecutor:
             }
 
     def shutdown(self, wait: bool = False):
+        """Shutdown the executor and stop all workers."""
         self._stop.set()
         self._exec.shutdown(wait=wait)
 
@@ -254,6 +271,7 @@ class ThreadPoolManager:
     @staticmethod
     @lru_cache(maxsize=32)
     def get_instance(vacuum_id: str) -> ThreadPoolManager:
+        """Get or create a ThreadPoolManager instance for the given vacuum_id."""
         return ThreadPoolManager(vacuum_id)
 
     async def shutdown_instance(self):

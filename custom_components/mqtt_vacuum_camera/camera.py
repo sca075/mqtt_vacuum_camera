@@ -356,7 +356,7 @@ class MQTTCamera(CoordinatorEntity, Camera):
         if payload and data_type:
             data = payload.payload if hasattr(payload, "payload") else payload
             parsed_json = await self.hass.async_create_task(
-                self._dm.decompress(self._file_name, data, data_type)
+                self._dm.decompress(payload=data, data_type=data_type)
             )
         return parsed_json, test_mode, data_type
 
