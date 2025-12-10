@@ -591,8 +591,7 @@ def generate_service_data_clean_segments(request: CleanSegmentsRequest) -> dict 
     Returns:
         Dictionary with topic, payload, and firmware information
     """
-    if not request.repeat:
-        request.repeat = 1
+    repeat = request.repeat if request.repeat else 1
     # Resolve entity ID if only device ID is given
     vacuum_entity_id, base_topic, is_rand256 = resolve_datas(
         request.entity_id, request.device_id, request.hass
@@ -613,7 +612,7 @@ def generate_service_data_clean_segments(request: CleanSegmentsRequest) -> dict 
         topic = f"{base_topic}/MapSegmentationCapability/clean/set"
         payload = {
             "segment_ids": segments,
-            "iterations": int(request.repeat),
+            "iterations": int(repeat),
             "customOrder": True,
         }
     else:
@@ -625,7 +624,7 @@ def generate_service_data_clean_segments(request: CleanSegmentsRequest) -> dict 
                 if isinstance(request.segments, list)
                 else [request.segments]
             ),
-            "repeats": int(request.repeat),
+            "repeats": int(repeat),
             "afterCleaning": request.after_cleaning,
         }
 
