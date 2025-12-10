@@ -17,6 +17,8 @@ from ..const import LOGGER
 
 T = TypeVar("T")
 R = TypeVar("R")
+DECOMPRESSION_THREAD_POOL = "decompression"
+CAMERA_PROCESSING_THREAD_POOL = "camera_processing"
 
 
 class BoundedExecutor:
@@ -140,8 +142,8 @@ class ThreadPoolManager:
     def _create_used_pools(self):
         """Pre-create thread pools + semaphores for this vacuum."""
         pool_configs = {
-            "decompression": self._get_optimal_worker_count("decompression"),  # up to 2
-            "camera_processing": 1,  # allow some overlap
+            DECOMPRESSION_THREAD_POOL: self._get_optimal_worker_count("decompression"),
+            CAMERA_PROCESSING_THREAD_POOL: 1,
         }
 
         for name, workers in pool_configs.items():

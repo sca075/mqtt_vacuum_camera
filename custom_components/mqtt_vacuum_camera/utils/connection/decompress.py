@@ -12,7 +12,10 @@ from isal import igzip, isal_zlib  # pylint: disable=c-extension-no-member
 from valetudo_map_parser.config.rand256_parser import RRMapParser
 
 from custom_components.mqtt_vacuum_camera.const import LOGGER
-from custom_components.mqtt_vacuum_camera.utils.thread_pool import ThreadPoolManager
+from custom_components.mqtt_vacuum_camera.utils.thread_pool import (
+    ThreadPoolManager,
+    DECOMPRESSION_THREAD_POOL,
+)
 
 
 def _safe_zlib_decompress(data: bytes) -> str:
@@ -66,7 +69,7 @@ class DecompressionManager:
         return cls(vacuum_id)
 
     async def decompress(
-        self, payload: bytes = None, data_type: str = None
+        self, payload: Optional[bytes] = None, data_type: Optional[str] = None
     ) -> Optional[Any]:
         """
         Decompress and parse MQTT payload.
@@ -89,16 +92,19 @@ class DecompressionManager:
         try:
             if data_type == "Hypfer":
                 raw = await self._thread_pool.run_in_executor(
-                    "decompression", _safe_zlib_decompress, payload
+                    DECOMPRESSION_THREAD_POOL, _safe_zlib_decompress, payload
                 )
                 return json.loads(raw)
 
             if data_type == "Rand256":
                 decompressed = await self._thread_pool.run_in_executor(
-                    "decompression", _safe_gzip_decompress, payload
+                    DECOMPRESSION_THREAD_POOL, _safe_gzip_decompress, payload
                 )
                 return await self._thread_pool.run_in_executor(
-                    "decompression", self._parser.parse_data, decompressed, True
+                    DECOMPRESSION_THREAD_POOL,
+                    self._parser.parse_data,
+                    decompressed,
+                    True,
                 )
 
             LOGGER.warning("%s: Unknown data type: %s", self.vacuum_id, data_type)

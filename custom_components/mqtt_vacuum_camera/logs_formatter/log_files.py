@@ -128,7 +128,7 @@ def process_logs(hass: HomeAssistant, file_name: str):
 
 
 async def run_async_save_logs(hass: HomeAssistant, file_name: str) -> None:
-    """Thread function to process the image snapshots."""
+    """Thread function to process the image logs_formatter."""
     loop = get_event_loop()
 
     with concurrent.futures.ThreadPoolExecutor(
