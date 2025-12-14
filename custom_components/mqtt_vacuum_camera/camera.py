@@ -409,7 +409,7 @@ class MQTTCamera(CoordinatorEntity, Camera):  # pylint: disable=too-many-instanc
                         timeout=RENDER_TIMEOUT_S,
                     )
                 except asyncio.TimeoutError:
-                    LOGGER.warning("%s: Time out in redering!", self.context.file_name)
+                    LOGGER.warning("%s: Time out in rendering!", self.context.file_name)
                     return self.camera_image(
                         self.image_state.width, self.image_state.height
                     )
