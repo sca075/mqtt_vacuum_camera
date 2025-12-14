@@ -109,6 +109,6 @@ class DecompressionManager:
 
             LOGGER.warning("%s: Unknown data type: %s", self.vacuum_id, data_type)
             return None
-        except ValueError as e:
+        except (ValueError, json.JSONDecodeError) as e:
             LOGGER.warning("%s: Invalid payload: %s", self.vacuum_id, e)
             return None

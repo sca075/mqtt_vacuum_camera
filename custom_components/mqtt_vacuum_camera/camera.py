@@ -454,8 +454,8 @@ class MQTTCamera(CoordinatorEntity, Camera):  # pylint: disable=too-many-instanc
                 image_id if image_id else self.context.shared.vac_json_id,
             )
         else:
-            if self.image_state.last_image is not None:
-                LOGGER.debug("%s: Output Last Image.", self.context.file_name)
+            if self.context.shared.last_image is not None:
+                LOGGER.debug("%s: Using shared last_image.", self.context.file_name)
                 pil_img = self.context.shared.last_image
         self.image_state.width = pil_img.width
         self.image_state.height = pil_img.height
