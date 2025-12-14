@@ -1,6 +1,6 @@
 """
 Type definitions and dataclasses for MQTT Vacuum Camera integration.
-Version: 2025.11.0
+Version: 2025.12.0
 """
 
 from __future__ import annotations
@@ -111,7 +111,6 @@ class CameraImageState:
     """Current image state and dimensions."""
 
     main_image: Optional[bytes] = None
-    last_image: Optional[bytes] = None
     width: Optional[int] = None
     height: Optional[int] = None
     json_data: Optional[dict] = None

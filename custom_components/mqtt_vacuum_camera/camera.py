@@ -72,7 +72,7 @@ async def async_setup_entry(
 
 class MQTTCamera(CoordinatorEntity, Camera):  # pylint: disable=too-many-instance-attributes
     """
-    Rend the vacuum map and the vacuum state for:
+    Render the vacuum map and the vacuum state for:
     Valetudo Hypfer and rand256 Firmwares Vacuums maps.
     From PI4 up to all other Home Assistant supported platforms.
 
@@ -150,9 +150,11 @@ class MQTTCamera(CoordinatorEntity, Camera):  # pylint: disable=too-many-instanc
     def _init_paths_config(self) -> CameraPathsConfig:
         """Initialize camera paths configuration."""
         homeassistant_path = self.context.hass.config.path()
-        storage_path = f"{self.context.hass.config.path(STORAGE_DIR)}/{CAMERA_STORAGE}"
+        storage_root = self.context.hass.config.path(STORAGE_DIR)
+        storage_path = os.path.join(storage_root, CAMERA_STORAGE)
         if not os.path.exists(storage_path):
-            storage_path = f"{homeassistant_path}/{STORAGE_DIR}"
+            # Use the default storage path
+            storage_path = os.path.join(homeassistant_path, STORAGE_DIR)
         log_file = f"{storage_path}/{self.context.file_name}.zip"
         return CameraPathsConfig(
             homeassistant_path=homeassistant_path,
@@ -445,7 +447,7 @@ class MQTTCamera(CoordinatorEntity, Camera):  # pylint: disable=too-many-instanc
             )
         return parsed_json, test_mode, data_type
 
-    def _pil_to_bytes(self, pil_img, image_id: str = None) -> Optional[bytes]:
+    def _pil_to_bytes(self, pil_img, image_id: str | None = None) -> Optional[bytes]:
         """Convert PIL image to bytes"""
         if pil_img:
             LOGGER.debug(
@@ -466,7 +468,7 @@ class MQTTCamera(CoordinatorEntity, Camera):  # pylint: disable=too-many-instanc
         finally:
             buffered.close()
 
-    async def _run_async_pil_to_bytes(self, pil_img, image_id: str = None):
+    async def _run_async_pil_to_bytes(self, pil_img, image_id: str | None = None):
         """Thread function to process the image data using persistent thread pool."""
         try:
             result = await self.processors.thread_pool.run_in_executor(
