@@ -108,7 +108,9 @@ def confirm_storage_path(hass) -> str:
         try:
             os.makedirs(storage_path)
         except Exception as e:
-            _LOGGER.warning("logs_formatter Error while creating storage folder: %s", str(e))
+            _LOGGER.warning(
+                "logs_formatter Error while creating storage folder: %s", str(e)
+            )
             return hass.config.path(STORAGE_DIR)
     return storage_path
 

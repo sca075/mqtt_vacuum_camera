@@ -299,8 +299,11 @@ class MQTTCamera(CoordinatorEntity, Camera):  # pylint: disable=too-many-instanc
             self.context.shared.camera_mode == CameraModes.OBSTACLE_VIEW
             or self.context.shared.binary_image is None
         ):
+            width, height = self.image_state.width, self.image_state.height
             return self.image_state.main_image
+        # Return the binary image data from the processor
         width, height = self.processors.processor.data["image"]["size"]
+        self.image_state.width, self.image_state.height = width, height
         return self.processors.processor.data["image"]["binary"]
 
     @property

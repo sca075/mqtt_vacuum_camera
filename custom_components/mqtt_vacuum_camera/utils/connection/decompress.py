@@ -37,11 +37,10 @@ def _safe_gzip_decompress(data: bytes) -> bytes:
 class DecompressionManager:
     """
     Manages decompression of MQTT payloads for vacuum map data.
-
     Singleton per vacuum_id to ensure thread pool reuse.
     """
 
-    __slots__ = ("vacuum_id", "_thread_pool", "_parser", "_last_payload")
+    __slots__ = ("vacuum_id", "_thread_pool", "_parser")
 
     _instances: Dict[str, DecompressionManager] = {}
 
@@ -72,14 +71,7 @@ class DecompressionManager:
         self, payload: Optional[bytes] = None, data_type: Optional[str] = None
     ) -> Optional[Any]:
         """
-        Decompress and parse MQTT payload.
-
-        Args:
-            payload: Raw MQTT payload bytes
-            data_type: Type of data ("Hypfer" or "Rand256")
-
-        Returns:
-            Parsed JSON data or None if processing fails
+        Decompress and parse vacuum map binary payload data into JSON.
         """
         if not payload:
             return None
