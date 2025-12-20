@@ -76,14 +76,6 @@
           "save_map_trims": "حفظ تقليم الخريطة"
         }
       },
-      "download_logs": {
-        "title": "تحميل السجلات",
-        "description": "إدارة ملفات السجل",
-        "menu_options": {
-          "logs_move": "نسخ السجلات إلى WWW",
-          "logs_remove": "إزالة السجلات من WWW"
-        }
-      },
       "image_basic_opt": {
         "data": {
           "rotate_image": "تدوير",

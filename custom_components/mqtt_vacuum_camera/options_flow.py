@@ -73,8 +73,6 @@ from .const import (
     ROTATION_VALUES,
     TEXT_SIZE_VALUES,
 )
-from .logs_formatter.log_files import run_async_save_logs
-from .utils.files_operations import async_del_file
 
 
 # noinspection PyTypeChecker
@@ -330,19 +328,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         return self.async_show_menu(
             step_id="advanced",
             menu_options=[
-                "download_logs",
                 "map_trims",
-            ],
-        )
-
-    # pylint: disable=unused-argument
-    async def async_step_download_logs(self, user_input=None) -> ConfigFlowResult:
-        """Handle logs menu."""
-        return self.async_show_menu(
-            step_id="download_logs",
-            menu_options=[
-                "logs_move",
-                "logs_remove",
             ],
         )
 
@@ -782,25 +768,6 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
             data_schema=vol.Schema(fields),
             description_placeholders=self.rooms_placeholders,
         )
-
-    # pylint: disable=unused-argument
-    async def async_step_logs_move(self, user_input=None):
-        """Move logs to storage."""
-        LOGGER.debug("Generating and Moving the logs.")
-        await self.hass.async_create_task(
-            run_async_save_logs(self.hass, self.file_name)
-        )
-        self.camera_options = self.backup_options
-        return await self.async_step_opt_save()
-
-    # pylint: disable=unused-argument
-    async def async_step_logs_remove(self, user_input=None):
-        """Remove logs from www folder."""
-        ha_dir = self.hass.config.path()
-        destination_path = f"{ha_dir}/www/{self.file_name}.zip"
-        await async_del_file(destination_path)
-        self.camera_options = self.backup_options
-        return await self.async_step_opt_save()
 
     # Other Advanced Steps
 

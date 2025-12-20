@@ -76,14 +76,6 @@
           "save_map_trims": "Kartenzuschnitte speichern"
         }
       },
-      "download_logs": {
-        "title": "Protokolle herunterladen",
-        "description": "Protokolldateien verwalten",
-        "menu_options": {
-          "logs_move": "Protokolle in WWW kopieren",
-          "logs_remove": "Protokolle aus WWW entfernen"
-        }
-      },
       "image_basic_opt": {
         "data": {
           "rotate_image": "Drehen",

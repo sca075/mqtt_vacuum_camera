@@ -76,14 +76,6 @@
           "save_map_trims": "Gem Kortbeskæringer"
         }
       },
-      "download_logs": {
-        "title": "Download af Logfiler",
-        "description": "Håndter logfiler",
-        "menu_options": {
-          "logs_move": "Kopiér logfiler til WWW",
-          "logs_remove": "Fjern logfiler fra WWW"
-        }
-      },
       "image_basic_opt": {
         "data": {
           "rotate_image": "Roter",

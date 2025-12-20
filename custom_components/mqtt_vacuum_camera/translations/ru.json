@@ -76,14 +76,6 @@
           "save_map_trims": "Сохранить обрезку карты"
         }
       },
-      "download_logs": {
-        "title": "Скачивание журналов",
-        "description": "Управление файлами журналов",
-        "menu_options": {
-          "logs_move": "Копировать журналы в WWW",
-          "logs_remove": "Удалить журналы из WWW"
-        }
-      },
       "image_basic_opt": {
         "data": {
           "rotate_image": "Поворот",

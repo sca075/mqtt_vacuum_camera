@@ -76,14 +76,6 @@
           "save_map_trims": "Spara kartbeskärningar"
         }
       },
-      "download_logs": {
-        "title": "Nedladdning av loggar",
-        "description": "Hantera loggfiler",
-        "menu_options": {
-          "logs_move": "Kopiera loggar till WWW",
-          "logs_remove": "Ta bort loggar från WWW"
-        }
-      },
       "image_basic_opt": {
         "data": {
           "rotate_image": "Rotera",

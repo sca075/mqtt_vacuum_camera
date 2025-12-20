@@ -76,14 +76,6 @@
           "save_map_trims": "保存地圖裁剪"
         }
       },
-      "download_logs": {
-        "title": "下載日誌",
-        "description": "管理日誌文件",
-        "menu_options": {
-          "logs_move": "複製日誌到 WWW",
-          "logs_remove": "從 WWW 移除日誌"
-        }
-      },
       "image_basic_opt": {
         "data": {
           "rotate_image": "旋轉",

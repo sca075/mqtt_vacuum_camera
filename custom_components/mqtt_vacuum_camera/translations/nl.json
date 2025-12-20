@@ -76,14 +76,6 @@
           "save_map_trims": "Kaartbijsnijdingen Opslaan"
         }
       },
-      "download_logs": {
-        "title": "Logbestanden Downloaden",
-        "description": "Logbestanden beheren",
-        "menu_options": {
-          "logs_move": "Logbestanden naar WWW kopiëren",
-          "logs_remove": "Logbestanden uit WWW verwijderen"
-        }
-      },
       "image_basic_opt": {
         "data": {
           "rotate_image": "Draaien",

@@ -76,14 +76,6 @@
           "save_map_trims": "Zapisz Przycięcia Mapy"
         }
       },
-      "download_logs": {
-        "title": "Pobieranie Logów",
-        "description": "Zarządzaj plikami logów",
-        "menu_options": {
-          "logs_move": "Kopiuj logi do WWW",
-          "logs_remove": "Usuń logi z WWW"
-        }
-      },
       "image_basic_opt": {
         "data": {
           "rotate_image": "Obróć",
