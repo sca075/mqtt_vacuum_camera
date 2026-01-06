@@ -9,6 +9,7 @@ import asyncio
 from datetime import timedelta
 from io import BytesIO
 import os
+from pathlib import Path
 from typing import Optional
 
 from homeassistant import config_entries, core
@@ -150,14 +151,14 @@ class MQTTCamera(CoordinatorEntity, Camera):  # pylint: disable=too-many-instanc
     def _init_paths_config(self) -> CameraPathsConfig:
         """Initialize camera paths configuration."""
         homeassistant_path = self.context.hass.config.path()
-        storage_root = self.context.hass.config.path(STORAGE_DIR)
-        storage_path = os.path.join(storage_root, CAMERA_STORAGE)
-        if not os.path.exists(storage_path):
+        storage_root = Path(self.context.hass.config.path(STORAGE_DIR))
+        storage_path = storage_root / CAMERA_STORAGE
+        if not storage_path.exists():
             # Use the default storage path
-            storage_path = os.path.join(homeassistant_path, STORAGE_DIR)
+            storage_path = Path(homeassistant_path) / STORAGE_DIR
         return CameraPathsConfig(
             homeassistant_path=homeassistant_path,
-            storage_path=storage_path,
+            storage_path=str(storage_path),
         )
 
     def _init_processors(self, device_info) -> CameraProcessors:
@@ -195,12 +196,9 @@ class MQTTCamera(CoordinatorEntity, Camera):  # pylint: disable=too-many-instanc
     def _init_clear_www_folder(self):
         """Remove PNG snapshots stored in HA config WWW if snapshots are disabled."""
         # If enable_snapshots is disabled, remove any existing snapshot file
-        if not self.context.shared.enable_snapshots and os.path.isfile(
-            f"{self.paths.homeassistant_path}/www/snapshot_{self.context.file_name}.png"
-        ):
-            os.remove(
-                f"{self.paths.homeassistant_path}/www/snapshot_{self.context.file_name}.png"
-            )
+        snapshot_path = Path(self.paths.homeassistant_path) / "www" / f"snapshot_{self.context.file_name}.png"
+        if not self.context.shared.enable_snapshots and snapshot_path.is_file():
+            snapshot_path.unlink()
 
     async def async_cleanup_all(self):
         """Clean up all dispatcher connections."""

@@ -13,6 +13,7 @@ import asyncio
 import glob
 import json
 import os
+from pathlib import Path
 import re
 from typing import Any, List, Optional
 
@@ -26,9 +27,9 @@ from .language_cache import LanguageCache
 
 def is_auth_updated(self) -> bool:
     """Check if the auth file has been updated."""
-    file_path = self.hass.config.path(STORAGE_DIR, "auth")
+    file_path = Path(self.hass.config.path(STORAGE_DIR, "auth"))
     # Get the last modified time of the file
-    last_modified_time = os.path.getmtime(file_path)
+    last_modified_time = file_path.stat().st_mtime
     if self.auth_update_time is None:
         self.auth_update_time = last_modified_time
         return True
@@ -133,9 +134,10 @@ async def async_populate_user_languages(hass: HomeAssistant):
 
 async def async_del_file(file):
     """Delete a file if it exists."""
-    if os.path.exists(file):
+    file_path = Path(file)
+    if file_path.exists():
         LOGGER.info("Removing the file %s", file)
-        os.remove(file)
+        file_path.unlink()
     else:
         LOGGER.debug("File not found: %s", file)
 
@@ -236,15 +238,15 @@ async def async_clean_up_all_auto_crop_files(hass: HomeAssistant) -> None:
     Deletes all auto_crop_*.json files in the specified directory.
     """
 
-    directory = hass.config.path(STORAGE_DIR, CAMERA_STORAGE)
+    directory = Path(hass.config.path(STORAGE_DIR, CAMERA_STORAGE))
     # Create the pattern to match all auto_crop_*.json files
-    pattern = os.path.join(directory, "auto_crop_*.json")
+    pattern = str(directory / "auto_crop_*.json")
     # List all matching files
     files_to_delete = await async_list_files(pattern)
     # Iterate over the files and delete each one
     for file_path in files_to_delete:
         try:
-            os.remove(file_path)
+            Path(file_path).unlink()
             LOGGER.debug("Deleted: %s", file_path)
         except Exception as e:
             LOGGER.error("Error deleting %s: %s", file_path, e)

@@ -5,6 +5,7 @@ Version: 2025.10.0
 
 from functools import partial
 import os
+from pathlib import Path
 from typing import Optional
 import zipfile
 
@@ -301,11 +302,10 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
         # Restore translation files from backup ZIP (run in executor to avoid blocking)
         def restore_translations():
             """Restore translation files from backup ZIP with path traversal protection."""
-            backup_zip = os.path.join(
-                os.path.dirname(__file__), "translations_backup.zip"
-            )
+            base_dir = Path(__file__).parent.resolve()
+            backup_zip = base_dir / "translations_backup.zip"
 
-            if not os.path.exists(backup_zip):
+            if not backup_zip.exists():
                 LOGGER.warning(
                     "Translation backup file not found, skipping restoration"
                 )
@@ -313,24 +313,23 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
 
             try:
                 LOGGER.info("Restoring translation files from backup")
-                base_dir = os.path.realpath(os.path.dirname(__file__))
 
                 with zipfile.ZipFile(backup_zip, "r") as zip_ref:
                     for member in zip_ref.infolist():
                         name = member.filename
 
                         # Block absolute paths
-                        if os.path.isabs(name):
+                        if Path(name).is_absolute():
                             LOGGER.error(
                                 "Security: Blocked absolute path in zip: %s", name
                             )
                             return False
 
                         # Resolve the destination path
-                        dest = os.path.realpath(os.path.join(base_dir, name))
+                        dest = (base_dir / name).resolve()
 
                         # Ensure extraction stays within target directory
-                        if not dest.startswith(base_dir + os.sep):
+                        if not dest.is_relative_to(base_dir):
                             LOGGER.error(
                                 "Security: Blocked path traversal attempt in zip: %s",
                                 name,
@@ -343,8 +342,8 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
                 LOGGER.info("Translation files restored successfully")
 
                 # Only delete backup on successful restoration
-                if os.path.exists(backup_zip):
-                    os.remove(backup_zip)
+                if backup_zip.exists():
+                    backup_zip.unlink()
 
                 return True
 
