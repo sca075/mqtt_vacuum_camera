@@ -93,8 +93,8 @@ class MQTTCamera(CoordinatorEntity, Camera):  # pylint: disable=too-many-instanc
         # 1. Core context (grouped)
         self.context = CameraContext(
             hass=coordinator.hass,
-            shared=coordinator.shared,
-            file_name=coordinator.file_name,
+            shared=coordinator.context.shared,
+            file_name=coordinator.context.file_name,
             coordinator=coordinator,
         )
 
@@ -110,7 +110,7 @@ class MQTTCamera(CoordinatorEntity, Camera):  # pylint: disable=too-many-instanc
         # 3. MQTT config (grouped)
         self.mqtt = CameraMQTTConfig(
             topic=coordinator.vacuum_topic,
-            connector=coordinator.connector,
+            connector=coordinator.context.connector,
         )
 
         # 4. Paths (grouped)
@@ -155,7 +155,7 @@ class MQTTCamera(CoordinatorEntity, Camera):  # pylint: disable=too-many-instanc
         storage_path = storage_root / CAMERA_STORAGE
         if not storage_path.exists():
             # Use the default storage path
-            storage_path = Path(homeassistant_path) / STORAGE_DIR
+            storage_path = Path(self.context.hass.config.path(STORAGE_DIR, CAMERA_STORAGE))
         return CameraPathsConfig(
             homeassistant_path=homeassistant_path,
             storage_path=str(storage_path),

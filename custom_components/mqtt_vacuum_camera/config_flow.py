@@ -7,7 +7,6 @@ sting.json and en.json please.
 Version: 2025.10.0
 """
 
-import os
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -89,7 +88,7 @@ class MQTTCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             # set default options
             self.camera_options.update(DEFAULT_VALUES)
             # create the storage path for camera data.
-            storage_path = Path(self.hass.config.path(STORAGE_DIR)) / CAMERA_STORAGE
+            storage_path = Path(self.hass.config.path(STORAGE_DIR, CAMERA_STORAGE))
             if not storage_path.exists():
                 try:
                     storage_path.mkdir(parents=True, exist_ok=True)

@@ -63,6 +63,16 @@ class CoordinatorConfig:
     polling_interval: timedelta = field(default_factory=lambda: timedelta(seconds=10))
 
 
+@dataclass
+class CoordinatorContext:
+    """Grouped context for coordinator to reduce attribute count."""
+
+    shared: Optional[Any]  # CameraShared
+    file_name: Optional[str]
+    connector: Any  # ValetudoConnector
+    device_info: Any  # DeviceInfo
+
+
 # ============================================================================
 # Camera Entity Dataclasses
 # ============================================================================
