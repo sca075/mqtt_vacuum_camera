@@ -62,18 +62,18 @@ def init_shared_data(
     _hass: core.HomeAssistant,
     mqtt_listen_topic: str,
     device_info: DeviceInfo,
-) -> tuple[Optional[CameraShared], Optional[str]]:
+) -> tuple[CameraShared, str]:
     """
     Initialize the shared data.
+    Raises ValueError if mqtt_listen_topic is empty.
     """
-    shared = None
-    file_name = None
+    if not mqtt_listen_topic:
+        raise ValueError("mqtt_listen_topic is required to initialize shared data")
 
-    if mqtt_listen_topic:
-        file_name = mqtt_listen_topic.split("/")[1].lower()
-        shared_manager = CameraSharedManager(file_name, dict(device_info))
-        shared = shared_manager.get_instance()
-        shared.vacuum_status_font = f"{get_default_font_path()}/FiraSans.ttf"
+    file_name = mqtt_listen_topic.split("/")[1].lower()
+    shared_manager = CameraSharedManager(file_name, dict(device_info))
+    shared = shared_manager.get_instance()
+    shared.vacuum_status_font = f"{get_default_font_path()}/FiraSans.ttf"
 
     return shared, file_name
 
