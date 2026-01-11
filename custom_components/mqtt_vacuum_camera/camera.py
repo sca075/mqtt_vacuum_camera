@@ -348,10 +348,14 @@ class MQTTCamera(CoordinatorEntity, Camera):  # pylint: disable=too-many-instanc
     def turn_on(self) -> None:
         """Camera Turn On"""
         self.context.shared.camera_mode = CameraModes.CAMERA_ON
+        self._attr_is_on = True
+        self.async_write_ha_state()
 
     def turn_off(self) -> None:
         """Camera Turn Off"""
         self.context.shared.camera_mode = CameraModes.CAMERA_OFF
+        self._attr_is_on = False
+        self.async_write_ha_state()
 
     async def _update_vacuum_state(self) -> str:
         """Update a few shared fields; light-weight."""

@@ -35,18 +35,19 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         self.is_rand256 = config.is_rand256
         self.device_entity = config.device_entity
 
+        # Validate required fields
+        if not config.shared:
+            raise ValueError("CoordinatorConfig.shared is required")
+        if not config.connector:
+            raise ValueError("CoordinatorConfig.connector is required")
+
         # Initialize context with grouped attributes
         device_info = get_camera_device_info(config.hass, config.device_entity)
-        shared = None
-        file_name = None
-        if config.shared:
-            shared = config.shared
-            shared.is_rand = self.is_rand256
-            file_name = config.shared.file_name
+        config.shared.is_rand = self.is_rand256
 
         self.context = CoordinatorContext(
-            shared=shared,
-            file_name=file_name,
+            shared=config.shared,
+            file_name=config.shared.file_name,
             connector=config.connector,
             device_info=device_info,
         )
@@ -59,25 +60,22 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         """
         Fetch data from the MQTT topics for sensors.
         """
-        if self.context.shared is not None and self.context.connector:
-            try:
-                async with async_timeout.timeout(10):
-                    # Fetch and process sensor data from the MQTT connector
-                    sensor_data = await self.context.connector.get_rand256_attributes()
-                    if sensor_data:
-                        # Format the data before returning it
-                        self.sensor_data = await self.async_update_sensor_data(
-                            sensor_data
-                        )
-                        return self.sensor_data
+        try:
+            async with async_timeout.timeout(10):
+                # Fetch and process sensor data from the MQTT connector
+                sensor_data = await self.context.connector.get_rand256_attributes()
+                if sensor_data:
+                    # Format the data before returning it
+                    self.sensor_data = await self.async_update_sensor_data(
+                        sensor_data
+                    )
                     return self.sensor_data
-            except Exception as err:
-                LOGGER.error(
-                    "Exception raised fetching sensor data: %s", err, exc_info=True
-                )
-                raise UpdateFailed(f"Error fetching sensor data: {err}") from err
-        else:
-            return self.sensor_data
+                return self.sensor_data
+        except Exception as err:
+            LOGGER.error(
+                "Exception raised fetching sensor data: %s", err, exc_info=True
+            )
+            raise UpdateFailed(f"Error fetching sensor data: {err}") from err
 
     async def async_update_sensor_data(self, sensor_data):
         """Update the sensor data format before sending to the sensors."""
