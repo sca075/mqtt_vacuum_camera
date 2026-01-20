@@ -8,7 +8,11 @@ from typing import Any, Dict, Optional
 
 from homeassistant.config_entries import ConfigEntry, ConfigFlowResult, OptionsFlow
 from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
-from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import (
+    area_registry as ar,
+    config_validation as cv,
+    floor_registry as fr,
+)
 from homeassistant.helpers.selector import (
     BooleanSelector,
     ColorRGBSelector,
@@ -17,15 +21,22 @@ from homeassistant.helpers.selector import (
     SelectSelector,
     SelectSelectorConfig,
     SelectSelectorMode,
+    TextSelector,
+    TextSelectorConfig,
+    TextSelectorType,
 )
+from valetudo_map_parser import FloorData, TrimsData
 from valetudo_map_parser.config.types import RoomStore
 import voluptuous as vol
 
 from .common import extract_file_name, update_options
 from .const import (
     ALPHA_BACKGROUND,
+    ALPHA_CARPET,
     ALPHA_CHARGER,
     ALPHA_GO_TO,
+    ALPHA_MATERIAL_TILE,
+    ALPHA_MATERIAL_WOOD,
     ALPHA_MOVE,
     ALPHA_NO_GO,
     ALPHA_ROBOT,
@@ -37,8 +48,11 @@ from .const import (
     ATTR_MARGINS,
     ATTR_ROTATE,
     COLOR_BACKGROUND,
+    COLOR_CARPET,
     COLOR_CHARGER,
     COLOR_GO_TO,
+    COLOR_MATERIAL_TILE,
+    COLOR_MATERIAL_WOOD,
     COLOR_MOVE,
     COLOR_NO_GO,
     COLOR_ROBOT,
@@ -48,11 +62,20 @@ from .const import (
     COLOR_ZONE_CLEAN,
     CONF_ASPECT_RATIO,
     CONF_AUTO_ZOOM,
+    CONF_CURRENT_FLOOR,
+    CONF_DISABLE_MATERIAL_OVERLAY,
+    CONF_FLOOR_NAME,
+    CONF_FLOORS_DATA,
+    CONF_MAP_NAME,
     CONF_OFFSET_BOTTOM,
     CONF_OFFSET_LEFT,
     CONF_OFFSET_RIGHT,
     CONF_OFFSET_TOP,
     CONF_ROBOT_SIZE,
+    CONF_TRIM_DOWN,
+    CONF_TRIM_LEFT,
+    CONF_TRIM_RIGHT,
+    CONF_TRIM_UP,
     CONF_VAC_STAT,
     CONF_VAC_STAT_FONT,
     CONF_VAC_STAT_POS,
@@ -91,6 +114,9 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         self.is_alpha_enabled = False
         self.number_of_rooms = DEFAULT_ROOMS
         self.rooms_placeholders = DEFAULT_ROOMS_NAMES
+        self.floors_data = dict(self.camera_config.options.get("floors_data", {}))
+        self.current_floor = self.camera_config.options.get("current_floor", "floor_0")
+        self.selected_floor = None
         LOGGER.debug(
             "Options edit in progress.. options before edit: %s",
             dict(self.backup_options),
@@ -200,6 +226,9 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                         COLOR_CHARGER, default=config_entry.options.get("color_charger")
                     ): ColorRGBSelector(),
                     vol.Optional(
+                        COLOR_CARPET, default=config_entry.options.get("color_carpet")
+                    ): ColorRGBSelector(),
+                    vol.Optional(
                         COLOR_MOVE, default=config_entry.options.get("color_move")
                     ): ColorRGBSelector(),
                     vol.Optional(
@@ -233,6 +262,9 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                         ALPHA_CHARGER, default=config_entry.options.get("alpha_charger")
                     ): NumberSelector(self.config_dict),
                     vol.Optional(
+                        ALPHA_CARPET, default=config_entry.options.get("alpha_carpet")
+                    ): NumberSelector(self.config_dict),
+                    vol.Optional(
                         ALPHA_MOVE, default=config_entry.options.get("alpha_move")
                     ): NumberSelector(self.config_dict),
                     vol.Optional(
@@ -247,10 +279,100 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                 }
             )
 
+    def _get_ha_floor_names(self) -> list[str]:
+        """Get list of floor names configured in Home Assistant."""
+        try:
+            floor_reg = fr.async_get(self.hass)
+            floors = list(floor_reg.async_list_floors())
+            return [floor.name for floor in floors] if floors else []
+        except Exception as e:
+            LOGGER.warning("Failed to get HA floor names: %s", e)
+            return []
+
+    def _get_ha_floor_id_by_name(self, floor_name: str) -> str:
+        """Get floor ID from floor name."""
+        try:
+            floor_reg = fr.async_get(self.hass)
+            floors = list(floor_reg.async_list_floors())
+            for floor in floors:
+                if floor.name == floor_name:
+                    return floor.floor_id
+            # If not found, return the name as-is (might be floor_0 or custom)
+            return floor_name
+        except Exception as e:
+            LOGGER.warning("Failed to get floor ID for name %s: %s", floor_name, e)
+            return floor_name
+
+    def _log_floor_area_data(self) -> None:
+        """Log all floors and their associated areas for debugging."""
+        try:
+            floor_reg = fr.async_get(self.hass)
+            area_reg = ar.async_get(self.hass)
+
+            floors = list(floor_reg.async_list_floors())
+
+            if not floors:
+                LOGGER.info("No floors configured in Home Assistant")
+                return
+
+            LOGGER.info("=" * 60)
+            LOGGER.info("HOME ASSISTANT FLOOR & AREA CONFIGURATION")
+            LOGGER.info("=" * 60)
+
+            for floor in floors:
+                LOGGER.info(
+                    "Floor: %s (ID: %s, Level: %s, Icon: %s)",
+                    floor.name,
+                    floor.floor_id,
+                    floor.level if floor.level is not None else "N/A",
+                    floor.icon if floor.icon else "N/A",
+                )
+
+                # Get areas for this floor
+                areas = ar.async_entries_for_floor(area_reg, floor.floor_id)
+
+                if areas:
+                    LOGGER.info("  Areas on this floor:")
+                    for area in areas:
+                        LOGGER.info(
+                            "    - %s (ID: %s, Icon: %s)",
+                            area.name,
+                            area.id,
+                            area.icon if area.icon else "N/A",
+                        )
+                else:
+                    LOGGER.info("  No areas assigned to this floor")
+
+                LOGGER.info("-" * 60)
+
+            # Also log areas without floor assignment
+            all_areas = list(area_reg.async_list_areas())
+            unassigned_areas = [area for area in all_areas if area.floor_id is None]
+
+            if unassigned_areas:
+                LOGGER.info("Areas NOT assigned to any floor:")
+                for area in unassigned_areas:
+                    LOGGER.info(
+                        "  - %s (ID: %s, Icon: %s)",
+                        area.name,
+                        area.id,
+                        area.icon if area.icon else "N/A",
+                    )
+                LOGGER.info("-" * 60)
+
+            LOGGER.info("=" * 60)
+
+        except Exception as e:
+            LOGGER.warning("Failed to retrieve floor/area data: %s", e, exc_info=True)
+
     # pylint: disable=unused-argument
     async def async_step_init(self, user_input=None) -> ConfigFlowResult:
         """Start the options menu configuration."""
         LOGGER.info("%s: Options Configuration Started.", self.camera_config.unique_id)
+
+        # Log floor and area configuration
+        self._log_floor_area_data()
+
         errors = {}
 
         rooms_data = RoomStore(self.file_name)
@@ -269,7 +391,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
 
         return self.async_show_menu(
             step_id="init",
-            menu_options=["image_opt", "colours", "advanced"],
+            menu_options=["image_opt", "colours", "materials", "advanced"],
         )
 
     # pylint: disable=unused-argument
@@ -328,8 +450,59 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         return self.async_show_menu(
             step_id="advanced",
             menu_options=[
+                "floor_management",
                 "map_trims",
             ],
+        )
+
+    async def async_step_materials(
+        self, user_input: Optional[Dict[str, Any]] = None
+    ) -> ConfigFlowResult:
+        """Handle materials configuration."""
+        if user_input is not None:
+            self.camera_options.update(
+                {
+                    "disable_material_overlay": user_input.get(
+                        CONF_DISABLE_MATERIAL_OVERLAY
+                    ),
+                    "color_material_wood": user_input.get(COLOR_MATERIAL_WOOD),
+                    "color_material_tile": user_input.get(COLOR_MATERIAL_TILE),
+                    "alpha_material_wood": user_input.get(ALPHA_MATERIAL_WOOD),
+                    "alpha_material_tile": user_input.get(ALPHA_MATERIAL_TILE),
+                }
+            )
+            return await self.async_step_opt_save()
+
+        schema = vol.Schema(
+            {
+                vol.Optional(
+                    CONF_DISABLE_MATERIAL_OVERLAY,
+                    default=self.camera_config.options.get(
+                        "disable_material_overlay", False
+                    ),
+                ): BooleanSelector(),
+                vol.Optional(
+                    COLOR_MATERIAL_WOOD,
+                    default=self.camera_config.options.get("color_material_wood"),
+                ): ColorRGBSelector(),
+                vol.Optional(
+                    COLOR_MATERIAL_TILE,
+                    default=self.camera_config.options.get("color_material_tile"),
+                ): ColorRGBSelector(),
+                vol.Optional(
+                    ALPHA_MATERIAL_WOOD,
+                    default=self.camera_config.options.get("alpha_material_wood"),
+                ): NumberSelector(self.config_dict),
+                vol.Optional(
+                    ALPHA_MATERIAL_TILE,
+                    default=self.camera_config.options.get("alpha_material_tile"),
+                ): NumberSelector(self.config_dict),
+            }
+        )
+
+        return self.async_show_form(
+            step_id="materials",
+            data_schema=schema,
         )
 
     # Image Settings Steps
@@ -354,6 +527,18 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
             step_id="image_basic_opt",
             data_schema=self.image_schema,
             description_placeholders=self.camera_options,
+        )
+
+    async def async_step_floor_management(self, user_input=None) -> ConfigFlowResult:
+        """Handle floor management menu."""
+        return self.async_show_menu(
+            step_id="floor_management",
+            menu_options=[
+                "select_floor",
+                "add_floor",
+                "edit_floor",
+                "delete_floor",
+            ],
         )
 
     async def async_step_map_trims(self, user_input=None) -> ConfigFlowResult:
@@ -535,6 +720,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
             self.camera_options.update(
                 {
                     "color_charger": user_input.get(COLOR_CHARGER),
+                    "color_carpet": user_input.get(COLOR_CARPET),
                     "color_move": user_input.get(COLOR_MOVE),
                     "color_wall": user_input.get(COLOR_WALL),
                     "color_robot": user_input.get(COLOR_ROBOT),
@@ -565,6 +751,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
             self.camera_options.update(
                 {
                     "alpha_charger": user_input.get(ALPHA_CHARGER),
+                    "alpha_carpet": user_input.get(ALPHA_CARPET),
                     "alpha_move": user_input.get(ALPHA_MOVE),
                     "alpha_wall": user_input.get(ALPHA_WALL),
                     "alpha_robot": user_input.get(ALPHA_ROBOT),
@@ -779,7 +966,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         coordinator = self.hass.data[DOMAIN][entry]["coordinator"]
 
         # Always reset trims when this option is selected
-        reset_trims = coordinator.shared.trims.clear()
+        reset_trims = coordinator.context.shared.trims.clear()
         self.camera_options = {
             "offset_bottom": 0,
             "offset_left": 0,
@@ -797,9 +984,281 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         coordinator = self.hass.data[DOMAIN][entry]["coordinator"]
 
         # Save current trims from coordinator
-        new_trims = coordinator.shared.trims.to_dict()
+        new_trims = coordinator.context.shared.trims.to_dict()
         self.camera_options = {"trims_data": new_trims}
         return await self.async_step_opt_save()
+
+    # Floor Management Steps
+
+    async def async_step_select_floor(
+        self, user_input: Optional[Dict[str, Any]] = None
+    ) -> ConfigFlowResult:
+        """Select the current active floor."""
+        if user_input is not None:
+            selected_floor_name = user_input.get(CONF_CURRENT_FLOOR)
+            # Convert floor name to floor ID
+            selected_floor_id = self._get_ha_floor_id_by_name(selected_floor_name)
+            self.camera_options = {
+                CONF_CURRENT_FLOOR: selected_floor_id,
+            }
+            LOGGER.info(
+                "Selected floor: %s (ID: %s)", selected_floor_name, selected_floor_id
+            )
+            return await self.async_step_opt_save()
+
+        # Get floor names from Home Assistant floor registry
+        ha_floor_names = self._get_ha_floor_names()
+
+        # Use HA floor names if available, otherwise fallback to "floor_0"
+        floor_options = ha_floor_names if ha_floor_names else ["floor_0"]
+
+        schema = vol.Schema(
+            {
+                vol.Required(
+                    CONF_CURRENT_FLOOR, default=self.current_floor
+                ): SelectSelector(
+                    SelectSelectorConfig(
+                        options=floor_options,
+                        mode=SelectSelectorMode.DROPDOWN,
+                    )
+                ),
+            }
+        )
+
+        return self.async_show_form(
+            step_id="select_floor",
+            data_schema=schema,
+            description_placeholders={"current_floor": self.current_floor},
+        )
+
+    async def async_step_add_floor(
+        self, user_input: Optional[Dict[str, Any]] = None
+    ) -> ConfigFlowResult:
+        """Add a new floor with trim settings."""
+        if user_input is not None:
+            floor_name = user_input.get(CONF_FLOOR_NAME)
+            map_name = user_input.get(CONF_MAP_NAME, "")
+
+            # Use existing trims_data as default for first floor if no floors exist yet
+            if not self.floors_data:
+                existing_trims = self.camera_config.options.get("trims_data", {})
+                trim_up = existing_trims.get("trim_up", 0)
+                trim_down = existing_trims.get("trim_down", 0)
+                trim_left = existing_trims.get("trim_left", 0)
+                trim_right = existing_trims.get("trim_right", 0)
+                LOGGER.info(
+                    "Using existing trims_data for first floor: %s", existing_trims
+                )
+            else:
+                trim_up = user_input.get(CONF_TRIM_UP, 0)
+                trim_down = user_input.get(CONF_TRIM_DOWN, 0)
+                trim_left = user_input.get(CONF_TRIM_LEFT, 0)
+                trim_right = user_input.get(CONF_TRIM_RIGHT, 0)
+
+            # Create new floor data
+            new_floor = FloorData(
+                trims=TrimsData(
+                    floor=floor_name,
+                    trim_up=trim_up,
+                    trim_down=trim_down,
+                    trim_left=trim_left,
+                    trim_right=trim_right,
+                ),
+                map_name=map_name,
+            )
+
+            # Update floors_data
+            updated_floors = dict(self.floors_data)
+            updated_floors[floor_name] = new_floor.to_dict()
+
+            self.camera_options = {
+                CONF_FLOORS_DATA: updated_floors,
+                CONF_CURRENT_FLOOR: floor_name,  # Set as current floor
+            }
+            LOGGER.info("Added new floor: %s", floor_name)
+            return await self.async_step_opt_save()
+
+        # Get HA floor names for dropdown
+        ha_floor_names = self._get_ha_floor_names()
+
+        # Filter out already configured floors
+        available_floors = [f for f in ha_floor_names if f not in self.floors_data]
+
+        # If no HA floors or all are used, allow custom text input
+        if available_floors:
+            floor_selector = SelectSelector(
+                SelectSelectorConfig(
+                    options=available_floors,
+                    mode=SelectSelectorMode.DROPDOWN,
+                    custom_value=True,  # Allow custom input
+                )
+            )
+        else:
+            # Fallback to text input if no HA floors available
+            floor_selector = TextSelector(
+                TextSelectorConfig(type=TextSelectorType.TEXT)
+            )
+
+        schema = vol.Schema(
+            {
+                vol.Required(CONF_FLOOR_NAME): floor_selector,
+                vol.Optional(CONF_MAP_NAME, default=""): TextSelector(
+                    TextSelectorConfig(type=TextSelectorType.TEXT)
+                ),
+            }
+        )
+
+        description = "Add a new floor. "
+        if not self.floors_data:
+            description += "Existing auto-calculated trim values will be used for this first floor."
+        else:
+            description += (
+                "Trim values will be auto-calculated when you use 'Save Map Trims'."
+            )
+
+        return self.async_show_form(
+            step_id="add_floor",
+            data_schema=schema,
+            description_placeholders={"info": description},
+        )
+
+    async def async_step_edit_floor(
+        self, user_input: Optional[Dict[str, Any]] = None
+    ) -> ConfigFlowResult:
+        """Edit map name for an existing floor."""
+        if user_input is not None:
+            if self.selected_floor is None:
+                # First step: select which floor to edit
+                self.selected_floor = user_input.get(CONF_FLOOR_NAME)
+                return await self.async_step_edit_floor()
+
+            # Second step: update only the map_name (trims are auto-calculated)
+            map_name = user_input.get(CONF_MAP_NAME, "")
+
+            # Keep existing trims data
+            floor_data = self.floors_data.get(self.selected_floor, {})
+            existing_trims = floor_data.get("trims", {})
+
+            updated_floor = FloorData(
+                trims=TrimsData(
+                    floor=self.selected_floor,
+                    trim_up=existing_trims.get("trim_up", 0),
+                    trim_down=existing_trims.get("trim_down", 0),
+                    trim_left=existing_trims.get("trim_left", 0),
+                    trim_right=existing_trims.get("trim_right", 0),
+                ),
+                map_name=map_name,
+            )
+
+            updated_floors = dict(self.floors_data)
+            updated_floors[self.selected_floor] = updated_floor.to_dict()
+
+            self.camera_options = {
+                CONF_FLOORS_DATA: updated_floors,
+            }
+            floor_name = self.selected_floor
+            self.selected_floor = None
+            LOGGER.info("Updated floor: %s", floor_name)
+            return await self.async_step_opt_save()
+
+        # First step: select floor to edit
+        if self.selected_floor is None:
+            floor_options = list(self.floors_data.keys()) if self.floors_data else []
+
+            if not floor_options:
+                LOGGER.warning("No floors available to edit")
+                return self.async_abort(reason="no_floors")
+
+            schema = vol.Schema(
+                {
+                    vol.Required(CONF_FLOOR_NAME): SelectSelector(
+                        SelectSelectorConfig(
+                            options=floor_options,
+                            mode=SelectSelectorMode.DROPDOWN,
+                        )
+                    ),
+                }
+            )
+
+            return self.async_show_form(
+                step_id="edit_floor",
+                data_schema=schema,
+            )
+
+        # Second step: edit the selected floor (only map_name, trims are read-only)
+        floor_data = self.floors_data.get(self.selected_floor, {})
+        trims_data = floor_data.get("trims", {})
+
+        schema = vol.Schema(
+            {
+                vol.Optional(
+                    CONF_MAP_NAME, default=floor_data.get("map_name", "")
+                ): TextSelector(TextSelectorConfig(type=TextSelectorType.TEXT)),
+            }
+        )
+
+        # Show current trim values in description
+        trim_info = (
+            f"Current auto-calculated trims: "
+            f"Top={trims_data.get('trim_up', 0)}, "
+            f"Bottom={trims_data.get('trim_down', 0)}, "
+            f"Left={trims_data.get('trim_left', 0)}, "
+            f"Right={trims_data.get('trim_right', 0)}"
+        )
+
+        return self.async_show_form(
+            step_id="edit_floor",
+            data_schema=schema,
+            description_placeholders={
+                "floor_name": self.selected_floor,
+                "trim_info": trim_info,
+            },
+        )
+
+    async def async_step_delete_floor(
+        self, user_input: Optional[Dict[str, Any]] = None
+    ) -> ConfigFlowResult:
+        """Delete a floor from the configuration."""
+        if user_input is not None:
+            floor_to_delete = user_input.get(CONF_FLOOR_NAME)
+
+            updated_floors = dict(self.floors_data)
+            if floor_to_delete in updated_floors:
+                del updated_floors[floor_to_delete]
+
+                # If we deleted the current floor, reset to floor_0
+                new_current_floor = self.current_floor
+                if floor_to_delete == self.current_floor:
+                    new_current_floor = "floor_0"
+
+                self.camera_options = {
+                    CONF_FLOORS_DATA: updated_floors,
+                    CONF_CURRENT_FLOOR: new_current_floor,
+                }
+                LOGGER.info("Deleted floor: %s", floor_to_delete)
+                return await self.async_step_opt_save()
+
+        floor_options = list(self.floors_data.keys()) if self.floors_data else []
+
+        if not floor_options:
+            LOGGER.warning("No floors available to delete")
+            return self.async_abort(reason="no_floors")
+
+        schema = vol.Schema(
+            {
+                vol.Required(CONF_FLOOR_NAME): SelectSelector(
+                    SelectSelectorConfig(
+                        options=floor_options,
+                        mode=SelectSelectorMode.DROPDOWN,
+                    )
+                ),
+            }
+        )
+
+        return self.async_show_form(
+            step_id="delete_floor",
+            data_schema=schema,
+        )
 
     async def async_step_opt_save(self):
         """

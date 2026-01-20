@@ -72,6 +72,7 @@ CONF_DISABLE_PATH = "disable_path"
 CONF_DISABLE_PREDICTED_PATH = "disable_predicted_path"
 CONF_DISABLE_GO_TO_TARGET = "disable_go_to_target"
 CONF_DISABLE_CARPETS = "disable_carpets"
+CONF_DISABLE_MATERIAL_OVERLAY = "disable_material_overlay"
 
 # List of all draw element flags for easier iteration
 DRAW_FLAGS = [
@@ -87,6 +88,7 @@ DRAW_FLAGS = [
     CONF_DISABLE_PREDICTED_PATH,
     CONF_DISABLE_GO_TO_TARGET,
     CONF_DISABLE_CARPETS,
+    CONF_DISABLE_MATERIAL_OVERLAY,
 ]
 
 # Room/Segment visibility options
@@ -179,6 +181,7 @@ DEFAULT_VALUES = {
     "disable_predicted_path": False,
     "disable_go_to_target": False,
     "disable_carpets": False,
+    "disable_material_overlay": False,
     "disable_room_1": False,
     "disable_room_2": False,
     "disable_room_3": False,
@@ -204,6 +207,8 @@ DEFAULT_VALUES = {
     "color_zone_clean": [255, 255, 255],
     "color_background": [0, 125, 255],
     "color_text": [255, 255, 255],
+    "color_material_wood": [40, 40, 40],
+    "color_material_tile": [40, 40, 40],
     "alpha_charger": 255.0,
     "alpha_carpet": 255.0,
     "alpha_move": 255.0,
@@ -214,6 +219,8 @@ DEFAULT_VALUES = {
     "alpha_zone_clean": 125.0,
     "alpha_background": 255.0,
     "alpha_text": 255.0,
+    "alpha_material_wood": 38.0,
+    "alpha_material_tile": 45.0,
     "color_room_0": [135, 206, 250],
     "color_room_1": [176, 226, 255],
     "color_room_2": [165, 105, 18],
@@ -278,6 +285,7 @@ KEYS_TO_UPDATE = [
     "disable_predicted_path",
     "disable_go_to_target",
     "disable_carpets",
+    "disable_material_overlay",
     "disable_room_1",
     "disable_room_2",
     "disable_room_3",
@@ -303,6 +311,8 @@ KEYS_TO_UPDATE = [
     "color_zone_clean",
     "color_background",
     "color_text",
+    "color_material_wood",
+    "color_material_tile",
     "alpha_charger",
     "alpha_carpet",
     "alpha_move",
@@ -313,6 +323,8 @@ KEYS_TO_UPDATE = [
     "alpha_zone_clean",
     "alpha_background",
     "alpha_text",
+    "alpha_material_wood",
+    "alpha_material_tile",
     "color_room_0",
     "color_room_1",
     "color_room_2",
@@ -482,6 +494,10 @@ COLOR_ZONE_CLEAN = "color_zone_clean"
 COLOR_WALL = "color_wall"
 COLOR_TEXT = "color_text"
 
+"""Material Colours RGB"""
+COLOR_MATERIAL_WOOD = "color_material_wood"
+COLOR_MATERIAL_TILE = "color_material_tile"
+
 "Rooms Colours RGB"
 COLOR_ROOM_0 = "color_room_0"
 COLOR_ROOM_1 = "color_room_1"
@@ -527,6 +543,10 @@ ALPHA_ROOM_12 = "alpha_room_12"
 ALPHA_ROOM_13 = "alpha_room_13"
 ALPHA_ROOM_14 = "alpha_room_14"
 ALPHA_ROOM_15 = "alpha_room_15"
+
+"""Material Alpha values"""
+ALPHA_MATERIAL_WOOD = "alpha_material_wood"
+ALPHA_MATERIAL_TILE = "alpha_material_tile"
 
 """ Constants for the attribute keys """
 ATTR_FRIENDLY_NAME = "friendly_name"

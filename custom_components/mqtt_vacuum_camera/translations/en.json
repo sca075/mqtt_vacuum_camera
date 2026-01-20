@@ -25,6 +25,7 @@
         "menu_options": {
           "image_opt": "Image Settings",
           "colours": "Colours Configuration",
+          "materials": "Material Rendering",
           "advanced": "Advanced Options"
         }
       },
@@ -66,6 +67,24 @@
         "menu_options": {
           "floor_management": "Floor Management",
           "map_trims": "Map Trims"
+        }
+      },
+      "materials": {
+        "title": "Material Rendering",
+        "description": "Configure material detection and rendering (wood planks, tiles)",
+        "data": {
+          "disable_material_overlay": "Disable material overlay",
+          "color_material_wood": "Wood plank color",
+          "color_material_tile": "Tile color",
+          "alpha_material_wood": "Wood transparency",
+          "alpha_material_tile": "Tile transparency"
+        },
+        "data_description": {
+          "disable_material_overlay": "Turn off material overlay rendering on the map",
+          "color_material_wood": "Color for wood plank materials (RGB)",
+          "color_material_tile": "Color for tile materials (RGB)",
+          "alpha_material_wood": "Transparency level for wood planks (0-255)",
+          "alpha_material_tile": "Transparency level for tiles (0-255)"
         }
       },
       "floor_management": {
@@ -151,7 +170,8 @@
           "disable_path": "Hide Path",
           "disable_predicted_path": "Hide Predicted Path",
           "disable_go_to_target": "Hide Go-To Target",
-          "disable_carpets": "Hide Carpets"
+          "disable_carpets": "Hide Carpets",
+          "disable_material_overlay": "Hide Tiles and Wood"
         },
         "data_description": {
           "disable_floor": "When enabled, the floor will not be shown on the map",
@@ -165,7 +185,8 @@
           "disable_path": "When enabled, the cleaning path will not be shown on the map",
           "disable_predicted_path": "When enabled, the predicted path will not be shown on the map",
           "disable_go_to_target": "When enabled, go-to targets will not be shown on the map",
-          "disable_carpets": "When enabled, carpets will not be shown on the map"
+          "disable_carpets": "When enabled, carpets will not be shown on the map",
+          "disable_material_overlay": "When enabled, material overlays (tiles and wood) will not be shown on the map"
         }
       },
       "segments_visibility": {
@@ -457,9 +478,6 @@
     },
     "mqtt_publish_failed": {
       "message": "Failed to publish command to vacuum via MQTT."
-    },
-    "invalid_mqtt_data": {
-      "message": "Invalid data format for MQTT command."
     }
   }
 }
