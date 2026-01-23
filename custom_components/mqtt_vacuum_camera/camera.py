@@ -155,7 +155,9 @@ class MQTTCamera(CoordinatorEntity, Camera):  # pylint: disable=too-many-instanc
         storage_path = storage_root / CAMERA_STORAGE
         if not storage_path.exists():
             # Use the default storage path
-            storage_path = Path(self.context.hass.config.path(STORAGE_DIR, CAMERA_STORAGE))
+            storage_path = Path(
+                self.context.hass.config.path(STORAGE_DIR, CAMERA_STORAGE)
+            )
         return CameraPathsConfig(
             homeassistant_path=homeassistant_path,
             storage_path=str(storage_path),
@@ -196,7 +198,11 @@ class MQTTCamera(CoordinatorEntity, Camera):  # pylint: disable=too-many-instanc
     def _init_clear_www_folder(self):
         """Remove PNG snapshots stored in HA config WWW if snapshots are disabled."""
         # If enable_snapshots is disabled, remove any existing snapshot file
-        snapshot_path = Path(self.paths.homeassistant_path) / "www" / f"snapshot_{self.context.file_name}.png"
+        snapshot_path = (
+            Path(self.paths.homeassistant_path)
+            / "www"
+            / f"snapshot_{self.context.file_name}.png"
+        )
         if not self.context.shared.enable_snapshots and snapshot_path.is_file():
             snapshot_path.unlink()
 

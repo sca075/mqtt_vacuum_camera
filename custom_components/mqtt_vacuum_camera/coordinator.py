@@ -66,9 +66,7 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
                 sensor_data = await self.context.connector.get_rand256_attributes()
                 if sensor_data:
                     # Format the data before returning it
-                    self.sensor_data = await self.async_update_sensor_data(
-                        sensor_data
-                    )
+                    self.sensor_data = await self.async_update_sensor_data(sensor_data)
                     return self.sensor_data
                 return self.sensor_data
         except Exception as err:

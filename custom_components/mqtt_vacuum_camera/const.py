@@ -460,6 +460,11 @@ DECODED_TOPICS = {
     "/$state",
     "/BatteryStateAttribute/level",
     "/WifiConfigurationCapability/ips",
+    "/AttachmentStateAttribute/mop",
+    "/OperationModeControlCapability/preset",
+    "/WaterUsageControlCapability/preset",
+    "/DockStatusStateAttribute/status",
+    "/ValetudoEvents/valetudo_events",
     "/state",  # Rand256
     "/destinations",  # Rand256
     "/command",  # Rand256

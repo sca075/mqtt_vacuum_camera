@@ -132,6 +132,7 @@ async def async_populate_user_languages(hass: HomeAssistant):
             "Error while initializing language cache: %s", str(e), exc_info=True
         )
 
+
 async def async_del_file(file):
     """Delete a file if it exists."""
     file_path = Path(file)

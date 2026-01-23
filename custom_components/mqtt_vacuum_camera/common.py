@@ -15,7 +15,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.helpers.device_registry import DeviceEntry
 
-from .const import KEYS_TO_UPDATE, LOGGER, DEFAULT_VALUES
+from .const import DEFAULT_VALUES, KEYS_TO_UPDATE, LOGGER
 from .hass_types import GET_MQTT_DATA
 
 

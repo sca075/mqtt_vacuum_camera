@@ -19,9 +19,9 @@ from homeassistant.const import (
     Platform,
 )
 from homeassistant.exceptions import ConfigEntryNotReady
+import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.reload import async_register_admin_service
-import homeassistant.helpers.config_validation as cv
 from valetudo_map_parser import get_default_font_path
 from valetudo_map_parser.config.shared import CameraShared, CameraSharedManager
 
@@ -29,8 +29,8 @@ from .common import (
     get_camera_device_info,
     get_vacuum_device_info,
     get_vacuum_mqtt_topic,
-    update_options,
     is_rand256_vacuum,
+    update_options,
 )
 from .const import (
     CONF_VACUUM_CONFIG_ENTRY_ID,
@@ -373,6 +373,39 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
             LOGGER.debug("Migration data: %s", dict(new_options))
             hass.config_entries.async_update_entry(
                 config_entry, version=3.4, data=new_data, options=new_options
+            )
+            LOGGER.info(
+                "Migration to config entry version %s successful",
+                config_entry.version,
+            )
+            return True
+
+        LOGGER.error(
+            "Migration failed: No options found in config entry. Please reconfigure the camera."
+        )
+        return False
+    if config_entry.version == 3.4:
+        LOGGER.info("Migrating config entry from version %s", config_entry.version)
+        old_data = {**config_entry.data}
+        new_data = {"vacuum_config_entry": old_data["vacuum_config_entry"]}
+        LOGGER.debug(dict(new_data))
+        old_options = {**config_entry.options}
+        if len(old_options) != 0:
+            # Add carpet mode and floor materials options
+            tmp_option = {
+                "disable_carpets": False,
+                "disable_material_overlay": False,
+                "color_carpet": [255, 192, 203],
+                "color_material_wood": [40, 40, 40],
+                "color_material_tile": [40, 40, 40],
+                "alpha_carpet": 255.0,
+                "alpha_material_wood": 38.0,
+                "alpha_material_tile": 45.0,
+            }
+            new_options = await update_options(old_options, tmp_option)
+            LOGGER.debug("Migration data: %s", dict(new_options))
+            hass.config_entries.async_update_entry(
+                config_entry, version=3.5, data=new_data, options=new_options
             )
             LOGGER.info(
                 "Migration to config entry version %s successful",

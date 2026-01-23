@@ -108,9 +108,9 @@ class LanguageCache:
             user_ids = [user.id for user in users if user.name not in excluded_users]
 
             for user_id in user_ids:
-                user_data_file = Path(hass.config.path(
-                    STORAGE_DIR, f"frontend.user_data_{user_id}"
-                ))
+                user_data_file = Path(
+                    hass.config.path(STORAGE_DIR, f"frontend.user_data_{user_id}")
+                )
 
                 if await asyncio.to_thread(user_data_file.exists):
                     try:
@@ -178,9 +178,11 @@ class LanguageCache:
                     return language
 
                 # Fallback to loading from file if not in UserLanguageStore
-                user_data_path = Path(hass.config.path(
-                    STORAGE_DIR, f"frontend.user_data_{active_user_id}"
-                ))
+                user_data_path = Path(
+                    hass.config.path(
+                        STORAGE_DIR, f"frontend.user_data_{active_user_id}"
+                    )
+                )
                 if await asyncio.to_thread(user_data_path.exists):
                     try:
                         # Use asyncio.to_thread for non-blocking file operations
@@ -288,9 +290,9 @@ class LanguageCache:
         if language in self._translations_cache:
             return self._translations_cache[language]
 
-        translations_path = Path(hass.config.path(
-            "custom_components/mqtt_vacuum_camera/translations"
-        ))
+        translations_path = Path(
+            hass.config.path("custom_components/mqtt_vacuum_camera/translations")
+        )
         file_path = translations_path / f"{language}.json"
 
         try:

@@ -48,7 +48,7 @@ VACUUM_SCHEMA = vol.Schema(
 class MQTTCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Camera Configration Flow Handler"""
 
-    VERSION = 3.4
+    VERSION = 3.5
 
     def __init__(self):
         self.data = {}
