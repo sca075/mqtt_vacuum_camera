@@ -184,7 +184,7 @@
         "description": "Einstellungen für die Kartenzuschnittverwaltung verwalten",
         "menu_options": {
           "reset_map_trims": "Kartentrimmen zurücksetzen",
-          "save_map_trims": "Save Map Trims",
+          "save_map_trims": "Kartentrimmen speichern",
           "main_menu": "Zurück zum Hauptmenü"
         }
       },

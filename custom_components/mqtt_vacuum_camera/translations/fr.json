@@ -72,7 +72,7 @@
           "disable_floor": "Masquer le sol",
           "disable_wall": "Masquer les murs",
           "disable_robot": "Masquer le robot",
-          "disable_charger": "Hide Charger",
+          "disable_charger": "Masquer le chargeur",
           "disable_virtual_walls": "Masquer les murs virtuels",
           "disable_restricted_areas": "Masquer les zones restreintes",
           "disable_no_mop_areas": "Masquer les zones sans balai à franges",
