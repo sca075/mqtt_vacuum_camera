@@ -82,7 +82,7 @@
           "disable_go_to_target": "Verberg doelwit"
         },
         "data_description": {
-          "disable_floor": "Wanneer deze optie is ingeschakeld, wordt de verdieping niet op de kaart weergegeven.",
+          "disable_floor": "Wanneer deze optie is ingeschakeld, wordt de verdieping niet weergegeven op de kaart.",
           "disable_wall": "Wanneer deze optie is ingeschakeld, worden muren niet weergegeven op de kaart.",
           "disable_robot": "Wanneer deze optie is ingeschakeld, wordt de robot niet op de kaart weergegeven.",
           "disable_charger": "Wanneer deze optie is ingeschakeld, wordt de oplader niet op de kaart weergegeven.",
@@ -116,21 +116,21 @@
           "disable_room_15": "Verberg kamer 15"
         },
         "data_description": {
-          "disable_room_1": "Wanneer deze optie is ingeschakeld, wordt kamer 1 {room_0_name} niet weergegeven op de kaart.",
-          "disable_room_2": "Wanneer deze optie is ingeschakeld, wordt kamer 2 {room_1_name} niet weergegeven op de kaart.",
-          "disable_room_3": "Wanneer deze optie is ingeschakeld, wordt kamer 3 {room_2_name} niet weergegeven op de kaart.",
-          "disable_room_4": "Wanneer deze optie is ingeschakeld, wordt kamer 4 {room_3_name} niet weergegeven op de kaart.",
-          "disable_room_5": "Wanneer deze optie is ingeschakeld, wordt kamer 5 {room_4_name} niet weergegeven op de kaart.",
-          "disable_room_6": "Wanneer deze optie is ingeschakeld, wordt kamer 6 {room_5_name} niet weergegeven op de kaart.",
-          "disable_room_7": "Wanneer deze optie is ingeschakeld, wordt kamer 7 {room_6_name} niet weergegeven op de kaart.",
-          "disable_room_8": "Wanneer deze optie is ingeschakeld, wordt kamer 8 {room_7_name} niet op de kaart weergegeven.",
-          "disable_room_9": "Wanneer deze optie is ingeschakeld, wordt kamer 9 {room_8_name} niet weergegeven op de kaart.",
-          "disable_room_10": "Wanneer deze optie is ingeschakeld, wordt kamer 10 {room_9_name} niet weergegeven op de kaart.",
-          "disable_room_11": "Wanneer deze optie is ingeschakeld, wordt kamer 11 {room_10_name} niet weergegeven op de kaart.",
-          "disable_room_12": "Wanneer deze optie is ingeschakeld, wordt kamer 12 {room_11_name} niet weergegeven op de kaart.",
-          "disable_room_13": "Wanneer deze optie is ingeschakeld, wordt kamer 13 {room_12_name} niet op de kaart weergegeven.",
-          "disable_room_14": "Wanneer deze optie is ingeschakeld, wordt kamer 14 {room_13_name} niet weergegeven op de kaart.",
-          "disable_room_15": "Wanneer deze optie is ingeschakeld, wordt kamer 15 {room_14_name} niet weergegeven op de kaart."
+          "disable_room_1": "Wanneer deze optie is ingeschakeld, wordt Room 1 {room_0_name} niet op de kaart weergegeven.",
+          "disable_room_2": "Wanneer deze optie is ingeschakeld, wordt Room 2 {room_1_name} niet op de kaart weergegeven.",
+          "disable_room_3": "Wanneer deze optie is ingeschakeld, wordt Room 3 {room_2_name} niet op de kaart weergegeven.",
+          "disable_room_4": "Wanneer deze optie is ingeschakeld, wordt Room 4 {room_3_name} niet op de kaart weergegeven.",
+          "disable_room_5": "Wanneer deze optie is ingeschakeld, wordt Room 5 {room_4_name} niet op de kaart weergegeven.",
+          "disable_room_6": "Wanneer deze optie is ingeschakeld, wordt Room 6 {room_5_name} niet op de kaart weergegeven.",
+          "disable_room_7": "Wanneer deze optie is ingeschakeld, wordt Room 7 {room_6_name} niet op de kaart weergegeven.",
+          "disable_room_8": "Wanneer deze optie is ingeschakeld, wordt Room 8 {room_7_name} niet op de kaart weergegeven.",
+          "disable_room_9": "Wanneer deze optie is ingeschakeld, wordt Room 9 {room_8_name} niet op de kaart weergegeven.",
+          "disable_room_10": "Wanneer deze optie is ingeschakeld, wordt Room 10 {room_9_name} niet op de kaart weergegeven.",
+          "disable_room_11": "Wanneer deze optie is ingeschakeld, wordt Room 11 {room_10_name} niet op de kaart weergegeven.",
+          "disable_room_12": "Wanneer deze optie is ingeschakeld, wordt Room 12 {room_11_name} niet op de kaart weergegeven.",
+          "disable_room_13": "Wanneer deze optie is ingeschakeld, wordt Room 13 {room_12_name} niet op de kaart weergegeven.",
+          "disable_room_14": "Wanneer deze optie is ingeschakeld, wordt Room 14 {room_13_name} niet op de kaart weergegeven.",
+          "disable_room_15": "Wanneer deze optie is ingeschakeld, wordt Room 15 {room_14_name} niet op de kaart weergegeven."
         }
       },
       "transparency": {
@@ -184,7 +184,7 @@
         "description": "Instellingen voor kaartuitsnede beheren",
         "menu_options": {
           "reset_map_trims": "Kaarttrims resetten",
-          "save_map_trims": "Save Kaart Trims",
+          "save_map_trims": "Save Map Trims",
           "main_menu": "Terug naar het hoofdmenu"
         }
       },
@@ -284,14 +284,14 @@
           "add_room_1_alpha": "Transparantie configureren:"
         },
         "data_description": {
-          "color_room_0": "### **{room_0_name} Kleur**",
-          "color_room_1": "### **{room_1_name} Kleur**",
-          "color_room_2": "### **{room_2_name} Kleur**",
-          "color_room_3": "### **{room_3_name} Kleur**",
-          "color_room_4": "### **{room_4_name} Kleur**",
-          "color_room_5": "### **{room_5_name} Kleur**",
-          "color_room_6": "### **{room_6_name} Kleur**",
-          "color_room_7": "### **{room_7_name} Kleur**"
+          "color_room_0": "{room_0_name}kleur",
+          "color_room_1": "{room_1_name}kleur",
+          "color_room_2": "{room_2_name}kleur",
+          "color_room_3": "{room_3_name}kleur",
+          "color_room_4": "{room_4_name}kleur",
+          "color_room_5": "{room_5_name}kleur",
+          "color_room_6": "{room_6_name}kleur",
+          "color_room_7": "{room_7_name}kleur"
         },
         "description": "Camera Kleurenopties.",
         "title": "Kamers 1 tot 8 Kleuren"
@@ -309,14 +309,14 @@
           "add_room_2_alpha": "Transparantie configureren:"
         },
         "data_description": {
-          "color_room_8": "### **{room_8_name} Kleur**",
-          "color_room_9": "### **{room_9_name} Kleur**",
-          "color_room_10": "### **{room_10_name} Kleur**",
-          "color_room_11": "### **{room_11_name} Kleur**",
-          "color_room_12": "### **{room_12_name} Kleur**",
-          "color_room_13": "### **{room_13_name} Kleur**",
-          "color_room_14": "### **{room_14_name} Kleur**",
-          "color_room_15": "### **{room_15_name} Kleur**"
+          "color_room_8": "{room_8_name}kleur",
+          "color_room_9": "{room_9_name}kleur",
+          "color_room_10": "{room_10_name}kleur",
+          "color_room_11": "{room_11_name}kleur",
+          "color_room_12": "{room_12_name}kleur",
+          "color_room_13": "{room_13_name}kleur",
+          "color_room_14": "{room_14_name}kleur",
+          "color_room_15": "{room_15_name}kleur"
         },
         "description": "Camera Kleurenopties.",
         "title": "Kamers 9 tot 15 Kleuren"
@@ -328,28 +328,28 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "### **{room_0_name} Alpha**",
-          "alpha_room_1": "### **{room_1_name} Alpha**",
-          "alpha_room_2": "### **{room_2_name} Alpha**",
-          "alpha_room_3": "### **{room_3_name} Alpha**",
-          "alpha_room_4": "### **{room_4_name} Alpha**",
-          "alpha_room_5": "### **{room_5_name} Alpha**",
-          "alpha_room_6": "### **{room_6_name} Alpha**",
-          "alpha_room_7": "### **{room_7_name} Alpha**"
+          "alpha_room_0": "Alpha-{room_0_name}",
+          "alpha_room_1": "Alpha-{room_1_name}",
+          "alpha_room_2": "Alpha-{room_2_name}",
+          "alpha_room_3": "Alpha-{room_3_name}",
+          "alpha_room_4": "Alpha-{room_4_name}",
+          "alpha_room_5": "Alpha-{room_5_name}",
+          "alpha_room_6": "Alpha-{room_6_name}",
+          "alpha_room_7": "Alpha-{room_7_name}"
         },
         "description": "Camera-opties. Alpha 2",
         "title": "Alpha Chanel Kamers Kleuren"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "### **{room_8_name} Alpha**",
-          "alpha_room_9": "### **{room_9_name} Alpha**",
-          "alpha_room_10": "### **{room_10_name} Alpha**",
-          "alpha_room_11": "### **{room_11_name} Alpha**",
-          "alpha_room_12": "### **{room_12_name} Alpha**",
-          "alpha_room_13": "### **{room_13_name} Alpha**",
-          "alpha_room_14": "### **{room_14_name} Alpha**",
-          "alpha_room_15": "### **{room_15_name} Alpha**"
+          "alpha_room_8": "Alpha-{room_8_name}",
+          "alpha_room_9": "Alpha-{room_9_name}",
+          "alpha_room_10": "Alpha-{room_10_name}",
+          "alpha_room_11": "Alpha-{room_11_name}",
+          "alpha_room_12": "Alpha-{room_12_name}",
+          "alpha_room_13": "Alpha-{room_13_name}",
+          "alpha_room_14": "Alpha-{room_14_name}",
+          "alpha_room_15": "Alpha-{room_15_name}"
         },
         "description": "Camera-opties. Alpha 3",
         "title": "Alpha Chanel Kamers Kleuren"
@@ -361,12 +361,12 @@
           "current_floor": "Actieve vloer"
         },
         "data_description": {
-          "current_floor": "Selecteer de verdieping die momenteel actief is. Huidig: {current_floor}"
+          "current_floor": "Selecteer de vloer die momenteel actief is. Huidig: {current_floor}"
         }
       },
       "add_floor": {
         "title": "Nieuwe verdieping toevoegen",
-        "description": "Informatie",
+        "description": "{info}",
         "data": {
           "floor_name": "Vloernaam",
           "map_name": "Kaartnaam (optioneel)"
@@ -378,18 +378,18 @@
       },
       "edit_floor": {
         "title": "Vloerinstellingen bewerken",
-        "description": "Bewerk de kaartnaam voor verdieping: {floor_name}. {trim_info}. Trimwaarden worden automatisch berekend - gebruik 'Save Kaart Trims' om ze bij te werken.",
+        "description": "Bewerk de kaartnaam voor de verdieping: {floor_name}. {trim_info}. Trimwaarden worden automatisch berekend - gebruik 'Save Map Trims' om ze bij te werken.",
         "data": {
           "floor_name": "Selecteer de te bewerken verdieping",
           "map_name": "Kaartnaam (optioneel)"
         },
         "data_description": {
-          "floor_name": "Kies welke verdieping je wilt bewerken",
+          "floor_name": "Kies welke verdieping u wilt bewerken",
           "map_name": "Optionele vriendelijke naam voor deze verdieping"
         }
       },
       "delete_floor": {
-        "title": "Verdieping verwijderen",
+        "title": "Verdiepingen verwijderen",
         "description": "Verwijder een verdieping uit de configuratie. Als u de momenteel actieve verdieping verwijdert, wordt deze teruggezet naar 'floor_0'.",
         "data": {
           "floor_name": "Vloer verwijderen"
@@ -440,7 +440,7 @@
     },
     "snapshot": {
       "name": "Maak een momentopname",
-      "description": "Maakt een foto met een camera.",
+      "description": "Maakt een momentopname met een camera.",
       "fields": {
         "filename": {
           "name": "Bestandsnaam",

@@ -38,7 +38,7 @@
         "title": "Bildinställningar",
         "description": "Konfigurera inställningar för bildvisning",
         "menu_options": {
-          "image_basic_opt": "Grundläggande inställningar",
+          "image_basic_opt": "Grundinställningar",
           "status_text": "Statustext",
           "draw_elements": "Kartelementens synlighet",
           "main_menu": "Tillbaka till huvudmenyn"
@@ -82,14 +82,14 @@
           "disable_go_to_target": "Dölj mål för Gå till"
         },
         "data_description": {
-          "disable_floor": "När denna funktion är aktiverad visas inte våningen på kartan.",
+          "disable_floor": "När denna funktion är aktiverad visas inte golvet på kartan.",
           "disable_wall": "När denna funktion är aktiverad visas inte väggar på kartan.",
-          "disable_robot": "När funktionen är aktiverad visas inte roboten på kartan.",
+          "disable_robot": "När denna funktion är aktiverad visas inte roboten på kartan.",
           "disable_charger": "När funktionen är aktiverad visas inte laddaren på kartan.",
           "disable_virtual_walls": "När funktionen är aktiverad visas inte virtuella väggar på kartan.",
           "disable_restricted_areas": "När denna funktion är aktiverad visas inte begränsade områden på kartan.",
           "disable_no_mop_areas": "När funktionen är aktiverad visas inga områden där moppning är förbjuden på kartan.",
-          "disable_obstacles": "När funktionen är aktiverad visas inga hinder på kartan.",
+          "disable_obstacles": "När denna funktion är aktiverad visas inte hinder på kartan.",
           "disable_path": "När funktionen är aktiverad visas inte rengöringsvägen på kartan.",
           "disable_predicted_path": "När funktionen är aktiverad visas inte den förutsagda vägen på kartan.",
           "disable_go_to_target": "När funktionen är aktiverad visas inte målen på kartan."
@@ -116,20 +116,20 @@
           "disable_room_15": "Dölj rum 15"
         },
         "data_description": {
-          "disable_room_1": "När denna funktion är aktiverad visas inte rum 1 {room_0_name} på kartan.",
-          "disable_room_2": "När denna funktion är aktiverad visas inte rum 2 {room_1_name} på kartan.",
-          "disable_room_3": "När denna funktion är aktiverad visas inte rum 3 {room_2_name} på kartan.",
-          "disable_room_4": "När denna funktion är aktiverad visas inte rum 4 {room_3_name} på kartan.",
-          "disable_room_5": "När denna funktion är aktiverad visas inte rum 5 {room_4_name} på kartan.",
-          "disable_room_6": "När denna funktion är aktiverad visas inte rum 6 {room_5_name} på kartan.",
-          "disable_room_7": "När denna funktion är aktiverad visas inte rum 7 {room_6_name} på kartan.",
-          "disable_room_8": "När denna funktion är aktiverad visas inte rum 8 {room_7_name} på kartan.",
-          "disable_room_9": "När denna funktion är aktiverad visas inte rum 9 {room_8_name} på kartan.",
+          "disable_room_1": "När funktionen är aktiverad visas inte rum 1 {room_0_name} på kartan.",
+          "disable_room_2": "När funktionen är aktiverad visas inte rum 2 {room_1_name} på kartan.",
+          "disable_room_3": "När funktionen är aktiverad visas inte Room 3 {room_2_name} på kartan.",
+          "disable_room_4": "När funktionen är aktiverad visas inte rum 4 {room_3_name} på kartan.",
+          "disable_room_5": "När denna funktion är aktiverad visas inte Room 5 {room_4_name} på kartan.",
+          "disable_room_6": "När funktionen är aktiverad visas inte Room 6 {room_5_name} på kartan.",
+          "disable_room_7": "När funktionen är aktiverad visas inte Room 7 {room_6_name} på kartan.",
+          "disable_room_8": "När funktionen är aktiverad visas inte Room 8 {room_7_name} på kartan.",
+          "disable_room_9": "När funktionen är aktiverad visas inte Room 9 {room_8_name} på kartan.",
           "disable_room_10": "När denna funktion är aktiverad visas inte rum 10 {room_9_name} på kartan.",
-          "disable_room_11": "När denna funktion är aktiverad visas inte rum 11 {room_10_name} på kartan.",
+          "disable_room_11": "När funktionen är aktiverad visas inte rum 11 {room_10_name} på kartan.",
           "disable_room_12": "När denna funktion är aktiverad visas inte rum 12 {room_11_name} på kartan.",
-          "disable_room_13": "När denna funktion är aktiverad visas inte rum 13 {room_12_name} på kartan.",
-          "disable_room_14": "När denna funktion är aktiverad visas inte rum 14 {room_13_name} på kartan.",
+          "disable_room_13": "När denna funktion är aktiverad visas inte Room 13 {room_12_name} på kartan.",
+          "disable_room_14": "När funktionen är aktiverad visas inte rum 14 {room_13_name} på kartan.",
           "disable_room_15": "När denna funktion är aktiverad visas inte rum 15 {room_14_name} på kartan."
         }
       },
@@ -165,7 +165,7 @@
           "color_material_tile": "Färg för kakelmaterial (RGB)",
           "alpha_carpet": "Transparensnivå för mattor (0-255)",
           "alpha_material_wood": "Transparensnivå för träplankor (0-255)",
-          "alpha_material_tile": "Transparensnivå för brickor (0-255)"
+          "alpha_material_tile": "Transparensnivå för kakel (0-255)"
         }
       },
       "floor_management": {
@@ -268,7 +268,7 @@
           "add_room_1_alpha": "Konfigurera transparens:"
         },
         "data_description": {
-          "color_room_0": "### **Golvets färg**"
+          "color_room_0": "### **Golvfärg**"
         }
       },
       "rooms_colours_1": {
@@ -284,14 +284,14 @@
           "add_room_1_alpha": "Konfigurera transparens:"
         },
         "data_description": {
-          "color_room_0": "### **{room_0_name} Färg**",
-          "color_room_1": "### **{room_1_name} Färg**",
-          "color_room_2": "### **{room_2_name} Färg**",
-          "color_room_3": "### **{room_3_name} Färg**",
-          "color_room_4": "### **{room_4_name} Färg**",
-          "color_room_5": "### **{room_5_name} Färg**",
-          "color_room_6": "### **{room_6_name} Färg**",
-          "color_room_7": "### **{room_7_name} Färg**"
+          "color_room_0": "{room_0_name}-färg",
+          "color_room_1": "{room_1_name}-färg",
+          "color_room_2": "{room_2_name}-färg",
+          "color_room_3": "{room_3_name}-färg",
+          "color_room_4": "{room_4_name}-färg",
+          "color_room_5": "{room_5_name}-färg",
+          "color_room_6": "{room_6_name}-färg",
+          "color_room_7": "{room_7_name}-färg"
         },
         "description": "Alternativ för kamerafärger.",
         "title": "Rum 1 till 8 Färger"
@@ -309,14 +309,14 @@
           "add_room_2_alpha": "Konfigurera transparens:"
         },
         "data_description": {
-          "color_room_8": "### **{room_8_name} Färg**",
-          "color_room_9": "### **{room_9_name} Färg**",
-          "color_room_10": "### **{room_10_name} Färg**",
-          "color_room_11": "### **{room_11_name} Färg**",
-          "color_room_12": "### **{room_12_name} Färg**",
-          "color_room_13": "### **{room_13_name} Färg**",
-          "color_room_14": "### **{room_14_name} Färg**",
-          "color_room_15": "### **{room_15_name} Färg**"
+          "color_room_8": "{room_8_name}-färg",
+          "color_room_9": "{room_9_name}-färg",
+          "color_room_10": "{room_10_name}-färg",
+          "color_room_11": "{room_11_name}-färg",
+          "color_room_12": "{room_12_name}-färg",
+          "color_room_13": "{room_13_name}-färg",
+          "color_room_14": "{room_14_name}-färg",
+          "color_room_15": "{room_15_name}-färg"
         },
         "description": "Alternativ för kamerafärger.",
         "title": "Rum 9 till 15 Färger"
@@ -328,28 +328,28 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "### **{room_0_name} Alpha**",
-          "alpha_room_1": "### **{room_1_name} Alpha**",
-          "alpha_room_2": "### **{room_2_name} Alpha**",
-          "alpha_room_3": "### **{room_3_name} Alpha**",
-          "alpha_room_4": "### **{room_4_name} Alpha**",
-          "alpha_room_5": "### **{room_5_name} Alpha**",
-          "alpha_room_6": "### **{room_6_name} Alpha**",
-          "alpha_room_7": "### **{room_7_name} Alpha**"
+          "alpha_room_0": "Alfa-{room_0_name}",
+          "alpha_room_1": "Alfa-{room_1_name}",
+          "alpha_room_2": "Alfa-{room_2_name}",
+          "alpha_room_3": "Alfa-{room_3_name}",
+          "alpha_room_4": "Alfa-{room_4_name}",
+          "alpha_room_5": "Alfa-{room_5_name}",
+          "alpha_room_6": "Alfa-{room_6_name}",
+          "alpha_room_7": "Alfa-{room_7_name}"
         },
         "description": "Kameraalternativ. Alpha 2",
         "title": "Alpha Chanel Rum Färger"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "### **{room_8_name} Alpha**",
-          "alpha_room_9": "### **{room_9_name} Alpha**",
-          "alpha_room_10": "### **{room_10_name} Alpha**",
-          "alpha_room_11": "### **{room_11_name} Alpha**",
-          "alpha_room_12": "### **{room_12_name} Alpha**",
-          "alpha_room_13": "### **{room_13_name} Alpha**",
-          "alpha_room_14": "### **{room_14_name} Alpha**",
-          "alpha_room_15": "### **{room_15_name} Alpha**"
+          "alpha_room_8": "Alfa-{room_8_name}",
+          "alpha_room_9": "Alfa-{room_9_name}",
+          "alpha_room_10": "Alfa-{room_10_name}",
+          "alpha_room_11": "Alfa-{room_11_name}",
+          "alpha_room_12": "Alfa-{room_12_name}",
+          "alpha_room_13": "Alfa-{room_13_name}",
+          "alpha_room_14": "Alfa-{room_14_name}",
+          "alpha_room_15": "Alfa-{room_15_name}"
         },
         "description": "Kameraalternativ. Alpha 3",
         "title": "Alpha Chanel Rum Färger"
@@ -366,7 +366,7 @@
       },
       "add_floor": {
         "title": "Lägg till nytt golv",
-        "description": "Information",
+        "description": "{info}",
         "data": {
           "floor_name": "Golvnamn",
           "map_name": "Kartnamn (valfritt)"
@@ -378,7 +378,7 @@
       },
       "edit_floor": {
         "title": "Redigera golvinställningar",
-        "description": "Redigera kartnamn för våning: {floor_name}. {trim_info}. Trimvärden beräknas automatiskt – använd \"Spara karttrimningar\" för att uppdatera dem.",
+        "description": "Redigera kartnamn för våning: {floor_name}. {trim_info}. Trimvärden beräknas automatiskt – använd ”Spara karttrimningar” för att uppdatera dem.",
         "data": {
           "floor_name": "Välj våning att redigera",
           "map_name": "Kartnamn (valfritt)"
@@ -424,7 +424,7 @@
   "services": {
     "reload": {
       "name": "Ladda om",
-      "description": "Ladda om MQTT Dammsugare Kamera Platform."
+      "description": "Ladda om MQTT Vacuum Camera Platform."
     },
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",
@@ -436,7 +436,7 @@
     },
     "reset_trims": {
       "name": "Återställ bilder Trims",
-      "description": "Återställer kartornas trimningar."
+      "description": "Återställer kartornas trimning."
     },
     "snapshot": {
       "name": "Ta en ögonblicksbild",
@@ -469,7 +469,7 @@
       "message": "MQTT-integration är inte tillgänglig. Se till att MQTT är konfigurerat."
     },
     "mqtt_publish_failed": {
-      "message": "Det gick inte att publicera kommandot till dammsugare via MQTT."
+      "message": "Det gick inte att publicera kommandot till vacuum via MQTT."
     }
   }
 }

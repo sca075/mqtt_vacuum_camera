@@ -82,11 +82,11 @@
           "disable_go_to_target": "إخفاء الوجهة المقصودة"
         },
         "data_description": {
-          "disable_floor": "عند التفعيل، لن يتم عرض الطابق على الخريطة",
+          "disable_floor": "عند التفعيل، لن تظهر الأرضية على الخريطة",
           "disable_wall": "عند التفعيل، لن تظهر الجدران على الخريطة",
           "disable_robot": "عند التفعيل، لن يظهر الروبوت على الخريطة",
           "disable_charger": "عند التفعيل، لن يظهر الشاحن على الخريطة",
-          "disable_virtual_walls": "عند التفعيل، لن تظهر الجدران الافتراضية على الخريطة",
+          "disable_virtual_walls": "عند التمكين، لن تظهر الجدران الافتراضية على الخريطة",
           "disable_restricted_areas": "عند التفعيل، لن تظهر المناطق المحظورة على الخريطة",
           "disable_no_mop_areas": "عند التفعيل، لن تظهر المناطق التي لا يتم تنظيفها بالممسحة على الخريطة",
           "disable_obstacles": "عند التفعيل، لن تظهر العوائق على الخريطة",
@@ -116,21 +116,21 @@
           "disable_room_15": "إخفاء الغرفة 15"
         },
         "data_description": {
-          "disable_room_1": "عند التفعيل، لن تظهر الغرفة 1 {room_0_name} على الخريطة",
-          "disable_room_2": "عند التفعيل، لن تظهر الغرفة 2 {room_1_name} على الخريطة",
-          "disable_room_3": "عند التفعيل، لن تظهر الغرفة 3 {room_2_name} على الخريطة",
-          "disable_room_4": "عند التفعيل، لن تظهر الغرفة 4 {room_3_name} على الخريطة",
-          "disable_room_5": "عند التفعيل، لن تظهر الغرفة 5 {room_4_name} على الخريطة",
-          "disable_room_6": "عند التفعيل، لن تظهر الغرفة 6 {room_5_name} على الخريطة",
-          "disable_room_7": "عند التفعيل، لن تظهر الغرفة 7 {room_6_name} على الخريطة",
-          "disable_room_8": "عند التفعيل، لن تظهر الغرفة 8 {room_7_name} على الخريطة",
-          "disable_room_9": "عند التفعيل، لن تظهر الغرفة 9 {room_8_name} على الخريطة",
-          "disable_room_10": "عند التفعيل، لن تظهر الغرفة 10 {room_9_name} على الخريطة",
-          "disable_room_11": "عند التفعيل، لن تظهر الغرفة 11 {room_10_name} على الخريطة",
-          "disable_room_12": "عند التفعيل، لن تظهر الغرفة 12 {room_11_name} على الخريطة",
-          "disable_room_13": "عند التفعيل، لن تظهر الغرفة 13 {room_12_name} على الخريطة",
-          "disable_room_14": "عند التفعيل، لن تظهر الغرفة 14 {room_13_name} على الخريطة",
-          "disable_room_15": "عند التفعيل، لن تظهر الغرفة 15 {room_14_name} على الخريطة"
+          "disable_room_1": "عند التفعيل، لن تظهر غرفة 1 {room_0_name} على الخريطة",
+          "disable_room_2": "عند التفعيل، لن تظهر غرفة 2 {room_1_name} على الخريطة",
+          "disable_room_3": "عند التفعيل، لن تظهر غرفة 3 {room_2_name} على الخريطة",
+          "disable_room_4": "عند التفعيل، لن يتم عرض Room 4 {room_3_name} على الخريطة",
+          "disable_room_5": "عند التفعيل، لن يتم عرض Room 5 {room_4_name} على الخريطة",
+          "disable_room_6": "عند التفعيل، لن يتم عرض Room 6 {room_5_name} على الخريطة",
+          "disable_room_7": "عند التفعيل، لن تظهر غرفة 7 {room_6_name} على الخريطة",
+          "disable_room_8": "عند التفعيل، لن يتم عرض Room 8 {room_7_name} على الخريطة",
+          "disable_room_9": "عند التفعيل، لن تظهر غرفة 9 {room_8_name} على الخريطة",
+          "disable_room_10": "عند التفعيل، لن تظهر غرفة 10 {room_9_name} على الخريطة",
+          "disable_room_11": "عند التفعيل، لن تظهر غرفة 11 {room_10_name} على الخريطة",
+          "disable_room_12": "عند التفعيل، لن يتم عرض Room 12 {room_11_name} على الخريطة",
+          "disable_room_13": "عند التفعيل، لن تظهر غرفة 13 {room_12_name} على الخريطة",
+          "disable_room_14": "عند التفعيل، لن تظهر غرفة 14 {room_13_name} على الخريطة",
+          "disable_room_15": "عند التفعيل، لن تظهر غرفة 15 {room_14_name} على الخريطة"
         }
       },
       "transparency": {
@@ -169,7 +169,7 @@
         }
       },
       "floor_management": {
-        "title": "إدارة الطوابق",
+        "title": "إدارة الطابق",
         "description": "إدارة عدة طوابق وإعدادات الزخرفة الخاصة بها",
         "menu_options": {
           "select_floor": "تحديد الطابق النشط",
@@ -260,7 +260,7 @@
           "alpha_text": "نص ألفا"
         },
         "description": "خيارات الكاميرا. ألفا 1",
-        "title": "ألوان قاعدة ألفا شانيل"
+        "title": "ألوان أساسية من Alpha Chanel"
       },
       "floor_only": {
         "data": {
@@ -284,17 +284,17 @@
           "add_room_1_alpha": "تكوين الشفافية:"
         },
         "data_description": {
-          "color_room_0": "### **{room_0_name} اللون**",
-          "color_room_1": "### **{room_1_name} اللون**",
-          "color_room_2": "### **{room_2_name} اللون**",
-          "color_room_3": "### **{room_3_name} اللون**",
-          "color_room_4": "### **{room_4_name} اللون**",
-          "color_room_5": "### **{room_5_name} اللون**",
-          "color_room_6": "### **{room_6_name} اللون**",
-          "color_room_7": "### **{room_7_name} اللون**"
+          "color_room_0": "لون {room_0_name}",
+          "color_room_1": "لون {room_1_name}",
+          "color_room_2": "لون {room_2_name}",
+          "color_room_3": "لون {room_3_name}",
+          "color_room_4": "لون {room_4_name}",
+          "color_room_5": "لون {room_5_name}",
+          "color_room_6": "لون {room_6_name}",
+          "color_room_7": "لون {room_7_name}"
         },
         "description": "خيارات ألوان الكاميرا.",
-        "title": "الغرف من 1 إلى 8 الألوان"
+        "title": "الغرف من 1 إلى 8 ألوان"
       },
       "rooms_colours_2": {
         "data": {
@@ -309,14 +309,14 @@
           "add_room_2_alpha": "تكوين الشفافية:"
         },
         "data_description": {
-          "color_room_8": "### **{room_8_name} اللون**",
-          "color_room_9": "### **{room_9_name} اللون**",
-          "color_room_10": "### **{room_10_name} اللون**",
-          "color_room_11": "### **{room_11_name} اللون**",
-          "color_room_12": "### **{room_12_name} اللون**",
-          "color_room_13": "### **{room_13_name} اللون**",
-          "color_room_14": "### **{room_14_name} اللون**",
-          "color_room_15": "### **{room_15_name} اللون**"
+          "color_room_8": "لون {room_8_name}",
+          "color_room_9": "لون {room_9_name}",
+          "color_room_10": "لون {room_10_name}",
+          "color_room_11": "لون {room_11_name}",
+          "color_room_12": "لون {room_12_name}",
+          "color_room_13": "لون {room_13_name}",
+          "color_room_14": "لون {room_14_name}",
+          "color_room_15": "لون {room_15_name}"
         },
         "description": "خيارات ألوان الكاميرا.",
         "title": "الغرف من 9 إلى 15 الألوان"
@@ -328,28 +328,28 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "### **{room_0_name} ألفا**",
-          "alpha_room_1": "### **{room_1_name} ألفا**",
-          "alpha_room_2": "### **{room_2_name} ألفا**",
-          "alpha_room_3": "### **{room_3_name} ألفا**",
-          "alpha_room_4": "### **{room_4_name} ألفا**",
-          "alpha_room_5": "### **{room_5_name} ألفا**",
-          "alpha_room_6": "### **{room_6_name} ألفا**",
-          "alpha_room_7": "### **{room_7_name} ألفا**"
+          "alpha_room_0": "ألفا{room_0_name}",
+          "alpha_room_1": "ألفا{room_1_name}",
+          "alpha_room_2": "ألفا{room_2_name}",
+          "alpha_room_3": "ألفا{room_3_name}",
+          "alpha_room_4": "ألفا{room_4_name}",
+          "alpha_room_5": "ألفا{room_5_name}",
+          "alpha_room_6": "ألفا{room_6_name}",
+          "alpha_room_7": "ألفا{room_7_name}"
         },
         "description": "خيارات الكاميرا. ألفا 2",
         "title": "ألوان غرف ألفا شانيل"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "### **{room_8_name} ألفا**",
-          "alpha_room_9": "### **{room_9_name} ألفا**",
-          "alpha_room_10": "### **{room_10_name} ألفا**",
-          "alpha_room_11": "### **{room_11_name} ألفا**",
-          "alpha_room_12": "### **{room_12_name} ألفا**",
-          "alpha_room_13": "### **{room_13_name} ألفا**",
-          "alpha_room_14": "### **{room_14_name} ألفا**",
-          "alpha_room_15": "### **{room_15_name} ألفا**"
+          "alpha_room_8": "ألفا{room_8_name}",
+          "alpha_room_9": "ألفا{room_9_name}",
+          "alpha_room_10": "ألفا{room_10_name}",
+          "alpha_room_11": "ألفا{room_11_name}",
+          "alpha_room_12": "ألفا{room_12_name}",
+          "alpha_room_13": "ألفا{room_13_name}",
+          "alpha_room_14": "ألفا{room_14_name}",
+          "alpha_room_15": "ألفا{room_15_name}"
         },
         "description": "خيارات الكاميرا. ألفا 3",
         "title": "ألوان غرف ألفا شانيل"
@@ -366,7 +366,7 @@
       },
       "add_floor": {
         "title": "إضافة طابق جديد",
-        "description": "معلومات",
+        "description": "{info}",
         "data": {
           "floor_name": "اسم الطابق",
           "map_name": "اسم الخريطة (اختياري)"
@@ -460,7 +460,7 @@
       "message": "يجب أن يكون المعلمة \"Zone\" قائمة."
     },
     "zoneid_must_be_list": {
-      "message": "يجب أن يكون المعلمة \"Zone_Ids\" قائمة."
+      "message": "يجب أن يكون المعلم \"Zone_Ids\" قائمة."
     },
     "zone_list_length": {
       "message": "يجب أن تحتوي \"المنطقة\" على عنصر واحد على الأقل يحتوي على قائمة من 4 أعداد صحيحة."
@@ -469,7 +469,7 @@
       "message": "تكامل MQTT غير متاح. يرجى التأكد من تكوين MQTT."
     },
     "mqtt_publish_failed": {
-      "message": "فشل نشر الأمر إلى مكنسة عبر MQTT."
+      "message": "فشل نشر الأمر إلى vacuum عبر MQTT."
     }
   }
 }

@@ -116,21 +116,21 @@
           "disable_room_15": "隐藏15号房间"
         },
         "data_description": {
-          "disable_room_1": "启用后，房间1 {room_0_name} 将不会显示在地图上",
-          "disable_room_2": "启用后，房间2 {room_1_name} 将不会显示在地图上",
-          "disable_room_3": "启用后，房间3 {room_2_name} 将不会显示在地图上",
-          "disable_room_4": "启用后，4号房间 {room_3_name} 将不会显示在地图上",
-          "disable_room_5": "启用后，5号房间 {room_4_name} 将不会显示在地图上",
-          "disable_room_6": "启用后，6号房间 {room_5_name} 将不会显示在地图上",
-          "disable_room_7": "启用后，7号房间 {room_6_name} 将不会显示在地图上",
-          "disable_room_8": "启用后，8号房间 {room_7_name} 将不会显示在地图上",
-          "disable_room_9": "启用后，9号房间 {room_8_name} 将不会显示在地图上",
-          "disable_room_10": "启用后，10号房间 {room_9_name} 将不会显示在地图上",
-          "disable_room_11": "启用后，11号房间 {room_10_name} 将不会显示在地图上",
-          "disable_room_12": "启用后，12号房间 {room_11_name} 将不会显示在地图上",
-          "disable_room_13": "启用后，13号房间 {room_12_name} 将不会显示在地图上",
-          "disable_room_14": "启用后，14号房间 {room_13_name} 将不会显示在地图上",
-          "disable_room_15": "启用后，15号房间 {room_14_name} 将不会显示在地图上"
+          "disable_room_1": "启用后，地图上将不再显示1号房间{room_0_name}。",
+          "disable_room_2": "启用后，地图上将不再显示2号房间{room_1_name}。",
+          "disable_room_3": "启用后，3号房间{room_2_name}将不会显示在地图上",
+          "disable_room_4": "启用后，{room_3_name}的4号房间将不会显示在地图上",
+          "disable_room_5": "启用后，5号房间{room_4_name}将不会显示在地图上",
+          "disable_room_6": "启用后，6号房间{room_5_name}将不会显示在地图上",
+          "disable_room_7": "启用后，7号房间{room_6_name}将不会显示在地图上",
+          "disable_room_8": "启用后，8号房间{room_7_name}将不会显示在地图上",
+          "disable_room_9": "启用后，9号房间{room_8_name}将不会显示在地图上",
+          "disable_room_10": "启用后，10号房间{room_9_name}将不会显示在地图上",
+          "disable_room_11": "启用后，11号房间{room_10_name}将不会显示在地图上",
+          "disable_room_12": "启用后，12号房间{room_11_name}将不会显示在地图上",
+          "disable_room_13": "启用后，13号房间{room_12_name}将不会显示在地图上",
+          "disable_room_14": "启用后，14号房间（{room_13_name}）将不会显示在地图上",
+          "disable_room_15": "启用后，15号房间{room_14_name}将不会显示在地图上"
         }
       },
       "transparency": {
@@ -148,7 +148,7 @@
         "title": "材质渲染",
         "description": "配置材质检测与渲染（木板、瓷砖、地毯）",
         "data": {
-          "disable_material_overlay": "禁用材质叠加（木材与瓷砖）",
+          "disable_material_overlay": "禁用材质叠加层（木材与瓷砖）",
           "disable_carpets": "隐藏地毯",
           "color_carpet": "地毯颜色",
           "color_material_wood": "木板颜色",
@@ -165,7 +165,7 @@
           "color_material_tile": "瓷砖材料的颜色（RGB）",
           "alpha_carpet": "地毯透明度级别（0-255）",
           "alpha_material_wood": "木板透明度级别（0-255）",
-          "alpha_material_tile": "瓦片透明度级别（0-255）"
+          "alpha_material_tile": "瓦片的透明度级别（0-255）"
         }
       },
       "floor_management": {
@@ -284,14 +284,14 @@
           "add_room_1_alpha": "配置透明度："
         },
         "data_description": {
-          "color_room_0": "### **{房间名称} 颜色**",
-          "color_room_1": "### **{房间1名称} 颜色**",
-          "color_room_2": "### **{房间2名称} 颜色**",
-          "color_room_3": "### **{房间3名称} 颜色**",
-          "color_room_4": "### **{房间4名称} 颜色**",
-          "color_room_5": "### **{room_5_name} 颜色**",
-          "color_room_6": "### **{房间6名称} 颜色**",
-          "color_room_7": "### **{房间7名称} 颜色**"
+          "color_room_0": "{room_0_name}色",
+          "color_room_1": "{room_1_name}色",
+          "color_room_2": "{room_2_name}色",
+          "color_room_3": "{room_3_name}色",
+          "color_room_4": "{room_4_name}色",
+          "color_room_5": "{room_5_name}色",
+          "color_room_6": "{room_6_name}色",
+          "color_room_7": "{room_7_name}色"
         },
         "description": "相机色彩选项。",
         "title": "1至8号房间 颜色"
@@ -309,14 +309,14 @@
           "add_room_2_alpha": "配置透明度："
         },
         "data_description": {
-          "color_room_8": "### **{房间8名称} 颜色**",
-          "color_room_9": "### **{房间9名称} 颜色**",
-          "color_room_10": "### **{房间10名称} 颜色**",
-          "color_room_11": "### **{房间11名称} 颜色**",
-          "color_room_12": "### **{房间12名称} 颜色**",
-          "color_room_13": "### **{房间13名称} 颜色**",
-          "color_room_14": "### **{room_14_name} 颜色**",
-          "color_room_15": "### **{room_15_name} 颜色**"
+          "color_room_8": "{room_8_name}色",
+          "color_room_9": "{room_9_name}色",
+          "color_room_10": "{room_10_name}色",
+          "color_room_11": "{room_11_name}色",
+          "color_room_12": "{room_12_name}色",
+          "color_room_13": "{room_13_name}色",
+          "color_room_14": "{room_14_name}色",
+          "color_room_15": "{room_15_name}色"
         },
         "description": "相机色彩选项。",
         "title": "9至15号房间 配色方案"
@@ -328,28 +328,28 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "### **{room_0_name} 阿尔法**",
-          "alpha_room_1": "### **{room_1_name} 阿尔法**",
-          "alpha_room_2": "### **{room_2_name} 阿尔法**",
-          "alpha_room_3": "### **{room_3_name} 阿尔法**",
-          "alpha_room_4": "### **{房间4名称} 阿尔法**",
-          "alpha_room_5": "### **{room_5_name} 阿尔法**",
-          "alpha_room_6": "### **{room_6_name} 阿尔法**",
-          "alpha_room_7": "### **{room_7_name} 阿尔法**"
+          "alpha_room_0": "Alpha {room_0_name}",
+          "alpha_room_1": "Alpha {room_1_name}",
+          "alpha_room_2": "Alpha {room_2_name}",
+          "alpha_room_3": "Alpha {room_3_name}",
+          "alpha_room_4": "Alpha {room_4_name}",
+          "alpha_room_5": "Alpha {room_5_name}",
+          "alpha_room_6": "Alpha {room_6_name}",
+          "alpha_room_7": "Alpha {room_7_name}"
         },
         "description": "相机选项。Alpha 2",
         "title": "阿尔法香奈儿房间色彩"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "### **{room_8_name} 阿尔法**",
-          "alpha_room_9": "### **{room_9_name} 阿尔法**",
-          "alpha_room_10": "### **{room_10_name} 阿尔法**",
-          "alpha_room_11": "### **{room_11_name} 阿尔法**",
-          "alpha_room_12": "### **{房间12名称} 阿尔法**",
-          "alpha_room_13": "### **{13号房间名称} 阿尔法**",
-          "alpha_room_14": "### **{room_14_name} 阿尔法**",
-          "alpha_room_15": "### **{room_15_name} 阿尔法**"
+          "alpha_room_8": "Alpha {room_8_name}",
+          "alpha_room_9": "Alpha {room_9_name}",
+          "alpha_room_10": "Alpha {room_10_name}",
+          "alpha_room_11": "Alpha {room_11_name}",
+          "alpha_room_12": "Alpha {room_12_name}",
+          "alpha_room_13": "Alpha {room_13_name}",
+          "alpha_room_14": "Alpha {room_14_name}",
+          "alpha_room_15": "Alpha {room_15_name}"
         },
         "description": "相机选项。Alpha 3",
         "title": "阿尔法香奈儿房间色彩"
@@ -361,12 +361,12 @@
           "current_floor": "活动地板"
         },
         "data_description": {
-          "current_floor": "选择当前活动的楼层。当前楼层：{current_floor}"
+          "current_floor": "选择当前活动的楼层。当前：{current_floor}"
         }
       },
       "add_floor": {
         "title": "添加新楼层",
-        "description": "信息",
+        "description": "{info}",
         "data": {
           "floor_name": "楼层名称",
           "map_name": "地图名称（可选）"
@@ -378,7 +378,7 @@
       },
       "edit_floor": {
         "title": "编辑楼层设置",
-        "description": "编辑楼层地图名称：{floor_name}。{trim_info}。修剪值为自动计算——请使用“保存地图修剪”功能更新数值。",
+        "description": "编辑楼层地图名称：{floor_name}。{trim_info}。修剪值将自动计算——使用\"保存地图修剪值\"更新数据。",
         "data": {
           "floor_name": "选择楼层进行编辑",
           "map_name": "地图名称（可选）"
@@ -390,7 +390,7 @@
       },
       "delete_floor": {
         "title": "删除楼层",
-        "description": "从配置中移除一层。若删除当前活动层，该层将重置为'floor_0'。",
+        "description": "从配置中移除一层。若删除当前活动层，则该层将重置为'floor_0'。",
         "data": {
           "floor_name": "删除楼层"
         },
@@ -424,7 +424,7 @@
   "services": {
     "reload": {
       "name": "重新加载",
-      "description": "重新加载MQTT真空摄像头平台。"
+      "description": "重新加载MQTT真空摄像平台。"
     },
     "turn_off": {
       "name": "[%key:common::action::关闭%]",
@@ -440,7 +440,7 @@
     },
     "snapshot": {
       "name": "拍摄快照",
-      "description": "从相机中拍摄快照。",
+      "description": "从相机拍摄快照。",
       "fields": {
         "filename": {
           "name": "文件名",
@@ -460,10 +460,10 @@
       "message": "'Zone' 参数必须是一个列表。"
     },
     "zoneid_must_be_list": {
-      "message": "'Zone_Ids' 参数必须为列表。"
+      "message": "'Zone_Ids' 参数必须是一个列表。"
     },
     "zone_list_length": {
-      "message": "该\"区域\"必须至少包含1个元素，该元素内含一个由4个整数组成的列表。"
+      "message": "该\"区域\"必须至少包含1个包含4个整数的列表。"
     },
     "mqtt_service_not_found": {
       "message": "MQTT集成功能不可用。请确保已配置MQTT。"

@@ -88,10 +88,10 @@
           "disable_charger": "Når denne funksjonen er aktivert, vises ikke ladestasjonen på kartet.",
           "disable_virtual_walls": "Når denne funksjonen er aktivert, vises ikke virtuelle vegger på kartet.",
           "disable_restricted_areas": "Når denne funksjonen er aktivert, vises ikke begrensede områder på kartet.",
-          "disable_no_mop_areas": "Når denne funksjonen er aktivert, vises ikke områder hvor det ikke er mulig å bruke mopp på kartet.",
+          "disable_no_mop_areas": "Når denne funksjonen er aktivert, vises ikke områder hvor det ikke er mulig å moppe på kartet.",
           "disable_obstacles": "Når denne funksjonen er aktivert, vises ikke hindringer på kartet.",
           "disable_path": "Når denne funksjonen er aktivert, vises ikke rengjøringsbanen på kartet.",
-          "disable_predicted_path": "Når denne funksjonen er aktivert, vises ikke den forventede ruten på kartet.",
+          "disable_predicted_path": "Når denne funksjonen er aktivert, vil den forventede ruten ikke vises på kartet.",
           "disable_go_to_target": "Når denne funksjonen er aktivert, vises ikke målene på kartet."
         }
       },
@@ -124,7 +124,7 @@
           "disable_room_6": "Når denne funksjonen er aktivert, vil rom 6 {room_5_name} ikke vises på kartet.",
           "disable_room_7": "Når denne funksjonen er aktivert, vil rom 7 {room_6_name} ikke vises på kartet.",
           "disable_room_8": "Når denne funksjonen er aktivert, vil rom 8 {room_7_name} ikke vises på kartet.",
-          "disable_room_9": "Når denne funksjonen er aktivert, vil rom 9 {room_8_name} ikke vises på kartet.",
+          "disable_room_9": "Når denne funksjonen er aktivert, vil Room 9 {room_8_name} ikke vises på kartet.",
           "disable_room_10": "Når denne funksjonen er aktivert, vil rom 10 {room_9_name} ikke vises på kartet.",
           "disable_room_11": "Når denne funksjonen er aktivert, vil rom 11 {room_10_name} ikke vises på kartet.",
           "disable_room_12": "Når denne funksjonen er aktivert, vil rom 12 {room_11_name} ikke vises på kartet.",
@@ -137,10 +137,10 @@
         "title": "Innstillinger for gjennomsiktighet",
         "description": "Konfigurer innstillinger for gjennomsiktighet (alfa) for kartelementer",
         "menu_options": {
-          "alpha_1": "Basertransparens",
+          "alpha_1": "Basistransparens",
           "alpha_floor": "Gulvtransparens",
           "alpha_2": "Rom 1-8 Gjennomsiktighet",
-          "alpha_3": "Rom 9-16 Gjennomsiktighet",
+          "alpha_3": "Rom 9–16 Gjennomsiktighet",
           "main_menu": "Tilbake til hovedmenyen"
         }
       },
@@ -169,11 +169,11 @@
         }
       },
       "floor_management": {
-        "title": "Gulvledelse",
+        "title": "Gulvstyring",
         "description": "Administrer flere etasjer og deres triminnstillinger",
         "menu_options": {
           "select_floor": "Velg aktiv etasje",
-          "add_floor": "Legg til ny etasje",
+          "add_floor": "Legg til nytt gulv",
           "edit_floor": "Rediger gulvinstillinger",
           "delete_floor": "Slett etasje",
           "main_menu": "Tilbake til hovedmenyen"
@@ -284,14 +284,14 @@
           "add_room_1_alpha": "Konfigurer gjennomsiktighet:"
         },
         "data_description": {
-          "color_room_0": "### **{room_0_name} Farge**",
-          "color_room_1": "### **{room_1_name} Farge**",
-          "color_room_2": "### **{room_2_name} Farge**",
-          "color_room_3": "### **{room_3_name} Farge**",
-          "color_room_4": "### **{room_4_name} Farge**",
-          "color_room_5": "### **{room_5_name} Farge**",
-          "color_room_6": "### **{room_6_name} Farge**",
-          "color_room_7": "### **{room_7_name} Farge**"
+          "color_room_0": "{room_0_name}-farge",
+          "color_room_1": "{room_1_name}-farge",
+          "color_room_2": "{room_2_name}-farge",
+          "color_room_3": "{room_3_name}-farge",
+          "color_room_4": "{room_4_name}-farge",
+          "color_room_5": "{room_5_name}-farge",
+          "color_room_6": "{room_6_name}-farge",
+          "color_room_7": "{room_7_name}-farge"
         },
         "description": "Kamerafarger Alternativer.",
         "title": "Rom 1 til 8 Farger"
@@ -309,14 +309,14 @@
           "add_room_2_alpha": "Konfigurer gjennomsiktighet:"
         },
         "data_description": {
-          "color_room_8": "### **{room_8_name} Farge**",
-          "color_room_9": "### **{room_9_name} Farge**",
-          "color_room_10": "### **{room_10_name} Farge**",
-          "color_room_11": "### **{room_11_name} Farge**",
-          "color_room_12": "### **{room_12_name} Farge**",
-          "color_room_13": "### **{room_13_name} Farge**",
-          "color_room_14": "### **{room_14_name} Farge**",
-          "color_room_15": "### **{room_15_name} Farge**"
+          "color_room_8": "{room_8_name}-farge",
+          "color_room_9": "{room_9_name}-farge",
+          "color_room_10": "{room_10_name}-farge",
+          "color_room_11": "{room_11_name}-farge",
+          "color_room_12": "{room_12_name}-farge",
+          "color_room_13": "{room_13_name}-farge",
+          "color_room_14": "{room_14_name}-farge",
+          "color_room_15": "{room_15_name}-farge"
         },
         "description": "Kamerafarger Alternativer.",
         "title": "Rom 9 til 15 Farger"
@@ -328,28 +328,28 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "### **{room_0_name} Alfa**",
-          "alpha_room_1": "### **{room_1_name} Alfa**",
-          "alpha_room_2": "### **{room_2_name} Alfa**",
-          "alpha_room_3": "### **{room_3_name} Alfa**",
-          "alpha_room_4": "### **{room_4_name} Alfa**",
-          "alpha_room_5": "### **{room_5_name} Alfa**",
-          "alpha_room_6": "### **{room_6_name} Alfa**",
-          "alpha_room_7": "### **{room_7_name} Alfa**"
+          "alpha_room_0": "Alfa-{room_0_name}",
+          "alpha_room_1": "Alfa-{room_1_name}",
+          "alpha_room_2": "Alfa-{room_2_name}",
+          "alpha_room_3": "Alfa-{room_3_name}",
+          "alpha_room_4": "Alfa-{room_4_name}",
+          "alpha_room_5": "Alfa-{room_5_name}",
+          "alpha_room_6": "Alfa-{room_6_name}",
+          "alpha_room_7": "Alfa-{room_7_name}"
         },
         "description": "Kamerainnstillinger. Alpha 2",
         "title": "Alpha Chanel Rom Farger"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "### **{room_8_name} Alfa**",
-          "alpha_room_9": "### **{room_9_name} Alfa**",
-          "alpha_room_10": "### **{room_10_name} Alfa**",
-          "alpha_room_11": "### **{room_11_name} Alfa**",
-          "alpha_room_12": "### **{room_12_name} Alfa**",
-          "alpha_room_13": "### **{room_13_name} Alfa**",
-          "alpha_room_14": "### **{room_14_name} Alfa**",
-          "alpha_room_15": "### **{room_15_name} Alfa**"
+          "alpha_room_8": "Alfa-{room_8_name}",
+          "alpha_room_9": "Alfa-{room_9_name}",
+          "alpha_room_10": "Alfa-{room_10_name}",
+          "alpha_room_11": "Alfa-{room_11_name}",
+          "alpha_room_12": "Alfa-{room_12_name}",
+          "alpha_room_13": "Alfa-{room_13_name}",
+          "alpha_room_14": "Alfa-{room_14_name}",
+          "alpha_room_15": "Alfa-{room_15_name}"
         },
         "description": "Kamerainnstillinger. Alpha 3",
         "title": "Alpha Chanel Rom Farger"
@@ -361,12 +361,12 @@
           "current_floor": "Aktiv gulv"
         },
         "data_description": {
-          "current_floor": "Velg etasjen som er aktiv for øyeblikket. Aktuell: {current_floor}"
+          "current_floor": "Velg gulvet som er aktivt for øyeblikket. Aktuelt: {current_floor}"
         }
       },
       "add_floor": {
         "title": "Legg til ny etasje",
-        "description": "Informasjon",
+        "description": "{info}",
         "data": {
           "floor_name": "Gulvnavn",
           "map_name": "Kartnavn (valgfritt)"
@@ -378,7 +378,7 @@
       },
       "edit_floor": {
         "title": "Rediger gulvinstillinger",
-        "description": "Rediger kartnavn for etasje: {floor_name}. {trim_info}. Trimverdiene beregnes automatisk – bruk «Lagre karttrim» for å oppdatere dem.",
+        "description": "Rediger kartnavn for etasje: {floor_name}. {trim_info}. Trimverdiene beregnes automatisk – bruk «Save Map Trims» for å oppdatere dem.",
         "data": {
           "floor_name": "Velg etasje for redigering",
           "map_name": "Kartnavn (valgfritt)"
@@ -424,7 +424,7 @@
   "services": {
     "reload": {
       "name": "Laste på nytt",
-      "description": "Last inn MQTT Støvsuger Kamera Platform på nytt."
+      "description": "Last inn MQTT Vacuum Camera Platform på nytt."
     },
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",
@@ -469,7 +469,7 @@
       "message": "MQTT-integrasjon er ikke tilgjengelig. Kontroller at MQTT er konfigurert."
     },
     "mqtt_publish_failed": {
-      "message": "Kunne ikke publisere kommandoen til støvsuger via MQTT."
+      "message": "Kunne ikke publisere kommando til støvsuger via MQTT."
     }
   }
 }

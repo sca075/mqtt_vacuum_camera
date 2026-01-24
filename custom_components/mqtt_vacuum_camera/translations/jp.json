@@ -20,7 +20,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "MQTTカメラオプション",
+        "title": "MQTT カメラ オプション",
         "description": "カメラオプションを設定する",
         "menu_options": {
           "image_opt": "画像設定",
@@ -116,28 +116,28 @@
           "disable_room_15": "隠し部屋15"
         },
         "data_description": {
-          "disable_room_1": "有効にすると、ルーム1 {room_0_name} はマップ上に表示されません",
-          "disable_room_2": "有効にすると、ルーム2 {room_1_name} はマップ上に表示されません",
-          "disable_room_3": "有効にすると、ルーム3 {room_2_name} はマップ上に表示されません",
-          "disable_room_4": "有効にすると、ルーム4 {room_3_name} はマップ上に表示されません",
-          "disable_room_5": "有効にすると、ルーム5 {room_4_name} はマップ上に表示されません",
-          "disable_room_6": "有効にすると、ルーム6 {room_5_name} はマップ上に表示されません",
-          "disable_room_7": "有効にすると、ルーム7 {room_6_name} はマップ上に表示されません",
-          "disable_room_8": "有効にすると、ルーム8 {room_7_name} はマップ上に表示されません",
-          "disable_room_9": "有効にすると、ルーム9 {room_8_name} はマップ上に表示されません",
-          "disable_room_10": "有効にすると、ルーム10 {room_9_name} はマップ上に表示されません",
-          "disable_room_11": "有効にすると、ルーム11 {room_10_name} はマップ上に表示されません",
+          "disable_room_1": "有効にすると、ルーム1 {room_0_name} は地図上に表示されません",
+          "disable_room_2": "有効にすると、ルーム2の{room_1_name}は地図上に表示されません",
+          "disable_room_3": "有効にすると、ルーム3 {room_2_name} は地図上に表示されません",
+          "disable_room_4": "有効にすると、ルーム4 {room_3_name} は地図上に表示されません",
+          "disable_room_5": "有効にすると、ルーム5 {room_4_name} は地図上に表示されません",
+          "disable_room_6": "有効にすると、ルーム6 {room_5_name} は地図上に表示されません",
+          "disable_room_7": "有効にすると、ルーム7 {room_6_name} は地図上に表示されません",
+          "disable_room_8": "有効にすると、ルーム8 {room_7_name} は地図上に表示されません",
+          "disable_room_9": "有効にすると、ルーム9 {room_8_name} は地図上に表示されません",
+          "disable_room_10": "有効にすると、ルーム10 {room_9_name} は地図上に表示されません",
+          "disable_room_11": "有効にすると、ルーム11 {room_10_name} は地図上に表示されません",
           "disable_room_12": "有効にすると、ルーム12 {room_11_name} はマップ上に表示されません",
           "disable_room_13": "有効にすると、ルーム13 {room_12_name} はマップ上に表示されません",
-          "disable_room_14": "有効にすると、ルーム14 {room_13_name} はマップ上に表示されません",
-          "disable_room_15": "有効にすると、ルーム15 {room_14_name} はマップ上に表示されません"
+          "disable_room_14": "有効にすると、ルーム14 {room_13_name} は地図上に表示されません",
+          "disable_room_15": "有効にすると、ルーム15 {room_14_name} は地図上に表示されません"
         }
       },
       "transparency": {
         "title": "透明度設定",
         "description": "マップ要素の透明度（アルファ）設定を構成する",
         "menu_options": {
-          "alpha_1": "ベース透明性",
+          "alpha_1": "ベース透明度",
           "alpha_floor": "床の透明性",
           "alpha_2": "部屋1～8 透明性",
           "alpha_3": "9～16号室 透明性",
@@ -160,7 +160,7 @@
         "data_description": {
           "disable_material_overlay": "マップ上の木材とタイルのマテリアルオーバーレイレンダリングを無効にする",
           "disable_carpets": "有効にすると、カーペットはマップ上に表示されません",
-          "color_carpet": "カーペット素材の色 (RGB)",
+          "color_carpet": "カーペット素材の色（RGB）",
           "color_material_wood": "木材板材の色 (RGB)",
           "color_material_tile": "タイル素材の色 (RGB)",
           "alpha_carpet": "カーペットの透明度レベル (0-255)",
@@ -235,7 +235,7 @@
           "add_base_alpha": "透明度を設定する："
         },
         "data_description": {
-          "color_charger": "カラーをロードする。",
+          "color_charger": "カラーをロード",
           "color_move": "色を移動する。",
           "color_wall": "壁の色。",
           "color_robot": "カラーロボット",
@@ -244,7 +244,7 @@
           "color_zone_clean": "ゾーンクリーンカラー。",
           "color_background": "背景色。"
         },
-        "description": "カメラカラーオプション",
+        "description": "カメラカラーオプション。",
         "title": "ベースカラー設定"
       },
       "alpha_1": {
@@ -284,14 +284,14 @@
           "add_room_1_alpha": "透明度を設定する："
         },
         "data_description": {
-          "color_room_0": "### **{room_0_name} カラー**",
-          "color_room_1": "### **{room_1_name} カラー**",
-          "color_room_2": "### **{room_2_name} カラー**",
-          "color_room_3": "### **{room_3_name} カラー**",
-          "color_room_4": "### **{room_4_name} カラー**",
-          "color_room_5": "### **{room_5_name} カラー**",
-          "color_room_6": "### **{room_6_name} カラー**",
-          "color_room_7": "### **{room_7_name} カラー**"
+          "color_room_0": "{room_0_name}カラー",
+          "color_room_1": "{room_1_name}カラー",
+          "color_room_2": "{room_2_name}カラー",
+          "color_room_3": "{room_3_name}カラー",
+          "color_room_4": "{room_4_name}カラー",
+          "color_room_5": "{room_5_name}カラー",
+          "color_room_6": "{room_6_name}カラー",
+          "color_room_7": "{room_7_name}カラー"
         },
         "description": "カメラカラーオプション",
         "title": "部屋1～8 色"
@@ -309,16 +309,16 @@
           "add_room_2_alpha": "透明度を設定する："
         },
         "data_description": {
-          "color_room_8": "### **{room_8_name} カラー**",
-          "color_room_9": "### **{room_9_name} カラー**",
-          "color_room_10": "### **{room_10_name} カラー**",
-          "color_room_11": "### **{room_11_name} カラー**",
-          "color_room_12": "### **{room_12_name} カラー**",
-          "color_room_13": "### **{room_13_name} カラー**",
-          "color_room_14": "### **{room_14_name} カラー**",
-          "color_room_15": "### **{room_15_name} カラー**"
+          "color_room_8": "{room_8_name}カラー",
+          "color_room_9": "{room_9_name}カラー",
+          "color_room_10": "{room_10_name}カラー",
+          "color_room_11": "{room_11_name}カラー",
+          "color_room_12": "{room_12_name}カラー",
+          "color_room_13": "{room_13_name}カラー",
+          "color_room_14": "{room_14_name}カラー",
+          "color_room_15": "{room_15_name}カラー"
         },
-        "description": "カメラカラーオプション",
+        "description": "カメラカラーオプション。",
         "title": "9号室から15号室まで カラー"
       },
       "alpha_floor": {
@@ -328,28 +328,28 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "### **{room_0_name} アルファ**",
-          "alpha_room_1": "### **{room_1_name} アルファ**",
-          "alpha_room_2": "### **{room_2_name} アルファ**",
-          "alpha_room_3": "### **{room_3_name} アルファ**",
-          "alpha_room_4": "### **{room_4_name} アルファ**",
-          "alpha_room_5": "### **{room_5_name} アルファ**",
-          "alpha_room_6": "### **{room_6_name} アルファ**",
-          "alpha_room_7": "### **{room_7_name} アルファ**"
+          "alpha_room_0": "アルファ版 {room_0_name}",
+          "alpha_room_1": "アルファ版 {room_1_name}",
+          "alpha_room_2": "アルファ版 {room_2_name}",
+          "alpha_room_3": "アルファ版 {room_3_name}",
+          "alpha_room_4": "アルファ版 {room_4_name}",
+          "alpha_room_5": "アルファ版 {room_5_name}",
+          "alpha_room_6": "アルファ版 {room_6_name}",
+          "alpha_room_7": "アルファ版 {room_7_name}"
         },
         "description": "カメラオプション。アルファ2",
         "title": "アルファ・シャネル・ルームズ・カラーズ"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "### **{room_8_name} アルファ**",
-          "alpha_room_9": "### **{room_9_name} アルファ**",
-          "alpha_room_10": "### **{room_10_name} アルファ**",
-          "alpha_room_11": "### **{room_11_name} アルファ**",
-          "alpha_room_12": "### **{room_12_name} アルファ**",
-          "alpha_room_13": "### **{room_13_name} アルファ**",
-          "alpha_room_14": "### **{room_14_name} アルファ**",
-          "alpha_room_15": "### **{room_15_name} アルファ**"
+          "alpha_room_8": "アルファ版 {room_8_name}",
+          "alpha_room_9": "アルファ版 {room_9_name}",
+          "alpha_room_10": "アルファ版 {room_10_name}",
+          "alpha_room_11": "アルファ版 {room_11_name}",
+          "alpha_room_12": "アルファ版 {room_12_name}",
+          "alpha_room_13": "アルファ版 {room_13_name}",
+          "alpha_room_14": "アルファ版 {room_14_name}",
+          "alpha_room_15": "アルファ版 {room_15_name}"
         },
         "description": "カメラオプション。アルファ3",
         "title": "アルファ・シャネル・ルームズ・カラーズ"
@@ -366,7 +366,7 @@
       },
       "add_floor": {
         "title": "新しい階を追加",
-        "description": "情報",
+        "description": "{info}",
         "data": {
           "floor_name": "フロア名",
           "map_name": "マップ名（任意）"
@@ -378,7 +378,7 @@
       },
       "edit_floor": {
         "title": "フロア設定を編集",
-        "description": "フロアのマップ名編集: {floor_name}. {trim_info}.トリム値は自動計算されます - 更新するには「マップトリムを保存」を使用してください。",
+        "description": "フロアの{floor_name}マップ名編集。{trim_info}。トリム値は自動計算されます - 「マップトリムを保存」で更新してください。",
         "data": {
           "floor_name": "編集する階を選択してください",
           "map_name": "マップ名（任意）"
@@ -435,7 +435,7 @@
       "description": "カメラをオンにする。"
     },
     "reset_trims": {
-      "name": "画像のリセットとトリミング",
+      "name": "画像リセットトリミング",
       "description": "マップのトリムをリセットします。"
     },
     "snapshot": {
@@ -460,7 +460,7 @@
       "message": "'Zone' パラメータはリストでなければなりません。"
     },
     "zoneid_must_be_list": {
-      "message": "'Zone_Ids' パラメータはリストでなければなりません。"
+      "message": "'Zone_Ids' パラメーターはリストでなければなりません。"
     },
     "zone_list_length": {
       "message": "「ゾーン」には、4つの整数のリストを含むアイテムが少なくとも1つ存在しなければならない。"

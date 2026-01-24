@@ -116,21 +116,21 @@
           "disable_room_15": "Skjul værelse 15"
         },
         "data_description": {
-          "disable_room_1": "Når denne funktion er aktiveret, vises rum 1 {room_0_name} ikke på kortet.",
-          "disable_room_2": "Når denne funktion er aktiveret, vises rum 2 {room_1_name} ikke på kortet.",
-          "disable_room_3": "Når denne funktion er aktiveret, vises rum 3 {room_2_name} ikke på kortet.",
-          "disable_room_4": "Når denne funktion er aktiveret, vises værelse 4 {room_3_name} ikke på kortet.",
-          "disable_room_5": "Når denne funktion er aktiveret, vises værelse 5 {room_4_name} ikke på kortet.",
-          "disable_room_6": "Når denne funktion er aktiveret, vises værelse 6 {room_5_name} ikke på kortet.",
-          "disable_room_7": "Når denne funktion er aktiveret, vises værelse 7 {room_6_name} ikke på kortet.",
-          "disable_room_8": "Når denne funktion er aktiveret, vises værelse 8 {room_7_name} ikke på kortet.",
-          "disable_room_9": "Når denne funktion er aktiveret, vises værelse 9 {room_8_name} ikke på kortet.",
-          "disable_room_10": "Når denne funktion er aktiveret, vises værelse 10 {room_9_name} ikke på kortet.",
-          "disable_room_11": "Når denne funktion er aktiveret, vises værelse 11 {room_10_name} ikke på kortet.",
-          "disable_room_12": "Når denne funktion er aktiveret, vises værelse 12 {room_11_name} ikke på kortet.",
-          "disable_room_13": "Når denne funktion er aktiveret, vises værelse 13 {room_12_name} ikke på kortet.",
-          "disable_room_14": "Når denne funktion er aktiveret, vises værelse 14 {room_13_name} ikke på kortet.",
-          "disable_room_15": "Når denne funktion er aktiveret, vises værelse 15 {room_14_name} ikke på kortet."
+          "disable_room_1": "Når denne funktion er aktiveret, vises Room 1 {room_0_name} ikke på kortet.",
+          "disable_room_2": "Når denne funktion er aktiveret, vises Room 2 {room_1_name} ikke på kortet.",
+          "disable_room_3": "Når denne funktion er aktiveret, vises Room 3 {room_2_name} ikke på kortet.",
+          "disable_room_4": "Når denne funktion er aktiveret, vises Room 4 {room_3_name} ikke på kortet.",
+          "disable_room_5": "Når denne funktion er aktiveret, vises Room 5 {room_4_name} ikke på kortet.",
+          "disable_room_6": "Når denne funktion er aktiveret, vises Room 6 {room_5_name} ikke på kortet.",
+          "disable_room_7": "Når denne funktion er aktiveret, vises Room 7 {room_6_name} ikke på kortet.",
+          "disable_room_8": "Når denne funktion er aktiveret, vises Room 8 {room_7_name} ikke på kortet.",
+          "disable_room_9": "Når denne funktion er aktiveret, vises Room 9 {room_8_name} ikke på kortet.",
+          "disable_room_10": "Når denne funktion er aktiveret, vises Room 10 {room_9_name} ikke på kortet.",
+          "disable_room_11": "Når denne funktion er aktiveret, vises Room 11 {room_10_name} ikke på kortet.",
+          "disable_room_12": "Når denne funktion er aktiveret, vises Room 12 {room_11_name} ikke på kortet.",
+          "disable_room_13": "Når denne funktion er aktiveret, vises Room 13 {room_12_name} ikke på kortet.",
+          "disable_room_14": "Når denne funktion er aktiveret, vises Room 14 {room_13_name} ikke på kortet.",
+          "disable_room_15": "Når denne funktion er aktiveret, vises Room 15 {room_14_name} ikke på kortet."
         }
       },
       "transparency": {
@@ -172,8 +172,8 @@
         "title": "Gulvstyring",
         "description": "Administrer flere etager og deres trimindstillinger",
         "menu_options": {
-          "select_floor": "Vælg aktivt gulv",
-          "add_floor": "Tilføj nyt etage",
+          "select_floor": "Vælg aktiv etage",
+          "add_floor": "Tilføj nyt gulv",
           "edit_floor": "Rediger gulvindstillinger",
           "delete_floor": "Slet etage",
           "main_menu": "Tilbage til hovedmenuen"
@@ -183,7 +183,7 @@
         "title": "Indstillinger for kortbeskæring",
         "description": "Administrer indstillinger for kortbeskæring",
         "menu_options": {
-          "reset_map_trims": "Nulstil korttrim",
+          "reset_map_trims": "Nulstil korttrimninger",
           "save_map_trims": "Gem korttrimninger",
           "main_menu": "Tilbage til hovedmenuen"
         }
@@ -284,14 +284,14 @@
           "add_room_1_alpha": "Konfigurer gennemsigtighed:"
         },
         "data_description": {
-          "color_room_0": "### **{room_0_name} Farve**",
-          "color_room_1": "### **{room_1_name} Farve**",
-          "color_room_2": "### **{room_2_name} Farve**",
-          "color_room_3": "### **{room_3_name} Farve**",
-          "color_room_4": "### **{room_4_name} Farve**",
-          "color_room_5": "### **{room_5_name} Farve**",
-          "color_room_6": "### **{room_6_name} Farve**",
-          "color_room_7": "### **{room_7_name} Farve**"
+          "color_room_0": "{room_0_name}farve",
+          "color_room_1": "{room_1_name}farve",
+          "color_room_2": "{room_2_name}farve",
+          "color_room_3": "{room_3_name}farvet",
+          "color_room_4": "{room_4_name}farve",
+          "color_room_5": "{room_5_name}farve",
+          "color_room_6": "{room_6_name}farve",
+          "color_room_7": "{room_7_name}farve"
         },
         "description": "Kamerafarveindstillinger.",
         "title": "Værelser 1 til 8 Farver"
@@ -309,14 +309,14 @@
           "add_room_2_alpha": "Konfigurer gennemsigtighed:"
         },
         "data_description": {
-          "color_room_8": "### **{room_8_name} Farve**",
-          "color_room_9": "### **{room_9_name} Farve**",
-          "color_room_10": "### **{room_10_name} Farve**",
-          "color_room_11": "### **{room_11_name} Farve**",
-          "color_room_12": "### **{room_12_name} Farve**",
-          "color_room_13": "### **{room_13_name} Farve**",
-          "color_room_14": "### **{room_14_name} Farve**",
-          "color_room_15": "### **{room_15_name} Farve**"
+          "color_room_8": "{room_8_name}farvet",
+          "color_room_9": "{room_9_name}farve",
+          "color_room_10": "{room_10_name}farve",
+          "color_room_11": "{room_11_name}farve",
+          "color_room_12": "{room_12_name}farve",
+          "color_room_13": "{room_13_name}farve",
+          "color_room_14": "{room_14_name}farve",
+          "color_room_15": "{room_15_name}farvet"
         },
         "description": "Kamerafarveindstillinger.",
         "title": "Værelser 9 til 15 Farver"
@@ -328,52 +328,52 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "### **{room_0_name} Alpha**",
-          "alpha_room_1": "### **{room_1_name} Alpha**",
-          "alpha_room_2": "### **{room_2_name} Alpha**",
-          "alpha_room_3": "### **{room_3_name} Alpha**",
-          "alpha_room_4": "### **{room_4_name} Alpha**",
-          "alpha_room_5": "### **{room_5_name} Alpha**",
-          "alpha_room_6": "### **{room_6_name} Alpha**",
-          "alpha_room_7": "### **{room_7_name} Alpha**"
+          "alpha_room_0": "Alpha-{room_0_name}",
+          "alpha_room_1": "Alpha-{room_1_name}",
+          "alpha_room_2": "Alpha-{room_2_name}",
+          "alpha_room_3": "Alpha-{room_3_name}",
+          "alpha_room_4": "Alpha-{room_4_name}",
+          "alpha_room_5": "Alpha-{room_5_name}",
+          "alpha_room_6": "Alpha-{room_6_name}",
+          "alpha_room_7": "Alpha-{room_7_name}"
         },
         "description": "Kamerainstillinger. Alpha 2",
         "title": "Alpha Chanel-værelser Farver"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "### **{room_8_name} Alpha**",
-          "alpha_room_9": "### **{room_9_name} Alpha**",
-          "alpha_room_10": "### **{room_10_name} Alpha**",
-          "alpha_room_11": "### **{room_11_name} Alpha**",
-          "alpha_room_12": "### **{room_12_name} Alpha**",
-          "alpha_room_13": "### **{room_13_name} Alpha**",
-          "alpha_room_14": "### **{room_14_name} Alpha**",
-          "alpha_room_15": "### **{room_15_name} Alpha**"
+          "alpha_room_8": "Alpha-{room_8_name}",
+          "alpha_room_9": "Alpha-{room_9_name}",
+          "alpha_room_10": "Alpha-{room_10_name}",
+          "alpha_room_11": "Alpha-{room_11_name}",
+          "alpha_room_12": "Alpha-{room_12_name}",
+          "alpha_room_13": "Alpha-{room_13_name}",
+          "alpha_room_14": "Alpha-{room_14_name}",
+          "alpha_room_15": "Alpha-{room_15_name}"
         },
         "description": "Kamerainstillinger. Alpha 3",
         "title": "Alpha Chanel-værelser Farver"
       },
       "select_floor": {
-        "title": "Vælg aktivt gulv",
+        "title": "Vælg aktiv etage",
         "description": "Vælg, hvilken etage der aktuelt er aktiv. Kameraet bruger trimindstillingerne for den valgte etage.",
         "data": {
           "current_floor": "Aktivt gulv"
         },
         "data_description": {
-          "current_floor": "Vælg den etage, der er aktiv i øjeblikket. Aktuel: {current_floor}"
+          "current_floor": "Vælg det gulv, der er aktivt i øjeblikket. Aktuelt: {current_floor}"
         }
       },
       "add_floor": {
         "title": "Tilføj nyt etage",
-        "description": "Oplysninger",
+        "description": "{info}",
         "data": {
           "floor_name": "Gulvnavn",
           "map_name": "Kortnavn (valgfrit)"
         },
         "data_description": {
           "floor_name": "Vælg mellem Home Assistant-etager eller indtast et brugerdefineret navn",
-          "map_name": "Valgfrit venligt navn til denne etage"
+          "map_name": "Valgfrit venligt navn for denne etage"
         }
       },
       "edit_floor": {
@@ -385,17 +385,17 @@
         },
         "data_description": {
           "floor_name": "Vælg hvilket gulv der skal redigeres",
-          "map_name": "Valgfrit venligt navn til denne etage"
+          "map_name": "Valgfrit venligt navn for denne etage"
         }
       },
       "delete_floor": {
         "title": "Slet etage",
-        "description": "Fjern et etage fra konfigurationen. Hvis du sletter den aktuelt aktive etage, vil den blive nulstillet til 'floor_0'.",
+        "description": "Fjern en etage fra konfigurationen. Hvis du sletter den aktuelt aktive etage, vil den blive nulstillet til 'floor_0'.",
         "data": {
           "floor_name": "Gulv til sletning"
         },
         "data_description": {
-          "floor_name": "Vælg hvilket etage der skal slettes"
+          "floor_name": "Vælg hvilket gulv der skal slettes"
         }
       }
     }
@@ -424,7 +424,7 @@
   "services": {
     "reload": {
       "name": "Genindlæs",
-      "description": "Genindlæs MQTT Støvsuger Kamera Platform."
+      "description": "Genindlæs MQTT Vacuum Camera Platform."
     },
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",

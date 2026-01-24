@@ -26,7 +26,7 @@
           "image_opt": "Configuración de imagen",
           "colours": "Configuración de colores",
           "materials": "Renderización de materiales",
-          "floor_management": "Gestión de plantas",
+          "floor_management": "Gestión de pisos",
           "save_options": "Opciones de guardado"
         }
       },
@@ -82,7 +82,7 @@
           "disable_go_to_target": "Ocultar destino de destino"
         },
         "data_description": {
-          "disable_floor": "Cuando esté habilitado, el piso no se mostrará en el mapa.",
+          "disable_floor": "Cuando esté activado, el piso no se mostrará en el mapa.",
           "disable_wall": "Cuando esté habilitado, las paredes no se mostrarán en el mapa.",
           "disable_robot": "Cuando esté habilitado, el robot no se mostrará en el mapa.",
           "disable_charger": "Cuando esté activado, el cargador no aparecerá en el mapa.",
@@ -92,7 +92,7 @@
           "disable_obstacles": "Cuando esté activado, los obstáculos no se mostrarán en el mapa.",
           "disable_path": "Cuando esté activada, la ruta de limpieza no se mostrará en el mapa.",
           "disable_predicted_path": "Cuando esté habilitada, la ruta prevista no se mostrará en el mapa.",
-          "disable_go_to_target": "Cuando esté activada, los destinos de destino no se mostrarán en el mapa."
+          "disable_go_to_target": "Cuando esté activado, los destinos a los que ir no se mostrarán en el mapa."
         }
       },
       "segments_visibility": {
@@ -116,21 +116,21 @@
           "disable_room_15": "Ocultar habitación 15"
         },
         "data_description": {
-          "disable_room_1": "Cuando esté habilitada, la sala 1 {room_0_name} no se mostrará en el mapa.",
-          "disable_room_2": "Cuando esté habilitada, la sala 2 {room_1_name} no se mostrará en el mapa.",
-          "disable_room_3": "Cuando esté habilitada, la sala 3 {room_2_name} no se mostrará en el mapa.",
-          "disable_room_4": "Cuando esté habilitada, la habitación 4 {room_3_name} no aparecerá en el mapa.",
-          "disable_room_5": "Cuando esté habilitada, la sala 5 {room_4_name} no se mostrará en el mapa.",
-          "disable_room_6": "Cuando esté habilitado, la sala 6 {room_5_name} no se mostrará en el mapa.",
-          "disable_room_7": "Cuando esté habilitada, la habitación 7 {room_6_name} no se mostrará en el mapa.",
-          "disable_room_8": "Cuando esté habilitada, la habitación 8 {room_7_name} no aparecerá en el mapa.",
-          "disable_room_9": "Cuando esté habilitado, la habitación 9 {room_8_name} no se mostrará en el mapa.",
-          "disable_room_10": "Cuando esté habilitada, la habitación 10 {room_9_name} no se mostrará en el mapa.",
-          "disable_room_11": "Cuando esté habilitada, la sala 11 {room_10_name} no se mostrará en el mapa.",
-          "disable_room_12": "Cuando esté habilitada, la habitación 12 {room_11_name} no aparecerá en el mapa.",
-          "disable_room_13": "Cuando esté habilitada, la sala 13 {room_12_name} no se mostrará en el mapa.",
-          "disable_room_14": "Cuando esté habilitada, la habitación 14 {room_13_name} no se mostrará en el mapa.",
-          "disable_room_15": "Cuando esté habilitada, la habitación 15 {room_14_name} no aparecerá en el mapa."
+          "disable_room_1": "Cuando está activada, la habitación 1 {room_0_name} no se mostrará en el mapa.",
+          "disable_room_2": "Cuando esté activada, la habitación 2 {room_1_name} no se mostrará en el mapa.",
+          "disable_room_3": "Cuando está activada, la habitación 3 {room_2_name} no se mostrará en el mapa.",
+          "disable_room_4": "Cuando esté habilitada, la habitación 4 {room_3_name} no se mostrará en el mapa.",
+          "disable_room_5": "Cuando esté activada, la sala 5 «{room_4_name}» no aparecerá en el mapa.",
+          "disable_room_6": "Cuando esté activada, la habitación 6 {room_5_name} no aparecerá en el mapa.",
+          "disable_room_7": "Cuando está activada, la habitación 7 {room_6_name} no aparecerá en el mapa.",
+          "disable_room_8": "Cuando está activada, la habitación 8 {room_7_name} no se mostrará en el mapa.",
+          "disable_room_9": "Cuando está activada, la habitación 9 {room_8_name} no se mostrará en el mapa.",
+          "disable_room_10": "Cuando está activada, la habitación 10 {room_9_name} no se mostrará en el mapa.",
+          "disable_room_11": "Cuando está activada, la habitación 11 {room_10_name} no aparecerá en el mapa.",
+          "disable_room_12": "Cuando esté activada, la habitación 12 {room_11_name} no aparecerá en el mapa.",
+          "disable_room_13": "Cuando está activada, la habitación 13 {room_12_name} no se mostrará en el mapa.",
+          "disable_room_14": "Cuando esté activada, la habitación 14 «{room_13_name}» no aparecerá en el mapa.",
+          "disable_room_15": "Cuando esté activada, la habitación 15 {room_14_name} no aparecerá en el mapa."
         }
       },
       "transparency": {
@@ -169,7 +169,7 @@
         }
       },
       "floor_management": {
-        "title": "Gestión de plantas",
+        "title": "Gestión de pisos",
         "description": "Gestiona varias plantas y sus ajustes de acabado.",
         "menu_options": {
           "select_floor": "Seleccionar piso activo",
@@ -284,14 +284,14 @@
           "add_room_1_alpha": "Configurar transparencia:"
         },
         "data_description": {
-          "color_room_0": "### **Color {room_0_name}**",
-          "color_room_1": "### **Color de {room_1_name}**",
-          "color_room_2": "### **Color de {room_2_name}**",
-          "color_room_3": "### **Color de {room_3_name}**",
-          "color_room_4": "### **Color de {room_4_name}**",
-          "color_room_5": "### **Color {room_5_name}**",
-          "color_room_6": "### **Color de {room_6_name}**",
-          "color_room_7": "### **Color de la habitación 7**"
+          "color_room_0": "Color {room_0_name}",
+          "color_room_1": "Color {room_1_name}",
+          "color_room_2": "Color {room_2_name}",
+          "color_room_3": "Color {room_3_name}",
+          "color_room_4": "Color {room_4_name}",
+          "color_room_5": "Color {room_5_name}",
+          "color_room_6": "Color {room_6_name}",
+          "color_room_7": "Color {room_7_name}"
         },
         "description": "Opciones de colores de la cámara.",
         "title": "Habitaciones 1 a 8 Colores"
@@ -309,14 +309,14 @@
           "add_room_2_alpha": "Configurar transparencia:"
         },
         "data_description": {
-          "color_room_8": "### **Color de la habitación 8**",
-          "color_room_9": "### **Color de la habitación 9**",
-          "color_room_10": "### **Color de la habitación 10**",
-          "color_room_11": "### **Color de la habitación 11**",
-          "color_room_12": "### **Color de {room_12_name}**",
-          "color_room_13": "### **Color {room_13_name}**",
-          "color_room_14": "### **Color de la habitación 14**",
-          "color_room_15": "### **Color {room_15_name}**"
+          "color_room_8": "Color {room_8_name}",
+          "color_room_9": "Color {room_9_name}",
+          "color_room_10": "Color {room_10_name}",
+          "color_room_11": "Color {room_11_name}",
+          "color_room_12": "Color {room_12_name}",
+          "color_room_13": "Color {room_13_name}",
+          "color_room_14": "Color {room_14_name}",
+          "color_room_15": "Color {room_15_name}"
         },
         "description": "Opciones de colores de la cámara.",
         "title": "Habitaciones 9 a 15 Colores"
@@ -328,28 +328,28 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "### **{room_0_name} Alfa**",
-          "alpha_room_1": "### **{room_1_name} Alfa**",
-          "alpha_room_2": "### **{room_2_name} Alfa**",
-          "alpha_room_3": "### **{room_3_name} Alfa**",
-          "alpha_room_4": "### **{room_4_name} Alfa**",
-          "alpha_room_5": "### **{room_5_name} Alfa**",
-          "alpha_room_6": "### **{room_6_name} Alfa**",
-          "alpha_room_7": "### **{room_7_name} Alfa**"
+          "alpha_room_0": "{room_0_name} alfa",
+          "alpha_room_1": "{room_1_name} alfa",
+          "alpha_room_2": "{room_2_name} alfa",
+          "alpha_room_3": "{room_3_name} alfa",
+          "alpha_room_4": "{room_4_name} alfa",
+          "alpha_room_5": "{room_5_name} alfa",
+          "alpha_room_6": "{room_6_name} alfa",
+          "alpha_room_7": "{room_7_name} alfa"
         },
         "description": "Opciones de la cámara. Alfa 2",
         "title": "Habitaciones Alpha Chanel Colores"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "### **{room_8_name} Alfa**",
-          "alpha_room_9": "### **{room_9_name} Alfa**",
-          "alpha_room_10": "### **{room_10_name} Alfa**",
-          "alpha_room_11": "### **{room_11_name} Alfa**",
-          "alpha_room_12": "### **{room_12_name} Alfa**",
-          "alpha_room_13": "### **{room_13_name} Alfa**",
-          "alpha_room_14": "### **{room_14_name} Alfa**",
-          "alpha_room_15": "### **{room_15_name} Alfa**"
+          "alpha_room_8": "{room_8_name} alfa",
+          "alpha_room_9": "{room_9_name} alfa",
+          "alpha_room_10": "{room_10_name} alfa",
+          "alpha_room_11": "{room_11_name} alfa",
+          "alpha_room_12": "{room_12_name} alfa",
+          "alpha_room_13": "{room_13_name} alfa",
+          "alpha_room_14": "{room_14_name} alfa",
+          "alpha_room_15": "{room_15_name} alfa"
         },
         "description": "Opciones de la cámara. Alfa 3",
         "title": "Habitaciones Alpha Chanel Colores"
@@ -365,14 +365,14 @@
         }
       },
       "add_floor": {
-        "title": "Añadir nueva planta",
-        "description": "Información",
+        "title": "Añadir nuevo piso",
+        "description": "{info}",
         "data": {
           "floor_name": "Nombre del piso",
           "map_name": "Nombre del mapa (opcional)"
         },
         "data_description": {
-          "floor_name": "Selecciona entre los pisos de Home Assistant o introduce un nombre personalizado.",
+          "floor_name": "Selecciona uno de los pisos de Home Assistant o introduce un nombre personalizado.",
           "map_name": "Nombre descriptivo opcional para esta planta"
         }
       },

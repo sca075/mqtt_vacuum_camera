@@ -79,7 +79,7 @@
           "disable_obstacles": "Скрыть препятствия",
           "disable_path": "Скрыть путь",
           "disable_predicted_path": "Скрыть прогнозируемый путь",
-          "disable_go_to_target": "Скрыть переход к цели"
+          "disable_go_to_target": "Скрыть цель перехода"
         },
         "data_description": {
           "disable_floor": "При включении этаж не будет отображаться на карте.",
@@ -90,7 +90,7 @@
           "disable_restricted_areas": "При включении ограниченные зоны не будут отображаться на карте.",
           "disable_no_mop_areas": "При включении этой функции зоны, где нельзя мыть полы, не будут отображаться на карте.",
           "disable_obstacles": "При включении препятствия не будут отображаться на карте.",
-          "disable_path": "При включении этот параметр очистительный путь не будет отображаться на карте",
+          "disable_path": "При включении пути очистки не будет отображаться на карте.",
           "disable_predicted_path": "При включении прогнозируемый маршрут не будет отображаться на карте.",
           "disable_go_to_target": "При включении этой функции цели перехода не будут отображаться на карте."
         }
@@ -116,21 +116,21 @@
           "disable_room_15": "Скрыть комнату 15"
         },
         "data_description": {
-          "disable_room_1": "При включении этой опции комната 1 {room_0_name} не будет отображаться на карте.",
-          "disable_room_2": "При включении этой опции комната 2 {room_1_name} не будет отображаться на карте.",
-          "disable_room_3": "При включении этой опции комната 3 {room_2_name} не будет отображаться на карте.",
-          "disable_room_4": "При включении этой опции комната 4 {room_3_name} не будет отображаться на карте.",
-          "disable_room_5": "При включении этой опции комната 5 {room_4_name} не будет отображаться на карте.",
-          "disable_room_6": "При включении этой функции комната 6 {room_5_name} не будет отображаться на карте.",
-          "disable_room_7": "При включении этой функции комната 7 {room_6_name} не будет отображаться на карте.",
-          "disable_room_8": "При включении этой опции комната 8 {room_7_name} не будет отображаться на карте.",
-          "disable_room_9": "При включении этой опции комната 9 {room_8_name} не будет отображаться на карте.",
-          "disable_room_10": "При включении этой функции комната 10 {room_9_name} не будет отображаться на карте.",
-          "disable_room_11": "При включении этой функции комната 11 {room_10_name} не будет отображаться на карте.",
-          "disable_room_12": "При включении комната 12 {room_11_name} не будет отображаться на карте.",
-          "disable_room_13": "При включении комната 13 {room_12_name} не будет отображаться на карте.",
-          "disable_room_14": "При включении этой опции комната 14 {room_13_name} не будет отображаться на карте.",
-          "disable_room_15": "При включении этой опции комната 15 {room_14_name} не будет отображаться на карте."
+          "disable_room_1": "При включении этой функции номер 1 {room_0_name} не будет отображаться на карте.",
+          "disable_room_2": "При включении функции «{room_1_name}» комната 2 не будет отображаться на карте.",
+          "disable_room_3": "Если эта функция включена, номер 3 {room_2_name} не будет отображаться на карте.",
+          "disable_room_4": "При включении этой функции номер 4 {room_3_name} не будет отображаться на карте.",
+          "disable_room_5": "При включении функции «{room_4_name}» (Скрыть на карте) номер 5 не будет отображаться на карте.",
+          "disable_room_6": "При включении функции «{room_5_name}» комната 6 не будет отображаться на карте.",
+          "disable_room_7": "При включении этой функции номер 7 {room_6_name} не будет отображаться на карте.",
+          "disable_room_8": "При включении этой функции номер 8 {room_7_name} не будет отображаться на карте.",
+          "disable_room_9": "При включении этой функции номер 9 {room_8_name} не будет отображаться на карте.",
+          "disable_room_10": "При включении этой функции номер 10 {room_9_name} не будет отображаться на карте.",
+          "disable_room_11": "При включении этой функции номер 11 {room_10_name} не будет отображаться на карте.",
+          "disable_room_12": "При включении этой функции номер 12 {room_11_name} не будет отображаться на карте.",
+          "disable_room_13": "При включении этой функции номер 13 {room_12_name} не будет отображаться на карте.",
+          "disable_room_14": "При включении этой функции номер 14 {room_13_name} не будет отображаться на карте.",
+          "disable_room_15": "При включении этой функции номер 15 {room_14_name} не будет отображаться на карте."
         }
       },
       "transparency": {
@@ -190,7 +190,7 @@
       },
       "image_basic_opt": {
         "data": {
-          "rotate_image": "Поворот",
+          "rotate_image": "Повернуть",
           "margins": "Поля изображения.",
           "auto_zoom": "Включить автоматическое масштабирование",
           "zoom_lock_ratio": "Заблокировать соотношение сторон.",
@@ -217,7 +217,7 @@
         "data_description": {
           "vac_status_font": "Шрифт текста по умолчанию Fira Serif.",
           "vac_status_size": "Размер текста по умолчанию 50.",
-          "color_text": "Цвет текста о состоянии вакуума."
+          "color_text": "Цвет текста состояния вакуума."
         },
         "description": "Параметры изображения",
         "title": "Параметры текста статуса"
@@ -284,14 +284,14 @@
           "add_room_1_alpha": "Настройка прозрачности:"
         },
         "data_description": {
-          "color_room_0": "### **Цвет {room_0_name}**",
-          "color_room_1": "### **Цвет {room_1_name}**",
-          "color_room_2": "### **Цвет {room_2_name}**",
-          "color_room_3": "### **Цвет {room_3_name}**",
-          "color_room_4": "### **Цвет {room_4_name}**",
-          "color_room_5": "### **{room_5_name} Цвет**",
-          "color_room_6": "### **Цвет {room_6_name}**",
-          "color_room_7": "### **{room_7_name} Цвет**"
+          "color_room_0": "Цвет {room_0_name}",
+          "color_room_1": "Цвет {room_1_name}",
+          "color_room_2": "Цвет {room_2_name}",
+          "color_room_3": "Цвет {room_3_name}",
+          "color_room_4": "Цвет {room_4_name}",
+          "color_room_5": "Цвет {room_5_name}",
+          "color_room_6": "Цвет {room_6_name}",
+          "color_room_7": "Цвет {room_7_name}"
         },
         "description": "Параметры цветов камеры.",
         "title": "Номера с 1 по 8 Цвета"
@@ -309,14 +309,14 @@
           "add_room_2_alpha": "Настройка прозрачности:"
         },
         "data_description": {
-          "color_room_8": "### **Цвет {room_8_name}**",
-          "color_room_9": "### **Цвет {room_9_name}**",
-          "color_room_10": "### **Цвет {room_10_name}**",
-          "color_room_11": "### **{room_11_name} Цвет**",
-          "color_room_12": "### **{room_12_name} Цвет**",
-          "color_room_13": "### **Цвет {room_13_name}**",
-          "color_room_14": "### **{room_14_name} Цвет**",
-          "color_room_15": "### **{room_15_name} Цвет**"
+          "color_room_8": "Цвет {room_8_name}",
+          "color_room_9": "Цвет {room_9_name}",
+          "color_room_10": "Цвет {room_10_name}",
+          "color_room_11": "Цвет {room_11_name}",
+          "color_room_12": "Цвет {room_12_name}",
+          "color_room_13": "Цвет {room_13_name}",
+          "color_room_14": "Цвет {room_14_name}",
+          "color_room_15": "Цвет {room_15_name}"
         },
         "description": "Параметры цветов камеры.",
         "title": "Номера с 9 по 15 Цвета"
@@ -328,28 +328,28 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "### **{room_0_name} Альфа**",
-          "alpha_room_1": "### **{room_1_name} Альфа**",
-          "alpha_room_2": "### **{room_2_name} Альфа**",
-          "alpha_room_3": "### **{room_3_name} Альфа**",
-          "alpha_room_4": "### **{room_4_name} Альфа**",
-          "alpha_room_5": "### **{room_5_name} Альфа**",
-          "alpha_room_6": "### **{room_6_name} Альфа**",
-          "alpha_room_7": "### **{room_7_name} Альфа**"
+          "alpha_room_0": "Альфа-{room_0_name}",
+          "alpha_room_1": "Альфа-{room_1_name}",
+          "alpha_room_2": "Альфа-{room_2_name}",
+          "alpha_room_3": "Альфа-{room_3_name}",
+          "alpha_room_4": "Альфа-{room_4_name}",
+          "alpha_room_5": "Альфа-{room_5_name}",
+          "alpha_room_6": "Альфа-{room_6_name}",
+          "alpha_room_7": "Альфа-{room_7_name}"
         },
         "description": "Параметры камеры. Alpha 2",
         "title": "Альфа Шанель Номера Цвета"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "### **{room_8_name} Альфа**",
-          "alpha_room_9": "### **{room_9_name} Альфа**",
-          "alpha_room_10": "### **{room_10_name} Альфа**",
-          "alpha_room_11": "### **{room_11_name} Альфа**",
-          "alpha_room_12": "### **{room_12_name} Альфа**",
-          "alpha_room_13": "### **{room_13_name} Альфа**",
-          "alpha_room_14": "### **{room_14_name} Альфа**",
-          "alpha_room_15": "### **{room_15_name} Альфа**"
+          "alpha_room_8": "Альфа-{room_8_name}",
+          "alpha_room_9": "Альфа-{room_9_name}",
+          "alpha_room_10": "Альфа-{room_10_name}",
+          "alpha_room_11": "Альфа-{room_11_name}",
+          "alpha_room_12": "Альфа-{room_12_name}",
+          "alpha_room_13": "Альфа-{room_13_name}",
+          "alpha_room_14": "Альфа-{room_14_name}",
+          "alpha_room_15": "Альфа-{room_15_name}"
         },
         "description": "Параметры камеры. Alpha 3",
         "title": "Альфа Шанель Номера Цвета"
@@ -366,7 +366,7 @@
       },
       "add_floor": {
         "title": "Добавить новый этаж",
-        "description": "Информация",
+        "description": "{info}",
         "data": {
           "floor_name": "Название этажа",
           "map_name": "Название карты (необязательно)"
@@ -424,7 +424,7 @@
   "services": {
     "reload": {
       "name": "Перезагрузить",
-      "description": "Перезагрузите платформу MQTT Пылесос Камера."
+      "description": "Перезагрузите платформу MQTT Vacuum Camera."
     },
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",
@@ -435,7 +435,7 @@
       "description": "Включает камеру."
     },
     "reset_trims": {
-      "name": "Сбросить настройки изображений",
+      "name": "Сбросить изображения Обрезки",
       "description": "Сбрасывает настройки карт."
     },
     "snapshot": {

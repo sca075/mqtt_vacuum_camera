@@ -79,7 +79,7 @@
           "disable_obstacles": "Masquer les obstacles",
           "disable_path": "Masquer le chemin",
           "disable_predicted_path": "Masquer le chemin prédit",
-          "disable_go_to_target": "Masquer la cible d'accès"
+          "disable_go_to_target": "Masquer la cible d'accès rapide"
         },
         "data_description": {
           "disable_floor": "Lorsque cette option est activée, le sol n'apparaîtra pas sur la carte.",
@@ -103,7 +103,7 @@
           "disable_room_2": "Masquer la pièce 2",
           "disable_room_3": "Masquer la pièce 3",
           "disable_room_4": "Masquer la pièce 4",
-          "disable_room_5": "Masquer la salle 5",
+          "disable_room_5": "Masquer la pièce 5",
           "disable_room_6": "Masquer la salle 6",
           "disable_room_7": "Masquer la salle 7",
           "disable_room_8": "Masquer la salle 8",
@@ -116,20 +116,20 @@
           "disable_room_15": "Masquer la salle 15"
         },
         "data_description": {
-          "disable_room_1": "Lorsque cette option est activée, la salle 1 {room_0_name} n'apparaîtra pas sur la carte.",
-          "disable_room_2": "Lorsque cette option est activée, la salle 2 {room_1_name} n'apparaîtra pas sur la carte.",
-          "disable_room_3": "Lorsque cette option est activée, la salle 3 {room_2_name} n'apparaîtra pas sur la carte.",
+          "disable_room_1": "Lorsque cette option est activée, l'{room_0_name}s relatives à la salle 1 n'apparaîtront pas sur la carte.",
+          "disable_room_2": "Lorsque cette option est activée, l'{room_1_name}s relatives à la salle 2 ne s'affichent pas sur la carte.",
+          "disable_room_3": "Lorsque cette option est activée, l'{room_2_name}s relatives à la salle 3 ne s'affichent pas sur la carte.",
           "disable_room_4": "Lorsque cette option est activée, la salle 4 {room_3_name} n'apparaîtra pas sur la carte.",
-          "disable_room_5": "Lorsque cette option est activée, la salle 5 {room_4_name} n'apparaîtra pas sur la carte.",
+          "disable_room_5": "Lorsque cette option est activée, l'{room_4_name}s relatives à la salle 5 n'apparaîtront pas sur la carte.",
           "disable_room_6": "Lorsque cette option est activée, la salle 6 {room_5_name} n'apparaîtra pas sur la carte.",
           "disable_room_7": "Lorsque cette option est activée, la salle 7 {room_6_name} n'apparaîtra pas sur la carte.",
           "disable_room_8": "Lorsque cette option est activée, la salle 8 {room_7_name} n'apparaîtra pas sur la carte.",
-          "disable_room_9": "Lorsque cette option est activée, la salle 9 {room_8_name} n'apparaîtra pas sur la carte.",
+          "disable_room_9": "Lorsque cette option est activée, l'{room_8_name}s relatives à la chambre 9 ne s'affichent pas sur la carte.",
           "disable_room_10": "Lorsque cette option est activée, la salle 10 {room_9_name} n'apparaîtra pas sur la carte.",
           "disable_room_11": "Lorsque cette option est activée, la salle 11 {room_10_name} n'apparaîtra pas sur la carte.",
           "disable_room_12": "Lorsque cette option est activée, la salle 12 {room_11_name} n'apparaîtra pas sur la carte.",
-          "disable_room_13": "Lorsque cette option est activée, la salle 13 {room_12_name} n'apparaîtra pas sur la carte.",
-          "disable_room_14": "Lorsque cette option est activée, la salle 14 {room_13_name} n'apparaîtra pas sur la carte.",
+          "disable_room_13": "Lorsque cette option est activée, l'{room_12_name}s relatives à la chambre 13 ne s'affichent pas sur la carte.",
+          "disable_room_14": "Lorsque cette option est activée, la chambre 14 {room_13_name} n'apparaîtra pas sur la carte.",
           "disable_room_15": "Lorsque cette option est activée, la salle 15 {room_14_name} n'apparaîtra pas sur la carte."
         }
       },
@@ -140,7 +140,7 @@
           "alpha_1": "Transparence de base",
           "alpha_floor": "Transparence au sol",
           "alpha_2": "Salles 1 à 8 Transparence",
-          "alpha_3": "Salles 9-16 Transparence",
+          "alpha_3": "Salles 9 à 16 Transparence",
           "main_menu": "Retour au menu principal"
         }
       },
@@ -148,7 +148,7 @@
         "title": "Rendu des matériaux",
         "description": "Configurer la détection et le rendu des matériaux (planches de bois, carreaux, tapis)",
         "data": {
-          "disable_material_overlay": "Désactiver la superposition des matériaux (bois et carreaux)",
+          "disable_material_overlay": "Désactiver la superposition des matériaux (bois et carrelage)",
           "disable_carpets": "Cacher les tapis",
           "color_carpet": "Couleur du tapis",
           "color_material_wood": "Couleur des planches de bois",
@@ -158,7 +158,7 @@
           "alpha_material_tile": "Transparence des carreaux"
         },
         "data_description": {
-          "disable_material_overlay": "Désactiver le rendu de superposition des matériaux pour le bois et les carreaux sur la carte",
+          "disable_material_overlay": "Désactivez le rendu de superposition des matériaux pour le bois et les carreaux sur la carte.",
           "disable_carpets": "Lorsque cette option est activée, les tapis n'apparaîtront pas sur la carte.",
           "color_carpet": "Couleur pour les matériaux de tapis (RVB)",
           "color_material_wood": "Couleur pour les matériaux en planches de bois (RVB)",
@@ -208,7 +208,7 @@
       },
       "status_text": {
         "data": {
-          "show_vac_status": "Afficher l'état du vide.",
+          "show_vac_status": "Afficher l'état de l'aspirateur.",
           "vac_status_font": "Fira Sans",
           "vac_status_size": "Taille du texte",
           "vac_status_position": "Position du texte : Bas (DÉSACTIVÉ)",
@@ -235,7 +235,7 @@
           "add_base_alpha": "Configurer la transparence :"
         },
         "data_description": {
-          "color_charger": "Charger couleur.",
+          "color_charger": "Charger color.",
           "color_move": "Déplacer la couleur.",
           "color_wall": "Couleur des murs.",
           "color_robot": "Robot couleur.",
@@ -284,14 +284,14 @@
           "add_room_1_alpha": "Configurer la transparence :"
         },
         "data_description": {
-          "color_room_0": "### **Couleur {room_0_name}**",
-          "color_room_1": "### **Couleur {room_1_name}**",
-          "color_room_2": "### **Couleur {room_2_name}**",
-          "color_room_3": "### **Couleur {room_3_name}**",
-          "color_room_4": "### **Couleur {room_4_name}**",
-          "color_room_5": "### **Couleur {room_5_name}**",
-          "color_room_6": "### **Couleur {room_6_name}**",
-          "color_room_7": "### **Couleur {room_7_name}**"
+          "color_room_0": "Couleur {room_0_name}",
+          "color_room_1": "Couleur {room_1_name}",
+          "color_room_2": "Couleur {room_2_name}",
+          "color_room_3": "Couleur {room_3_name}",
+          "color_room_4": "Couleur {room_4_name}",
+          "color_room_5": "Couleur {room_5_name}",
+          "color_room_6": "Couleur {room_6_name}",
+          "color_room_7": "Couleur {room_7_name}"
         },
         "description": "Options de couleurs de la caméra.",
         "title": "Chambres 1 à 8 Couleurs"
@@ -309,14 +309,14 @@
           "add_room_2_alpha": "Configurer la transparence :"
         },
         "data_description": {
-          "color_room_8": "### **Couleur {room_8_name}**",
-          "color_room_9": "### **Couleur {room_9_name}**",
-          "color_room_10": "### **Couleur {room_10_name}**",
-          "color_room_11": "### **Couleur {room_11_name}**",
-          "color_room_12": "### **Couleur {room_12_name}**",
-          "color_room_13": "### **Couleur {room_13_name}**",
-          "color_room_14": "### **Couleur {room_14_name}**",
-          "color_room_15": "### **Couleur {room_15_name}**"
+          "color_room_8": "Couleur {room_8_name}",
+          "color_room_9": "Couleur {room_9_name}",
+          "color_room_10": "Couleur {room_10_name}",
+          "color_room_11": "Couleur {room_11_name}",
+          "color_room_12": "Couleur {room_12_name}",
+          "color_room_13": "Couleur {room_13_name}",
+          "color_room_14": "Couleur {room_14_name}",
+          "color_room_15": "Couleur {room_15_name}"
         },
         "description": "Options de couleurs de la caméra.",
         "title": "Chambres 9 à 15 Couleurs"
@@ -328,28 +328,28 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "### **{room_0_name} Alpha**",
-          "alpha_room_1": "### **{room_1_name} Alpha**",
-          "alpha_room_2": "### **{room_2_name} Alpha**",
-          "alpha_room_3": "### **{room_3_name} Alpha**",
-          "alpha_room_4": "### **{room_4_name} Alpha**",
-          "alpha_room_5": "### **{room_5_name} Alpha**",
-          "alpha_room_6": "### **{room_6_name} Alpha**",
-          "alpha_room_7": "### **{room_7_name} Alpha**"
+          "alpha_room_0": "{room_0_name} Alpha",
+          "alpha_room_1": "{room_1_name} Alpha",
+          "alpha_room_2": "{room_2_name} Alpha",
+          "alpha_room_3": "{room_3_name} Alpha",
+          "alpha_room_4": "{room_4_name} Alpha",
+          "alpha_room_5": "{room_5_name} Alpha",
+          "alpha_room_6": "{room_6_name} Alpha",
+          "alpha_room_7": "{room_7_name} Alpha"
         },
         "description": "Options de la caméra. Alpha 2",
         "title": "Couleurs des chambres Alpha Chanel"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "### **{room_8_name} Alpha**",
-          "alpha_room_9": "### **{room_9_name} Alpha**",
-          "alpha_room_10": "### **{room_10_name} Alpha**",
-          "alpha_room_11": "### **{room_11_name} Alpha**",
-          "alpha_room_12": "### **{room_12_name} Alpha**",
-          "alpha_room_13": "### **{room_13_name} Alpha**",
-          "alpha_room_14": "### **{room_14_name} Alpha**",
-          "alpha_room_15": "### **{room_15_name} Alpha**"
+          "alpha_room_8": "{room_8_name} Alpha",
+          "alpha_room_9": "{room_9_name} Alpha",
+          "alpha_room_10": "{room_10_name} Alpha",
+          "alpha_room_11": "{room_11_name} Alpha",
+          "alpha_room_12": "{room_12_name} Alpha",
+          "alpha_room_13": "{room_13_name} Alpha",
+          "alpha_room_14": "{room_14_name} Alpha",
+          "alpha_room_15": "{room_15_name} Alpha"
         },
         "description": "Options de l'appareil photo. Alpha 3",
         "title": "Couleurs des chambres Alpha Chanel"
@@ -366,7 +366,7 @@
       },
       "add_floor": {
         "title": "Ajouter un nouvel étage",
-        "description": "Informations",
+        "description": "{info}",
         "data": {
           "floor_name": "Nom du plancher",
           "map_name": "Nom de la carte (facultatif)"
@@ -378,7 +378,7 @@
       },
       "edit_floor": {
         "title": "Modifier les paramètres de l'étage",
-        "description": "Modifier le nom de la carte pour l'étage : {floor_name}. {trim_info}. Les valeurs de trim sont calculées automatiquement. Utilisez « Save Carte Trims » (Enregistrer les trims de la carte) pour les mettre à jour.",
+        "description": "Modifier le nom de la carte pour l'étage : {floor_name}. {trim_info}. Les valeurs de découpe sont calculées automatiquement. Utilisez « Save Map Trims » (Enregistrer les découpes de la carte) pour les mettre à jour.",
         "data": {
           "floor_name": "Sélectionnez l'étage à modifier",
           "map_name": "Nom de la carte (facultatif)"
@@ -390,7 +390,7 @@
       },
       "delete_floor": {
         "title": "Supprimer l'étage",
-        "description": "Supprimer un étage de la configuration. Si vous supprimez l'étage actuellement actif, il sera réinitialisé à « floor_0 ».",
+        "description": "Supprimez un étage de la configuration. Si vous supprimez l'étage actuellement actif, il sera réinitialisé à « floor_0 ».",
         "data": {
           "floor_name": "Étage à supprimer"
         },

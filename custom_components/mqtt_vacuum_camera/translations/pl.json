@@ -117,20 +117,20 @@
         },
         "data_description": {
           "disable_room_1": "Po włączeniu tej opcji pokój 1 {room_0_name} nie będzie wyświetlany na mapie.",
-          "disable_room_2": "Po włączeniu tej opcji pokój 2 {nazwa_pokoju_1} nie będzie wyświetlany na mapie.",
-          "disable_room_3": "Po włączeniu opcji pokój 3 {nazwa_pokoju_2} nie będzie wyświetlany na mapie.",
+          "disable_room_2": "Po włączeniu tej opcji pokój 2 {room_1_name} nie będzie wyświetlany na mapie.",
+          "disable_room_3": "Po włączeniu tej opcji pokój 3 {room_2_name} nie będzie wyświetlany na mapie.",
           "disable_room_4": "Po włączeniu tej opcji pokój 4 {room_3_name} nie będzie wyświetlany na mapie.",
           "disable_room_5": "Po włączeniu tej opcji pokój 5 {room_4_name} nie będzie wyświetlany na mapie.",
           "disable_room_6": "Po włączeniu tej opcji pokój 6 {room_5_name} nie będzie wyświetlany na mapie.",
-          "disable_room_7": "Po włączeniu tej opcji pokój 7 {nazwa_pokoju_6} nie będzie wyświetlany na mapie.",
+          "disable_room_7": "Po włączeniu tej opcji pokój 7 {room_6_name} nie będzie wyświetlany na mapie.",
           "disable_room_8": "Po włączeniu tej opcji pokój 8 {room_7_name} nie będzie wyświetlany na mapie.",
-          "disable_room_9": "Po włączeniu pokój 9 {room_8_name} nie będzie wyświetlany na mapie.",
-          "disable_room_10": "Po włączeniu tej opcji pokój 10 {nazwa_pokoju_9} nie będzie wyświetlany na mapie.",
+          "disable_room_9": "Po włączeniu tej opcji pokój 9 {room_8_name} nie będzie wyświetlany na mapie.",
+          "disable_room_10": "Po włączeniu tej opcji pokój 10 {room_9_name} nie będzie wyświetlany na mapie.",
           "disable_room_11": "Po włączeniu tej opcji pokój 11 {room_10_name} nie będzie wyświetlany na mapie.",
-          "disable_room_12": "Po włączeniu tej opcji pokój 12 {nazwa_pokoju_11} nie będzie wyświetlany na mapie.",
+          "disable_room_12": "Po włączeniu tej opcji pokój 12 {room_11_name} nie będzie wyświetlany na mapie.",
           "disable_room_13": "Po włączeniu tej opcji pokój 13 {room_12_name} nie będzie wyświetlany na mapie.",
-          "disable_room_14": "Po włączeniu tej opcji pokój 14 {nazwa_pokoju_13} nie będzie wyświetlany na mapie.",
-          "disable_room_15": "Po włączeniu tej opcji pokój 15 {room_14_name} nie będzie wyświetlany na mapie."
+          "disable_room_14": "Po włączeniu tej opcji pokój 14 {room_13_name} nie będzie wyświetlany na mapie.",
+          "disable_room_15": "Po włączeniu tej opcji pokój 15 „{room_14_name}” nie będzie wyświetlany na mapie."
         }
       },
       "transparency": {
@@ -173,7 +173,7 @@
         "description": "Zarządzaj wieloma piętrami i ich ustawieniami wykończenia",
         "menu_options": {
           "select_floor": "Wybierz aktywny poziom",
-          "add_floor": "Dodaj nową podłogę",
+          "add_floor": "Dodaj nowe piętro",
           "edit_floor": "Edytuj ustawienia piętra",
           "delete_floor": "Usuń piętro",
           "main_menu": "Powrót do menu głównego"
@@ -240,7 +240,7 @@
           "color_wall": "Kolor ścian.",
           "color_robot": "Kolorowy robot.",
           "color_go_to": "Kolor, który zawsze się sprawdza.",
-          "color_no_go": "Kolor nie do przyjęcia.",
+          "color_no_go": "Kolor niedopuszczalny.",
           "color_zone_clean": "Czysty kolor strefy.",
           "color_background": "Kolor tła."
         },
@@ -284,14 +284,14 @@
           "add_room_1_alpha": "Konfiguracja przezroczystości:"
         },
         "data_description": {
-          "color_room_0": "### **Kolor {room_0_name}**",
-          "color_room_1": "### **Kolor {room_1_name}**",
-          "color_room_2": "### **Kolor {room_2_name}**",
-          "color_room_3": "### **Kolor {room_3_name}**",
-          "color_room_4": "### **Kolor {room_4_name}**",
-          "color_room_5": "### **Kolor {room_5_name}**",
-          "color_room_6": "### **Kolor {room_6_name}**",
-          "color_room_7": "### **Kolor {room_7_name}**"
+          "color_room_0": "Kolor {room_0_name}",
+          "color_room_1": "Kolor {room_1_name}",
+          "color_room_2": "Kolor {room_2_name}",
+          "color_room_3": "Kolor {room_3_name}",
+          "color_room_4": "Kolor {room_4_name}",
+          "color_room_5": "Kolor {room_5_name}",
+          "color_room_6": "Kolor {room_6_name}",
+          "color_room_7": "Kolor {room_7_name}"
         },
         "description": "Opcje kolorów aparatu.",
         "title": "Pokoje od 1 do 8 Kolory"
@@ -309,14 +309,14 @@
           "add_room_2_alpha": "Konfiguracja przezroczystości:"
         },
         "data_description": {
-          "color_room_8": "### **Kolor {room_8_name}**",
-          "color_room_9": "### **Kolor {room_9_name}**",
-          "color_room_10": "### **Kolor {room_10_name}**",
-          "color_room_11": "### **Kolor {room_11_name}**",
-          "color_room_12": "### **Kolor {room_12_name}**",
-          "color_room_13": "### **Kolor {room_13_name}**",
-          "color_room_14": "### **Kolor {room_14_name}**",
-          "color_room_15": "### **Kolor {room_15_name}**"
+          "color_room_8": "Kolor {room_8_name}",
+          "color_room_9": "Kolor {room_9_name}",
+          "color_room_10": "Kolor {room_10_name}",
+          "color_room_11": "Kolor {room_11_name}",
+          "color_room_12": "Kolor {room_12_name}",
+          "color_room_13": "Kolor {room_13_name}",
+          "color_room_14": "Kolor {room_14_name}",
+          "color_room_15": "Kolor {room_15_name}"
         },
         "description": "Opcje kolorów aparatu.",
         "title": "Pokoje od 9 do 15 Kolory"
@@ -328,45 +328,45 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "### **{nazwa_pokoju_0} Alpha**",
-          "alpha_room_1": "### **{nazwa_pokoju_1} Alpha**",
-          "alpha_room_2": "### **{nazwa_pokoju_2} Alpha**",
-          "alpha_room_3": "### **{nazwa_pokoju_3} Alpha**",
-          "alpha_room_4": "### **{nazwa_pokoju_4} Alpha**",
-          "alpha_room_5": "### **{nazwa_pokoju_5} Alpha**",
-          "alpha_room_6": "### **{nazwa_pokoju_6} Alpha**",
-          "alpha_room_7": "### **{nazwa_pokoju_7} Alpha**"
+          "alpha_room_0": "{room_0_name} Alpha",
+          "alpha_room_1": "{room_1_name} Alpha",
+          "alpha_room_2": "{room_2_name} Alpha",
+          "alpha_room_3": "{room_3_name} Alpha",
+          "alpha_room_4": "{room_4_name} Alpha",
+          "alpha_room_5": "{room_5_name} Alpha",
+          "alpha_room_6": "{room_6_name} Alpha",
+          "alpha_room_7": "{room_7_name} Alpha"
         },
         "description": "Opcje aparatu. Alpha 2",
         "title": "Kolory pokoi Alpha Chanel"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "### **{nazwa_pokoju_8} Alpha**",
-          "alpha_room_9": "### **{nazwa_pokoju_9} Alpha**",
-          "alpha_room_10": "### **{nazwa_pokoju_10} Alpha**",
-          "alpha_room_11": "### **{nazwa_pokoju_11} Alpha**",
-          "alpha_room_12": "### **{nazwa_pokoju_12} Alpha**",
-          "alpha_room_13": "### **{nazwa_pokoju_13} Alpha**",
-          "alpha_room_14": "### **{room_14_name} Alpha**",
-          "alpha_room_15": "### **{nazwa_pokoju_15} Alpha**"
+          "alpha_room_8": "{room_8_name} Alpha",
+          "alpha_room_9": "{room_9_name} Alpha",
+          "alpha_room_10": "{room_10_name} Alpha",
+          "alpha_room_11": "{room_11_name} Alpha",
+          "alpha_room_12": "{room_12_name} Alpha",
+          "alpha_room_13": "{room_13_name}",
+          "alpha_room_14": "{room_14_name} Alpha",
+          "alpha_room_15": "{room_15_name}"
         },
         "description": "Opcje aparatu. Alpha 3",
         "title": "Kolory pokoi Alpha Chanel"
       },
       "select_floor": {
         "title": "Wybierz aktywny poziom",
-        "description": "Wybierz, które piętro jest obecnie aktywne. Kamera będzie korzystać z ustawień przycinania dla wybranego piętra.",
+        "description": "Wybierz, które piętro jest obecnie aktywne. Kamera będzie używać ustawień przycinania dla wybranego piętra.",
         "data": {
           "current_floor": "Aktywna podłoga"
         },
         "data_description": {
-          "current_floor": "Wybierz piętro, które jest obecnie aktywne. Aktualne: {current_floor}"
+          "current_floor": "Wybierz piętro, które jest obecnie aktywne. Obecne: {current_floor}"
         }
       },
       "add_floor": {
-        "title": "Dodaj nową podłogę",
-        "description": "Informacje",
+        "title": "Dodaj nowe piętro",
+        "description": "{info}",
         "data": {
           "floor_name": "Nazwa piętra",
           "map_name": "Nazwa mapy (opcjonalnie)"
@@ -378,7 +378,7 @@
       },
       "edit_floor": {
         "title": "Edytuj ustawienia piętra",
-        "description": "Edytuj nazwę mapy dla piętra: {nazwa_piętra}. {informacje_o_przycięciu}. Wartości przycięcia są obliczane automatycznie — użyj opcji „Zapisz przycięcia mapy”, aby je zaktualizować.",
+        "description": "Edytuj nazwę mapy dla piętra: {floor_name}. {trim_info}. Wartości przycięcia są obliczane automatycznie — użyj opcji „Zapisz przycięcia mapy”, aby je zaktualizować.",
         "data": {
           "floor_name": "Wybierz piętro do edycji",
           "map_name": "Nazwa mapy (opcjonalnie)"
@@ -436,7 +436,7 @@
     },
     "reset_trims": {
       "name": "Resetuj przycinanie obrazów",
-      "description": "Resetuje przycięcia mapa."
+      "description": "Resetuje przycinanie map."
     },
     "snapshot": {
       "name": "Zrób migawkę",
@@ -469,7 +469,7 @@
       "message": "Integracja MQTT nie jest dostępna. Upewnij się, że MQTT jest skonfigurowane."
     },
     "mqtt_publish_failed": {
-      "message": "Nie udało się opublikować polecenia odkurzacz za pośrednictwem MQTT."
+      "message": "Nie udało się opublikować polecenia vacuum za pośrednictwem MQTT."
     }
   }
 }
