@@ -25,8 +25,14 @@
         "menu_options": {
           "image_opt": "Ajustes de Imagen",
           "colours": "Configuración de Colores",
-          "advanced": "Opciones Avanzadas"
+          "materials": "Renderizado de Materiales",
+          "floor_management": "Gestión de Pisos",
+          "save_options": "Guardar Opciones"
         }
+      },
+      "main_menu": {
+        "title": "Menú Principal",
+        "description": "Volver al menú principal"
       },
       "image_opt": {
         "title": "Ajustes de Imagen",
@@ -35,7 +41,7 @@
           "image_basic_opt": "Ajustes Básicos",
           "status_text": "Texto de Estado",
           "draw_elements": "Visibilidad de Objetos",
-          "segments_visibility": "Visibilidad de Segmentos"
+          "main_menu": "Volver al Menú Principal"
         }
       },
       "colours": {
@@ -47,100 +53,33 @@
           "rooms_colours_2": "Habitaciones 9-16",
           "floor_only": "Solo Suelo",
           "transparency": "Ajustes de Transparencia",
-          "rename_translations": "Renombrar Habitaciones"
+          "main_menu": "Volver al Menú Principal"
         }
-      },
-      "transparency": {
-        "title": "Ajustes de Transparencia",
-        "description": "Configurar niveles de transparencia",
-        "menu_options": {
-          "base_transparency": "Transparencia Base",
-          "rooms_transparency_1": "Transparencia Habitaciones 1-8",
-          "rooms_transparency_2": "Transparencia Habitaciones 9-16",
-          "floor_transparency": "Transparencia del Suelo"
-        }
-      },
-      "advanced": {
-        "title": "Opciones Avanzadas",
-        "description": "Opciones de configuración avanzadas",
-        "menu_options": {
-          "download_logs": "Descargar Registros",
-          "map_trims": "Recortes del Mapa"
-        }
-      },
-      "map_trims": {
-        "title": "Opciones de Recortes del Mapa",
-        "description": "Gestionar configuración de recortes del mapa",
-        "menu_options": {
-          "reset_map_trims": "Restablecer Recortes del Mapa",
-          "save_map_trims": "Guardar Recortes del Mapa"
-        }
-      },
-      "image_basic_opt": {
-        "data": {
-          "rotate_image": "Rotar",
-          "margins": "Márgenes de la Imagen.",
-          "auto_zoom": "Habilitar Zoom Automático",
-          "zoom_lock_ratio": "Bloquear Relación de Aspecto.",
-          "aspect_ratio": "Relación de Aspecto de la Imagen.",
-          "robot_size": "Tamaño del robot"
-        },
-        "data_description": {
-          "rotate_image": "Grado 0, 90, 180, 270",
-          "margins": "Recortar automáticamente los márgenes en píxeles.",
-          "aspect_ratio": "Relación de Aspecto de la Imagen.",
-          "robot_size": "Tamaño del robot en píxeles 8-25"
-        },
-        "description": "Opciones de Imagen de la Cámara",
-        "title": "Opciones de Imagen"
-      },
-      "image_offset": {
-        "title": "Ajustes de Desplazamiento de Imagen",
-        "description": "Configurar valores de desplazamiento de imagen",
-        "data": {
-          "offset_top": "Desplazamiento Superior",
-          "offset_bottom": "Desplazamiento Inferior",
-          "offset_left": "Desplazamiento Izquierdo",
-          "offset_right": "Desplazamiento Derecho"
-        },
-        "data_description": {
-          "offset_top": "Píxeles a desplazar desde arriba (0-1000)",
-          "offset_bottom": "Píxeles a desplazar desde abajo (0-1000)",
-          "offset_left": "Píxeles a desplazar desde la izquierda (0-1000)",
-          "offset_right": "Píxeles a desplazar desde la derecha (0-1000)"
-        }
-      },
-      "status_text": {
-        "data": {
-          "show_vac_status": "Mostrar Estado de Aspiradora.",
-          "vac_status_font": "Fira Sans",
-          "vac_status_size": "Tamaño de Texto",
-          "vac_status_position": "Posición de Texto: Abajo(APAGADO)",
-          "color_text": "[255, 255, 255]"
-        },
-        "data_description": {
-          "vac_status_font": "Fuente de texto predeterminada Fira Serif.",
-          "vac_status_size": "Tamaño de texto predeterminado 50.",
-          "color_text": "Color de texto de estado de aspiradora."
-        },
-        "description": "Opciones de Imagen",
-        "title": "Opciones de Texto de Estado"
       },
       "draw_elements": {
         "title": "Visibilidad de Objetos",
         "description": "Configurar qué elementos son visibles en el mapa",
+        "menu_options": {
+          "map_elements": "Elementos del Mapa",
+          "segments_visibility": "Visibilidad de segmentos",
+          "main_menu": "Volver al Menú Principal"
+        }
+      },
+      "map_elements": {
+        "title": "Elementos del Mapa",
+        "description": "Configurar qué elementos son visibles en el mapa",
         "data": {
-          "disable_floor": "Ocultar Suelo",
-          "disable_wall": "Ocultar Paredes",
-          "disable_robot": "Ocultar Robot",
-          "disable_charger": "Ocultar Cargador",
-          "disable_virtual_walls": "Ocultar Paredes Virtuales",
-          "disable_restricted_areas": "Ocultar Áreas Restringidas",
-          "disable_no_mop_areas": "Ocultar Áreas Sin Mopa",
-          "disable_obstacles": "Ocultar Obstáculos",
-          "disable_path": "Ocultar Ruta",
-          "disable_predicted_path": "Ocultar Ruta Prevista",
-          "disable_go_to_target": "Ocultar Objetivo Ir-A"
+          "disable_floor": "Ocultar suelo",
+          "disable_wall": "Ocultar paredes",
+          "disable_robot": "Ocultar robot",
+          "disable_charger": "Ocultar cargador",
+          "disable_virtual_walls": "Ocultar paredes virtuales",
+          "disable_restricted_areas": "Ocultar áreas restringidas",
+          "disable_no_mop_areas": "Ocultar áreas sin fregar",
+          "disable_obstacles": "Ocultar obstáculos",
+          "disable_path": "Ocultar ruta",
+          "disable_predicted_path": "Ocultar ruta predicha",
+          "disable_go_to_target": "Ocultar objetivo"
         },
         "data_description": {
           "disable_floor": "Cuando está habilitado, el suelo no se mostrará en el mapa",
@@ -149,11 +88,11 @@
           "disable_charger": "Cuando está habilitado, el cargador no se mostrará en el mapa",
           "disable_virtual_walls": "Cuando está habilitado, las paredes virtuales no se mostrarán en el mapa",
           "disable_restricted_areas": "Cuando está habilitado, las áreas restringidas no se mostrarán en el mapa",
-          "disable_no_mop_areas": "Cuando está habilitado, las áreas sin mopa no se mostrarán en el mapa",
+          "disable_no_mop_areas": "Cuando está habilitado, las áreas sin fregado no se mostrarán en el mapa",
           "disable_obstacles": "Cuando está habilitado, los obstáculos no se mostrarán en el mapa",
           "disable_path": "Cuando está habilitado, la ruta de limpieza no se mostrará en el mapa",
-          "disable_predicted_path": "Cuando está habilitado, la ruta prevista no se mostrará en el mapa",
-          "disable_go_to_target": "Cuando está habilitado, los objetivos ir-a no se mostrarán en el mapa"
+          "disable_predicted_path": "Cuando está habilitado, la ruta predicha no se mostrará en el mapa",
+          "disable_go_to_target": "Cuando está habilitado, los objetivos de ir a no se mostrarán en el mapa"
         }
       },
       "segments_visibility": {
@@ -193,6 +132,95 @@
           "disable_room_14": "Cuando está habilitado, la Habitación 14 {room_13_name} no se mostrará en el mapa",
           "disable_room_15": "Cuando está habilitado, la Habitación 15 {room_14_name} no se mostrará en el mapa"
         }
+      },
+      "transparency": {
+        "title": "Ajustes de Transparencia",
+        "description": "Configurar niveles de transparencia",
+        "menu_options": {
+          "alpha_1": "Transparencia Base",
+          "alpha_floor": "Transparencia del Suelo",
+          "alpha_2": "Transparencia Habitaciones 1-8",
+          "alpha_3": "Transparencia Habitaciones 9-16",
+          "main_menu": "Volver al Menú Principal"
+        }
+      },
+      "materials": {
+        "title": "Renderizado de Materiales",
+        "description": "Configurar detección y renderizado de materiales (tablas de madera, baldosas, alfombras)",
+        "data": {
+          "disable_material_overlay": "Desactivar superposición de materiales (madera y baldosas)",
+          "disable_carpets": "Ocultar alfombras",
+          "color_carpet": "Color de alfombra",
+          "color_material_wood": "Color de tablas de madera",
+          "color_material_tile": "Color de baldosas",
+          "alpha_carpet": "Transparencia de alfombra",
+          "alpha_material_wood": "Transparencia de madera",
+          "alpha_material_tile": "Transparencia de baldosas"
+        },
+        "data_description": {
+          "disable_material_overlay": "Desactivar renderizado de superposición de materiales para madera y baldosas en el mapa",
+          "disable_carpets": "Cuando está habilitado, las alfombras no se mostrarán en el mapa",
+          "color_carpet": "Color para materiales de alfombra (RGB)",
+          "color_material_wood": "Color para materiales de tablas de madera (RGB)",
+          "color_material_tile": "Color para materiales de baldosas (RGB)",
+          "alpha_carpet": "Nivel de transparencia para alfombras (0-255)",
+          "alpha_material_wood": "Nivel de transparencia para tablas de madera (0-255)",
+          "alpha_material_tile": "Nivel de transparencia para baldosas (0-255)"
+        }
+      },
+      "floor_management": {
+        "title": "Gestión de Pisos",
+        "description": "Gestionar múltiples pisos y sus configuraciones de recorte",
+        "menu_options": {
+          "select_floor": "Seleccionar Piso Activo",
+          "add_floor": "Agregar Nuevo Piso",
+          "edit_floor": "Editar Configuración del Piso",
+          "delete_floor": "Eliminar Piso",
+          "main_menu": "Volver al Menú Principal"
+        }
+      },
+      "map_trims": {
+        "title": "Opciones de Recortes del Mapa",
+        "description": "Gestionar configuración de recortes del mapa",
+        "menu_options": {
+          "reset_map_trims": "Restablecer Recortes del Mapa",
+          "save_map_trims": "Guardar Recortes del Mapa",
+          "main_menu": "Volver al Menú Principal"
+        }
+      },
+      "image_basic_opt": {
+        "data": {
+          "rotate_image": "Rotar",
+          "margins": "Márgenes de la Imagen.",
+          "auto_zoom": "Habilitar Zoom Automático",
+          "zoom_lock_ratio": "Bloquear Relación de Aspecto.",
+          "aspect_ratio": "Relación de Aspecto de la Imagen.",
+          "robot_size": "Tamaño del robot"
+        },
+        "data_description": {
+          "rotate_image": "Grado 0, 90, 180, 270",
+          "margins": "Recortar automáticamente los márgenes en píxeles.",
+          "aspect_ratio": "Relación de Aspecto de la Imagen.",
+          "robot_size": "Tamaño del robot en píxeles 8-25"
+        },
+        "description": "Opciones de Imagen de la Cámara",
+        "title": "Opciones de Imagen"
+      },
+      "status_text": {
+        "data": {
+          "show_vac_status": "Mostrar Estado de Aspiradora.",
+          "vac_status_font": "Fira Sans",
+          "vac_status_size": "Tamaño de Texto",
+          "vac_status_position": "Posición de Texto: Abajo(APAGADO)",
+          "color_text": "[255, 255, 255]"
+        },
+        "data_description": {
+          "vac_status_font": "Fuente de texto predeterminada Fira Serif.",
+          "vac_status_size": "Tamaño de texto predeterminado 50.",
+          "color_text": "Color de texto de estado de aspiradora."
+        },
+        "description": "Opciones de Imagen",
+        "title": "Opciones de Texto de Estado"
       },
       "base_colours": {
         "data": {
@@ -256,14 +284,14 @@
           "add_room_1_alpha": "Configurar Transparencia:"
         },
         "data_description": {
-          "color_room_0": "### **{room_0_name} Color**",
-          "color_room_1": "### **{room_1_name} Color**",
-          "color_room_2": "### **{room_2_name} Color**",
-          "color_room_3": "### **{room_3_name} Color**",
-          "color_room_4": "### **{room_4_name} Color**",
-          "color_room_5": "### **{room_5_name} Color**",
-          "color_room_6": "### **{room_6_name} Color**",
-          "color_room_7": "### **{room_7_name} Color**"
+          "color_room_0": "### **Color de {room_0_name}**",
+          "color_room_1": "### **Color de {room_1_name}**",
+          "color_room_2": "### **Color de {room_2_name}**",
+          "color_room_3": "### **Color de {room_3_name}**",
+          "color_room_4": "### **Color de {room_4_name}**",
+          "color_room_5": "### **Color de {room_5_name}**",
+          "color_room_6": "### **Color de {room_6_name}**",
+          "color_room_7": "### **Color de {room_7_name}**"
         },
         "description": "Opciones de Colores de Cámara.",
         "title": "Colores de Habitaciones 1 a 8"
@@ -281,14 +309,14 @@
           "add_room_2_alpha": "Configurar Transparencia:"
         },
         "data_description": {
-          "color_room_8": "### **{room_8_name} Color**",
-          "color_room_9": "### **{room_9_name} Color**",
-          "color_room_10": "### **{room_10_name} Color**",
-          "color_room_11": "### **{room_11_name} Color**",
-          "color_room_12": "### **{room_12_name} Color**",
-          "color_room_13": "### **{room_13_name} Color**",
-          "color_room_14": "### **{room_14_name} Color**",
-          "color_room_15": "### **{room_15_name} Color**"
+          "color_room_8": "### **Color de {room_8_name}**",
+          "color_room_9": "### **Color de {room_9_name}**",
+          "color_room_10": "### **Color de {room_10_name}**",
+          "color_room_11": "### **Color de {room_11_name}**",
+          "color_room_12": "### **Color de {room_12_name}**",
+          "color_room_13": "### **Color de {room_13_name}**",
+          "color_room_14": "### **Color de {room_14_name}**",
+          "color_room_15": "### **Color de {room_15_name}**"
         },
         "description": "Opciones de Colores de Cámara.",
         "title": "Colores de Habitaciones 9 a 15"
@@ -325,6 +353,46 @@
         },
         "description": "Opciones de Cámara. Alpha 3",
         "title": "Canal Alpha Colores de Habitaciones"
+      },
+      "select_floor": {
+        "description": "Elija qué piso está activo actualmente. La cámara utilizará la configuración de recorte para el piso seleccionado.",
+        "data": {
+          "current_floor": "Piso activo"
+        },
+        "data_description": {
+          "current_floor": "Seleccione el piso que está activo actualmente. Actual: {current_floor}"
+        }
+      },
+      "add_floor": {
+        "description": "{info}",
+        "data": {
+          "floor_name": "Nombre del piso",
+          "map_name": "Nombre del mapa (opcional)"
+        },
+        "data_description": {
+          "floor_name": "Seleccione de los pisos de Home Assistant o ingrese un nombre personalizado",
+          "map_name": "Nombre descriptivo opcional para este piso"
+        }
+      },
+      "edit_floor": {
+        "description": "Editar nombre del mapa para el piso: {floor_name}. {trim_info}. Los valores de recorte se calculan automáticamente - use 'Guardar recortes del mapa' para actualizarlos.",
+        "data": {
+          "floor_name": "Seleccionar piso para editar",
+          "map_name": "Nombre del mapa (opcional)"
+        },
+        "data_description": {
+          "floor_name": "Elija qué piso editar",
+          "map_name": "Nombre descriptivo opcional para este piso"
+        }
+      },
+      "delete_floor": {
+        "description": "Eliminar un piso de la configuración. Si elimina el piso activo actualmente, se restablecerá a 'floor_0'.",
+        "data": {
+          "floor_name": "Piso a eliminar"
+        },
+        "data_description": {
+          "floor_name": "Seleccione el piso a eliminar"
+        }
       }
     }
   },
@@ -392,6 +460,12 @@
     },
     "zone_list_length": {
       "message": "La 'Zone' debe tener al menos 1 elemento que contenga una lista de 4 enteros."
+    },
+    "mqtt_service_not_found": {
+      "message": "La integración MQTT no está disponible. Asegúrese de que MQTT esté configurado."
+    },
+    "mqtt_publish_failed": {
+      "message": "Error al publicar el comando a la aspiradora a través de MQTT."
     }
   }
 }

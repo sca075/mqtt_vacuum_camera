@@ -63,6 +63,7 @@ from .const import (
     CONF_ASPECT_RATIO,
     CONF_AUTO_ZOOM,
     CONF_CURRENT_FLOOR,
+    CONF_DISABLE_CARPETS,
     CONF_DISABLE_MATERIAL_OVERLAY,
     CONF_FLOOR_NAME,
     CONF_FLOORS_DATA,
@@ -226,9 +227,6 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                         COLOR_CHARGER, default=config_entry.options.get("color_charger")
                     ): ColorRGBSelector(),
                     vol.Optional(
-                        COLOR_CARPET, default=config_entry.options.get("color_carpet")
-                    ): ColorRGBSelector(),
-                    vol.Optional(
                         COLOR_MOVE, default=config_entry.options.get("color_move")
                     ): ColorRGBSelector(),
                     vol.Optional(
@@ -260,9 +258,6 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                     ): NumberSelector(self.config_dict),
                     vol.Optional(
                         ALPHA_CHARGER, default=config_entry.options.get("alpha_charger")
-                    ): NumberSelector(self.config_dict),
-                    vol.Optional(
-                        ALPHA_CARPET, default=config_entry.options.get("alpha_carpet")
                     ): NumberSelector(self.config_dict),
                     vol.Optional(
                         ALPHA_MOVE, default=config_entry.options.get("alpha_move")
@@ -391,8 +386,13 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
 
         return self.async_show_menu(
             step_id="init",
-            menu_options=["image_opt", "colours", "materials", "advanced"],
+            menu_options=["image_opt", "colours", "materials", "floor_management", "save_options"],
         )
+
+    # pylint: disable=unused-argument
+    async def async_step_main_menu(self, user_input=None) -> ConfigFlowResult:
+        """Return to main menu."""
+        return await self.async_step_init()
 
     # pylint: disable=unused-argument
     async def async_step_image_opt(self, user_input=None) -> ConfigFlowResult:
@@ -403,7 +403,18 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                 "image_basic_opt",
                 "status_text",
                 "draw_elements",
+                "main_menu",
+            ],
+        )
+
+    async def async_step_draw_elements(self, user_input=None) -> ConfigFlowResult:
+        """Handle draw elements menu."""
+        return self.async_show_menu(
+            step_id="draw_elements",
+            menu_options=[
+                "map_elements",
                 "segments_visibility",
+                "main_menu",
             ],
         )
 
@@ -423,6 +434,8 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         if self.is_alpha_enabled:
             menu_options.append("transparency")
 
+        menu_options.append("main_menu")
+
         return self.async_show_menu(
             step_id="colours",
             menu_options=menu_options,
@@ -431,29 +444,23 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
     async def async_step_transparency(self, user_input=None) -> ConfigFlowResult:
         """Handle transparency menu"""
 
-        menu_options = ["base_transparency"]
+        menu_options = ["alpha_1"]
 
         if self.number_of_rooms == 1:
-            menu_options.append("floor_transparency")
+            menu_options.append("alpha_floor")
         elif self.number_of_rooms <= 8:
-            menu_options.append("rooms_transparency_1")
+            menu_options.append("alpha_2")
         else:
-            menu_options.extend(["rooms_transparency_1", "rooms_transparency_2"])
+            menu_options.extend(["alpha_2", "alpha_3"])
+
+        menu_options.append("main_menu")
 
         return self.async_show_menu(
             step_id="transparency",
             menu_options=menu_options,
         )
 
-    async def async_step_advanced(self, user_input=None) -> ConfigFlowResult:
-        """Handle advanced options menu."""
-        return self.async_show_menu(
-            step_id="advanced",
-            menu_options=[
-                "floor_management",
-                "map_trims",
-            ],
-        )
+
 
     async def async_step_materials(
         self, user_input: Optional[Dict[str, Any]] = None
@@ -465,13 +472,16 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                     "disable_material_overlay": user_input.get(
                         CONF_DISABLE_MATERIAL_OVERLAY
                     ),
+                    "disable_carpets": user_input.get(CONF_DISABLE_CARPETS),
+                    "color_carpet": user_input.get(COLOR_CARPET),
                     "color_material_wood": user_input.get(COLOR_MATERIAL_WOOD),
                     "color_material_tile": user_input.get(COLOR_MATERIAL_TILE),
+                    "alpha_carpet": user_input.get(ALPHA_CARPET),
                     "alpha_material_wood": user_input.get(ALPHA_MATERIAL_WOOD),
                     "alpha_material_tile": user_input.get(ALPHA_MATERIAL_TILE),
                 }
             )
-            return await self.async_step_opt_save()
+            return await self.async_step_init()
 
         schema = vol.Schema(
             {
@@ -482,6 +492,14 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                     ),
                 ): BooleanSelector(),
                 vol.Optional(
+                    CONF_DISABLE_CARPETS,
+                    default=self.camera_config.options.get("disable_carpets", False),
+                ): BooleanSelector(),
+                vol.Optional(
+                    COLOR_CARPET,
+                    default=self.camera_config.options.get("color_carpet"),
+                ): ColorRGBSelector(),
+                vol.Optional(
                     COLOR_MATERIAL_WOOD,
                     default=self.camera_config.options.get("color_material_wood"),
                 ): ColorRGBSelector(),
@@ -489,6 +507,10 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                     COLOR_MATERIAL_TILE,
                     default=self.camera_config.options.get("color_material_tile"),
                 ): ColorRGBSelector(),
+                vol.Optional(
+                    ALPHA_CARPET,
+                    default=self.camera_config.options.get("alpha_carpet"),
+                ): NumberSelector(self.config_dict),
                 vol.Optional(
                     ALPHA_MATERIAL_WOOD,
                     default=self.camera_config.options.get("alpha_material_wood"),
@@ -521,7 +543,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                     "robot_size": user_input.get(CONF_ROBOT_SIZE),
                 }
             )
-            return await self.async_step_opt_save()
+            return await self.async_step_image_opt()
 
         return self.async_show_form(
             step_id="image_basic_opt",
@@ -538,6 +560,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                 "add_floor",
                 "edit_floor",
                 "delete_floor",
+                "main_menu",
             ],
         )
 
@@ -548,48 +571,11 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
             menu_options=[
                 "reset_map_trims",
                 "save_map_trims",
+                "main_menu",
             ],
         )
 
-    async def async_step_image_offset(
-        self, user_input: Optional[Dict[str, Any]] = None
-    ):
-        """Handle image offset settings."""
-        config_options = self.camera_config.as_dict().get("options", {})
 
-        if user_input is not None:
-            # Handle offset updates only
-            offset_updates = {
-                "offset_top": user_input.get(CONF_OFFSET_TOP),
-                "offset_bottom": user_input.get(CONF_OFFSET_BOTTOM),
-                "offset_left": user_input.get(CONF_OFFSET_LEFT),
-                "offset_right": user_input.get(CONF_OFFSET_RIGHT),
-            }
-
-            self.camera_options.update(offset_updates)
-            return await self.async_step_opt_save()
-
-        # Build the form schema - only for offsets
-        offset_schema = {
-            vol.Optional(
-                CONF_OFFSET_TOP, default=config_options.get("offset_top", 0)
-            ): NumberSelector({"min": 0, "max": 1000, "step": 1}),
-            vol.Optional(
-                CONF_OFFSET_BOTTOM, default=config_options.get("offset_bottom", 0)
-            ): NumberSelector({"min": 0, "max": 1000, "step": 1}),
-            vol.Optional(
-                CONF_OFFSET_LEFT, default=config_options.get("offset_left", 0)
-            ): NumberSelector({"min": 0, "max": 1000, "step": 1}),
-            vol.Optional(
-                CONF_OFFSET_RIGHT, default=config_options.get("offset_right", 0)
-            ): NumberSelector({"min": 0, "max": 1000, "step": 1}),
-        }
-
-        return self.async_show_form(
-            step_id="image_offset",
-            data_schema=vol.Schema(offset_schema),
-            description_placeholders=self.camera_options,
-        )
 
     async def async_step_status_text(self, user_input: Optional[Dict[str, Any]] = None):
         """Handle status text settings."""
@@ -603,7 +589,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                     "color_text": user_input.get(COLOR_TEXT),
                 }
             )
-            return await self.async_step_opt_save()
+            return await self.async_step_image_opt()
 
         return self.async_show_form(
             step_id="status_text",
@@ -662,23 +648,23 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
 
         return options_update
 
-    async def async_step_draw_elements(
+    async def async_step_map_elements(
         self, user_input: Optional[Dict[str, Any]] = None
     ):
-        """Handle draw elements configuration."""
-        LOGGER.info("Draw Elements Configuration Started.")
+        """Handle map elements visibility configuration."""
+        LOGGER.info("Map Elements Configuration Started.")
 
         if user_input is not None:
             # Update options based on user input using DRAW_FLAGS
             options_update = self._update_boolean_options(user_input, DRAW_FLAGS)
             self.camera_options.update(options_update)
-            return await self.async_step_opt_save()
+            return await self.async_step_draw_elements()
 
         # Create schema for the form using DRAW_FLAGS
         fields = self._build_boolean_options_fields(DRAW_FLAGS)
 
         return self.async_show_form(
-            step_id="draw_elements",
+            step_id="map_elements",
             data_schema=vol.Schema(fields),
             description_placeholders=self.rooms_placeholders,
         )
@@ -698,7 +684,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                 user_input, ROOM_FLAGS, room_limit
             )
             self.camera_options.update(options_update)
-            return await self.async_step_opt_save()
+            return await self.async_step_draw_elements()
 
         # Create schema for the form - only show fields for rooms that exist
         fields = self._build_boolean_options_fields(ROOM_FLAGS, room_limit)
@@ -720,7 +706,6 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
             self.camera_options.update(
                 {
                     "color_charger": user_input.get(COLOR_CHARGER),
-                    "color_carpet": user_input.get(COLOR_CARPET),
                     "color_move": user_input.get(COLOR_MOVE),
                     "color_wall": user_input.get(COLOR_WALL),
                     "color_robot": user_input.get(COLOR_ROBOT),
@@ -734,7 +719,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
             if self.is_alpha_enabled:
                 self.is_alpha_enabled = False
                 return await self.async_step_alpha_1()
-            return await self.async_step_opt_save()
+            return await self.async_step_colours()
 
         return self.async_show_form(
             step_id="base_colours",
@@ -751,7 +736,6 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
             self.camera_options.update(
                 {
                     "alpha_charger": user_input.get(ALPHA_CHARGER),
-                    "alpha_carpet": user_input.get(ALPHA_CARPET),
                     "alpha_move": user_input.get(ALPHA_MOVE),
                     "alpha_wall": user_input.get(ALPHA_WALL),
                     "alpha_robot": user_input.get(ALPHA_ROBOT),
@@ -762,7 +746,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                     "alpha_text": user_input.get(ALPHA_TEXT),
                 }
             )
-            return await self.async_step_opt_save()
+            return await self.async_step_transparency()
 
         return self.async_show_form(
             step_id="alpha_1",
@@ -780,7 +764,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
             self.is_alpha_enabled = user_input.get(IS_ALPHA_R1, False)
             if self.is_alpha_enabled:
                 return await self.async_step_alpha_floor()
-            return await self.async_step_opt_save()
+            return await self.async_step_colours()
 
         fields = {
             vol.Optional(
@@ -816,7 +800,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
 
             if self.is_alpha_enabled:
                 return await self.async_step_alpha_2()
-            return await self.async_step_opt_save()
+            return await self.async_step_colours()
 
         # Dynamically create data schema based on the number of rooms
         fields = {}
@@ -853,7 +837,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
 
             if self.is_alpha_enabled:
                 return await self.async_step_alpha_3()
-            return await self.async_step_opt_save()
+            return await self.async_step_colours()
 
         # Dynamically create data schema based on the number of rooms
         fields = {}
@@ -882,7 +866,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         if user_input is not None:
             # Update options based on user input
             self.camera_options.update({"alpha_room_0": user_input.get(ALPHA_ROOM_0)})
-            return await self.async_step_opt_save()
+            return await self.async_step_transparency()
 
         fields = {
             vol.Optional(
@@ -911,7 +895,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                 room_key = f"alpha_room_{i}"
                 self.camera_options.update({room_key: user_input.get(room_key)})
 
-            return await self.async_step_opt_save()
+            return await self.async_step_transparency()
 
         # Dynamically create data schema based on the number of rooms
         fields = {}
@@ -938,7 +922,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                 room_key = f"alpha_room_{i}"
                 self.camera_options.update({room_key: user_input.get(room_key)})
 
-            return await self.async_step_opt_save()
+            return await self.async_step_transparency()
 
         # Dynamically create data schema based on the number of rooms
         fields = {}
@@ -974,7 +958,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
             "offset_right": 0,
             "trims_data": reset_trims,
         }
-        return await self.async_step_opt_save()
+        return await self.async_step_save_options()
 
     # pylint: disable=unused-argument
     async def async_step_save_map_trims(self, user_input=None):
@@ -986,7 +970,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         # Save current trims from coordinator
         new_trims = coordinator.context.shared.trims.to_dict()
         self.camera_options = {"trims_data": new_trims}
-        return await self.async_step_opt_save()
+        return await self.async_step_save_options()
 
     # Floor Management Steps
 
@@ -1004,7 +988,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
             LOGGER.info(
                 "Selected floor: %s (ID: %s)", selected_floor_name, selected_floor_id
             )
-            return await self.async_step_opt_save()
+            return await self.async_step_floor_management()
 
         # Get floor names from Home Assistant floor registry
         ha_floor_names = self._get_ha_floor_names()
@@ -1076,7 +1060,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                 CONF_CURRENT_FLOOR: floor_name,  # Set as current floor
             }
             LOGGER.info("Added new floor: %s", floor_name)
-            return await self.async_step_opt_save()
+            return await self.async_step_floor_management()
 
         # Get HA floor names for dropdown
         ha_floor_names = self._get_ha_floor_names()
@@ -1159,7 +1143,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
             floor_name = self.selected_floor
             self.selected_floor = None
             LOGGER.info("Updated floor: %s", floor_name)
-            return await self.async_step_opt_save()
+            return await self.async_step_floor_management()
 
         # First step: select floor to edit
         if self.selected_floor is None:
@@ -1236,7 +1220,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                     CONF_CURRENT_FLOOR: new_current_floor,
                 }
                 LOGGER.info("Deleted floor: %s", floor_to_delete)
-                return await self.async_step_opt_save()
+                return await self.async_step_floor_management()
 
         floor_options = list(self.floors_data.keys()) if self.floors_data else []
 
@@ -1260,7 +1244,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
             data_schema=schema,
         )
 
-    async def async_step_opt_save(self):
+    async def async_step_save_options(self, user_input=None):
         """
         Save the options in a sorted way. It stores all the options.
         """

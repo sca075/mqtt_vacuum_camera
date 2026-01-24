@@ -25,8 +25,14 @@
         "menu_options": {
           "image_opt": "Nastavení Obrazu",
           "colours": "Konfigurace Barev",
-          "advanced": "Pokročilé Nastavení"
+          "materials": "Vykreslování materiálů",
+          "floor_management": "Správa podlaží",
+          "save_options": "Uložit možnosti"
         }
+      },
+      "main_menu": {
+        "title": "Hlavní nabídka",
+        "description": "Návrat do hlavní nabídky"
       },
       "image_opt": {
         "title": "Nastavení Obrazu",
@@ -35,7 +41,7 @@
           "image_basic_opt": "Základní Nastavení",
           "status_text": "Stavový Text",
           "draw_elements": "Viditelnost Objektů",
-          "segments_visibility": "Viditelnost Segmentů"
+          "main_menu": "Zpět do hlavní nabídky"
         }
       },
       "colours": {
@@ -47,113 +53,46 @@
           "rooms_colours_2": "Místnosti 9-16",
           "floor_only": "Pouze Podlaha",
           "transparency": "Nastavení Průhlednosti",
-          "rename_translations": "Přejmenovat Místnosti"
+          "main_menu": "Zpět do hlavní nabídky"
         }
-      },
-      "transparency": {
-        "title": "Nastavení Průhlednosti",
-        "description": "Konfigurace úrovní průhlednosti",
-        "menu_options": {
-          "base_transparency": "Základní Průhlednost",
-          "rooms_transparency_1": "Průhlednost Místností 1-8",
-          "rooms_transparency_2": "Průhlednost Místností 9-16",
-          "floor_transparency": "Průhlednost Podlahy"
-        }
-      },
-      "advanced": {
-        "title": "Pokročilé Nastavení",
-        "description": "Pokročilé možnosti konfigurace",
-        "menu_options": {
-          "download_logs": "Stáhnout Logy",
-          "map_trims": "Ořezy Mapy"
-        }
-      },
-      "map_trims": {
-        "title": "Možnosti Ořezů Mapy",
-        "description": "Správa nastavení ořezů mapy",
-        "menu_options": {
-          "reset_map_trims": "Resetovat Ořezy Mapy",
-          "save_map_trims": "Uložit Ořezy Mapy"
-        }
-      },
-      "image_basic_opt": {
-        "data": {
-          "rotate_image": "Otočit",
-          "margins": "Okraje Obrazu.",
-          "auto_zoom": "Povolit Automatický Zoom",
-          "zoom_lock_ratio": "Zamknout Poměr Stran.",
-          "aspect_ratio": "Poměr Stran Obrazu.",
-          "robot_size": "Velikost robota"
-        },
-        "data_description": {
-          "rotate_image": "Stupeň 0, 90, 180, 270",
-          "margins": "Automatické ořezání okrajů v pixelech.",
-          "aspect_ratio": "Poměr Stran Obrazu.",
-          "robot_size": "Velikost robota v pixelech 8-25"
-        },
-        "description": "Možnosti Obrazu Kamery",
-        "title": "Možnosti Obrazu"
-      },
-      "image_offset": {
-        "title": "Nastavení Odsazení Obrazu",
-        "description": "Konfigurace hodnot odsazení obrazu",
-        "data": {
-          "offset_top": "Horní Odsazení",
-          "offset_bottom": "Dolní Odsazení",
-          "offset_left": "Levé Odsazení",
-          "offset_right": "Pravé Odsazení"
-        },
-        "data_description": {
-          "offset_top": "Pixely pro odsazení shora (0-1000)",
-          "offset_bottom": "Pixely pro odsazení zdola (0-1000)",
-          "offset_left": "Pixely pro odsazení zleva (0-1000)",
-          "offset_right": "Pixely pro odsazení zprava (0-1000)"
-        }
-      },
-      "status_text": {
-        "data": {
-          "show_vac_status": "Zobrazit Stav Vysavače.",
-          "vac_status_font": "Fira Sans",
-          "vac_status_size": "Velikost Textu",
-          "vac_status_position": "Pozice Textu: Dole(VYP)",
-          "color_text": "[255, 255, 255]"
-        },
-        "data_description": {
-          "vac_status_font": "Výchozí font textu Fira Serif.",
-          "vac_status_size": "Výchozí velikost textu 50.",
-          "color_text": "Barva textu stavu vysavače."
-        },
-        "description": "Možnosti Obrazu",
-        "title": "Možnosti Stavového Textu"
       },
       "draw_elements": {
         "title": "Viditelnost Objektů",
         "description": "Konfigurace viditelnosti prvků na mapě",
+        "menu_options": {
+          "map_elements": "Prvky mapy",
+          "segments_visibility": "Viditelnost segmentů",
+          "main_menu": "Zpět do hlavní nabídky"
+        }
+      },
+      "map_elements": {
+        "title": "Prvky mapy",
+        "description": "Nakonfigurujte, které prvky jsou viditelné na mapě",
         "data": {
-          "disable_floor": "Skrýt Podlahu",
-          "disable_wall": "Skrýt Stěny",
-          "disable_robot": "Skrýt Robota",
-          "disable_charger": "Skrýt Nabíječku",
-          "disable_virtual_walls": "Skrýt Virtuální Stěny",
-          "disable_restricted_areas": "Skrýt Zakázané Oblasti",
-          "disable_no_mop_areas": "Skrýt Oblasti Bez Mopu",
-          "disable_obstacles": "Skrýt Překážky",
-          "disable_path": "Skrýt Cestu",
-          "disable_predicted_path": "Skrýt Předpokládanou Cestu",
-          "disable_go_to_target": "Skrýt Cíl Přesunu"
+          "disable_floor": "Skrýt podlahu",
+          "disable_wall": "Skrýt zdi",
+          "disable_robot": "Skrýt robota",
+          "disable_charger": "Skrýt nabíječku",
+          "disable_virtual_walls": "Skrýt virtuální zdi",
+          "disable_restricted_areas": "Skrýt zakázané oblasti",
+          "disable_no_mop_areas": "Skrýt oblasti bez vytírání",
+          "disable_obstacles": "Skrýt překážky",
+          "disable_path": "Skrýt cestu",
+          "disable_predicted_path": "Skrýt předpokládanou cestu",
+          "disable_go_to_target": "Skrýt cílový bod"
         },
         "data_description": {
-          "disable_floor": "Když je povoleno, podlaha nebude zobrazena na mapě",
-          "disable_wall": "Když je povoleno, stěny nebudou zobrazeny na mapě",
-          "disable_robot": "Když je povoleno, robot nebude zobrazen na mapě",
-          "disable_charger": "Když je povoleno, nabíječka nebude zobrazena na mapě",
-          "disable_virtual_walls": "Když je povoleno, virtuální stěny nebudou zobrazeny na mapě",
-          "disable_restricted_areas": "Když je povoleno, zakázané oblasti nebudou zobrazeny na mapě",
-          "disable_no_mop_areas": "Když je povoleno, oblasti bez mopu nebudou zobrazeny na mapě",
-          "disable_obstacles": "Když je povoleno, překážky nebudou zobrazeny na mapě",
-          "disable_path": "Když je povoleno, cesta čištění nebude zobrazena na mapě",
-          "disable_predicted_path": "Když je povoleno, předpokládaná cesta nebude zobrazena na mapě",
-          "disable_go_to_target": "Když je povoleno, cíle přesunu nebudou zobrazeny na mapě"
+          "disable_floor": "Pokud je povoleno, podlaha nebude zobrazena na mapě",
+          "disable_wall": "Pokud je povoleno, zdi nebudou zobrazeny na mapě",
+          "disable_robot": "Pokud je povoleno, robot nebude zobrazen na mapě",
+          "disable_charger": "Pokud je povoleno, nabíječka nebude zobrazena na mapě",
+          "disable_virtual_walls": "Pokud je povoleno, virtuální zdi nebudou zobrazeny na mapě",
+          "disable_restricted_areas": "Pokud je povoleno, zakázané oblasti nebudou zobrazeny na mapě",
+          "disable_no_mop_areas": "Pokud je povoleno, oblasti bez vytírání nebudou zobrazeny na mapě",
+          "disable_obstacles": "Pokud je povoleno, překážky nebudou zobrazeny na mapě",
+          "disable_path": "Pokud je povoleno, cesta čištění nebude zobrazena na mapě",
+          "disable_predicted_path": "Pokud je povoleno, předpokládaná cesta nebude zobrazena na mapě",
+          "disable_go_to_target": "Pokud je povoleno, cílové body nebudou zobrazeny na mapě"
         }
       },
       "segments_visibility": {
@@ -193,6 +132,95 @@
           "disable_room_14": "Když je povoleno, Místnost 14 {room_13_name} nebude zobrazena na mapě",
           "disable_room_15": "Když je povoleno, Místnost 15 {room_14_name} nebude zobrazena na mapě"
         }
+      },
+      "transparency": {
+        "title": "Nastavení Průhlednosti",
+        "description": "Konfigurace úrovní průhlednosti",
+        "menu_options": {
+          "alpha_1": "Základní průhlednost",
+          "alpha_floor": "Průhlednost podlahy",
+          "alpha_2": "Průhlednost místností 1-8",
+          "alpha_3": "Průhlednost místností 9-16",
+          "main_menu": "Zpět do hlavní nabídky"
+        }
+      },
+      "materials": {
+        "title": "Vykreslování materiálů",
+        "description": "Konfigurace detekce a vykreslování materiálů (dřevěné prkna, dlaždice, koberce)",
+        "data": {
+          "disable_material_overlay": "Zakázat vrstvu materiálů (dřevo a dlaždice)",
+          "disable_carpets": "Skrýt koberce",
+          "color_carpet": "Barva koberce",
+          "color_material_wood": "Barva dřevěných prken",
+          "color_material_tile": "Barva dlaždic",
+          "alpha_carpet": "Průhlednost koberce",
+          "alpha_material_wood": "Průhlednost dřeva",
+          "alpha_material_tile": "Průhlednost dlaždic"
+        },
+        "data_description": {
+          "disable_material_overlay": "Vypnout vykreslování vrstvy materiálů pro dřevo a dlaždice na mapě",
+          "disable_carpets": "Pokud je povoleno, koberce nebudou zobrazeny na mapě",
+          "color_carpet": "Barva materiálů koberců (RGB)",
+          "color_material_wood": "Barva materiálů dřevěných prken (RGB)",
+          "color_material_tile": "Barva materiálů dlaždic (RGB)",
+          "alpha_carpet": "Úroveň průhlednosti koberců (0-255)",
+          "alpha_material_wood": "Úroveň průhlednosti dřevěných prken (0-255)",
+          "alpha_material_tile": "Úroveň průhlednosti dlaždic (0-255)"
+        }
+      },
+      "floor_management": {
+        "title": "Správa podlaží",
+        "description": "Správa více podlaží a jejich nastavení ořezu",
+        "menu_options": {
+          "select_floor": "Vybrat aktivní podlaží",
+          "add_floor": "Přidat nové podlaží",
+          "edit_floor": "Upravit nastavení podlaží",
+          "delete_floor": "Smazat podlaží",
+          "main_menu": "Zpět do hlavní nabídky"
+        }
+      },
+      "map_trims": {
+        "title": "Možnosti Ořezů Mapy",
+        "description": "Správa nastavení ořezů mapy",
+        "menu_options": {
+          "reset_map_trims": "Resetovat Ořezy Mapy",
+          "save_map_trims": "Uložit Ořezy Mapy",
+          "main_menu": "Zpět do hlavní nabídky"
+        }
+      },
+      "image_basic_opt": {
+        "data": {
+          "rotate_image": "Otočit",
+          "margins": "Okraje Obrazu.",
+          "auto_zoom": "Povolit Automatický Zoom",
+          "zoom_lock_ratio": "Zamknout Poměr Stran.",
+          "aspect_ratio": "Poměr Stran Obrazu.",
+          "robot_size": "Velikost robota"
+        },
+        "data_description": {
+          "rotate_image": "Stupeň 0, 90, 180, 270",
+          "margins": "Automatické ořezání okrajů v pixelech.",
+          "aspect_ratio": "Poměr Stran Obrazu.",
+          "robot_size": "Velikost robota v pixelech 8-25"
+        },
+        "description": "Možnosti Obrazu Kamery",
+        "title": "Možnosti Obrazu"
+      },
+      "status_text": {
+        "data": {
+          "show_vac_status": "Zobrazit Stav Vysavače.",
+          "vac_status_font": "Fira Sans",
+          "vac_status_size": "Velikost Textu",
+          "vac_status_position": "Pozice Textu: Dole(VYP)",
+          "color_text": "[255, 255, 255]"
+        },
+        "data_description": {
+          "vac_status_font": "Výchozí font textu Fira Serif.",
+          "vac_status_size": "Výchozí velikost textu 50.",
+          "color_text": "Barva textu stavu vysavače."
+        },
+        "description": "Možnosti Obrazu",
+        "title": "Možnosti Stavového Textu"
       },
       "base_colours": {
         "data": {
@@ -325,6 +353,46 @@
         },
         "description": "Možnosti Kamery. Alpha 3",
         "title": "Alpha Kanál Barev Místností"
+      },
+      "select_floor": {
+        "description": "Vyberte, které podlaží je aktuálně aktivní. Kamera použije nastavení ořezu pro vybrané podlaží.",
+        "data": {
+          "current_floor": "Aktivní podlaží"
+        },
+        "data_description": {
+          "current_floor": "Vyberte podlaží, které je aktuálně aktivní. Aktuální: {current_floor}"
+        }
+      },
+      "add_floor": {
+        "description": "{info}",
+        "data": {
+          "floor_name": "Název podlaží",
+          "map_name": "Název mapy (volitelné)"
+        },
+        "data_description": {
+          "floor_name": "Vyberte z podlaží Home Assistant nebo zadejte vlastní název",
+          "map_name": "Volitelný přátelský název pro toto podlaží"
+        }
+      },
+      "edit_floor": {
+        "description": "Upravit název mapy pro podlaží: {floor_name}. {trim_info}. Hodnoty ořezu se počítají automaticky - použijte 'Uložit ořezy mapy' k jejich aktualizaci.",
+        "data": {
+          "floor_name": "Vyberte podlaží k úpravě",
+          "map_name": "Název mapy (volitelné)"
+        },
+        "data_description": {
+          "floor_name": "Vyberte, které podlaží chcete upravit",
+          "map_name": "Volitelný přátelský název pro toto podlaží"
+        }
+      },
+      "delete_floor": {
+        "description": "Odebrat podlaží z konfigurace. Pokud smažete aktuálně aktivní podlaží, bude resetováno na 'floor_0'.",
+        "data": {
+          "floor_name": "Podlaží ke smazání"
+        },
+        "data_description": {
+          "floor_name": "Vyberte podlaží ke smazání"
+        }
       }
     }
   },
@@ -392,6 +460,12 @@
     },
     "zone_list_length": {
       "message": "'Zone' musí obsahovat alespoň 1 položku, která obsahuje seznam 4 celých čísel."
+    },
+    "mqtt_service_not_found": {
+      "message": "Integrace MQTT není k dispozici. Ujistěte se, že je MQTT nakonfigurováno."
+    },
+    "mqtt_publish_failed": {
+      "message": "Nepodařilo se publikovat příkaz do vysavače přes MQTT."
     }
   }
 }

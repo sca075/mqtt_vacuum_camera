@@ -25,8 +25,14 @@
         "menu_options": {
           "image_opt": "圖像設置",
           "colours": "顏色配置",
-          "advanced": "進階選項"
+          "materials": "材質渲染",
+          "floor_management": "樓層管理",
+          "save_options": "儲存選項"
         }
+      },
+      "main_menu": {
+        "title": "主選單",
+        "description": "返回主選單"
       },
       "image_opt": {
         "title": "圖像設置",
@@ -35,7 +41,7 @@
           "image_basic_opt": "基本設置",
           "status_text": "狀態文本",
           "draw_elements": "物件可見性",
-          "segments_visibility": "分段可見性"
+          "main_menu": "返回主選單"
         }
       },
       "colours": {
@@ -47,100 +53,33 @@
           "rooms_colours_2": "房間 9-16",
           "floor_only": "僅地板",
           "transparency": "透明度設置",
-          "rename_translations": "重命名房間"
+          "main_menu": "返回主選單"
         }
-      },
-      "transparency": {
-        "title": "透明度設置",
-        "description": "配置透明度級別",
-        "menu_options": {
-          "base_transparency": "基本透明度",
-          "rooms_transparency_1": "房間 1-8 透明度",
-          "rooms_transparency_2": "房間 9-16 透明度",
-          "floor_transparency": "地板透明度"
-        }
-      },
-      "advanced": {
-        "title": "進階選項",
-        "description": "進階配置選項",
-        "menu_options": {
-          "download_logs": "下載日誌",
-          "map_trims": "地圖裁剪"
-        }
-      },
-      "map_trims": {
-        "title": "地圖裁剪選項",
-        "description": "管理地圖裁剪設置",
-        "menu_options": {
-          "reset_map_trims": "重置地圖裁剪",
-          "save_map_trims": "保存地圖裁剪"
-        }
-      },
-      "image_basic_opt": {
-        "data": {
-          "rotate_image": "旋轉",
-          "margins": "圖像邊距。",
-          "auto_zoom": "啟用自動縮放",
-          "zoom_lock_ratio": "鎖定縱橫比。",
-          "aspect_ratio": "圖像縱橫比。",
-          "robot_size": "機器人大小"
-        },
-        "data_description": {
-          "rotate_image": "度數 0, 90, 180, 270",
-          "margins": "自動邊距裁剪（像素）。",
-          "aspect_ratio": "圖像縱橫比。",
-          "robot_size": "機器人大小（像素）8-25"
-        },
-        "description": "相機圖像選項",
-        "title": "圖像選項"
-      },
-      "image_offset": {
-        "title": "圖像偏移設置",
-        "description": "配置圖像偏移值",
-        "data": {
-          "offset_top": "頂部偏移",
-          "offset_bottom": "底部偏移",
-          "offset_left": "左側偏移",
-          "offset_right": "右側偏移"
-        },
-        "data_description": {
-          "offset_top": "從頂部偏移的像素 (0-1000)",
-          "offset_bottom": "從底部偏移的像素 (0-1000)",
-          "offset_left": "從左側偏移的像素 (0-1000)",
-          "offset_right": "從右側偏移的像素 (0-1000)"
-        }
-      },
-      "status_text": {
-        "data": {
-          "show_vac_status": "顯示吸塵器狀態。",
-          "vac_status_font": "Fira Sans",
-          "vac_status_size": "文本大小",
-          "vac_status_position": "文本位置：底部（關閉）",
-          "color_text": "[255, 255, 255]"
-        },
-        "data_description": {
-          "vac_status_font": "默認文本字體 Fira Serif。",
-          "vac_status_size": "默認文本大小 50。",
-          "color_text": "吸塵器狀態文本顏色。"
-        },
-        "description": "圖像選項",
-        "title": "狀態文本選項"
       },
       "draw_elements": {
         "title": "物件可見性",
+        "description": "配置地圖上可見的元素",
+        "menu_options": {
+          "map_elements": "地圖元素",
+          "segments_visibility": "區段可見性",
+          "main_menu": "返回主選單"
+        }
+      },
+      "map_elements": {
+        "title": "地圖元素",
         "description": "配置地圖上可見的元素",
         "data": {
           "disable_floor": "隱藏地板",
           "disable_wall": "隱藏牆壁",
           "disable_robot": "隱藏機器人",
-          "disable_charger": "隱藏充電器",
+          "disable_charger": "隱藏充電座",
           "disable_virtual_walls": "隱藏虛擬牆",
-          "disable_restricted_areas": "隱藏限制區域",
-          "disable_no_mop_areas": "隱藏禁止拖地區域",
+          "disable_restricted_areas": "隱藏禁區",
+          "disable_no_mop_areas": "隱藏禁拖區",
           "disable_obstacles": "隱藏障礙物",
           "disable_path": "隱藏路徑",
           "disable_predicted_path": "隱藏預測路徑",
-          "disable_go_to_target": "隱藏前往目標"
+          "disable_go_to_target": "隱藏目標點"
         },
         "data_description": {
           "disable_floor": "啟用時，地板將不會顯示在地圖上",
@@ -149,11 +88,11 @@
           "disable_charger": "啟用時，充電器將不會顯示在地圖上",
           "disable_virtual_walls": "啟用時，虛擬牆將不會顯示在地圖上",
           "disable_restricted_areas": "啟用時，限制區域將不會顯示在地圖上",
-          "disable_no_mop_areas": "啟用時，禁止拖地區域將不會顯示在地圖上",
+          "disable_no_mop_areas": "啟用時，禁拖區域將不會顯示在地圖上",
           "disable_obstacles": "啟用時，障礙物將不會顯示在地圖上",
-          "disable_path": "啟用時，清潔路徑將不會顯示在地圖上",
+          "disable_path": "啟用後，清潔路徑將不會顯示在地圖上",
           "disable_predicted_path": "啟用時，預測路徑將不會顯示在地圖上",
-          "disable_go_to_target": "啟用時，前往目標將不會顯示在地圖上"
+          "disable_go_to_target": "啟用後，前往目標將不會顯示在地圖上"
         }
       },
       "segments_visibility": {
@@ -193,6 +132,95 @@
           "disable_room_14": "啟用時，房間 14 {room_13_name} 將不會顯示在地圖上",
           "disable_room_15": "啟用時，房間 15 {room_14_name} 將不會顯示在地圖上"
         }
+      },
+      "transparency": {
+        "title": "透明度設置",
+        "description": "配置透明度級別",
+        "menu_options": {
+          "alpha_1": "基礎透明度",
+          "alpha_floor": "地板透明度",
+          "alpha_2": "房間 1-8 透明度",
+          "alpha_3": "房間 9-16 透明度",
+          "main_menu": "返回主選單"
+        }
+      },
+      "materials": {
+        "title": "材質渲染",
+        "description": "配置材質檢測和渲染（木板、瓷磚、地毯）",
+        "data": {
+          "disable_material_overlay": "停用材質覆蓋（木材和瓷磚）",
+          "disable_carpets": "隱藏地毯",
+          "color_carpet": "地毯顏色",
+          "color_material_wood": "木板顏色",
+          "color_material_tile": "瓷磚顏色",
+          "alpha_carpet": "地毯透明度",
+          "alpha_material_wood": "木材透明度",
+          "alpha_material_tile": "瓷磚透明度"
+        },
+        "data_description": {
+          "disable_material_overlay": "關閉地圖上木材和瓷磚的材質覆蓋渲染",
+          "disable_carpets": "啟用時，地毯將不會顯示在地圖上",
+          "color_carpet": "地毯材質顏色（RGB）",
+          "color_material_wood": "木板材質顏色（RGB）",
+          "color_material_tile": "瓷磚材質顏色（RGB）",
+          "alpha_carpet": "地毯透明度級別（0-255）",
+          "alpha_material_wood": "木板透明度級別（0-255）",
+          "alpha_material_tile": "瓷磚透明度級別（0-255）"
+        }
+      },
+      "floor_management": {
+        "title": "樓層管理",
+        "description": "管理多個樓層及其修剪設定",
+        "menu_options": {
+          "select_floor": "選擇活動樓層",
+          "add_floor": "新增樓層",
+          "edit_floor": "編輯樓層設定",
+          "delete_floor": "刪除樓層",
+          "main_menu": "返回主選單"
+        }
+      },
+      "map_trims": {
+        "title": "地圖裁剪選項",
+        "description": "管理地圖裁剪設置",
+        "menu_options": {
+          "reset_map_trims": "重置地圖裁剪",
+          "save_map_trims": "保存地圖裁剪",
+          "main_menu": "返回主選單"
+        }
+      },
+      "image_basic_opt": {
+        "data": {
+          "rotate_image": "旋轉",
+          "margins": "圖像邊距。",
+          "auto_zoom": "啟用自動縮放",
+          "zoom_lock_ratio": "鎖定縱橫比。",
+          "aspect_ratio": "圖像縱橫比。",
+          "robot_size": "機器人大小"
+        },
+        "data_description": {
+          "rotate_image": "度數 0, 90, 180, 270",
+          "margins": "自動邊距裁剪（像素）。",
+          "aspect_ratio": "圖像縱橫比。",
+          "robot_size": "機器人大小（像素）8-25"
+        },
+        "description": "相機圖像選項",
+        "title": "圖像選項"
+      },
+      "status_text": {
+        "data": {
+          "show_vac_status": "顯示吸塵器狀態。",
+          "vac_status_font": "Fira Sans",
+          "vac_status_size": "文本大小",
+          "vac_status_position": "文本位置：底部（關閉）",
+          "color_text": "[255, 255, 255]"
+        },
+        "data_description": {
+          "vac_status_font": "默認文本字體 Fira Serif。",
+          "vac_status_size": "默認文本大小 50。",
+          "color_text": "吸塵器狀態文本顏色。"
+        },
+        "description": "圖像選項",
+        "title": "狀態文本選項"
       },
       "base_colours": {
         "data": {
@@ -325,6 +353,46 @@
         },
         "description": "相機選項。透明度 3",
         "title": "房間顏色透明度通道"
+      },
+      "select_floor": {
+        "description": "選擇目前啟用的樓層。相機將使用所選樓層的修剪設定。",
+        "data": {
+          "current_floor": "啟用的樓層"
+        },
+        "data_description": {
+          "current_floor": "選擇目前啟用的樓層。目前：{current_floor}"
+        }
+      },
+      "add_floor": {
+        "description": "{info}",
+        "data": {
+          "floor_name": "樓層名稱",
+          "map_name": "地圖名稱（選填）"
+        },
+        "data_description": {
+          "floor_name": "從 Home Assistant 樓層中選擇或輸入自訂名稱",
+          "map_name": "此樓層的選填易記名稱"
+        }
+      },
+      "edit_floor": {
+        "description": "編輯樓層的地圖名稱：{floor_name}。{trim_info}。修剪值會自動計算 - 使用「儲存地圖修剪」來更新它們。",
+        "data": {
+          "floor_name": "選擇要編輯的樓層",
+          "map_name": "地圖名稱（選填）"
+        },
+        "data_description": {
+          "floor_name": "選擇要編輯的樓層",
+          "map_name": "此樓層的選填易記名稱"
+        }
+      },
+      "delete_floor": {
+        "description": "從設定中移除樓層。如果您刪除目前啟用的樓層，它將重設為「floor_0」。",
+        "data": {
+          "floor_name": "要刪除的樓層"
+        },
+        "data_description": {
+          "floor_name": "選擇要刪除的樓層"
+        }
       }
     }
   },
@@ -392,6 +460,12 @@
     },
     "zone_list_length": {
       "message": "'Zone' 必須至少有 1 個元素，該元素包含 4 個整數的列表。"
+    },
+    "mqtt_service_not_found": {
+      "message": "MQTT 整合無法使用。請確保已設定 MQTT。"
+    },
+    "mqtt_publish_failed": {
+      "message": "無法透過 MQTT 發布命令至吸塵器。"
     }
   }
 }

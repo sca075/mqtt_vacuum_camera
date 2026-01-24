@@ -25,8 +25,14 @@
         "menu_options": {
           "image_opt": "Billedindstillinger",
           "colours": "Farveindstillinger",
-          "advanced": "Avancerede Indstillinger"
+          "materials": "Materialegengivelse",
+          "floor_management": "Etagehåndtering",
+          "save_options": "Gem indstillinger"
         }
+      },
+      "main_menu": {
+        "title": "Hovedmenu",
+        "description": "Tilbage til hovedmenu"
       },
       "image_opt": {
         "title": "Billedindstillinger",
@@ -35,7 +41,7 @@
           "image_basic_opt": "Grundlæggende Indstillinger",
           "status_text": "Statustekst",
           "draw_elements": "Objektsynlighed",
-          "segments_visibility": "Segmentsynlighed"
+          "main_menu": "Tilbage til hovedmenu"
         }
       },
       "colours": {
@@ -47,87 +53,20 @@
           "rooms_colours_2": "Rum 9-16",
           "floor_only": "Gulvfarve",
           "transparency": "Gennemsigtighedsindstillinger",
-          "rename_translations": "Omdøb Rum"
+          "main_menu": "Tilbage til hovedmenu"
         }
-      },
-      "transparency": {
-        "title": "Gennemsigtighedsindstillinger",
-        "description": "Konfigurer gennemsigtighedsniveauer",
-        "menu_options": {
-          "base_transparency": "Grundlæggende Gennemsigtighed",
-          "rooms_transparency_1": "Gennemsigtighed Rum 1-8",
-          "rooms_transparency_2": "Gennemsigtighed Rum 9-16",
-          "floor_transparency": "Gulvgennemsigtighed"
-        }
-      },
-      "advanced": {
-        "title": "Avancerede Indstillinger",
-        "description": "Avancerede konfigurationsindstillinger",
-        "menu_options": {
-          "download_logs": "Download Logfiler",
-          "map_trims": "Kortbeskæringer"
-        }
-      },
-      "map_trims": {
-        "title": "Kortbeskæringsindstillinger",
-        "description": "Administrer kortbeskæringsindstillinger",
-        "menu_options": {
-          "reset_map_trims": "Nulstil Kortbeskæringer",
-          "save_map_trims": "Gem Kortbeskæringer"
-        }
-      },
-      "image_basic_opt": {
-        "data": {
-          "rotate_image": "Roter",
-          "margins": "Billedemargener.",
-          "auto_zoom": "Aktivér automatisk zoom",
-          "zoom_lock_ratio": "Bevar proportioner.",
-          "aspect_ratio": "Billedeproportioner.",
-          "robot_size": "Robotstørrelse"
-        },
-        "data_description": {
-          "rotate_image": "Grader 0, 90, 180, 270",
-          "margins": "Automatisk margenbeskæring i pixels.",
-          "aspect_ratio": "Billedeproportioner.",
-          "robot_size": "Robotstørrelse i pixels 8-25"
-        },
-        "description": "Kamera billede indstillinger",
-        "title": "Billedeindstillinger"
-      },
-      "image_offset": {
-        "title": "Billedforskydningsindstillinger",
-        "description": "Konfigurer billedforskydningsværdier",
-        "data": {
-          "offset_top": "Top Forskydning",
-          "offset_bottom": "Bund Forskydning",
-          "offset_left": "Venstre Forskydning",
-          "offset_right": "Højre Forskydning"
-        },
-        "data_description": {
-          "offset_top": "Pixels til forskydning fra top (0-1000)",
-          "offset_bottom": "Pixels til forskydning fra bund (0-1000)",
-          "offset_left": "Pixels til forskydning fra venstre (0-1000)",
-          "offset_right": "Pixels til forskydning fra højre (0-1000)"
-        }
-      },
-      "status_text": {
-        "data": {
-          "show_vac_status": "Vis støvsuger status.",
-          "vac_status_font": "Fira Sans",
-          "vac_status_size": "Tekststørrelse",
-          "vac_status_position": "Tekst position: Bund(FRA)",
-          "color_text": "[255, 255, 255]"
-        },
-        "data_description": {
-          "vac_status_font": "Standard skrifttype Fira Serif.",
-          "vac_status_size": "Tekststørrelse standard 50.",
-          "color_text": "Støvsuger statustekst farve."
-        },
-        "description": "Billedeindstillinger",
-        "title": "Statustekst indstillinger"
       },
       "draw_elements": {
         "title": "Objektsynlighed",
+        "description": "Konfigurer hvilke elementer der er synlige på kortet",
+        "menu_options": {
+          "map_elements": "Kortelementer",
+          "segments_visibility": "Segmentsynlighed",
+          "main_menu": "Tilbage til hovedmenu"
+        }
+      },
+      "map_elements": {
+        "title": "Kortelementer",
         "description": "Konfigurer hvilke elementer der er synlige på kortet",
         "data": {
           "disable_floor": "Skjul gulv",
@@ -136,24 +75,24 @@
           "disable_charger": "Skjul oplader",
           "disable_virtual_walls": "Skjul virtuelle vægge",
           "disable_restricted_areas": "Skjul begrænsede områder",
-          "disable_no_mop_areas": "Skjul no-mop områder",
+          "disable_no_mop_areas": "Skjul ingen-moppe områder",
           "disable_obstacles": "Skjul forhindringer",
           "disable_path": "Skjul sti",
-          "disable_predicted_path": "Skjul forventet sti",
+          "disable_predicted_path": "Skjul forudsagt sti",
           "disable_go_to_target": "Skjul gå-til mål"
         },
         "data_description": {
-          "disable_floor": "Når aktiveret, vil gulvet ikke blive vist på kortet",
-          "disable_wall": "Når aktiveret, vil vægge ikke blive vist på kortet",
-          "disable_robot": "Når aktiveret, vil robotten ikke blive vist på kortet",
-          "disable_charger": "Når aktiveret, vil opladeren ikke blive vist på kortet",
-          "disable_virtual_walls": "Når aktiveret, vil virtuelle vægge ikke blive vist på kortet",
-          "disable_restricted_areas": "Når aktiveret, vil begrænsede områder ikke blive vist på kortet",
-          "disable_no_mop_areas": "Når aktiveret, vil no-mop områder ikke blive vist på kortet",
-          "disable_obstacles": "Når aktiveret, vil forhindringer ikke blive vist på kortet",
-          "disable_path": "Når aktiveret, vil rengøringsstien ikke blive vist på kortet",
-          "disable_predicted_path": "Når aktiveret, vil den forventede sti ikke blive vist på kortet",
-          "disable_go_to_target": "Når aktiveret, vil gå-til mål ikke blive vist på kortet"
+          "disable_floor": "Når aktiveret, vises gulvet ikke på kortet",
+          "disable_wall": "Når aktiveret, vises vægge ikke på kortet",
+          "disable_robot": "Når aktiveret, vises robotten ikke på kortet",
+          "disable_charger": "Når aktiveret, vises opladeren ikke på kortet",
+          "disable_virtual_walls": "Når aktiveret, vises virtuelle vægge ikke på kortet",
+          "disable_restricted_areas": "Når aktiveret, vises begrænsede områder ikke på kortet",
+          "disable_no_mop_areas": "Når aktiveret, vises områder uden mopping ikke på kortet",
+          "disable_obstacles": "Når aktiveret, vises forhindringer ikke på kortet",
+          "disable_path": "Når aktiveret, vises rengøringsstien ikke på kortet",
+          "disable_predicted_path": "Når aktiveret, vises den forudsagte sti ikke på kortet",
+          "disable_go_to_target": "Når aktiveret, vises gå-til-mål ikke på kortet"
         }
       },
       "segments_visibility": {
@@ -193,6 +132,95 @@
           "disable_room_14": "Når aktiveret, vil rum 14 {room_13_name} ikke blive vist på kortet",
           "disable_room_15": "Når aktiveret, vil rum 15 {room_14_name} ikke blive vist på kortet"
         }
+      },
+      "transparency": {
+        "title": "Gennemsigtighedsindstillinger",
+        "description": "Konfigurer gennemsigtighedsniveauer",
+        "menu_options": {
+          "alpha_1": "Basisgennemsigtighed",
+          "alpha_floor": "Gulvgennemsigtighed",
+          "alpha_2": "Rum 1-8 gennemsigtighed",
+          "alpha_3": "Rum 9-16 gennemsigtighed",
+          "main_menu": "Tilbage til hovedmenu"
+        }
+      },
+      "materials": {
+        "title": "Materialegengivelse",
+        "description": "Konfigurer materialeregistrering og gengivelse (træplanker, fliser, tæpper)",
+        "data": {
+          "disable_material_overlay": "Deaktiver materialeoverlay (træ og fliser)",
+          "disable_carpets": "Skjul tæpper",
+          "color_carpet": "Tæppefarve",
+          "color_material_wood": "Træplankefarve",
+          "color_material_tile": "Flisefarve",
+          "alpha_carpet": "Tæppegennemsigtighed",
+          "alpha_material_wood": "Trægennemsigtighed",
+          "alpha_material_tile": "Flisegennemsigtighed"
+        },
+        "data_description": {
+          "disable_material_overlay": "Slå materialeoverlay-gengivelse fra for træ og fliser på kortet",
+          "disable_carpets": "Når aktiveret, vises tæpper ikke på kortet",
+          "color_carpet": "Farve til tæppematerialer (RGB)",
+          "color_material_wood": "Farve til træplankematerialer (RGB)",
+          "color_material_tile": "Farve til flisematerialer (RGB)",
+          "alpha_carpet": "Gennemsigtighedsniveau for tæpper (0-255)",
+          "alpha_material_wood": "Gennemsigtighedsniveau for træplanker (0-255)",
+          "alpha_material_tile": "Gennemsigtighedsniveau for fliser (0-255)"
+        }
+      },
+      "floor_management": {
+        "title": "Etagehåndtering",
+        "description": "Administrer flere etager og deres beskæringsindstillinger",
+        "menu_options": {
+          "select_floor": "Vælg aktiv etage",
+          "add_floor": "Tilføj ny etage",
+          "edit_floor": "Rediger etageindstillinger",
+          "delete_floor": "Slet etage",
+          "main_menu": "Tilbage til hovedmenu"
+        }
+      },
+      "map_trims": {
+        "title": "Kortbeskæringsindstillinger",
+        "description": "Administrer kortbeskæringsindstillinger",
+        "menu_options": {
+          "reset_map_trims": "Nulstil Kortbeskæringer",
+          "save_map_trims": "Gem Kortbeskæringer",
+          "main_menu": "Tilbage til hovedmenu"
+        }
+      },
+      "image_basic_opt": {
+        "data": {
+          "rotate_image": "Roter",
+          "margins": "Billedemargener.",
+          "auto_zoom": "Aktivér automatisk zoom",
+          "zoom_lock_ratio": "Bevar proportioner.",
+          "aspect_ratio": "Billedeproportioner.",
+          "robot_size": "Robotstørrelse"
+        },
+        "data_description": {
+          "rotate_image": "Grader 0, 90, 180, 270",
+          "margins": "Automatisk margenbeskæring i pixels.",
+          "aspect_ratio": "Billedeproportioner.",
+          "robot_size": "Robotstørrelse i pixels 8-25"
+        },
+        "description": "Kamera billede indstillinger",
+        "title": "Billedeindstillinger"
+      },
+      "status_text": {
+        "data": {
+          "show_vac_status": "Vis støvsuger status.",
+          "vac_status_font": "Fira Sans",
+          "vac_status_size": "Tekststørrelse",
+          "vac_status_position": "Tekst position: Bund(FRA)",
+          "color_text": "[255, 255, 255]"
+        },
+        "data_description": {
+          "vac_status_font": "Standard skrifttype Fira Serif.",
+          "vac_status_size": "Tekststørrelse standard 50.",
+          "color_text": "Støvsuger statustekst farve."
+        },
+        "description": "Billedeindstillinger",
+        "title": "Statustekst indstillinger"
       },
       "base_colours": {
         "data": {
@@ -325,6 +353,46 @@
         },
         "description": "Kameraindstillinger. Alpha 3",
         "title": "Alphakanal rumfarver"
+      },
+      "select_floor": {
+        "description": "Vælg hvilken etage der er aktiv i øjeblikket. Kameraet vil bruge trim-indstillingerne for den valgte etage.",
+        "data": {
+          "current_floor": "Aktiv etage"
+        },
+        "data_description": {
+          "current_floor": "Vælg den etage, der er aktiv i øjeblikket. Nuværende: {current_floor}"
+        }
+      },
+      "add_floor": {
+        "description": "{info}",
+        "data": {
+          "floor_name": "Etagenavn",
+          "map_name": "Kortnavn (valgfrit)"
+        },
+        "data_description": {
+          "floor_name": "Vælg fra Home Assistant etager eller indtast et brugerdefineret navn",
+          "map_name": "Valgfrit venligt navn til denne etage"
+        }
+      },
+      "edit_floor": {
+        "description": "Rediger kortnavn for etage: {floor_name}. {trim_info}. Trim-værdier beregnes automatisk - brug 'Gem korttrim' for at opdatere dem.",
+        "data": {
+          "floor_name": "Vælg etage at redigere",
+          "map_name": "Kortnavn (valgfrit)"
+        },
+        "data_description": {
+          "floor_name": "Vælg hvilken etage der skal redigeres",
+          "map_name": "Valgfrit venligt navn til denne etage"
+        }
+      },
+      "delete_floor": {
+        "description": "Fjern en etage fra konfigurationen. Hvis du sletter den aktuelt aktive etage, nulstilles den til 'floor_0'.",
+        "data": {
+          "floor_name": "Etage at slette"
+        },
+        "data_description": {
+          "floor_name": "Vælg etagen der skal slettes"
+        }
       }
     }
   },
@@ -392,6 +460,12 @@
     },
     "zone_list_length": {
       "message": "'Zone' skal have mindst 1 element, der indeholder en liste med 4 heltal."
+    },
+    "mqtt_service_not_found": {
+      "message": "MQTT-integration er ikke tilgængelig. Sørg for at MQTT er konfigureret."
+    },
+    "mqtt_publish_failed": {
+      "message": "Kunne ikke publicere kommando til støvsuger via MQTT."
     }
   }
 }

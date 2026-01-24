@@ -25,8 +25,14 @@
         "menu_options": {
           "image_opt": "Impostazioni Immagine",
           "colours": "Configurazione Colori",
-          "advanced": "Opzioni Avanzate"
+          "materials": "Rendering dei Materiali",
+          "floor_management": "Gestione Piani",
+          "save_options": "Salva Opzioni"
         }
+      },
+      "main_menu": {
+        "title": "Menu Principale",
+        "description": "Torna al menu principale"
       },
       "image_opt": {
         "title": "Impostazioni Immagine",
@@ -35,7 +41,7 @@
           "image_basic_opt": "Impostazioni Base",
           "status_text": "Testo Stato",
           "draw_elements": "Visibilità Oggetti",
-          "segments_visibility": "Visibilità Segmenti"
+          "main_menu": "Torna al Menu Principale"
         }
       },
       "colours": {
@@ -47,113 +53,46 @@
           "rooms_colours_2": "Stanze 9-16",
           "floor_only": "Solo Pavimento",
           "transparency": "Impostazioni Trasparenza",
-          "rename_translations": "Rinomina Stanze"
+          "main_menu": "Torna al Menu Principale"
         }
-      },
-      "transparency": {
-        "title": "Impostazioni Trasparenza",
-        "description": "Configura livelli di trasparenza",
-        "menu_options": {
-          "base_transparency": "Trasparenza Base",
-          "rooms_transparency_1": "Trasparenza Stanze 1-8",
-          "rooms_transparency_2": "Trasparenza Stanze 9-16",
-          "floor_transparency": "Trasparenza Pavimento"
-        }
-      },
-      "advanced": {
-        "title": "Opzioni Avanzate",
-        "description": "Opzioni di configurazione avanzate",
-        "menu_options": {
-          "download_logs": "Scarica Log",
-          "map_trims": "Ritagli Mappa"
-        }
-      },
-      "map_trims": {
-        "title": "Opzioni Ritagli Mappa",
-        "description": "Gestisci impostazioni ritagli mappa",
-        "menu_options": {
-          "reset_map_trims": "Reimposta Ritagli Mappa",
-          "save_map_trims": "Salva Ritagli Mappa"
-        }
-      },
-      "image_basic_opt": {
-        "data": {
-          "rotate_image": "Ruota",
-          "margins": "Margini Immagine.",
-          "auto_zoom": "Abilita Zoom Automatico",
-          "zoom_lock_ratio": "Blocca Rapporto Aspetto.",
-          "aspect_ratio": "Rapporto Aspetto Immagine.",
-          "robot_size": "Dimensione del robot"
-        },
-        "data_description": {
-          "rotate_image": "Gradi 0, 90, 180, 270",
-          "margins": "Ritaglio automatico margini in pixel.",
-          "aspect_ratio": "Rapporto Aspetto Immagine.",
-          "robot_size": "Dimensione del robot in pixel 8-25"
-        },
-        "description": "Opzioni immagine fotocamera",
-        "title": "Opzioni Immagine"
-      },
-      "image_offset": {
-        "title": "Impostazioni Offset Immagine",
-        "description": "Configura valori offset immagine",
-        "data": {
-          "offset_top": "Offset Superiore",
-          "offset_bottom": "Offset Inferiore",
-          "offset_left": "Offset Sinistro",
-          "offset_right": "Offset Destro"
-        },
-        "data_description": {
-          "offset_top": "Pixel per offset dall'alto (0-1000)",
-          "offset_bottom": "Pixel per offset dal basso (0-1000)",
-          "offset_left": "Pixel per offset da sinistra (0-1000)",
-          "offset_right": "Pixel per offset da destra (0-1000)"
-        }
-      },
-      "status_text": {
-        "data": {
-          "show_vac_status": "Mostra stato aspirapolvere.",
-          "vac_status_font": "Fira Sans",
-          "vac_status_size": "Dimensione Testo",
-          "vac_status_position": "Posizione Testo: Basso(OFF)",
-          "color_text": "[255, 255, 255]"
-        },
-        "data_description": {
-          "vac_status_font": "Font testo predefinito Fira Serif.",
-          "vac_status_size": "Dimensione testo predefinita 50.",
-          "color_text": "Colore testo stato aspirapolvere."
-        },
-        "description": "Opzioni Immagine",
-        "title": "Opzioni Testo Stato"
       },
       "draw_elements": {
         "title": "Visibilità Oggetti",
         "description": "Configura quali elementi sono visibili sulla mappa",
+        "menu_options": {
+          "map_elements": "Elementi Mappa",
+          "segments_visibility": "Visibilità segmenti",
+          "main_menu": "Torna al Menu Principale"
+        }
+      },
+      "map_elements": {
+        "title": "Elementi Mappa",
+        "description": "Configura quali elementi sono visibili sulla mappa",
         "data": {
-          "disable_floor": "Nascondi Pavimento",
-          "disable_wall": "Nascondi Pareti",
-          "disable_robot": "Nascondi Robot",
-          "disable_charger": "Nascondi Caricatore",
-          "disable_virtual_walls": "Nascondi Pareti Virtuali",
-          "disable_restricted_areas": "Nascondi Aree Ristrette",
-          "disable_no_mop_areas": "Nascondi Aree No-Mop",
-          "disable_obstacles": "Nascondi Ostacoli",
-          "disable_path": "Nascondi Percorso",
-          "disable_predicted_path": "Nascondi Percorso Previsto",
-          "disable_go_to_target": "Nascondi Obiettivo Vai-A"
+          "disable_floor": "Nascondi pavimento",
+          "disable_wall": "Nascondi pareti",
+          "disable_robot": "Nascondi robot",
+          "disable_charger": "Nascondi caricatore",
+          "disable_virtual_walls": "Nascondi pareti virtuali",
+          "disable_restricted_areas": "Nascondi aree vietate",
+          "disable_no_mop_areas": "Nascondi aree senza lavaggio",
+          "disable_obstacles": "Nascondi ostacoli",
+          "disable_path": "Nascondi percorso",
+          "disable_predicted_path": "Nascondi percorso previsto",
+          "disable_go_to_target": "Nascondi destinazione"
         },
         "data_description": {
-          "disable_floor": "Quando abilitato, il pavimento non sarà mostrato sulla mappa",
-          "disable_wall": "Quando abilitato, le pareti non saranno mostrate sulla mappa",
-          "disable_robot": "Quando abilitato, il robot non sarà mostrato sulla mappa",
-          "disable_charger": "Quando abilitato, il caricatore non sarà mostrato sulla mappa",
-          "disable_virtual_walls": "Quando abilitato, le pareti virtuali non saranno mostrate sulla mappa",
-          "disable_restricted_areas": "Quando abilitato, le aree ristrette non saranno mostrate sulla mappa",
-          "disable_no_mop_areas": "Quando abilitato, le aree no-mop non saranno mostrate sulla mappa",
-          "disable_obstacles": "Quando abilitato, gli ostacoli non saranno mostrati sulla mappa",
-          "disable_path": "Quando abilitato, il percorso di pulizia non sarà mostrato sulla mappa",
-          "disable_predicted_path": "Quando abilitato, il percorso previsto non sarà mostrato sulla mappa",
-          "disable_go_to_target": "Quando abilitato, gli obiettivi vai-a non saranno mostrati sulla mappa"
+          "disable_floor": "Quando abilitato, il pavimento non verrà mostrato sulla mappa",
+          "disable_wall": "Quando abilitato, le pareti non verranno mostrate sulla mappa",
+          "disable_robot": "Quando abilitato, il robot non verrà mostrato sulla mappa",
+          "disable_charger": "Quando abilitato, il caricatore non verrà mostrato sulla mappa",
+          "disable_virtual_walls": "Quando abilitato, i muri virtuali non verranno mostrati sulla mappa",
+          "disable_restricted_areas": "Quando abilitato, le aree riservate non verranno mostrate sulla mappa",
+          "disable_no_mop_areas": "Quando abilitato, le aree senza lavaggio non verranno mostrate sulla mappa",
+          "disable_obstacles": "Quando abilitato, gli ostacoli non verranno mostrati sulla mappa",
+          "disable_path": "Quando abilitato, il percorso di pulizia non verrà mostrato sulla mappa",
+          "disable_predicted_path": "Quando abilitato, il percorso previsto non verrà mostrato sulla mappa",
+          "disable_go_to_target": "Quando abilitato, gli obiettivi vai a non verranno mostrati sulla mappa"
         }
       },
       "segments_visibility": {
@@ -193,6 +132,95 @@
           "disable_room_14": "Quando abilitato, la Stanza 14 {room_13_name} non sarà mostrata sulla mappa",
           "disable_room_15": "Quando abilitato, la Stanza 15 {room_14_name} non sarà mostrata sulla mappa"
         }
+      },
+      "transparency": {
+        "title": "Impostazioni Trasparenza",
+        "description": "Configura livelli di trasparenza",
+        "menu_options": {
+          "alpha_1": "Trasparenza Base",
+          "alpha_floor": "Trasparenza Pavimento",
+          "alpha_2": "Trasparenza Stanze 1-8",
+          "alpha_3": "Trasparenza Stanze 9-16",
+          "main_menu": "Torna al Menu Principale"
+        }
+      },
+      "materials": {
+        "title": "Rendering dei Materiali",
+        "description": "Configura rilevamento e rendering dei materiali (assi di legno, piastrelle, tappeti)",
+        "data": {
+          "disable_material_overlay": "Disabilita sovrapposizione materiali (legno e piastrelle)",
+          "disable_carpets": "Nascondi tappeti",
+          "color_carpet": "Colore tappeto",
+          "color_material_wood": "Colore assi di legno",
+          "color_material_tile": "Colore piastrelle",
+          "alpha_carpet": "Trasparenza tappeto",
+          "alpha_material_wood": "Trasparenza legno",
+          "alpha_material_tile": "Trasparenza piastrelle"
+        },
+        "data_description": {
+          "disable_material_overlay": "Disattiva il rendering della sovrapposizione materiali per legno e piastrelle sulla mappa",
+          "disable_carpets": "Quando abilitato, i tappeti non verranno mostrati sulla mappa",
+          "color_carpet": "Colore per materiali tappeto (RGB)",
+          "color_material_wood": "Colore per materiali assi di legno (RGB)",
+          "color_material_tile": "Colore per materiali piastrelle (RGB)",
+          "alpha_carpet": "Livello di trasparenza per tappeti (0-255)",
+          "alpha_material_wood": "Livello di trasparenza per assi di legno (0-255)",
+          "alpha_material_tile": "Livello di trasparenza per piastrelle (0-255)"
+        }
+      },
+      "floor_management": {
+        "title": "Gestione Piani",
+        "description": "Gestisci più piani e le loro impostazioni di ritaglio",
+        "menu_options": {
+          "select_floor": "Seleziona Piano Attivo",
+          "add_floor": "Aggiungi Nuovo Piano",
+          "edit_floor": "Modifica Impostazioni Piano",
+          "delete_floor": "Elimina Piano",
+          "main_menu": "Torna al Menu Principale"
+        }
+      },
+      "map_trims": {
+        "title": "Opzioni Ritagli Mappa",
+        "description": "Gestisci impostazioni ritagli mappa",
+        "menu_options": {
+          "reset_map_trims": "Reimposta Ritagli Mappa",
+          "save_map_trims": "Salva Ritagli Mappa",
+          "main_menu": "Torna al Menu Principale"
+        }
+      },
+      "image_basic_opt": {
+        "data": {
+          "rotate_image": "Ruota",
+          "margins": "Margini Immagine.",
+          "auto_zoom": "Abilita Zoom Automatico",
+          "zoom_lock_ratio": "Blocca Rapporto Aspetto.",
+          "aspect_ratio": "Rapporto Aspetto Immagine.",
+          "robot_size": "Dimensione del robot"
+        },
+        "data_description": {
+          "rotate_image": "Gradi 0, 90, 180, 270",
+          "margins": "Ritaglio automatico margini in pixel.",
+          "aspect_ratio": "Rapporto Aspetto Immagine.",
+          "robot_size": "Dimensione del robot in pixel 8-25"
+        },
+        "description": "Opzioni immagine fotocamera",
+        "title": "Opzioni Immagine"
+      },
+      "status_text": {
+        "data": {
+          "show_vac_status": "Mostra stato aspirapolvere.",
+          "vac_status_font": "Fira Sans",
+          "vac_status_size": "Dimensione Testo",
+          "vac_status_position": "Posizione Testo: Basso(OFF)",
+          "color_text": "[255, 255, 255]"
+        },
+        "data_description": {
+          "vac_status_font": "Font testo predefinito Fira Serif.",
+          "vac_status_size": "Dimensione testo predefinita 50.",
+          "color_text": "Colore testo stato aspirapolvere."
+        },
+        "description": "Opzioni Immagine",
+        "title": "Opzioni Testo Stato"
       },
       "base_colours": {
         "data": {
@@ -325,6 +353,46 @@
         },
         "description": "Opzioni fotocamera. Alpha 3",
         "title": "Canale Alpha Colori Stanze"
+      },
+      "select_floor": {
+        "description": "Scegli quale piano è attualmente attivo. La fotocamera utilizzerà le impostazioni di ritaglio per il piano selezionato.",
+        "data": {
+          "current_floor": "Piano attivo"
+        },
+        "data_description": {
+          "current_floor": "Seleziona il piano attualmente attivo. Attuale: {current_floor}"
+        }
+      },
+      "add_floor": {
+        "description": "{info}",
+        "data": {
+          "floor_name": "Nome del piano",
+          "map_name": "Nome della mappa (facoltativo)"
+        },
+        "data_description": {
+          "floor_name": "Seleziona dai piani di Home Assistant o inserisci un nome personalizzato",
+          "map_name": "Nome descrittivo facoltativo per questo piano"
+        }
+      },
+      "edit_floor": {
+        "description": "Modifica il nome della mappa per il piano: {floor_name}. {trim_info}. I valori di ritaglio vengono calcolati automaticamente - usa 'Salva ritagli mappa' per aggiornarli.",
+        "data": {
+          "floor_name": "Seleziona piano da modificare",
+          "map_name": "Nome della mappa (facoltativo)"
+        },
+        "data_description": {
+          "floor_name": "Scegli quale piano modificare",
+          "map_name": "Nome descrittivo facoltativo per questo piano"
+        }
+      },
+      "delete_floor": {
+        "description": "Rimuovi un piano dalla configurazione. Se elimini il piano attualmente attivo, verrà ripristinato a 'floor_0'.",
+        "data": {
+          "floor_name": "Piano da eliminare"
+        },
+        "data_description": {
+          "floor_name": "Seleziona il piano da eliminare"
+        }
       }
     }
   },
@@ -392,6 +460,12 @@
     },
     "zone_list_length": {
       "message": "'Zone' deve avere almeno 1 elemento che contiene un elenco di 4 interi."
+    },
+    "mqtt_service_not_found": {
+      "message": "L'integrazione MQTT non è disponibile. Assicurati che MQTT sia configurato."
+    },
+    "mqtt_publish_failed": {
+      "message": "Impossibile pubblicare il comando all'aspirapolvere tramite MQTT."
     }
   }
 }

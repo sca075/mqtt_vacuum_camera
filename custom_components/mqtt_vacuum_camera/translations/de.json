@@ -25,8 +25,14 @@
         "menu_options": {
           "image_opt": "Bildeinstellungen",
           "colours": "Farbkonfiguration",
-          "advanced": "Erweiterte Optionen"
+          "materials": "Materialdarstellung",
+          "floor_management": "Etagenverwaltung",
+          "save_options": "Optionen speichern"
         }
+      },
+      "main_menu": {
+        "title": "Hauptmenü",
+        "description": "Zurück zum Hauptmenü"
       },
       "image_opt": {
         "title": "Bildeinstellungen",
@@ -35,7 +41,7 @@
           "image_basic_opt": "Grundeinstellungen",
           "status_text": "Statustext",
           "draw_elements": "Objektsichtbarkeit",
-          "segments_visibility": "Segmentsichtbarkeit"
+          "main_menu": "Zurück zum Hauptmenü"
         }
       },
       "colours": {
@@ -47,87 +53,20 @@
           "rooms_colours_2": "Räume 9-16",
           "floor_only": "Nur Boden",
           "transparency": "Transparenzeinstellungen",
-          "rename_translations": "Räume umbenennen"
+          "main_menu": "Zurück zum Hauptmenü"
         }
-      },
-      "transparency": {
-        "title": "Transparenzeinstellungen",
-        "description": "Transparenzstufen konfigurieren",
-        "menu_options": {
-          "base_transparency": "Basis-Transparenz",
-          "rooms_transparency_1": "Räume 1-8 Transparenz",
-          "rooms_transparency_2": "Räume 9-16 Transparenz",
-          "floor_transparency": "Boden-Transparenz"
-        }
-      },
-      "advanced": {
-        "title": "Erweiterte Optionen",
-        "description": "Erweiterte Konfigurationsoptionen",
-        "menu_options": {
-          "download_logs": "Protokolle herunterladen",
-          "map_trims": "Kartenzuschnitte"
-        }
-      },
-      "map_trims": {
-        "title": "Kartenzuschnitt-Optionen",
-        "description": "Kartenzuschnitt-Einstellungen verwalten",
-        "menu_options": {
-          "reset_map_trims": "Kartenzuschnitte zurücksetzen",
-          "save_map_trims": "Kartenzuschnitte speichern"
-        }
-      },
-      "image_basic_opt": {
-        "data": {
-          "rotate_image": "Drehen",
-          "margins": "Bildränder.",
-          "auto_zoom": "Automatischen Zoom aktivieren",
-          "zoom_lock_ratio": "Seitenverhältnis sperren.",
-          "aspect_ratio": "Bildseitenverhältnis.",
-          "robot_size": "Robotergröße"
-        },
-        "data_description": {
-          "rotate_image": "Grad 0, 90, 180, 270",
-          "margins": "Automatische Randanpassung in Pixeln.",
-          "aspect_ratio": "Bildseitenverhältnis.",
-          "robot_size": "Robotergröße in Pixeln 8-25"
-        },
-        "description": "Kamera-Bildoptionen",
-        "title": "Bildoptionen"
-      },
-      "image_offset": {
-        "title": "Bildversatz-Einstellungen",
-        "description": "Bildversatzwerte konfigurieren",
-        "data": {
-          "offset_top": "Oberer Versatz",
-          "offset_bottom": "Unterer Versatz",
-          "offset_left": "Linker Versatz",
-          "offset_right": "Rechter Versatz"
-        },
-        "data_description": {
-          "offset_top": "Pixel für Versatz von oben (0-1000)",
-          "offset_bottom": "Pixel für Versatz von unten (0-1000)",
-          "offset_left": "Pixel für Versatz von links (0-1000)",
-          "offset_right": "Pixel für Versatz von rechts (0-1000)"
-        }
-      },
-      "status_text": {
-        "data": {
-          "show_vac_status": "Staubsaugerstatus anzeigen.",
-          "vac_status_font": "Fira Sans",
-          "vac_status_size": "Textgröße",
-          "vac_status_position": "Textposition: Unten(AUS)",
-          "color_text": "[255, 255, 255]"
-        },
-        "data_description": {
-          "vac_status_font": "Textschriftart Standard Fira Serif.",
-          "vac_status_size": "Textgröße Standard 50.",
-          "color_text": "Staubsauger-Statustextfarbe."
-        },
-        "description": "Bildoptionen",
-        "title": "Statustext-Optionen"
       },
       "draw_elements": {
         "title": "Objektsichtbarkeit",
+        "description": "Konfigurieren, welche Elemente auf der Karte sichtbar sind",
+        "menu_options": {
+          "map_elements": "Kartenelemente",
+          "segments_visibility": "Segmentsichtbarkeit",
+          "main_menu": "Zurück zum Hauptmenü"
+        }
+      },
+      "map_elements": {
+        "title": "Kartenelemente",
         "description": "Konfigurieren, welche Elemente auf der Karte sichtbar sind",
         "data": {
           "disable_floor": "Boden ausblenden",
@@ -135,12 +74,12 @@
           "disable_robot": "Roboter ausblenden",
           "disable_charger": "Ladestation ausblenden",
           "disable_virtual_walls": "Virtuelle Wände ausblenden",
-          "disable_restricted_areas": "Eingeschränkte Bereiche ausblenden",
-          "disable_no_mop_areas": "No-Mop-Bereiche ausblenden",
+          "disable_restricted_areas": "Sperrbereiche ausblenden",
+          "disable_no_mop_areas": "Nicht-Wisch-Bereiche ausblenden",
           "disable_obstacles": "Hindernisse ausblenden",
           "disable_path": "Pfad ausblenden",
           "disable_predicted_path": "Vorhergesagten Pfad ausblenden",
-          "disable_go_to_target": "Gehe-zu-Ziel ausblenden"
+          "disable_go_to_target": "Zielpunkt ausblenden"
         },
         "data_description": {
           "disable_floor": "Wenn aktiviert, wird der Boden nicht auf der Karte angezeigt",
@@ -148,12 +87,12 @@
           "disable_robot": "Wenn aktiviert, wird der Roboter nicht auf der Karte angezeigt",
           "disable_charger": "Wenn aktiviert, wird die Ladestation nicht auf der Karte angezeigt",
           "disable_virtual_walls": "Wenn aktiviert, werden virtuelle Wände nicht auf der Karte angezeigt",
-          "disable_restricted_areas": "Wenn aktiviert, werden eingeschränkte Bereiche nicht auf der Karte angezeigt",
-          "disable_no_mop_areas": "Wenn aktiviert, werden No-Mop-Bereiche nicht auf der Karte angezeigt",
+          "disable_restricted_areas": "Wenn aktiviert, werden Sperrbereiche nicht auf der Karte angezeigt",
+          "disable_no_mop_areas": "Wenn aktiviert, werden Nicht-Wisch-Bereiche nicht auf der Karte angezeigt",
           "disable_obstacles": "Wenn aktiviert, werden Hindernisse nicht auf der Karte angezeigt",
           "disable_path": "Wenn aktiviert, wird der Reinigungspfad nicht auf der Karte angezeigt",
           "disable_predicted_path": "Wenn aktiviert, wird der vorhergesagte Pfad nicht auf der Karte angezeigt",
-          "disable_go_to_target": "Wenn aktiviert, werden Gehe-zu-Ziele nicht auf der Karte angezeigt"
+          "disable_go_to_target": "Wenn aktiviert, werden Zielpunkte nicht auf der Karte angezeigt"
         }
       },
       "segments_visibility": {
@@ -193,6 +132,95 @@
           "disable_room_14": "Wenn aktiviert, wird Raum 14 {room_13_name} nicht auf der Karte angezeigt",
           "disable_room_15": "Wenn aktiviert, wird Raum 15 {room_14_name} nicht auf der Karte angezeigt"
         }
+      },
+      "transparency": {
+        "title": "Transparenzeinstellungen",
+        "description": "Transparenzstufen konfigurieren",
+        "menu_options": {
+          "alpha_1": "Basistransparenz",
+          "alpha_floor": "Bodentransparenz",
+          "alpha_2": "Räume 1-8 Transparenz",
+          "alpha_3": "Räume 9-16 Transparenz",
+          "main_menu": "Zurück zum Hauptmenü"
+        }
+      },
+      "materials": {
+        "title": "Materialdarstellung",
+        "description": "Konfigurieren Sie die Materialerkennung und -darstellung (Holzdielen, Fliesen, Teppiche)",
+        "data": {
+          "disable_material_overlay": "Material-Overlay deaktivieren (Holz & Fliesen)",
+          "disable_carpets": "Teppiche ausblenden",
+          "color_carpet": "Teppichfarbe",
+          "color_material_wood": "Holzdielenfarbe",
+          "color_material_tile": "Fliesenfarbe",
+          "alpha_carpet": "Teppichtransparenz",
+          "alpha_material_wood": "Holztransparenz",
+          "alpha_material_tile": "Fliesentransparenz"
+        },
+        "data_description": {
+          "disable_material_overlay": "Deaktivieren Sie die Material-Overlay-Darstellung für Holz und Fliesen auf der Karte",
+          "disable_carpets": "Wenn aktiviert, werden Teppiche nicht auf der Karte angezeigt",
+          "color_carpet": "Farbe für Teppichmaterialien (RGB)",
+          "color_material_wood": "Farbe für Holzdielenmaterialien (RGB)",
+          "color_material_tile": "Farbe für Fliesenmaterialien (RGB)",
+          "alpha_carpet": "Transparenzstufe für Teppiche (0-255)",
+          "alpha_material_wood": "Transparenzstufe für Holzdielen (0-255)",
+          "alpha_material_tile": "Transparenzstufe für Fliesen (0-255)"
+        }
+      },
+      "floor_management": {
+        "title": "Etagenverwaltung",
+        "description": "Verwalten Sie mehrere Etagen und deren Zuschnitteinstellungen",
+        "menu_options": {
+          "select_floor": "Aktive Etage auswählen",
+          "add_floor": "Neue Etage hinzufügen",
+          "edit_floor": "Etageneinstellungen bearbeiten",
+          "delete_floor": "Etage löschen",
+          "main_menu": "Zurück zum Hauptmenü"
+        }
+      },
+      "map_trims": {
+        "title": "Kartenzuschnitt-Optionen",
+        "description": "Kartenzuschnitt-Einstellungen verwalten",
+        "menu_options": {
+          "reset_map_trims": "Kartenzuschnitte zurücksetzen",
+          "save_map_trims": "Kartenzuschnitte speichern",
+          "main_menu": "Zurück zum Hauptmenü"
+        }
+      },
+      "image_basic_opt": {
+        "data": {
+          "rotate_image": "Drehen",
+          "margins": "Bildränder.",
+          "auto_zoom": "Automatischen Zoom aktivieren",
+          "zoom_lock_ratio": "Seitenverhältnis sperren.",
+          "aspect_ratio": "Bildseitenverhältnis.",
+          "robot_size": "Robotergröße"
+        },
+        "data_description": {
+          "rotate_image": "Grad 0, 90, 180, 270",
+          "margins": "Automatische Randanpassung in Pixeln.",
+          "aspect_ratio": "Bildseitenverhältnis.",
+          "robot_size": "Robotergröße in Pixeln 8-25"
+        },
+        "description": "Kamera-Bildoptionen",
+        "title": "Bildoptionen"
+      },
+      "status_text": {
+        "data": {
+          "show_vac_status": "Staubsaugerstatus anzeigen.",
+          "vac_status_font": "Fira Sans",
+          "vac_status_size": "Textgröße",
+          "vac_status_position": "Textposition: Unten(AUS)",
+          "color_text": "[255, 255, 255]"
+        },
+        "data_description": {
+          "vac_status_font": "Textschriftart Standard Fira Serif.",
+          "vac_status_size": "Textgröße Standard 50.",
+          "color_text": "Staubsauger-Statustextfarbe."
+        },
+        "description": "Bildoptionen",
+        "title": "Statustext-Optionen"
       },
       "base_colours": {
         "data": {
@@ -325,6 +353,46 @@
         },
         "description": "Kamera-Optionen. Alpha 3",
         "title": "Alpha-Kanal Raumfarben"
+      },
+      "select_floor": {
+        "description": "Wählen Sie, welche Etage derzeit aktiv ist. Die Kamera verwendet die Zuschnitteinstellungen für die ausgewählte Etage.",
+        "data": {
+          "current_floor": "Aktive Etage"
+        },
+        "data_description": {
+          "current_floor": "Wählen Sie die derzeit aktive Etage. Aktuell: {current_floor}"
+        }
+      },
+      "add_floor": {
+        "description": "{info}",
+        "data": {
+          "floor_name": "Etagenname",
+          "map_name": "Kartenname (optional)"
+        },
+        "data_description": {
+          "floor_name": "Wählen Sie aus Home Assistant Etagen oder geben Sie einen benutzerdefinierten Namen ein",
+          "map_name": "Optionaler Anzeigename für diese Etage"
+        }
+      },
+      "edit_floor": {
+        "description": "Kartenname für Etage bearbeiten: {floor_name}. {trim_info}. Zuschnittwerte werden automatisch berechnet - verwenden Sie 'Kartenzuschnitte speichern', um sie zu aktualisieren.",
+        "data": {
+          "floor_name": "Etage zum Bearbeiten auswählen",
+          "map_name": "Kartenname (optional)"
+        },
+        "data_description": {
+          "floor_name": "Wählen Sie die zu bearbeitende Etage",
+          "map_name": "Optionaler Anzeigename für diese Etage"
+        }
+      },
+      "delete_floor": {
+        "description": "Eine Etage aus der Konfiguration entfernen. Wenn Sie die derzeit aktive Etage löschen, wird sie auf 'floor_0' zurückgesetzt.",
+        "data": {
+          "floor_name": "Zu löschende Etage"
+        },
+        "data_description": {
+          "floor_name": "Wählen Sie die zu löschende Etage"
+        }
       }
     }
   },
@@ -392,6 +460,12 @@
     },
     "zone_list_length": {
       "message": "Die 'Zone' muss mindestens 1 Element enthalten, das eine Liste von 4 Ganzzahlen enthält."
+    },
+    "mqtt_service_not_found": {
+      "message": "MQTT-Integration ist nicht verfügbar. Bitte stellen Sie sicher, dass MQTT konfiguriert ist."
+    },
+    "mqtt_publish_failed": {
+      "message": "Befehl konnte nicht über MQTT an den Staubsauger gesendet werden."
     }
   }
 }

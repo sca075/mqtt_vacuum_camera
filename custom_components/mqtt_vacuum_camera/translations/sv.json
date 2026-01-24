@@ -25,8 +25,14 @@
         "menu_options": {
           "image_opt": "Bildinställningar",
           "colours": "Färgkonfiguration",
-          "advanced": "Avancerade Alternativ"
+          "materials": "Materialrendering",
+          "floor_management": "Våningshantering",
+          "save_options": "Spara alternativ"
         }
+      },
+      "main_menu": {
+        "title": "Huvudmeny",
+        "description": "Återgå till huvudmenyn"
       },
       "image_opt": {
         "title": "Bildinställningar",
@@ -35,7 +41,7 @@
           "image_basic_opt": "Grundläggande Inställningar",
           "status_text": "Statustext",
           "draw_elements": "Objektsynlighet",
-          "segments_visibility": "Segmentsynlighet"
+          "main_menu": "Tillbaka till Huvudmenyn"
         }
       },
       "colours": {
@@ -47,87 +53,20 @@
           "rooms_colours_2": "Rum 9-16",
           "floor_only": "Endast Golv",
           "transparency": "Transparensinställningar",
-          "rename_translations": "Byt namn på Rum"
+          "main_menu": "Tillbaka till Huvudmenyn"
         }
-      },
-      "transparency": {
-        "title": "Transparensinställningar",
-        "description": "Konfigurera transparensnivåer",
-        "menu_options": {
-          "base_transparency": "Bastransparens",
-          "rooms_transparency_1": "Rum 1-8 Transparens",
-          "rooms_transparency_2": "Rum 9-16 Transparens",
-          "floor_transparency": "Golvtransparens"
-        }
-      },
-      "advanced": {
-        "title": "Avancerade Alternativ",
-        "description": "Avancerade konfigurationsalternativ",
-        "menu_options": {
-          "download_logs": "Ladda ner loggar",
-          "map_trims": "Kartbeskärningar"
-        }
-      },
-      "map_trims": {
-        "title": "Kartbeskärningsalternativ",
-        "description": "Hantera kartbeskärningsinställningar",
-        "menu_options": {
-          "reset_map_trims": "Återställ kartbeskärningar",
-          "save_map_trims": "Spara kartbeskärningar"
-        }
-      },
-      "image_basic_opt": {
-        "data": {
-          "rotate_image": "Rotera",
-          "margins": "Bildmarginaler.",
-          "auto_zoom": "Aktivera automatisk zoom",
-          "zoom_lock_ratio": "Lås bildförhållande.",
-          "aspect_ratio": "Bildförhållande.",
-          "robot_size": "Robotstorlek"
-        },
-        "data_description": {
-          "rotate_image": "Grader 0, 90, 180, 270",
-          "margins": "Automatisk marginalbeskärning i pixlar.",
-          "aspect_ratio": "Bildförhållande.",
-          "robot_size": "Robotstorlek i pixlar 8-25"
-        },
-        "description": "Kamera bildalternativ",
-        "title": "Bildalternativ"
-      },
-      "image_offset": {
-        "title": "Bildförskjutningsinställningar",
-        "description": "Konfigurera bildförskjutningsvärden",
-        "data": {
-          "offset_top": "Övre Förskjutning",
-          "offset_bottom": "Nedre Förskjutning",
-          "offset_left": "Vänster Förskjutning",
-          "offset_right": "Höger Förskjutning"
-        },
-        "data_description": {
-          "offset_top": "Pixlar för förskjutning från toppen (0-1000)",
-          "offset_bottom": "Pixlar för förskjutning från botten (0-1000)",
-          "offset_left": "Pixlar för förskjutning från vänster (0-1000)",
-          "offset_right": "Pixlar för förskjutning från höger (0-1000)"
-        }
-      },
-      "status_text": {
-        "data": {
-          "show_vac_status": "Visa dammsugarstatus.",
-          "vac_status_font": "Fira Sans",
-          "vac_status_size": "Textstorlek",
-          "vac_status_position": "Textposition: Botten(AV)",
-          "color_text": "[255, 255, 255]"
-        },
-        "data_description": {
-          "vac_status_font": "Standard texttypssnitt Fira Serif.",
-          "vac_status_size": "Standard textstorlek 50.",
-          "color_text": "Dammsugare statustextfärg."
-        },
-        "description": "Bildalternativ",
-        "title": "Statustextalternativ"
       },
       "draw_elements": {
         "title": "Objektsynlighet",
+        "description": "Konfigurera vilka element som är synliga på kartan",
+        "menu_options": {
+          "map_elements": "Kartelement",
+          "segments_visibility": "Segmentsynlighet",
+          "main_menu": "Tillbaka till Huvudmenyn"
+        }
+      },
+      "map_elements": {
+        "title": "Kartelement",
         "description": "Konfigurera vilka element som är synliga på kartan",
         "data": {
           "disable_floor": "Dölj golv",
@@ -135,25 +74,25 @@
           "disable_robot": "Dölj robot",
           "disable_charger": "Dölj laddare",
           "disable_virtual_walls": "Dölj virtuella väggar",
-          "disable_restricted_areas": "Dölj begränsade områden",
+          "disable_restricted_areas": "Dölj förbjudna områden",
           "disable_no_mop_areas": "Dölj inga-mopp områden",
           "disable_obstacles": "Dölj hinder",
           "disable_path": "Dölj väg",
-          "disable_predicted_path": "Dölj förutsagd väg",
+          "disable_predicted_path": "Dölj förutsedd väg",
           "disable_go_to_target": "Dölj gå-till mål"
         },
         "data_description": {
-          "disable_floor": "När aktiverad kommer golvet inte att visas på kartan",
-          "disable_wall": "När aktiverad kommer väggar inte att visas på kartan",
-          "disable_robot": "När aktiverad kommer roboten inte att visas på kartan",
-          "disable_charger": "När aktiverad kommer laddaren inte att visas på kartan",
-          "disable_virtual_walls": "När aktiverad kommer virtuella väggar inte att visas på kartan",
-          "disable_restricted_areas": "När aktiverad kommer begränsade områden inte att visas på kartan",
-          "disable_no_mop_areas": "När aktiverad kommer inga-mopp områden inte att visas på kartan",
-          "disable_obstacles": "När aktiverad kommer hinder inte att visas på kartan",
-          "disable_path": "När aktiverad kommer rengöringsvägen inte att visas på kartan",
-          "disable_predicted_path": "När aktiverad kommer den förutsagda vägen inte att visas på kartan",
-          "disable_go_to_target": "När aktiverad kommer gå-till mål inte att visas på kartan"
+          "disable_floor": "När aktiverat visas inte golvet på kartan",
+          "disable_wall": "När aktiverat visas inte väggar på kartan",
+          "disable_robot": "När aktiverat visas inte roboten på kartan",
+          "disable_charger": "När aktiverat visas inte laddaren på kartan",
+          "disable_virtual_walls": "När aktiverat visas inte virtuella väggar på kartan",
+          "disable_restricted_areas": "När aktiverat visas inte begränsade områden på kartan",
+          "disable_no_mop_areas": "När aktiverat visas inte områden utan mopping på kartan",
+          "disable_obstacles": "När aktiverat visas inte hinder på kartan",
+          "disable_path": "När aktiverat visas inte städvägen på kartan",
+          "disable_predicted_path": "När aktiverat visas inte den förutsagda vägen på kartan",
+          "disable_go_to_target": "När aktiverat visas inte gå-till-mål på kartan"
         }
       },
       "segments_visibility": {
@@ -193,6 +132,95 @@
           "disable_room_14": "När aktiverad kommer rum 14 {room_13_name} inte att visas på kartan",
           "disable_room_15": "När aktiverad kommer rum 15 {room_14_name} inte att visas på kartan"
         }
+      },
+      "transparency": {
+        "title": "Transparensinställningar",
+        "description": "Konfigurera transparensnivåer",
+        "menu_options": {
+          "alpha_1": "Basgenomskinlighet",
+          "alpha_floor": "Golvgenomskinlighet",
+          "alpha_2": "Rum 1-8 Genomskinlighet",
+          "alpha_3": "Rum 9-16 Genomskinlighet",
+          "main_menu": "Tillbaka till Huvudmenyn"
+        }
+      },
+      "materials": {
+        "title": "Materialrendering",
+        "description": "Konfigurera materialdetektering och rendering (träplankor, plattor, mattor)",
+        "data": {
+          "disable_material_overlay": "Inaktivera materialöverlagring (trä och plattor)",
+          "disable_carpets": "Dölj mattor",
+          "color_carpet": "Mattfärg",
+          "color_material_wood": "Träplankfärg",
+          "color_material_tile": "Plattfärg",
+          "alpha_carpet": "Mattgenomskinlighet",
+          "alpha_material_wood": "Trägenomskinlighet",
+          "alpha_material_tile": "Plattgenomskinlighet"
+        },
+        "data_description": {
+          "disable_material_overlay": "Stäng av materialöverlagringsrendering för trä och plattor på kartan",
+          "disable_carpets": "När aktiverad kommer mattor inte att visas på kartan",
+          "color_carpet": "Färg för mattmaterial (RGB)",
+          "color_material_wood": "Färg för träplankmaterial (RGB)",
+          "color_material_tile": "Färg för plattmaterial (RGB)",
+          "alpha_carpet": "Genomskinlighetsnivå för mattor (0-255)",
+          "alpha_material_wood": "Genomskinlighetsnivå för träplankor (0-255)",
+          "alpha_material_tile": "Genomskinlighetsnivå för plattor (0-255)"
+        }
+      },
+      "floor_management": {
+        "title": "Våningshantering",
+        "description": "Hantera flera våningar och deras trimningsinställningar",
+        "menu_options": {
+          "select_floor": "Välj aktiv våning",
+          "add_floor": "Lägg till ny våning",
+          "edit_floor": "Redigera våningsinställningar",
+          "delete_floor": "Ta bort våning",
+          "main_menu": "Tillbaka till Huvudmenyn"
+        }
+      },
+      "map_trims": {
+        "title": "Kartbeskärningsalternativ",
+        "description": "Hantera kartbeskärningsinställningar",
+        "menu_options": {
+          "reset_map_trims": "Återställ kartbeskärningar",
+          "save_map_trims": "Spara kartbeskärningar",
+          "main_menu": "Tillbaka till Huvudmenyn"
+        }
+      },
+      "image_basic_opt": {
+        "data": {
+          "rotate_image": "Rotera",
+          "margins": "Bildmarginaler.",
+          "auto_zoom": "Aktivera automatisk zoom",
+          "zoom_lock_ratio": "Lås bildförhållande.",
+          "aspect_ratio": "Bildförhållande.",
+          "robot_size": "Robotstorlek"
+        },
+        "data_description": {
+          "rotate_image": "Grader 0, 90, 180, 270",
+          "margins": "Automatisk marginalbeskärning i pixlar.",
+          "aspect_ratio": "Bildförhållande.",
+          "robot_size": "Robotstorlek i pixlar 8-25"
+        },
+        "description": "Kamera bildalternativ",
+        "title": "Bildalternativ"
+      },
+      "status_text": {
+        "data": {
+          "show_vac_status": "Visa dammsugarstatus.",
+          "vac_status_font": "Fira Sans",
+          "vac_status_size": "Textstorlek",
+          "vac_status_position": "Textposition: Botten(AV)",
+          "color_text": "[255, 255, 255]"
+        },
+        "data_description": {
+          "vac_status_font": "Standard texttypssnitt Fira Serif.",
+          "vac_status_size": "Standard textstorlek 50.",
+          "color_text": "Dammsugare statustextfärg."
+        },
+        "description": "Bildalternativ",
+        "title": "Statustextalternativ"
       },
       "base_colours": {
         "data": {
@@ -325,6 +353,46 @@
         },
         "description": "Kameraalternativ. Alpha 3",
         "title": "Alpha-kanal rumsfärger"
+      },
+      "select_floor": {
+        "description": "Välj vilken våning som för närvarande är aktiv. Kameran kommer att använda beskärningsinställningarna för den valda våningen.",
+        "data": {
+          "current_floor": "Aktiv våning"
+        },
+        "data_description": {
+          "current_floor": "Välj våningen som för närvarande är aktiv. Nuvarande: {current_floor}"
+        }
+      },
+      "add_floor": {
+        "description": "{info}",
+        "data": {
+          "floor_name": "Våningsnamn",
+          "map_name": "Kartnamn (valfritt)"
+        },
+        "data_description": {
+          "floor_name": "Välj från Home Assistant våningar eller ange ett anpassat namn",
+          "map_name": "Valfritt vänligt namn för denna våning"
+        }
+      },
+      "edit_floor": {
+        "description": "Redigera kartnamn för våning: {floor_name}. {trim_info}. Beskärningsvärden beräknas automatiskt - använd 'Spara kartbeskärningar' för att uppdatera dem.",
+        "data": {
+          "floor_name": "Välj våning att redigera",
+          "map_name": "Kartnamn (valfritt)"
+        },
+        "data_description": {
+          "floor_name": "Välj vilken våning som ska redigeras",
+          "map_name": "Valfritt vänligt namn för denna våning"
+        }
+      },
+      "delete_floor": {
+        "description": "Ta bort en våning från konfigurationen. Om du tar bort den för närvarande aktiva våningen kommer den att återställas till 'floor_0'.",
+        "data": {
+          "floor_name": "Våning att ta bort"
+        },
+        "data_description": {
+          "floor_name": "Välj våningen som ska tas bort"
+        }
       }
     }
   },
@@ -392,6 +460,12 @@
     },
     "zone_list_length": {
       "message": "'Zone' måste ha minst 1 element som innehåller en lista med 4 heltal."
+    },
+    "mqtt_service_not_found": {
+      "message": "MQTT-integration är inte tillgänglig. Se till att MQTT är konfigurerat."
+    },
+    "mqtt_publish_failed": {
+      "message": "Kunde inte publicera kommando till dammsugare via MQTT."
     }
   }
 }

@@ -25,8 +25,14 @@
         "menu_options": {
           "image_opt": "画像設定",
           "colours": "色設定",
-          "advanced": "詳細設定"
+          "materials": "マテリアルレンダリング",
+          "floor_management": "フロア管理",
+          "save_options": "オプションを保存"
         }
+      },
+      "main_menu": {
+        "title": "メインメニュー",
+        "description": "メインメニューに戻る"
       },
       "image_opt": {
         "title": "画像設定",
@@ -35,7 +41,7 @@
           "image_basic_opt": "基本設定",
           "status_text": "ステータステキスト",
           "draw_elements": "オブジェクト表示",
-          "segments_visibility": "セグメント表示"
+          "main_menu": "メインメニューに戻る"
         }
       },
       "colours": {
@@ -47,88 +53,21 @@
           "rooms_colours_2": "部屋9-16",
           "floor_only": "床のみ",
           "transparency": "透明度設定",
-          "rename_translations": "部屋名の変更"
+          "main_menu": "メインメニューに戻る"
         }
-      },
-      "transparency": {
-        "title": "透明度設定",
-        "description": "透明度レベルの設定",
-        "menu_options": {
-          "base_transparency": "基本透明度",
-          "rooms_transparency_1": "部屋1-8の透明度",
-          "rooms_transparency_2": "部屋9-16の透明度",
-          "floor_transparency": "床の透明度"
-        }
-      },
-      "advanced": {
-        "title": "詳細設定",
-        "description": "詳細設定オプション",
-        "menu_options": {
-          "download_logs": "ログのダウンロード",
-          "map_trims": "マップトリム"
-        }
-      },
-      "map_trims": {
-        "title": "マップトリムオプション",
-        "description": "マップトリム設定の管理",
-        "menu_options": {
-          "reset_map_trims": "マップトリムのリセット",
-          "save_map_trims": "マップトリムの保存"
-        }
-      },
-      "image_basic_opt": {
-        "data": {
-          "rotate_image": "回転",
-          "margins": "画像の余白。",
-          "auto_zoom": "自動ズームを有効にする",
-          "zoom_lock_ratio": "アスペクト比をロック。",
-          "aspect_ratio": "画像のアスペクト比。",
-          "robot_size": "ロボットのサイズ"
-        },
-        "data_description": {
-          "rotate_image": "度数 0, 90, 180, 270",
-          "margins": "ピクセル単位の自動余白トリミング。",
-          "aspect_ratio": "画像のアスペクト比。",
-          "robot_size": "ロボットのサイズ（ピクセル）8-25"
-        },
-        "description": "カメラ画像オプション",
-        "title": "画像オプション"
-      },
-      "image_offset": {
-        "title": "画像オフセット設定",
-        "description": "画像オフセット値の設定",
-        "data": {
-          "offset_top": "上オフセット",
-          "offset_bottom": "下オフセット",
-          "offset_left": "左オフセット",
-          "offset_right": "右オフセット"
-        },
-        "data_description": {
-          "offset_top": "上からのオフセットピクセル (0-1000)",
-          "offset_bottom": "下からのオフセットピクセル (0-1000)",
-          "offset_left": "左からのオフセットピクセル (0-1000)",
-          "offset_right": "右からのオフセットピクセル (0-1000)"
-        }
-      },
-      "status_text": {
-        "data": {
-          "show_vac_status": "掃除機のステータスを表示。",
-          "vac_status_font": "Fira Sans",
-          "vac_status_size": "テキストサイズ",
-          "vac_status_position": "テキスト位置: 下(オフ)",
-          "color_text": "[255, 255, 255]"
-        },
-        "data_description": {
-          "vac_status_font": "デフォルトテキストフォント Fira Serif。",
-          "vac_status_size": "デフォルトテキストサイズ 50。",
-          "color_text": "掃除機ステータステキストの色。"
-        },
-        "description": "画像オプション",
-        "title": "ステータステキストオプション"
       },
       "draw_elements": {
         "title": "オブジェクト表示",
         "description": "マップ上に表示する要素の設定",
+        "menu_options": {
+          "map_elements": "マップ要素",
+          "segments_visibility": "セグメント表示",
+          "main_menu": "メインメニューに戻る"
+        }
+      },
+      "map_elements": {
+        "title": "マップ要素",
+        "description": "マップに表示される要素を設定",
         "data": {
           "disable_floor": "床を非表示",
           "disable_wall": "壁を非表示",
@@ -140,19 +79,19 @@
           "disable_obstacles": "障害物を非表示",
           "disable_path": "パスを非表示",
           "disable_predicted_path": "予測パスを非表示",
-          "disable_go_to_target": "移動先ターゲットを非表示"
+          "disable_go_to_target": "目標地点を非表示"
         },
         "data_description": {
-          "disable_floor": "有効にすると、床はマップに表示されません",
-          "disable_wall": "有効にすると、壁はマップに表示されません",
-          "disable_robot": "有効にすると、ロボットはマップに表示されません",
-          "disable_charger": "有効にすると、充電器はマップに表示されません",
-          "disable_virtual_walls": "有効にすると、仮想壁はマップに表示されません",
-          "disable_restricted_areas": "有効にすると、制限エリアはマップに表示されません",
-          "disable_no_mop_areas": "有効にすると、モップ禁止エリアはマップに表示されません",
-          "disable_obstacles": "有効にすると、障害物はマップに表示されません",
-          "disable_path": "有効にすると、クリーニングパスはマップに表示されません",
-          "disable_predicted_path": "有効にすると、予測パスはマップに表示されません",
+          "disable_floor": "有効にすると、床がマップに表示されません",
+          "disable_wall": "有効にすると、壁がマップに表示されません",
+          "disable_robot": "有効にすると、ロボットがマップに表示されません",
+          "disable_charger": "有効にすると、充電器がマップに表示されません",
+          "disable_virtual_walls": "有効にすると、仮想壁がマップに表示されません",
+          "disable_restricted_areas": "有効にすると、制限エリアがマップに表示されません",
+          "disable_no_mop_areas": "有効にすると、モップ禁止エリアがマップに表示されません",
+          "disable_obstacles": "有効にすると、障害物がマップに表示されません",
+          "disable_path": "有効にすると、清掃経路はマップに表示されません",
+          "disable_predicted_path": "有効にすると、予測経路がマップに表示されません",
           "disable_go_to_target": "有効にすると、移動先ターゲットはマップに表示されません"
         }
       },
@@ -193,6 +132,95 @@
           "disable_room_14": "有効にすると、部屋14 {room_13_name} はマップに表示されません",
           "disable_room_15": "有効にすると、部屋15 {room_14_name} はマップに表示されません"
         }
+      },
+      "transparency": {
+        "title": "透明度設定",
+        "description": "透明度レベルの設定",
+        "menu_options": {
+          "alpha_1": "基本透明度",
+          "alpha_floor": "フロア透明度",
+          "alpha_2": "部屋1-8の透明度",
+          "alpha_3": "部屋9-16の透明度",
+          "main_menu": "メインメニューに戻る"
+        }
+      },
+      "materials": {
+        "title": "マテリアルレンダリング",
+        "description": "マテリアル検出とレンダリングを設定（木材、タイル、カーペット）",
+        "data": {
+          "disable_material_overlay": "マテリアルオーバーレイを無効化（木材とタイル）",
+          "disable_carpets": "カーペットを非表示",
+          "color_carpet": "カーペットの色",
+          "color_material_wood": "木材の色",
+          "color_material_tile": "タイルの色",
+          "alpha_carpet": "カーペットの透明度",
+          "alpha_material_wood": "木材の透明度",
+          "alpha_material_tile": "タイルの透明度"
+        },
+        "data_description": {
+          "disable_material_overlay": "マップ上の木材とタイルのマテリアルオーバーレイレンダリングをオフにする",
+          "disable_carpets": "有効にすると、カーペットはマップに表示されません",
+          "color_carpet": "カーペットマテリアルの色（RGB）",
+          "color_material_wood": "木材マテリアルの色（RGB）",
+          "color_material_tile": "タイルマテリアルの色（RGB）",
+          "alpha_carpet": "カーペットの透明度レベル（0-255）",
+          "alpha_material_wood": "木材の透明度レベル（0-255）",
+          "alpha_material_tile": "タイルの透明度レベル（0-255）"
+        }
+      },
+      "floor_management": {
+        "title": "フロア管理",
+        "description": "複数のフロアとそのトリム設定を管理",
+        "menu_options": {
+          "select_floor": "アクティブフロアを選択",
+          "add_floor": "新しいフロアを追加",
+          "edit_floor": "フロア設定を編集",
+          "delete_floor": "フロアを削除",
+          "main_menu": "メインメニューに戻る"
+        }
+      },
+      "map_trims": {
+        "title": "マップトリムオプション",
+        "description": "マップトリム設定の管理",
+        "menu_options": {
+          "reset_map_trims": "マップトリムのリセット",
+          "save_map_trims": "マップトリムの保存",
+          "main_menu": "メインメニューに戻る"
+        }
+      },
+      "image_basic_opt": {
+        "data": {
+          "rotate_image": "回転",
+          "margins": "画像の余白。",
+          "auto_zoom": "自動ズームを有効にする",
+          "zoom_lock_ratio": "アスペクト比をロック。",
+          "aspect_ratio": "画像のアスペクト比。",
+          "robot_size": "ロボットのサイズ"
+        },
+        "data_description": {
+          "rotate_image": "度数 0, 90, 180, 270",
+          "margins": "ピクセル単位の自動余白トリミング。",
+          "aspect_ratio": "画像のアスペクト比。",
+          "robot_size": "ロボットのサイズ（ピクセル）8-25"
+        },
+        "description": "カメラ画像オプション",
+        "title": "画像オプション"
+      },
+      "status_text": {
+        "data": {
+          "show_vac_status": "掃除機のステータスを表示。",
+          "vac_status_font": "Fira Sans",
+          "vac_status_size": "テキストサイズ",
+          "vac_status_position": "テキスト位置: 下(オフ)",
+          "color_text": "[255, 255, 255]"
+        },
+        "data_description": {
+          "vac_status_font": "デフォルトテキストフォント Fira Serif。",
+          "vac_status_size": "デフォルトテキストサイズ 50。",
+          "color_text": "掃除機ステータステキストの色。"
+        },
+        "description": "画像オプション",
+        "title": "ステータステキストオプション"
       },
       "base_colours": {
         "data": {
@@ -325,6 +353,46 @@
         },
         "description": "カメラオプション。アルファ3",
         "title": "部屋の色のアルファチャンネル"
+      },
+      "select_floor": {
+        "description": "現在アクティブなフロアを選択します。カメラは選択したフロアのトリム設定を使用します。",
+        "data": {
+          "current_floor": "アクティブなフロア"
+        },
+        "data_description": {
+          "current_floor": "現在アクティブなフロアを選択します。現在: {current_floor}"
+        }
+      },
+      "add_floor": {
+        "description": "{info}",
+        "data": {
+          "floor_name": "フロア名",
+          "map_name": "マップ名（オプション）"
+        },
+        "data_description": {
+          "floor_name": "Home Assistantのフロアから選択するか、カスタム名を入力します",
+          "map_name": "このフロアのオプションの表示名"
+        }
+      },
+      "edit_floor": {
+        "description": "フロアのマップ名を編集: {floor_name}。{trim_info}。トリム値は自動計算されます - 更新するには「マップトリムを保存」を使用してください。",
+        "data": {
+          "floor_name": "編集するフロアを選択",
+          "map_name": "マップ名（オプション）"
+        },
+        "data_description": {
+          "floor_name": "編集するフロアを選択します",
+          "map_name": "このフロアのオプションの表示名"
+        }
+      },
+      "delete_floor": {
+        "description": "設定からフロアを削除します。現在アクティブなフロアを削除すると、'floor_0'にリセットされます。",
+        "data": {
+          "floor_name": "削除するフロア"
+        },
+        "data_description": {
+          "floor_name": "削除するフロアを選択します"
+        }
       }
     }
   },
@@ -392,6 +460,12 @@
     },
     "zone_list_length": {
       "message": "'Zone'には、4つの整数のリストを含む要素が少なくとも1つ必要です。"
+    },
+    "mqtt_service_not_found": {
+      "message": "MQTT統合が利用できません。MQTTが設定されていることを確認してください。"
+    },
+    "mqtt_publish_failed": {
+      "message": "MQTT経由で掃除機にコマンドを公開できませんでした。"
     }
   }
 }

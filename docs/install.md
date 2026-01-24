@@ -98,7 +98,12 @@ The setup of the options of the camera include:
 - [**Image Options**](https://github.com/sca075/mqtt_vacuum_camera/blob/main/docs/images_options.md)
 - [**Configure Status Text**](https://github.com/sca075/mqtt_vacuum_camera/blob/main/docs/status_text.md)
 - [**Configure the Colours**](https://github.com/sca075/mqtt_vacuum_camera/blob/main/docs/colours.md)
+- [**Configure Transparency**](https://github.com/sca075/mqtt_vacuum_camera/blob/main/docs/transparency.md)
+- [**Material Rendering (Wood, Tiles, Carpets)**](https://github.com/sca075/mqtt_vacuum_camera/blob/main/docs/materials.md)
+- [**Floor Management (Multi-Floor Support)**](https://github.com/sca075/mqtt_vacuum_camera/blob/main/docs/floor_management.md)
 - [**Export the logs of this integration**](https://github.com/sca075/mqtt_vacuum_camera/blob/main/docs/snapshots.md)
+
+**Navigation Tip:** All configuration submenus now include a "Back to Main Menu" option for easier navigation between different settings.
 
 We filter the logs of HA. Only the Camera entries on the logs are important to us, so we can help you better.
 The logs are stored in the .storage folder of Home Assistant. Can be export to WWW from the options of the camera.
