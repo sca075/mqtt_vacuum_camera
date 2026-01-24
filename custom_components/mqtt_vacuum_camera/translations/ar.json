@@ -3,14 +3,14 @@
     "step": {
       "user": {
         "data": {
-          "vacuum_entity": "معرف كيان المكنسة",
-          "vacuum_config_entry": "بيانات تهيئة المكنسة",
-          "vacuum_map": "موضوع المكنسة",
-          "vacuum_identifiers": "معرف MQTT للمكنسة",
+          "vacuum_entity": "معرف كيان الروبوت الفراغي",
+          "vacuum_config_entry": "بيانات تكوين الروبوت الفراغي",
+          "vacuum_map": "موضوع الروبوت الفراغي",
+          "vacuum_identifiers": "رقم تعريف MQTT لروبوت التنظيف",
           "unique_id": ""
         },
         "data_description": {
-          "vacuum_entity": "معرف كيان المكنسة"
+          "vacuum_entity": "معرف كيان الروبوت الفراغي"
         },
         "description": "إعداد الكاميرا.",
         "title": "إعداد كاميرا MQTT"
@@ -25,9 +25,9 @@
         "menu_options": {
           "image_opt": "إعدادات الصورة",
           "colours": "تكوين الألوان",
-          "materials": "عرض المواد",
+          "materials": "تجسيد المواد",
           "floor_management": "إدارة الطوابق",
-          "save_options": "حفظ الخيارات"
+          "save_options": "خيارات الحفظ"
         }
       },
       "main_menu": {
@@ -36,11 +36,11 @@
       },
       "image_opt": {
         "title": "إعدادات الصورة",
-        "description": "تكوين إعدادات عرض الصورة",
+        "description": "تكوين إعدادات عرض الصور",
         "menu_options": {
           "image_basic_opt": "الإعدادات الأساسية",
           "status_text": "نص الحالة",
-          "draw_elements": "رؤية العناصر",
+          "draw_elements": "رؤية عناصر الخريطة",
           "main_menu": "العودة إلى القائمة الرئيسية"
         }
       },
@@ -48,7 +48,7 @@
         "title": "تكوين الألوان",
         "description": "تكوين ألوان الخريطة",
         "menu_options": {
-          "base_colours": "الألوان الأساسية",
+          "base_colours": "ألوان الأساس",
           "rooms_colours_1": "الغرف 1-8",
           "rooms_colours_2": "الغرف 9-16",
           "floor_only": "الأرضية فقط",
@@ -57,8 +57,8 @@
         }
       },
       "draw_elements": {
-        "title": "رؤية العناصر",
-        "description": "تكوين العناصر المرئية على الخريطة",
+        "title": "رؤية عناصر الخريطة",
+        "description": "تكوين العناصر التي تظهر على الخريطة",
         "menu_options": {
           "map_elements": "عناصر الخريطة",
           "segments_visibility": "رؤية القطاعات",
@@ -67,37 +67,37 @@
       },
       "map_elements": {
         "title": "عناصر الخريطة",
-        "description": "تكوين العناصر المرئية على الخريطة",
+        "description": "تكوين العناصر التي تظهر على الخريطة",
         "data": {
           "disable_floor": "إخفاء الأرضية",
           "disable_wall": "إخفاء الجدران",
           "disable_robot": "إخفاء الروبوت",
-          "disable_charger": "إخفاء الشاحن",
+          "disable_charger": "إخفاء شاحن",
           "disable_virtual_walls": "إخفاء الجدران الافتراضية",
           "disable_restricted_areas": "إخفاء المناطق المحظورة",
-          "disable_no_mop_areas": "إخفاء مناطق عدم المسح",
+          "disable_no_mop_areas": "إخفاء المناطق التي لا تحتاج إلى مسح",
           "disable_obstacles": "إخفاء العوائق",
           "disable_path": "إخفاء المسار",
           "disable_predicted_path": "إخفاء المسار المتوقع",
-          "disable_go_to_target": "إخفاء الهدف المحدد"
+          "disable_go_to_target": "إخفاء الوجهة المقصودة"
         },
         "data_description": {
-          "disable_floor": "عند التمكين، لن يتم عرض الأرضية على الخريطة",
-          "disable_wall": "عند التمكين، لن يتم عرض الجدران على الخريطة",
-          "disable_robot": "عند التمكين، لن يتم عرض الروبوت على الخريطة",
-          "disable_charger": "عند التمكين، لن يتم عرض الشاحن على الخريطة",
-          "disable_virtual_walls": "عند التمكين، لن يتم عرض الجدران الافتراضية على الخريطة",
-          "disable_restricted_areas": "عند التمكين، لن يتم عرض المناطق المحظورة على الخريطة",
-          "disable_no_mop_areas": "عند التمكين، لن يتم عرض مناطق عدم المسح على الخريطة",
-          "disable_obstacles": "عند التمكين، لن يتم عرض العوائق على الخريطة",
-          "disable_path": "عند التمكين، لن يتم عرض مسار التنظيف على الخريطة",
-          "disable_predicted_path": "عند التمكين، لن يتم عرض المسار المتوقع على الخريطة",
-          "disable_go_to_target": "عند التمكين، لن يتم عرض أهداف الانتقال على الخريطة"
+          "disable_floor": "عند التفعيل، لن يتم عرض الطابق على الخريطة",
+          "disable_wall": "عند التفعيل، لن تظهر الجدران على الخريطة",
+          "disable_robot": "عند التفعيل، لن يظهر الروبوت على الخريطة",
+          "disable_charger": "عند التفعيل، لن يظهر الشاحن على الخريطة",
+          "disable_virtual_walls": "عند التفعيل، لن تظهر الجدران الافتراضية على الخريطة",
+          "disable_restricted_areas": "عند التفعيل، لن تظهر المناطق المحظورة على الخريطة",
+          "disable_no_mop_areas": "عند التفعيل، لن تظهر المناطق التي لا يتم تنظيفها بالممسحة على الخريطة",
+          "disable_obstacles": "عند التفعيل، لن تظهر العوائق على الخريطة",
+          "disable_path": "عند التفعيل، لن يظهر مسار التنظيف على الخريطة",
+          "disable_predicted_path": "عند التمكين، لن يظهر المسار المتوقع على الخريطة",
+          "disable_go_to_target": "عند التفعيل، لن تظهر الأهداف المقصودة على الخريطة"
         }
       },
       "segments_visibility": {
-        "title": "رؤية الغرف",
-        "description": "تكوين أقسام الغرف المرئية على الخريطة",
+        "title": "رؤية القطاعات",
+        "description": "تكوين أجزاء الغرفة التي تظهر على الخريطة",
         "data": {
           "disable_room_1": "إخفاء الغرفة 1",
           "disable_room_2": "إخفاء الغرفة 2",
@@ -135,22 +135,22 @@
       },
       "transparency": {
         "title": "إعدادات الشفافية",
-        "description": "تكوين مستويات الشفافية",
+        "description": "تكوين إعدادات الشفافية (ألفا) لعناصر الخريطة",
         "menu_options": {
-          "alpha_1": "الشفافية الأساسية",
+          "alpha_1": "شفافية القاعدة",
           "alpha_floor": "شفافية الأرضية",
-          "alpha_2": "شفافية الغرف 1-8",
-          "alpha_3": "شفافية الغرف 9-16",
+          "alpha_2": "الغرف 1-8 الشفافية",
+          "alpha_3": "الغرف 9-16 الشفافية",
           "main_menu": "العودة إلى القائمة الرئيسية"
         }
       },
       "materials": {
-        "title": "عرض المواد",
-        "description": "تكوين اكتشاف وعرض المواد (ألواح خشبية، بلاط، سجاد)",
+        "title": "تجسيد المواد",
+        "description": "تكوين الكشف عن المواد وعرضها (ألواح خشبية، بلاط، سجاد)",
         "data": {
-          "disable_material_overlay": "تعطيل طبقة المواد (خشب وبلاط)",
+          "disable_material_overlay": "تعطيل تراكب المواد (الخشب والبلاط)",
           "disable_carpets": "إخفاء السجاد",
-          "color_carpet": "لون السجاد",
+          "color_carpet": "لون السجادة",
           "color_material_wood": "لون الألواح الخشبية",
           "color_material_tile": "لون البلاط",
           "alpha_carpet": "شفافية السجاد",
@@ -158,113 +158,113 @@
           "alpha_material_tile": "شفافية البلاط"
         },
         "data_description": {
-          "disable_material_overlay": "إيقاف عرض طبقة المواد للخشب والبلاط على الخريطة",
-          "disable_carpets": "عند التفعيل، لن يتم عرض السجاد على الخريطة",
+          "disable_material_overlay": "قم بإيقاف تشغيل عرض تراكب المواد للخشب والبلاط على الخريطة",
+          "disable_carpets": "عند التفعيل، لن تظهر السجاد على الخريطة",
           "color_carpet": "لون مواد السجاد (RGB)",
           "color_material_wood": "لون مواد الألواح الخشبية (RGB)",
           "color_material_tile": "لون مواد البلاط (RGB)",
           "alpha_carpet": "مستوى شفافية السجاد (0-255)",
           "alpha_material_wood": "مستوى شفافية الألواح الخشبية (0-255)",
-          "alpha_material_tile": "مستوى شفافية البلاط (0-255)"
+          "alpha_material_tile": "مستوى الشفافية للبلاط (0-255)"
         }
       },
       "floor_management": {
         "title": "إدارة الطوابق",
-        "description": "إدارة طوابق متعددة وإعدادات القص الخاصة بها",
+        "description": "إدارة عدة طوابق وإعدادات الزخرفة الخاصة بها",
         "menu_options": {
-          "select_floor": "اختيار الطابق النشط",
+          "select_floor": "تحديد الطابق النشط",
           "add_floor": "إضافة طابق جديد",
-          "edit_floor": "تعديل إعدادات الطابق",
+          "edit_floor": "تحرير إعدادات الطابق",
           "delete_floor": "حذف الطابق",
           "main_menu": "العودة إلى القائمة الرئيسية"
         }
       },
       "map_trims": {
-        "title": "خيارات تقليم الخريطة",
-        "description": "إدارة إعدادات تقليم الخريطة",
+        "title": "خيارات قص الخريطة",
+        "description": "إدارة إعدادات قص الخريطة",
         "menu_options": {
-          "reset_map_trims": "إعادة تعيين تقليم الخريطة",
-          "save_map_trims": "حفظ تقليم الخريطة",
+          "reset_map_trims": "إعادة ضبط حواف الخريطة",
+          "save_map_trims": "حفظ حواف الخريطة",
           "main_menu": "العودة إلى القائمة الرئيسية"
         }
       },
       "image_basic_opt": {
         "data": {
           "rotate_image": "تدوير",
-          "margins": "هوامش الصورة",
-          "auto_zoom": "تفعيل التكبير التلقائي",
-          "zoom_lock_ratio": "قفل نسبة الأبعاد",
-          "aspect_ratio": "نسبة أبعاد الصورة",
-          "robot_size": "حجم الروبوت"
+          "margins": "هوامش الصورة.",
+          "auto_zoom": "تمكين التكبير التلقائي",
+          "zoom_lock_ratio": "قفل نسبة العرض إلى الارتفاع.",
+          "aspect_ratio": "نسبة عرض إلى ارتفاع الصورة.",
+          "robot_size": "حجم الروبوت."
         },
         "data_description": {
-          "rotate_image": "درجة 0, 90, 180, 270",
-          "margins": "هوامش تلقائية بالبكسل",
-          "aspect_ratio": "نسبة أبعاد الصورة",
-          "robot_size": "حجم الروبوت بالبكسل 8-25"
+          "rotate_image": "درجة 0، 90، 180، 270",
+          "margins": "تقليص الهوامش تلقائيًا بالبكسل.",
+          "aspect_ratio": "نسبة عرض إلى ارتفاع الصورة.",
+          "robot_size": "حجم الروبوت بالبكسل 8-25."
         },
         "description": "خيارات صورة الكاميرا",
         "title": "خيارات الصورة"
       },
       "status_text": {
         "data": {
-          "show_vac_status": "عرض حالة المكنسة",
-          "vac_status_font": "Fira Sans",
+          "show_vac_status": "إظهار حالة الفراغ.",
+          "vac_status_font": "فيرا سانز",
           "vac_status_size": "حجم النص",
-          "vac_status_position": "موضع النص: الأسفل(إيقاف)",
-          "color_text": "[255, 255, 255]"
+          "vac_status_position": "موضع النص: أسفل (إيقاف)",
+          "color_text": "[255، 255، 255]"
         },
         "data_description": {
-          "vac_status_font": "خط النص الافتراضي Fira Serif",
-          "vac_status_size": "حجم النص الافتراضي 50",
-          "color_text": "لون نص حالة المكنسة"
+          "vac_status_font": "خط النص الافتراضي Fira Serif.",
+          "vac_status_size": "حجم النص الافتراضي 50.",
+          "color_text": "لون نص حالة الفراغ."
         },
         "description": "خيارات الصورة",
         "title": "خيارات نص الحالة"
       },
       "base_colours": {
         "data": {
-          "color_charger": "[255, 128, 0]",
-          "color_move": "[238, 247, 255]",
-          "color_wall": "[255, 255, 0]",
-          "color_robot": "[255, 255, 204]",
-          "color_go_to": "[0, 255, 0]",
-          "color_no_go": "[255, 0, 0]",
-          "color_zone_clean": "[255, 255, 255]",
-          "color_background": "[0, 125, 255]",
+          "color_charger": "[255، 128، 0]",
+          "color_move": "[238، 247، 255]",
+          "color_wall": "[255، 255، 0]",
+          "color_robot": "[255، 255، 204]",
+          "color_go_to": "[0، 255، 0]",
+          "color_no_go": "[255، 0، 0]",
+          "color_zone_clean": "[255، 255، 255]",
+          "color_background": "[0، 125، 255]",
           "add_base_alpha": "تكوين الشفافية:"
         },
         "data_description": {
-          "color_charger": "لون الشاحن",
-          "color_move": "لون الحركة",
-          "color_wall": "لون الجدار",
-          "color_robot": "لون الروبوت",
-          "color_go_to": "لون الانتقال إلى",
-          "color_no_go": "لون منطقة عدم الدخول",
-          "color_zone_clean": "لون منطقة التنظيف",
-          "color_background": "لون الخلفية"
+          "color_charger": "تحميل اللون.",
+          "color_move": "تحريك اللون.",
+          "color_wall": "لون الجدار.",
+          "color_robot": "لون الروبوت.",
+          "color_go_to": "اللون المفضل.",
+          "color_no_go": "لون غير مقبول.",
+          "color_zone_clean": "لون نظيف للمنطقة.",
+          "color_background": "لون الخلفية."
         },
-        "description": "خيارات ألوان الكاميرا",
+        "description": "خيارات ألوان الكاميرا.",
         "title": "إعداد الألوان الأساسية"
       },
       "alpha_1": {
         "data": {
-          "alpha_charger": "شفافية الشاحن",
-          "alpha_move": "شفافية الحركة",
-          "alpha_wall": "شفافية الجدران",
-          "alpha_robot": "شفافية الروبوت",
-          "alpha_go_to": "شفافية منطقة الانتقال",
-          "alpha_no_go": "شفافية منطقة عدم الدخول",
-          "alpha_zone_clean": "شفافية منطقة التنظيف",
-          "alpha_background": "شفافية الخلفية",
-          "alpha_text": "شفافية النص"
+          "alpha_charger": "تحميل ألفا",
+          "alpha_move": "تحركات ألفا",
+          "alpha_wall": "جدران ألفا",
+          "alpha_robot": "روبوت ألفا",
+          "alpha_go_to": "انتقل إلى منطقة ألفا",
+          "alpha_no_go": "منطقة محظورة ألفا",
+          "alpha_zone_clean": "منطقة نظيفة ألفا",
+          "alpha_background": "الخلفية ألفا",
+          "alpha_text": "نص ألفا"
         },
         "description": "خيارات الكاميرا. ألفا 1",
-        "title": "قناة ألفا للألوان الأساسية"
+        "title": "ألوان قاعدة ألفا شانيل"
       },
       "floor_only": {
         "data": {
-          "color_room_0": "[135, 206, 250]",
+          "color_room_0": "[135، 206، 250]",
           "add_room_1_alpha": "تكوين الشفافية:"
         },
         "data_description": {
@@ -273,53 +273,53 @@
       },
       "rooms_colours_1": {
         "data": {
-          "color_room_0": "[135, 206, 250]",
-          "color_room_1": "[176, 226, 255]",
-          "color_room_2": "[165, 105, 18]",
-          "color_room_3": "[164, 211, 238]",
-          "color_room_4": "[141, 182, 205]",
-          "color_room_5": "[96, 123, 139]",
-          "color_room_6": "[224, 255, 255]",
-          "color_room_7": "[209, 238, 238]",
+          "color_room_0": "[135، 206، 250]",
+          "color_room_1": "[176، 226، 255]",
+          "color_room_2": "[165، 105، 18]",
+          "color_room_3": "[164، 211، 238]",
+          "color_room_4": "[141، 182، 205]",
+          "color_room_5": "[96، 123، 139]",
+          "color_room_6": "[224، 255، 255]",
+          "color_room_7": "[209، 238، 238]",
           "add_room_1_alpha": "تكوين الشفافية:"
         },
         "data_description": {
-          "color_room_0": "### **{room_0_name} لون**",
-          "color_room_1": "### **{room_1_name} لون**",
-          "color_room_2": "### **{room_2_name} لون**",
-          "color_room_3": "### **{room_3_name} لون**",
-          "color_room_4": "### **{room_4_name} لون**",
-          "color_room_5": "### **{room_5_name} لون**",
-          "color_room_6": "### **{room_6_name} لون**",
-          "color_room_7": "### **{room_7_name} لون**"
+          "color_room_0": "### **{room_0_name} اللون**",
+          "color_room_1": "### **{room_1_name} اللون**",
+          "color_room_2": "### **{room_2_name} اللون**",
+          "color_room_3": "### **{room_3_name} اللون**",
+          "color_room_4": "### **{room_4_name} اللون**",
+          "color_room_5": "### **{room_5_name} اللون**",
+          "color_room_6": "### **{room_6_name} اللون**",
+          "color_room_7": "### **{room_7_name} اللون**"
         },
         "description": "خيارات ألوان الكاميرا.",
-        "title": "ألوان الغرف من 1 إلى 8"
+        "title": "الغرف من 1 إلى 8 الألوان"
       },
       "rooms_colours_2": {
         "data": {
-          "color_room_8": "[180, 205, 205]",
-          "color_room_9": "[122, 139, 139]",
-          "color_room_10": "[175, 238, 238]",
-          "color_room_11": "[84, 153, 199]",
-          "color_room_12": "[133, 193, 233]",
-          "color_room_13": "[245, 176, 65]",
-          "color_room_14": "[82, 190, 128]",
-          "color_room_15": "[72, 201, 176]",
+          "color_room_8": "[180، 205، 205]",
+          "color_room_9": "[122، 139، 139]",
+          "color_room_10": "[175، 238، 238]",
+          "color_room_11": "[84، 153، 199]",
+          "color_room_12": "[133، 193، 233]",
+          "color_room_13": "[245، 176، 65]",
+          "color_room_14": "[82، 190، 128]",
+          "color_room_15": "[72، 201، 176]",
           "add_room_2_alpha": "تكوين الشفافية:"
         },
         "data_description": {
-          "color_room_8": "### **{room_8_name} لون**",
-          "color_room_9": "### **{room_9_name} لون**",
-          "color_room_10": "### **{room_10_name} لون**",
-          "color_room_11": "### **{room_11_name} لون**",
-          "color_room_12": "### **{room_12_name} لون**",
-          "color_room_13": "### **{room_13_name} لون**",
-          "color_room_14": "### **{room_14_name} لون**",
-          "color_room_15": "### **{room_15_name} لون**"
+          "color_room_8": "### **{room_8_name} اللون**",
+          "color_room_9": "### **{room_9_name} اللون**",
+          "color_room_10": "### **{room_10_name} اللون**",
+          "color_room_11": "### **{room_11_name} اللون**",
+          "color_room_12": "### **{room_12_name} اللون**",
+          "color_room_13": "### **{room_13_name} اللون**",
+          "color_room_14": "### **{room_14_name} اللون**",
+          "color_room_15": "### **{room_15_name} اللون**"
         },
         "description": "خيارات ألوان الكاميرا.",
-        "title": "ألوان الغرف من 9 إلى 15"
+        "title": "الغرف من 9 إلى 15 الألوان"
       },
       "alpha_floor": {
         "data": {
@@ -328,70 +328,74 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "قطاع {room_0_name} شفافية",
-          "alpha_room_1": "قطاع {room_1_name} شفافية",
-          "alpha_room_2": "قطاع {room_2_name} شفافية",
-          "alpha_room_3": "قطاع {room_3_name} شفافية",
-          "alpha_room_4": "قطاع {room_4_name} شفافية",
-          "alpha_room_5": "قطاع {room_5_name} شفافية",
-          "alpha_room_6": "قطاع {room_6_name} شفافية",
-          "alpha_room_7": "قطاع {room_7_name} شفافية"
+          "alpha_room_0": "### **{room_0_name} ألفا**",
+          "alpha_room_1": "### **{room_1_name} ألفا**",
+          "alpha_room_2": "### **{room_2_name} ألفا**",
+          "alpha_room_3": "### **{room_3_name} ألفا**",
+          "alpha_room_4": "### **{room_4_name} ألفا**",
+          "alpha_room_5": "### **{room_5_name} ألفا**",
+          "alpha_room_6": "### **{room_6_name} ألفا**",
+          "alpha_room_7": "### **{room_7_name} ألفا**"
         },
         "description": "خيارات الكاميرا. ألفا 2",
-        "title": "قناة ألفا لألوان الغرف"
+        "title": "ألوان غرف ألفا شانيل"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "قطاع {room_8_name} شفافية",
-          "alpha_room_9": "قطاع {room_9_name} شفافية",
-          "alpha_room_10": "قطاع {room_10_name} شفافية",
-          "alpha_room_11": "قطاع {room_11_name} شفافية",
-          "alpha_room_12": "قطاع {room_12_name} شفافية",
-          "alpha_room_13": "قطاع {room_13_name} شفافية",
-          "alpha_room_14": "قطاع {room_14_name} شفافية",
-          "alpha_room_15": "قطاع {room_15_name} شفافية"
+          "alpha_room_8": "### **{room_8_name} ألفا**",
+          "alpha_room_9": "### **{room_9_name} ألفا**",
+          "alpha_room_10": "### **{room_10_name} ألفا**",
+          "alpha_room_11": "### **{room_11_name} ألفا**",
+          "alpha_room_12": "### **{room_12_name} ألفا**",
+          "alpha_room_13": "### **{room_13_name} ألفا**",
+          "alpha_room_14": "### **{room_14_name} ألفا**",
+          "alpha_room_15": "### **{room_15_name} ألفا**"
         },
         "description": "خيارات الكاميرا. ألفا 3",
-        "title": "قناة ألفا لألوان الغرف"
+        "title": "ألوان غرف ألفا شانيل"
       },
       "select_floor": {
-        "description": "اختر الطابق النشط حاليًا. ستستخدم الكاميرا إعدادات القص للطابق المحدد.",
+        "title": "تحديد الطابق النشط",
+        "description": "اختر الطابق النشط حاليًا. ستستخدم الكاميرا إعدادات القطع للطابق المحدد.",
         "data": {
-          "current_floor": "الطابق النشط"
+          "current_floor": "أرضية نشطة"
         },
         "data_description": {
           "current_floor": "حدد الطابق النشط حاليًا. الحالي: {current_floor}"
         }
       },
       "add_floor": {
-        "description": "{info}",
+        "title": "إضافة طابق جديد",
+        "description": "معلومات",
         "data": {
           "floor_name": "اسم الطابق",
           "map_name": "اسم الخريطة (اختياري)"
         },
         "data_description": {
           "floor_name": "اختر من طوابق Home Assistant أو أدخل اسمًا مخصصًا",
-          "map_name": "اسم ودي اختياري لهذا الطابق"
+          "map_name": "اسم اختياري لهذه الطابق"
         }
       },
       "edit_floor": {
-        "description": "تحرير اسم الخريطة للطابق: {floor_name}. {trim_info}. يتم حساب قيم القص تلقائيًا - استخدم 'حفظ قصات الخريطة' لتحديثها.",
+        "title": "تحرير إعدادات الطابق",
+        "description": "تحرير اسم الخريطة للطابق: {floor_name}. {trim_info}. يتم حساب قيم القطع تلقائيًا - استخدم \"حفظ قطع الخريطة\" لتحديثها.",
         "data": {
-          "floor_name": "حدد الطابق للتحرير",
+          "floor_name": "حدد الطابق المراد تعديله",
           "map_name": "اسم الخريطة (اختياري)"
         },
         "data_description": {
-          "floor_name": "اختر الطابق المراد تحريره",
-          "map_name": "اسم ودي اختياري لهذا الطابق"
+          "floor_name": "اختر الطابق الذي تريد تعديله",
+          "map_name": "اسم اختياري لهذه الطابق"
         }
       },
       "delete_floor": {
-        "description": "إزالة طابق من التكوين. إذا قمت بحذف الطابق النشط حاليًا، فسيتم إعادة تعيينه إلى 'floor_0'.",
+        "title": "حذف الطابق",
+        "description": "إزالة طابق من التكوين. إذا قمت بحذف الطابق النشط حاليًا، فسيتم إعادة تعيينه إلى \"floor_0\".",
         "data": {
           "floor_name": "الطابق المراد حذفه"
         },
         "data_description": {
-          "floor_name": "اختر الطابق المراد حذفه"
+          "floor_name": "حدد الطابق المراد حذفه"
         }
       }
     }
@@ -400,72 +404,72 @@
     "trim_actions": {
       "options": {
         "save": "حفظ التغييرات",
-        "reset": "إعادة التعيين إلى القيم المكتشفة",
-        "delete": "حذف جميع التقليمات"
+        "reset": "إعادة الضبط إلى القيم المكتشفة",
+        "delete": "حذف جميع القصاصات"
       }
     },
     "vacuum_status": {
       "options": {
         "connected": "متصل",
         "disconnected": "غير متصل",
-        "charging": "قيد الشحن",
-        "cleaning": "قيد التنظيف",
-        "docked": "في القاعدة",
+        "charging": "الشحن",
+        "cleaning": "التنظيف",
+        "docked": "مرسى",
         "idle": "خامل",
         "paused": "متوقف مؤقتًا",
-        "returning": "عائد"
+        "returning": "العودة"
       }
     }
   },
   "services": {
     "reload": {
-      "name": "إعادة تحميل",
-      "description": "إعادة تحميل منصة كاميرا مكنسة MQTT."
+      "name": "إعادة التحميل",
+      "description": "أعد تحميل منصة الكاميرا الفراغية MQTT."
     },
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",
-      "description": "إيقاف تشغيل الكاميرا."
+      "description": "يغلق الكاميرا."
     },
     "turn_on": {
       "name": "[%key:common::action::turn_on%]",
       "description": "تشغيل الكاميرا."
     },
     "reset_trims": {
-      "name": "إعادة تعيين تقليمات الصور",
-      "description": "إعادة تعيين تقليمات الخرائط."
+      "name": "إعادة تعيين الصور المقصوصة",
+      "description": "إعادة ضبط حواف الخرائط."
     },
     "snapshot": {
       "name": "التقاط لقطة",
-      "description": "التقاط لقطة من الكاميرا.",
+      "description": "يلتقط لقطة من الكاميرا.",
       "fields": {
         "filename": {
           "name": "اسم الملف",
-          "description": "قالب لاسم ملف. المتغير المتاح هو `entity_id`."
+          "description": "قالب اسم ملف. المتغير المتاح هو `entity_id`."
         }
       }
     }
   },
   "exceptions": {
     "no_entity_id_provided": {
-      "message": "معرف الكيان مفقود في التكوين."
+      "message": "عدم وجود entity_id في التكوين."
     },
     "missing_zone_or_zone_ids": {
-      "message": "يجب توفير إما 'zone' أو 'zone_ids'."
+      "message": "يجب توفير إما \"zone\" أو \"zone_ids\"."
     },
     "zone_must_be_list": {
-      "message": "يجب أن تكون المعلمة 'Zone' قائمة."
+      "message": "يجب أن يكون المعلمة \"Zone\" قائمة."
     },
     "zoneid_must_be_list": {
-      "message": "يجب أن تكون المعلمة 'Zone_Ids' قائمة."
+      "message": "يجب أن يكون المعلمة \"Zone_Ids\" قائمة."
     },
     "zone_list_length": {
-      "message": "يجب أن تحتوي 'Zone' على عنصر واحد على الأقل يحتوي على قائمة من 4 أعداد صحيحة."
+      "message": "يجب أن تحتوي \"المنطقة\" على عنصر واحد على الأقل يحتوي على قائمة من 4 أعداد صحيحة."
     },
     "mqtt_service_not_found": {
       "message": "تكامل MQTT غير متاح. يرجى التأكد من تكوين MQTT."
     },
     "mqtt_publish_failed": {
-      "message": "فشل نشر الأمر إلى المكنسة عبر MQTT."
+      "message": "فشل نشر الأمر إلى مكنسة عبر MQTT."
     }
   }
 }

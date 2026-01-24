@@ -3,224 +3,224 @@
     "step": {
       "user": {
         "data": {
-          "vacuum_entity": "吸塵器實體 ID",
-          "vacuum_config_entry": "吸塵器配置數據",
-          "vacuum_map": "吸塵器主題",
-          "vacuum_identifiers": "吸塵器 MQTT ID",
+          "vacuum_entity": "真空机器人实体ID",
+          "vacuum_config_entry": "真空机器人配置数据",
+          "vacuum_map": "真空机器人专题",
+          "vacuum_identifiers": "真空机器人MQTT标识符",
           "unique_id": ""
         },
         "data_description": {
-          "vacuum_entity": "吸塵器實體 ID"
+          "vacuum_entity": "真空机器人实体ID"
         },
-        "description": "相機設置。",
-        "title": "MQTT 相機設置"
+        "description": "摄像机设置。",
+        "title": "MQTT摄像头设置"
       }
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "MQTT 相機選項",
-        "description": "配置相機選項",
+        "title": "MQTT 摄像头选项",
+        "description": "配置摄像头选项",
         "menu_options": {
-          "image_opt": "圖像設置",
-          "colours": "顏色配置",
-          "materials": "材質渲染",
-          "floor_management": "樓層管理",
-          "save_options": "儲存選項"
+          "image_opt": "图像设置",
+          "colours": "颜色配置",
+          "materials": "材质渲染",
+          "floor_management": "楼层管理",
+          "save_options": "保存选项"
         }
       },
       "main_menu": {
-        "title": "主選單",
-        "description": "返回主選單"
+        "title": "主菜单",
+        "description": "返回主菜单"
       },
       "image_opt": {
-        "title": "圖像設置",
-        "description": "配置圖像顯示設置",
+        "title": "图像设置",
+        "description": "配置图像显示设置",
         "menu_options": {
-          "image_basic_opt": "基本設置",
-          "status_text": "狀態文本",
-          "draw_elements": "物件可見性",
-          "main_menu": "返回主選單"
+          "image_basic_opt": "基本设置",
+          "status_text": "状态文本",
+          "draw_elements": "地图元素可见性",
+          "main_menu": "返回主菜单"
         }
       },
       "colours": {
-        "title": "顏色配置",
-        "description": "配置地圖顏色",
+        "title": "颜色配置",
+        "description": "配置地图颜色",
         "menu_options": {
-          "base_colours": "基本顏色",
-          "rooms_colours_1": "房間 1-8",
-          "rooms_colours_2": "房間 9-16",
-          "floor_only": "僅地板",
-          "transparency": "透明度設置",
-          "main_menu": "返回主選單"
+          "base_colours": "基础色",
+          "rooms_colours_1": "房间1-8",
+          "rooms_colours_2": "9-16号房间",
+          "floor_only": "仅限地面层",
+          "transparency": "透明度设置",
+          "main_menu": "返回主菜单"
         }
       },
       "draw_elements": {
-        "title": "物件可見性",
-        "description": "配置地圖上可見的元素",
+        "title": "地图元素可见性",
+        "description": "配置地图上可见的元素",
         "menu_options": {
-          "map_elements": "地圖元素",
-          "segments_visibility": "區段可見性",
-          "main_menu": "返回主選單"
+          "map_elements": "地图元素",
+          "segments_visibility": "分段可见性",
+          "main_menu": "返回主菜单"
         }
       },
       "map_elements": {
-        "title": "地圖元素",
-        "description": "配置地圖上可見的元素",
+        "title": "地图元素",
+        "description": "配置地图上可见的元素",
         "data": {
-          "disable_floor": "隱藏地板",
-          "disable_wall": "隱藏牆壁",
-          "disable_robot": "隱藏機器人",
-          "disable_charger": "隱藏充電座",
-          "disable_virtual_walls": "隱藏虛擬牆",
-          "disable_restricted_areas": "隱藏禁區",
-          "disable_no_mop_areas": "隱藏禁拖區",
-          "disable_obstacles": "隱藏障礙物",
-          "disable_path": "隱藏路徑",
-          "disable_predicted_path": "隱藏預測路徑",
-          "disable_go_to_target": "隱藏目標點"
+          "disable_floor": "隐藏楼层",
+          "disable_wall": "隐藏墙壁",
+          "disable_robot": "隐藏机器人",
+          "disable_charger": "隐藏充电器",
+          "disable_virtual_walls": "隐藏虚拟墙",
+          "disable_restricted_areas": "隐藏受限区域",
+          "disable_no_mop_areas": "隐藏无需拖地区域",
+          "disable_obstacles": "隐藏障碍物",
+          "disable_path": "隐藏路径",
+          "disable_predicted_path": "隐藏预测路径",
+          "disable_go_to_target": "隐藏转到目标"
         },
         "data_description": {
-          "disable_floor": "啟用時，地板將不會顯示在地圖上",
-          "disable_wall": "啟用時，牆壁將不會顯示在地圖上",
-          "disable_robot": "啟用時，機器人將不會顯示在地圖上",
-          "disable_charger": "啟用時，充電器將不會顯示在地圖上",
-          "disable_virtual_walls": "啟用時，虛擬牆將不會顯示在地圖上",
-          "disable_restricted_areas": "啟用時，限制區域將不會顯示在地圖上",
-          "disable_no_mop_areas": "啟用時，禁拖區域將不會顯示在地圖上",
-          "disable_obstacles": "啟用時，障礙物將不會顯示在地圖上",
-          "disable_path": "啟用後，清潔路徑將不會顯示在地圖上",
-          "disable_predicted_path": "啟用時，預測路徑將不會顯示在地圖上",
-          "disable_go_to_target": "啟用後，前往目標將不會顯示在地圖上"
+          "disable_floor": "启用后，地图上将不显示该楼层",
+          "disable_wall": "启用后，地图上将不显示墙体",
+          "disable_robot": "启用后，机器人将不会显示在地图上",
+          "disable_charger": "启用后，充电器将不会显示在地图上",
+          "disable_virtual_walls": "启用后，虚拟墙将不会显示在地图上",
+          "disable_restricted_areas": "启用后，限制区域将不会显示在地图上",
+          "disable_no_mop_areas": "启用后，地图上将不显示禁止拖地区域",
+          "disable_obstacles": "启用后，地图上将不再显示障碍物",
+          "disable_path": "启用后，清洁路径将不会显示在地图上",
+          "disable_predicted_path": "启用后，预测路径将不会显示在地图上",
+          "disable_go_to_target": "启用后，前往目标将不会显示在地图上"
         }
       },
       "segments_visibility": {
-        "title": "分段可見性",
-        "description": "配置地圖上可見的房間分段",
+        "title": "分段可见性",
+        "description": "配置地图上可见的房间分区",
         "data": {
-          "disable_room_1": "隱藏房間 1",
-          "disable_room_2": "隱藏房間 2",
-          "disable_room_3": "隱藏房間 3",
-          "disable_room_4": "隱藏房間 4",
-          "disable_room_5": "隱藏房間 5",
-          "disable_room_6": "隱藏房間 6",
-          "disable_room_7": "隱藏房間 7",
-          "disable_room_8": "隱藏房間 8",
-          "disable_room_9": "隱藏房間 9",
-          "disable_room_10": "隱藏房間 10",
-          "disable_room_11": "隱藏房間 11",
-          "disable_room_12": "隱藏房間 12",
-          "disable_room_13": "隱藏房間 13",
-          "disable_room_14": "隱藏房間 14",
-          "disable_room_15": "隱藏房間 15"
+          "disable_room_1": "隐藏房间1",
+          "disable_room_2": "隐藏房间2",
+          "disable_room_3": "隐藏房间3",
+          "disable_room_4": "隐藏房间4",
+          "disable_room_5": "隐藏5号房间",
+          "disable_room_6": "隐藏6号房间",
+          "disable_room_7": "隐藏7号房间",
+          "disable_room_8": "隐藏8号房间",
+          "disable_room_9": "隐藏9号房间",
+          "disable_room_10": "隐藏10号房间",
+          "disable_room_11": "隐藏11号房间",
+          "disable_room_12": "隐藏12号房间",
+          "disable_room_13": "隐藏13号房间",
+          "disable_room_14": "隐藏14号房间",
+          "disable_room_15": "隐藏15号房间"
         },
         "data_description": {
-          "disable_room_1": "啟用時，房間 1 {room_0_name} 將不會顯示在地圖上",
-          "disable_room_2": "啟用時，房間 2 {room_1_name} 將不會顯示在地圖上",
-          "disable_room_3": "啟用時，房間 3 {room_2_name} 將不會顯示在地圖上",
-          "disable_room_4": "啟用時，房間 4 {room_3_name} 將不會顯示在地圖上",
-          "disable_room_5": "啟用時，房間 5 {room_4_name} 將不會顯示在地圖上",
-          "disable_room_6": "啟用時，房間 6 {room_5_name} 將不會顯示在地圖上",
-          "disable_room_7": "啟用時，房間 7 {room_6_name} 將不會顯示在地圖上",
-          "disable_room_8": "啟用時，房間 8 {room_7_name} 將不會顯示在地圖上",
-          "disable_room_9": "啟用時，房間 9 {room_8_name} 將不會顯示在地圖上",
-          "disable_room_10": "啟用時，房間 10 {room_9_name} 將不會顯示在地圖上",
-          "disable_room_11": "啟用時，房間 11 {room_10_name} 將不會顯示在地圖上",
-          "disable_room_12": "啟用時，房間 12 {room_11_name} 將不會顯示在地圖上",
-          "disable_room_13": "啟用時，房間 13 {room_12_name} 將不會顯示在地圖上",
-          "disable_room_14": "啟用時，房間 14 {room_13_name} 將不會顯示在地圖上",
-          "disable_room_15": "啟用時，房間 15 {room_14_name} 將不會顯示在地圖上"
+          "disable_room_1": "启用后，房间1 {room_0_name} 将不会显示在地图上",
+          "disable_room_2": "启用后，房间2 {room_1_name} 将不会显示在地图上",
+          "disable_room_3": "启用后，房间3 {room_2_name} 将不会显示在地图上",
+          "disable_room_4": "启用后，4号房间 {room_3_name} 将不会显示在地图上",
+          "disable_room_5": "启用后，5号房间 {room_4_name} 将不会显示在地图上",
+          "disable_room_6": "启用后，6号房间 {room_5_name} 将不会显示在地图上",
+          "disable_room_7": "启用后，7号房间 {room_6_name} 将不会显示在地图上",
+          "disable_room_8": "启用后，8号房间 {room_7_name} 将不会显示在地图上",
+          "disable_room_9": "启用后，9号房间 {room_8_name} 将不会显示在地图上",
+          "disable_room_10": "启用后，10号房间 {room_9_name} 将不会显示在地图上",
+          "disable_room_11": "启用后，11号房间 {room_10_name} 将不会显示在地图上",
+          "disable_room_12": "启用后，12号房间 {room_11_name} 将不会显示在地图上",
+          "disable_room_13": "启用后，13号房间 {room_12_name} 将不会显示在地图上",
+          "disable_room_14": "启用后，14号房间 {room_13_name} 将不会显示在地图上",
+          "disable_room_15": "启用后，15号房间 {room_14_name} 将不会显示在地图上"
         }
       },
       "transparency": {
-        "title": "透明度設置",
-        "description": "配置透明度級別",
+        "title": "透明度设置",
+        "description": "配置地图元素的透明度（alpha）设置",
         "menu_options": {
-          "alpha_1": "基礎透明度",
+          "alpha_1": "基础透明度",
           "alpha_floor": "地板透明度",
-          "alpha_2": "房間 1-8 透明度",
-          "alpha_3": "房間 9-16 透明度",
-          "main_menu": "返回主選單"
+          "alpha_2": "房间1-8 透明度",
+          "alpha_3": "房间9-16 透明度",
+          "main_menu": "返回主菜单"
         }
       },
       "materials": {
-        "title": "材質渲染",
-        "description": "配置材質檢測和渲染（木板、瓷磚、地毯）",
+        "title": "材质渲染",
+        "description": "配置材质检测与渲染（木板、瓷砖、地毯）",
         "data": {
-          "disable_material_overlay": "停用材質覆蓋（木材和瓷磚）",
-          "disable_carpets": "隱藏地毯",
-          "color_carpet": "地毯顏色",
-          "color_material_wood": "木板顏色",
-          "color_material_tile": "瓷磚顏色",
+          "disable_material_overlay": "禁用材质叠加（木材与瓷砖）",
+          "disable_carpets": "隐藏地毯",
+          "color_carpet": "地毯颜色",
+          "color_material_wood": "木板颜色",
+          "color_material_tile": "瓷砖颜色",
           "alpha_carpet": "地毯透明度",
           "alpha_material_wood": "木材透明度",
-          "alpha_material_tile": "瓷磚透明度"
+          "alpha_material_tile": "瓷砖透明度"
         },
         "data_description": {
-          "disable_material_overlay": "關閉地圖上木材和瓷磚的材質覆蓋渲染",
-          "disable_carpets": "啟用時，地毯將不會顯示在地圖上",
-          "color_carpet": "地毯材質顏色（RGB）",
-          "color_material_wood": "木板材質顏色（RGB）",
-          "color_material_tile": "瓷磚材質顏色（RGB）",
-          "alpha_carpet": "地毯透明度級別（0-255）",
-          "alpha_material_wood": "木板透明度級別（0-255）",
-          "alpha_material_tile": "瓷磚透明度級別（0-255）"
+          "disable_material_overlay": "关闭地图上木材和瓷砖的材质叠加渲染",
+          "disable_carpets": "启用后，地图上将不再显示地毯",
+          "color_carpet": "地毯材料的颜色（RGB）",
+          "color_material_wood": "木板材料的颜色（RGB）",
+          "color_material_tile": "瓷砖材料的颜色（RGB）",
+          "alpha_carpet": "地毯透明度级别（0-255）",
+          "alpha_material_wood": "木板透明度级别（0-255）",
+          "alpha_material_tile": "瓦片透明度级别（0-255）"
         }
       },
       "floor_management": {
-        "title": "樓層管理",
-        "description": "管理多個樓層及其修剪設定",
+        "title": "楼层管理",
+        "description": "管理多个楼层及其修剪设置",
         "menu_options": {
-          "select_floor": "選擇活動樓層",
-          "add_floor": "新增樓層",
-          "edit_floor": "編輯樓層設定",
-          "delete_floor": "刪除樓層",
-          "main_menu": "返回主選單"
+          "select_floor": "选择活动楼层",
+          "add_floor": "添加新楼层",
+          "edit_floor": "编辑楼层设置",
+          "delete_floor": "删除楼层",
+          "main_menu": "返回主菜单"
         }
       },
       "map_trims": {
-        "title": "地圖裁剪選項",
-        "description": "管理地圖裁剪設置",
+        "title": "地图修剪选项",
+        "description": "管理地图修剪设置",
         "menu_options": {
-          "reset_map_trims": "重置地圖裁剪",
-          "save_map_trims": "保存地圖裁剪",
-          "main_menu": "返回主選單"
+          "reset_map_trims": "重置地图修剪",
+          "save_map_trims": "保存地图修剪",
+          "main_menu": "返回主菜单"
         }
       },
       "image_basic_opt": {
         "data": {
-          "rotate_image": "旋轉",
-          "margins": "圖像邊距。",
-          "auto_zoom": "啟用自動縮放",
-          "zoom_lock_ratio": "鎖定縱橫比。",
-          "aspect_ratio": "圖像縱橫比。",
-          "robot_size": "機器人大小"
+          "rotate_image": "旋转",
+          "margins": "图像边距。",
+          "auto_zoom": "启用自动缩放",
+          "zoom_lock_ratio": "锁定宽高比。",
+          "aspect_ratio": "图像宽高比。",
+          "robot_size": "机器人的尺寸。"
         },
         "data_description": {
-          "rotate_image": "度數 0, 90, 180, 270",
-          "margins": "自動邊距裁剪（像素）。",
-          "aspect_ratio": "圖像縱橫比。",
-          "robot_size": "機器人大小（像素）8-25"
+          "rotate_image": "0度、90度、180度、270度",
+          "margins": "自动修剪边距（单位：像素）",
+          "aspect_ratio": "图像宽高比。",
+          "robot_size": "机器人的像素尺寸为8-25。"
         },
-        "description": "相機圖像選項",
-        "title": "圖像選項"
+        "description": "相机图像选项",
+        "title": "图片选项"
       },
       "status_text": {
         "data": {
-          "show_vac_status": "顯示吸塵器狀態。",
-          "vac_status_font": "Fira Sans",
-          "vac_status_size": "文本大小",
-          "vac_status_position": "文本位置：底部（關閉）",
+          "show_vac_status": "显示真空状态。",
+          "vac_status_font": "菲拉·桑斯",
+          "vac_status_size": "文字大小",
+          "vac_status_position": "文本位置：底部（关闭）",
           "color_text": "[255, 255, 255]"
         },
         "data_description": {
-          "vac_status_font": "默認文本字體 Fira Serif。",
-          "vac_status_size": "默認文本大小 50。",
-          "color_text": "吸塵器狀態文本顏色。"
+          "vac_status_font": "文本字体默认为Fira Serif。",
+          "vac_status_size": "文本大小默认值为50。",
+          "color_text": "真空状态文本颜色。"
         },
-        "description": "圖像選項",
-        "title": "狀態文本選項"
+        "description": "图片选项",
+        "title": "状态文本选项"
       },
       "base_colours": {
         "data": {
@@ -235,32 +235,32 @@
           "add_base_alpha": "配置透明度："
         },
         "data_description": {
-          "color_charger": "充電器顏色。",
-          "color_move": "移動顏色。",
-          "color_wall": "牆壁顏色。",
-          "color_robot": "機器人顏色。",
-          "color_go_to": "前往顏色。",
-          "color_no_go": "禁止前往顏色。",
-          "color_zone_clean": "區域清潔顏色。",
-          "color_background": "背景顏色。"
+          "color_charger": "加载颜色。",
+          "color_move": "移动颜色。",
+          "color_wall": "墙面颜色。",
+          "color_robot": "彩色机器人。",
+          "color_go_to": "首选色。",
+          "color_no_go": "禁用色。",
+          "color_zone_clean": "区域清洁色。",
+          "color_background": "背景颜色。"
         },
-        "description": "相機顏色選項。",
-        "title": "基本顏色設置"
+        "description": "相机色彩选项。",
+        "title": "基础颜色设置"
       },
       "alpha_1": {
         "data": {
-          "alpha_charger": "充電器透明度",
-          "alpha_move": "移動透明度",
-          "alpha_wall": "牆壁透明度",
-          "alpha_robot": "機器人透明度",
-          "alpha_go_to": "前往區域透明度",
-          "alpha_no_go": "禁止前往區域透明度",
-          "alpha_zone_clean": "區域清潔透明度",
-          "alpha_background": "背景透明度",
-          "alpha_text": "文本透明度"
+          "alpha_charger": "加载Alpha",
+          "alpha_move": "Moves Alpha",
+          "alpha_wall": "墙壁阿尔法",
+          "alpha_robot": "阿尔法机器人",
+          "alpha_go_to": "前往区域阿尔法",
+          "alpha_no_go": "禁入区阿尔法",
+          "alpha_zone_clean": "区域清洁阿尔法",
+          "alpha_background": "背景阿尔法",
+          "alpha_text": "文本阿尔法"
         },
-        "description": "相機選項。透明度 1",
-        "title": "基本顏色透明度通道"
+        "description": "相机选项。Alpha 1",
+        "title": "阿尔法香奈儿基础色系"
       },
       "floor_only": {
         "data": {
@@ -268,7 +268,7 @@
           "add_room_1_alpha": "配置透明度："
         },
         "data_description": {
-          "color_room_0": "### **地板顏色**"
+          "color_room_0": "### **地板颜色**"
         }
       },
       "rooms_colours_1": {
@@ -284,17 +284,17 @@
           "add_room_1_alpha": "配置透明度："
         },
         "data_description": {
-          "color_room_0": "### **{room_0_name} 顏色**",
-          "color_room_1": "### **{room_1_name} 顏色**",
-          "color_room_2": "### **{room_2_name} 顏色**",
-          "color_room_3": "### **{room_3_name} 顏色**",
-          "color_room_4": "### **{room_4_name} 顏色**",
-          "color_room_5": "### **{room_5_name} 顏色**",
-          "color_room_6": "### **{room_6_name} 顏色**",
-          "color_room_7": "### **{room_7_name} 顏色**"
+          "color_room_0": "### **{房间名称} 颜色**",
+          "color_room_1": "### **{房间1名称} 颜色**",
+          "color_room_2": "### **{房间2名称} 颜色**",
+          "color_room_3": "### **{房间3名称} 颜色**",
+          "color_room_4": "### **{房间4名称} 颜色**",
+          "color_room_5": "### **{room_5_name} 颜色**",
+          "color_room_6": "### **{房间6名称} 颜色**",
+          "color_room_7": "### **{房间7名称} 颜色**"
         },
-        "description": "相機顏色選項。",
-        "title": "房間 1 至 8 顏色"
+        "description": "相机色彩选项。",
+        "title": "1至8号房间 颜色"
       },
       "rooms_colours_2": {
         "data": {
@@ -309,89 +309,93 @@
           "add_room_2_alpha": "配置透明度："
         },
         "data_description": {
-          "color_room_8": "### **{room_8_name} 顏色**",
-          "color_room_9": "### **{room_9_name} 顏色**",
-          "color_room_10": "### **{room_10_name} 顏色**",
-          "color_room_11": "### **{room_11_name} 顏色**",
-          "color_room_12": "### **{room_12_name} 顏色**",
-          "color_room_13": "### **{room_13_name} 顏色**",
-          "color_room_14": "### **{room_14_name} 顏色**",
-          "color_room_15": "### **{room_15_name} 顏色**"
+          "color_room_8": "### **{房间8名称} 颜色**",
+          "color_room_9": "### **{房间9名称} 颜色**",
+          "color_room_10": "### **{房间10名称} 颜色**",
+          "color_room_11": "### **{房间11名称} 颜色**",
+          "color_room_12": "### **{房间12名称} 颜色**",
+          "color_room_13": "### **{房间13名称} 颜色**",
+          "color_room_14": "### **{room_14_name} 颜色**",
+          "color_room_15": "### **{room_15_name} 颜色**"
         },
-        "description": "相機顏色選項。",
-        "title": "房間 9 至 15 顏色"
+        "description": "相机色彩选项。",
+        "title": "9至15号房间 配色方案"
       },
       "alpha_floor": {
         "data": {
-          "alpha_room_0": "地板顏色"
+          "alpha_room_0": "地板颜色"
         }
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "區段 {room_0_name} 透明度",
-          "alpha_room_1": "區段 {room_1_name} 透明度",
-          "alpha_room_2": "區段 {room_2_name} 透明度",
-          "alpha_room_3": "區段 {room_3_name} 透明度",
-          "alpha_room_4": "區段 {room_4_name} 透明度",
-          "alpha_room_5": "區段 {room_5_name} 透明度",
-          "alpha_room_6": "區段 {room_6_name} 透明度",
-          "alpha_room_7": "區段 {room_7_name} 透明度"
+          "alpha_room_0": "### **{room_0_name} 阿尔法**",
+          "alpha_room_1": "### **{room_1_name} 阿尔法**",
+          "alpha_room_2": "### **{room_2_name} 阿尔法**",
+          "alpha_room_3": "### **{room_3_name} 阿尔法**",
+          "alpha_room_4": "### **{房间4名称} 阿尔法**",
+          "alpha_room_5": "### **{room_5_name} 阿尔法**",
+          "alpha_room_6": "### **{room_6_name} 阿尔法**",
+          "alpha_room_7": "### **{room_7_name} 阿尔法**"
         },
-        "description": "相機選項。透明度 2",
-        "title": "房間顏色透明度通道"
+        "description": "相机选项。Alpha 2",
+        "title": "阿尔法香奈儿房间色彩"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "區段 {room_8_name} 透明度",
-          "alpha_room_9": "區段 {room_9_name} 透明度",
-          "alpha_room_10": "區段 {room_10_name} 透明度",
-          "alpha_room_11": "區段 {room_11_name} 透明度",
-          "alpha_room_12": "區段 {room_12_name} 透明度",
-          "alpha_room_13": "區段 {room_13_name} 透明度",
-          "alpha_room_14": "區段 {room_14_name} 透明度",
-          "alpha_room_15": "區段 {room_15_name} 透明度"
+          "alpha_room_8": "### **{room_8_name} 阿尔法**",
+          "alpha_room_9": "### **{room_9_name} 阿尔法**",
+          "alpha_room_10": "### **{room_10_name} 阿尔法**",
+          "alpha_room_11": "### **{room_11_name} 阿尔法**",
+          "alpha_room_12": "### **{房间12名称} 阿尔法**",
+          "alpha_room_13": "### **{13号房间名称} 阿尔法**",
+          "alpha_room_14": "### **{room_14_name} 阿尔法**",
+          "alpha_room_15": "### **{room_15_name} 阿尔法**"
         },
-        "description": "相機選項。透明度 3",
-        "title": "房間顏色透明度通道"
+        "description": "相机选项。Alpha 3",
+        "title": "阿尔法香奈儿房间色彩"
       },
       "select_floor": {
-        "description": "選擇目前啟用的樓層。相機將使用所選樓層的修剪設定。",
+        "title": "选择活动楼层",
+        "description": "选择当前活动的楼层。相机将使用所选楼层的修剪设置。",
         "data": {
-          "current_floor": "啟用的樓層"
+          "current_floor": "活动地板"
         },
         "data_description": {
-          "current_floor": "選擇目前啟用的樓層。目前：{current_floor}"
+          "current_floor": "选择当前活动的楼层。当前楼层：{current_floor}"
         }
       },
       "add_floor": {
-        "description": "{info}",
+        "title": "添加新楼层",
+        "description": "信息",
         "data": {
-          "floor_name": "樓層名稱",
-          "map_name": "地圖名稱（選填）"
+          "floor_name": "楼层名称",
+          "map_name": "地图名称（可选）"
         },
         "data_description": {
-          "floor_name": "從 Home Assistant 樓層中選擇或輸入自訂名稱",
-          "map_name": "此樓層的選填易記名稱"
+          "floor_name": "从 Home Assistant 楼层中选择或输入自定义名称",
+          "map_name": "此楼层的可选友好名称"
         }
       },
       "edit_floor": {
-        "description": "編輯樓層的地圖名稱：{floor_name}。{trim_info}。修剪值會自動計算 - 使用「儲存地圖修剪」來更新它們。",
+        "title": "编辑楼层设置",
+        "description": "编辑楼层地图名称：{floor_name}。{trim_info}。修剪值为自动计算——请使用“保存地图修剪”功能更新数值。",
         "data": {
-          "floor_name": "選擇要編輯的樓層",
-          "map_name": "地圖名稱（選填）"
+          "floor_name": "选择楼层进行编辑",
+          "map_name": "地图名称（可选）"
         },
         "data_description": {
-          "floor_name": "選擇要編輯的樓層",
-          "map_name": "此樓層的選填易記名稱"
+          "floor_name": "选择要编辑的楼层",
+          "map_name": "此楼层的可选友好名称"
         }
       },
       "delete_floor": {
-        "description": "從設定中移除樓層。如果您刪除目前啟用的樓層，它將重設為「floor_0」。",
+        "title": "删除楼层",
+        "description": "从配置中移除一层。若删除当前活动层，该层将重置为'floor_0'。",
         "data": {
-          "floor_name": "要刪除的樓層"
+          "floor_name": "删除楼层"
         },
         "data_description": {
-          "floor_name": "選擇要刪除的樓層"
+          "floor_name": "选择要删除的楼层"
         }
       }
     }
@@ -400,47 +404,47 @@
     "trim_actions": {
       "options": {
         "save": "保存更改",
-        "reset": "重置為檢測到的值",
-        "delete": "刪除所有裁剪"
+        "reset": "重置为检测到的值",
+        "delete": "删除所有修剪"
       }
     },
     "vacuum_status": {
       "options": {
-        "connected": "已連接",
-        "disconnected": "已斷開",
-        "charging": "充電中",
-        "cleaning": "清掃中",
-        "docked": "已停靠",
-        "idle": "空閒",
-        "paused": "已暫停",
-        "returning": "返回中"
+        "connected": "互联",
+        "disconnected": "断开连接",
+        "charging": "充电",
+        "cleaning": "清洁",
+        "docked": "停靠",
+        "idle": "闲置",
+        "paused": "暂停",
+        "returning": "归来"
       }
     }
   },
   "services": {
     "reload": {
-      "name": "重新載入",
-      "description": "重新載入 MQTT 吸塵器相機平台。"
+      "name": "重新加载",
+      "description": "重新加载MQTT真空摄像头平台。"
     },
     "turn_off": {
-      "name": "[%key:common::action::turn_off%]",
-      "description": "關閉相機。"
+      "name": "[%key:common::action::关闭%]",
+      "description": "关闭摄像头。"
     },
     "turn_on": {
       "name": "[%key:common::action::turn_on%]",
-      "description": "開啟相機。"
+      "description": "打开摄像头。"
     },
     "reset_trims": {
-      "name": "重置圖像裁剪",
-      "description": "重置地圖裁剪。"
+      "name": "重置图像修剪",
+      "description": "重置地图的修剪。"
     },
     "snapshot": {
-      "name": "拍攝快照",
-      "description": "從相機拍攝快照。",
+      "name": "拍摄快照",
+      "description": "从相机中拍摄快照。",
       "fields": {
         "filename": {
           "name": "文件名",
-          "description": "文件名模板。可用變量是 `entity_id`。"
+          "description": "文件名模板。可用变量为 `entity_id`。"
         }
       }
     }
@@ -450,22 +454,22 @@
       "message": "配置中缺少 entity_id。"
     },
     "missing_zone_or_zone_ids": {
-      "message": "必須提供 'zone' 或 'zone_ids'。"
+      "message": "必须提供 'zone' 或 'zone_ids' 之一。"
     },
     "zone_must_be_list": {
-      "message": "參數 'Zone' 必須是列表。"
+      "message": "'Zone' 参数必须是一个列表。"
     },
     "zoneid_must_be_list": {
-      "message": "參數 'Zone_Ids' 必須是列表。"
+      "message": "'Zone_Ids' 参数必须为列表。"
     },
     "zone_list_length": {
-      "message": "'Zone' 必須至少有 1 個元素，該元素包含 4 個整數的列表。"
+      "message": "该\"区域\"必须至少包含1个元素，该元素内含一个由4个整数组成的列表。"
     },
     "mqtt_service_not_found": {
-      "message": "MQTT 整合無法使用。請確保已設定 MQTT。"
+      "message": "MQTT集成功能不可用。请确保已配置MQTT。"
     },
     "mqtt_publish_failed": {
-      "message": "無法透過 MQTT 發布命令至吸塵器。"
+      "message": "通过MQTT向vacuum发布命令失败。"
     }
   }
 }

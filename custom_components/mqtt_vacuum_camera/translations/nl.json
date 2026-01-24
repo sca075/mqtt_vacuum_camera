@@ -3,36 +3,36 @@
     "step": {
       "user": {
         "data": {
-          "vacuum_entity": "Stofzuiger Entiteit ID",
-          "vacuum_config_entry": "Stofzuiger Configuratiegegevens",
-          "vacuum_map": "Stofzuiger Onderwerp",
-          "vacuum_identifiers": "Stofzuiger MQTT ID",
+          "vacuum_entity": "Vacuümrobot-entiteits-ID",
+          "vacuum_config_entry": "Configuratiegegevens vacuümrobot",
+          "vacuum_map": "Vacuümrobot Onderwerp",
+          "vacuum_identifiers": "Vacuümrobot MQTT-id",
           "unique_id": ""
         },
         "data_description": {
-          "vacuum_entity": "Stofzuiger Entiteit ID"
+          "vacuum_entity": "Vacuümrobot-entiteits-ID"
         },
-        "description": "Camera Instelling.",
-        "title": "MQTT Camera Instelling"
+        "description": "Camera-instellingen.",
+        "title": "MQTT-camera instellen"
       }
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "MQTT Camera Opties",
-        "description": "Camera opties configureren",
+        "title": "MQTT-camera-opties",
+        "description": "Camera-opties configureren",
         "menu_options": {
           "image_opt": "Beeldinstellingen",
-          "colours": "Kleurconfiguratie",
+          "colours": "Kleurenconfiguratie",
           "materials": "Materiaalweergave",
-          "floor_management": "Verdiepingsbeheer",
-          "save_options": "Opties Opslaan"
+          "floor_management": "Vloerbeheer",
+          "save_options": "Opslaan Opties"
         }
       },
       "main_menu": {
         "title": "Hoofdmenu",
-        "description": "Terug naar hoofdmenu"
+        "description": "Terug naar het hoofdmenu"
       },
       "image_opt": {
         "title": "Beeldinstellingen",
@@ -40,108 +40,108 @@
         "menu_options": {
           "image_basic_opt": "Basisinstellingen",
           "status_text": "Statustekst",
-          "draw_elements": "Objectzichtbaarheid",
-          "main_menu": "Terug naar Hoofdmenu"
+          "draw_elements": "Zichtbaarheid van kaartelementen",
+          "main_menu": "Terug naar het hoofdmenu"
         }
       },
       "colours": {
-        "title": "Kleurconfiguratie",
+        "title": "Kleurenconfiguratie",
         "description": "Kaartkleuren configureren",
         "menu_options": {
           "base_colours": "Basiskleuren",
           "rooms_colours_1": "Kamers 1-8",
           "rooms_colours_2": "Kamers 9-16",
-          "floor_only": "Alleen Vloer",
+          "floor_only": "Alleen vloer",
           "transparency": "Transparantie-instellingen",
-          "main_menu": "Terug naar Hoofdmenu"
+          "main_menu": "Terug naar het hoofdmenu"
         }
       },
       "draw_elements": {
-        "title": "Objectzichtbaarheid",
+        "title": "Zichtbaarheid van kaartelementen",
         "description": "Configureer welke elementen zichtbaar zijn op de kaart",
         "menu_options": {
           "map_elements": "Kaartelementen",
-          "segments_visibility": "Segmentenzichtbaarheid",
-          "main_menu": "Terug naar Hoofdmenu"
+          "segments_visibility": "Segmenten Zichtbaarheid",
+          "main_menu": "Terug naar het hoofdmenu"
         }
       },
       "map_elements": {
         "title": "Kaartelementen",
         "description": "Configureer welke elementen zichtbaar zijn op de kaart",
         "data": {
-          "disable_floor": "Verberg vloer",
-          "disable_wall": "Verberg muren",
-          "disable_robot": "Verberg robot",
-          "disable_charger": "Verberg oplader",
-          "disable_virtual_walls": "Verberg virtuele muren",
-          "disable_restricted_areas": "Verberg verboden gebieden",
-          "disable_no_mop_areas": "Verberg niet-dweilen gebieden",
+          "disable_floor": "Vloer verbergen",
+          "disable_wall": "Wanden verbergen",
+          "disable_robot": "Robot verbergen",
+          "disable_charger": "Verbergen Laden",
+          "disable_virtual_walls": "Virtuele muren verbergen",
+          "disable_restricted_areas": "Beperkte gebieden verbergen",
+          "disable_no_mop_areas": "Verberg gebieden waar niet geveegd wordt",
           "disable_obstacles": "Verberg obstakels",
-          "disable_path": "Verberg pad",
-          "disable_predicted_path": "Verberg voorspeld pad",
-          "disable_go_to_target": "Verberg ga-naar doel"
+          "disable_path": "Pad verbergen",
+          "disable_predicted_path": "Voorspelde route verbergen",
+          "disable_go_to_target": "Verberg doelwit"
         },
         "data_description": {
-          "disable_floor": "Indien ingeschakeld, wordt de vloer niet op de kaart weergegeven",
-          "disable_wall": "Indien ingeschakeld, worden muren niet op de kaart weergegeven",
-          "disable_robot": "Indien ingeschakeld, wordt de robot niet op de kaart weergegeven",
-          "disable_charger": "Indien ingeschakeld, wordt de oplader niet op de kaart weergegeven",
-          "disable_virtual_walls": "Indien ingeschakeld, worden virtuele muren niet op de kaart weergegeven",
-          "disable_restricted_areas": "Indien ingeschakeld, worden beperkte gebieden niet op de kaart weergegeven",
-          "disable_no_mop_areas": "Indien ingeschakeld, worden niet-dweil gebieden niet op de kaart weergegeven",
-          "disable_obstacles": "Indien ingeschakeld, worden obstakels niet op de kaart weergegeven",
-          "disable_path": "Indien ingeschakeld, wordt het reinigingspad niet op de kaart weergegeven",
-          "disable_predicted_path": "Indien ingeschakeld, wordt het voorspelde pad niet op de kaart weergegeven",
-          "disable_go_to_target": "Indien ingeschakeld, worden ga-naar-doelen niet op de kaart weergegeven"
+          "disable_floor": "Wanneer deze optie is ingeschakeld, wordt de verdieping niet op de kaart weergegeven.",
+          "disable_wall": "Wanneer deze optie is ingeschakeld, worden muren niet weergegeven op de kaart.",
+          "disable_robot": "Wanneer deze optie is ingeschakeld, wordt de robot niet op de kaart weergegeven.",
+          "disable_charger": "Wanneer deze optie is ingeschakeld, wordt de oplader niet op de kaart weergegeven.",
+          "disable_virtual_walls": "Wanneer deze functie is ingeschakeld, worden virtuele muren niet weergegeven op de kaart.",
+          "disable_restricted_areas": "Wanneer deze optie is ingeschakeld, worden beperkte gebieden niet op de kaart weergegeven.",
+          "disable_no_mop_areas": "Wanneer deze optie is ingeschakeld, worden gebieden waar niet geveegd mag worden niet op de kaart weergegeven.",
+          "disable_obstacles": "Wanneer deze optie is ingeschakeld, worden obstakels niet op de kaart weergegeven.",
+          "disable_path": "Wanneer deze optie is ingeschakeld, wordt het reinigingspad niet op de kaart weergegeven.",
+          "disable_predicted_path": "Wanneer deze optie is ingeschakeld, wordt het voorspelde pad niet op de kaart weergegeven.",
+          "disable_go_to_target": "Wanneer deze optie is ingeschakeld, worden bestemmingen niet op de kaart weergegeven."
         }
       },
       "segments_visibility": {
-        "title": "Segmentzichtbaarheid",
+        "title": "Segmenten Zichtbaarheid",
         "description": "Configureer welke kamersegmenten zichtbaar zijn op de kaart",
         "data": {
-          "disable_room_1": "Kamer 1 verbergen",
-          "disable_room_2": "Kamer 2 verbergen",
-          "disable_room_3": "Kamer 3 verbergen",
-          "disable_room_4": "Kamer 4 verbergen",
-          "disable_room_5": "Kamer 5 verbergen",
-          "disable_room_6": "Kamer 6 verbergen",
-          "disable_room_7": "Kamer 7 verbergen",
-          "disable_room_8": "Kamer 8 verbergen",
-          "disable_room_9": "Kamer 9 verbergen",
-          "disable_room_10": "Kamer 10 verbergen",
-          "disable_room_11": "Kamer 11 verbergen",
-          "disable_room_12": "Kamer 12 verbergen",
-          "disable_room_13": "Kamer 13 verbergen",
-          "disable_room_14": "Kamer 14 verbergen",
-          "disable_room_15": "Kamer 15 verbergen"
+          "disable_room_1": "Verberg kamer 1",
+          "disable_room_2": "Verberg kamer 2",
+          "disable_room_3": "Verberg kamer 3",
+          "disable_room_4": "Verberg kamer 4",
+          "disable_room_5": "Verberg kamer 5",
+          "disable_room_6": "Verberg kamer 6",
+          "disable_room_7": "Verberg kamer 7",
+          "disable_room_8": "Verberg kamer 8",
+          "disable_room_9": "Verberg kamer 9",
+          "disable_room_10": "Verberg kamer 10",
+          "disable_room_11": "Verberg kamer 11",
+          "disable_room_12": "Verberg kamer 12",
+          "disable_room_13": "Verberg kamer 13",
+          "disable_room_14": "Verberg kamer 14",
+          "disable_room_15": "Verberg kamer 15"
         },
         "data_description": {
-          "disable_room_1": "Wanneer ingeschakeld, wordt Kamer 1 {room_0_name} niet weergegeven op de kaart",
-          "disable_room_2": "Wanneer ingeschakeld, wordt Kamer 2 {room_1_name} niet weergegeven op de kaart",
-          "disable_room_3": "Wanneer ingeschakeld, wordt Kamer 3 {room_2_name} niet weergegeven op de kaart",
-          "disable_room_4": "Wanneer ingeschakeld, wordt Kamer 4 {room_3_name} niet weergegeven op de kaart",
-          "disable_room_5": "Wanneer ingeschakeld, wordt Kamer 5 {room_4_name} niet weergegeven op de kaart",
-          "disable_room_6": "Wanneer ingeschakeld, wordt Kamer 6 {room_5_name} niet weergegeven op de kaart",
-          "disable_room_7": "Wanneer ingeschakeld, wordt Kamer 7 {room_6_name} niet weergegeven op de kaart",
-          "disable_room_8": "Wanneer ingeschakeld, wordt Kamer 8 {room_7_name} niet weergegeven op de kaart",
-          "disable_room_9": "Wanneer ingeschakeld, wordt Kamer 9 {room_8_name} niet weergegeven op de kaart",
-          "disable_room_10": "Wanneer ingeschakeld, wordt Kamer 10 {room_9_name} niet weergegeven op de kaart",
-          "disable_room_11": "Wanneer ingeschakeld, wordt Kamer 11 {room_10_name} niet weergegeven op de kaart",
-          "disable_room_12": "Wanneer ingeschakeld, wordt Kamer 12 {room_11_name} niet weergegeven op de kaart",
-          "disable_room_13": "Wanneer ingeschakeld, wordt Kamer 13 {room_12_name} niet weergegeven op de kaart",
-          "disable_room_14": "Wanneer ingeschakeld, wordt Kamer 14 {room_13_name} niet weergegeven op de kaart",
-          "disable_room_15": "Wanneer ingeschakeld, wordt Kamer 15 {room_14_name} niet weergegeven op de kaart"
+          "disable_room_1": "Wanneer deze optie is ingeschakeld, wordt kamer 1 {room_0_name} niet weergegeven op de kaart.",
+          "disable_room_2": "Wanneer deze optie is ingeschakeld, wordt kamer 2 {room_1_name} niet weergegeven op de kaart.",
+          "disable_room_3": "Wanneer deze optie is ingeschakeld, wordt kamer 3 {room_2_name} niet weergegeven op de kaart.",
+          "disable_room_4": "Wanneer deze optie is ingeschakeld, wordt kamer 4 {room_3_name} niet weergegeven op de kaart.",
+          "disable_room_5": "Wanneer deze optie is ingeschakeld, wordt kamer 5 {room_4_name} niet weergegeven op de kaart.",
+          "disable_room_6": "Wanneer deze optie is ingeschakeld, wordt kamer 6 {room_5_name} niet weergegeven op de kaart.",
+          "disable_room_7": "Wanneer deze optie is ingeschakeld, wordt kamer 7 {room_6_name} niet weergegeven op de kaart.",
+          "disable_room_8": "Wanneer deze optie is ingeschakeld, wordt kamer 8 {room_7_name} niet op de kaart weergegeven.",
+          "disable_room_9": "Wanneer deze optie is ingeschakeld, wordt kamer 9 {room_8_name} niet weergegeven op de kaart.",
+          "disable_room_10": "Wanneer deze optie is ingeschakeld, wordt kamer 10 {room_9_name} niet weergegeven op de kaart.",
+          "disable_room_11": "Wanneer deze optie is ingeschakeld, wordt kamer 11 {room_10_name} niet weergegeven op de kaart.",
+          "disable_room_12": "Wanneer deze optie is ingeschakeld, wordt kamer 12 {room_11_name} niet weergegeven op de kaart.",
+          "disable_room_13": "Wanneer deze optie is ingeschakeld, wordt kamer 13 {room_12_name} niet op de kaart weergegeven.",
+          "disable_room_14": "Wanneer deze optie is ingeschakeld, wordt kamer 14 {room_13_name} niet weergegeven op de kaart.",
+          "disable_room_15": "Wanneer deze optie is ingeschakeld, wordt kamer 15 {room_14_name} niet weergegeven op de kaart."
         }
       },
       "transparency": {
         "title": "Transparantie-instellingen",
-        "description": "Transparantieniveaus configureren",
+        "description": "Configureer transparantie-instellingen (alpha) voor kaartelementen",
         "menu_options": {
-          "alpha_1": "Basis Transparantie",
-          "alpha_floor": "Vloer Transparantie",
+          "alpha_1": "Basistransparantie",
+          "alpha_floor": "Vloertransparantie",
           "alpha_2": "Kamers 1-8 Transparantie",
           "alpha_3": "Kamers 9-16 Transparantie",
-          "main_menu": "Terug naar Hoofdmenu"
+          "main_menu": "Terug naar het hoofdmenu"
         }
       },
       "materials": {
@@ -150,77 +150,77 @@
         "data": {
           "disable_material_overlay": "Materiaaloverlay uitschakelen (hout en tegels)",
           "disable_carpets": "Tapijten verbergen",
-          "color_carpet": "Tapijt kleur",
-          "color_material_wood": "Houten plank kleur",
-          "color_material_tile": "Tegel kleur",
+          "color_carpet": "Kleur van het tapijt",
+          "color_material_wood": "Kleur van houten planken",
+          "color_material_tile": "Tegelkleur",
           "alpha_carpet": "Tapijt transparantie",
-          "alpha_material_wood": "Hout transparantie",
-          "alpha_material_tile": "Tegel transparantie"
+          "alpha_material_wood": "Houttransparantie",
+          "alpha_material_tile": "Transparantie van tegels"
         },
         "data_description": {
-          "disable_material_overlay": "Schakel materiaaloverlay-weergave voor hout en tegels op de kaart uit",
-          "disable_carpets": "Indien ingeschakeld, worden tapijten niet op de kaart weergegeven",
-          "color_carpet": "Kleur voor tapijt materialen (RGB)",
-          "color_material_wood": "Kleur voor houten plank materialen (RGB)",
-          "color_material_tile": "Kleur voor tegel materialen (RGB)",
+          "disable_material_overlay": "Schakel het weergeven van materiaaloverlays voor hout en tegels op de kaart uit.",
+          "disable_carpets": "Wanneer deze optie is ingeschakeld, worden tapijten niet weergegeven op de kaart.",
+          "color_carpet": "Kleur voor tapijtmaterialen (RGB)",
+          "color_material_wood": "Kleur voor houten plankmaterialen (RGB)",
+          "color_material_tile": "Kleur voor tegelmaterialen (RGB)",
           "alpha_carpet": "Transparantieniveau voor tapijten (0-255)",
           "alpha_material_wood": "Transparantieniveau voor houten planken (0-255)",
           "alpha_material_tile": "Transparantieniveau voor tegels (0-255)"
         }
       },
       "floor_management": {
-        "title": "Verdiepingsbeheer",
-        "description": "Beheer meerdere verdiepingen en hun trim-instellingen",
+        "title": "Vloerbeheer",
+        "description": "Beheer meerdere verdiepingen en hun afwerkingsinstellingen",
         "menu_options": {
-          "select_floor": "Selecteer Actieve Verdieping",
-          "add_floor": "Nieuwe Verdieping Toevoegen",
-          "edit_floor": "Verdiepingsinstellingen Bewerken",
-          "delete_floor": "Verdieping Verwijderen",
-          "main_menu": "Terug naar Hoofdmenu"
+          "select_floor": "Selecteer actieve verdieping",
+          "add_floor": "Nieuwe verdieping toevoegen",
+          "edit_floor": "Vloerinstellingen bewerken",
+          "delete_floor": "Verdieping verwijderen",
+          "main_menu": "Terug naar het hoofdmenu"
         }
       },
       "map_trims": {
-        "title": "Kaartbijsnijdingsopties",
-        "description": "Beheer kaartbijsnijdingsinstellingen",
+        "title": "Kaarttrimsopties",
+        "description": "Instellingen voor kaartuitsnede beheren",
         "menu_options": {
-          "reset_map_trims": "Kaartbijsnijdingen Resetten",
-          "save_map_trims": "Kaartbijsnijdingen Opslaan",
-          "main_menu": "Terug naar Hoofdmenu"
+          "reset_map_trims": "Kaarttrims resetten",
+          "save_map_trims": "Save Kaart Trims",
+          "main_menu": "Terug naar het hoofdmenu"
         }
       },
       "image_basic_opt": {
         "data": {
           "rotate_image": "Draaien",
-          "margins": "Beeldmarges.",
+          "margins": "Afbeeldingsmarges.",
           "auto_zoom": "Automatisch zoomen inschakelen",
           "zoom_lock_ratio": "Beeldverhouding vergrendelen.",
           "aspect_ratio": "Beeldverhouding.",
-          "robot_size": "Robotgrootte"
+          "robot_size": "Grootte van de robot."
         },
         "data_description": {
-          "rotate_image": "Graden 0, 90, 180, 270",
-          "margins": "Automatisch marges bijsnijden in pixels.",
+          "rotate_image": "Graad 0, 90, 180, 270",
+          "margins": "Automatisch bijsnijden Marges in pixels.",
           "aspect_ratio": "Beeldverhouding.",
-          "robot_size": "Robotgrootte in pixels 8-25"
+          "robot_size": "Grootte van de robot in pixels 8-25."
         },
-        "description": "Camera beeldopties",
+        "description": "Camera-afbeeldingsopties",
         "title": "Beeldopties"
       },
       "status_text": {
         "data": {
-          "show_vac_status": "Stofzuigerstatus weergeven.",
+          "show_vac_status": "Toon vacuümstatus.",
           "vac_status_font": "Fira Sans",
           "vac_status_size": "Tekstgrootte",
-          "vac_status_position": "Tekstpositie: Onder(UIT)",
+          "vac_status_position": "Tekstpositie: Onder (UIT)",
           "color_text": "[255, 255, 255]"
         },
         "data_description": {
-          "vac_status_font": "Standaard tekstlettertype Fira Serif.",
-          "vac_status_size": "Standaard tekstgrootte 50.",
-          "color_text": "Stofzuiger statustekstkleur."
+          "vac_status_font": "Tekstlettertype standaard Fira Serif.",
+          "vac_status_size": "Tekstgrootte standaard 50.",
+          "color_text": "Vacuümstatus Tekstkleur."
         },
         "description": "Beeldopties",
-        "title": "Statustekst opties"
+        "title": "Statustekstopties"
       },
       "base_colours": {
         "data": {
@@ -235,32 +235,32 @@
           "add_base_alpha": "Transparantie configureren:"
         },
         "data_description": {
-          "color_charger": "Opladerkleur.",
-          "color_move": "Bewegingskleur.",
-          "color_wall": "Muurkleur.",
-          "color_robot": "Robotkleur.",
-          "color_go_to": "Ga-naar kleur.",
-          "color_no_go": "Niet-gaan kleur.",
-          "color_zone_clean": "Zonereiniging kleur.",
+          "color_charger": "Kleur laden.",
+          "color_move": "Kleur verplaatsen.",
+          "color_wall": "Kleur van de muur.",
+          "color_robot": "Robot kleur.",
+          "color_go_to": "Go-to kleur.",
+          "color_no_go": "Verboden kleur.",
+          "color_zone_clean": "Zone schone kleur.",
           "color_background": "Achtergrondkleur."
         },
-        "description": "Camera kleuropties.",
+        "description": "Camera Kleurenopties.",
         "title": "Basiskleuren instellen"
       },
       "alpha_1": {
         "data": {
-          "alpha_charger": "Oplader Alpha",
-          "alpha_move": "Bewegingen Alpha",
+          "alpha_charger": "Alpha laden",
+          "alpha_move": "Verhuizingen Alpha",
           "alpha_wall": "Muren Alpha",
-          "alpha_robot": "Robot Alpha",
-          "alpha_go_to": "Ga-naar gebied Alpha",
-          "alpha_no_go": "Niet-gaan gebied Alpha",
-          "alpha_zone_clean": "Zonereiniging Alpha",
+          "alpha_robot": "Alfa Robot",
+          "alpha_go_to": "Ga naar gebied Alpha",
+          "alpha_no_go": "Verboden gebied Alpha",
+          "alpha_zone_clean": "Zone Clean Alpha",
           "alpha_background": "Achtergrond Alpha",
           "alpha_text": "Tekst Alpha"
         },
-        "description": "Camera opties. Alpha 1",
-        "title": "Alpha kanaal basiskleuren"
+        "description": "Camera-opties. Alpha 1",
+        "title": "Alpha Chanel Basiskleuren"
       },
       "floor_only": {
         "data": {
@@ -293,8 +293,8 @@
           "color_room_6": "### **{room_6_name} Kleur**",
           "color_room_7": "### **{room_7_name} Kleur**"
         },
-        "description": "Camera kleuropties.",
-        "title": "Kamers 1 tot 8 kleuren"
+        "description": "Camera Kleurenopties.",
+        "title": "Kamers 1 tot 8 Kleuren"
       },
       "rooms_colours_2": {
         "data": {
@@ -318,8 +318,8 @@
           "color_room_14": "### **{room_14_name} Kleur**",
           "color_room_15": "### **{room_15_name} Kleur**"
         },
-        "description": "Camera kleuropties.",
-        "title": "Kamers 9 tot 15 kleuren"
+        "description": "Camera Kleurenopties.",
+        "title": "Kamers 9 tot 15 Kleuren"
       },
       "alpha_floor": {
         "data": {
@@ -328,70 +328,74 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "Segment {room_0_name} Alpha",
-          "alpha_room_1": "Segment {room_1_name} Alpha",
-          "alpha_room_2": "Segment {room_2_name} Alpha",
-          "alpha_room_3": "Segment {room_3_name} Alpha",
-          "alpha_room_4": "Segment {room_4_name} Alpha",
-          "alpha_room_5": "Segment {room_5_name} Alpha",
-          "alpha_room_6": "Segment {room_6_name} Alpha",
-          "alpha_room_7": "Segment {room_7_name} Alpha"
+          "alpha_room_0": "### **{room_0_name} Alpha**",
+          "alpha_room_1": "### **{room_1_name} Alpha**",
+          "alpha_room_2": "### **{room_2_name} Alpha**",
+          "alpha_room_3": "### **{room_3_name} Alpha**",
+          "alpha_room_4": "### **{room_4_name} Alpha**",
+          "alpha_room_5": "### **{room_5_name} Alpha**",
+          "alpha_room_6": "### **{room_6_name} Alpha**",
+          "alpha_room_7": "### **{room_7_name} Alpha**"
         },
-        "description": "Camera opties. Alpha 2",
-        "title": "Alpha kanaal kamerkleuren"
+        "description": "Camera-opties. Alpha 2",
+        "title": "Alpha Chanel Kamers Kleuren"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "Segment {room_8_name} Alpha",
-          "alpha_room_9": "Segment {room_9_name} Alpha",
-          "alpha_room_10": "Segment {room_10_name} Alpha",
-          "alpha_room_11": "Segment {room_11_name} Alpha",
-          "alpha_room_12": "Segment {room_12_name} Alpha",
-          "alpha_room_13": "Segment {room_13_name} Alpha",
-          "alpha_room_14": "Segment {room_14_name} Alpha",
-          "alpha_room_15": "Segment {room_15_name} Alpha"
+          "alpha_room_8": "### **{room_8_name} Alpha**",
+          "alpha_room_9": "### **{room_9_name} Alpha**",
+          "alpha_room_10": "### **{room_10_name} Alpha**",
+          "alpha_room_11": "### **{room_11_name} Alpha**",
+          "alpha_room_12": "### **{room_12_name} Alpha**",
+          "alpha_room_13": "### **{room_13_name} Alpha**",
+          "alpha_room_14": "### **{room_14_name} Alpha**",
+          "alpha_room_15": "### **{room_15_name} Alpha**"
         },
-        "description": "Camera opties. Alpha 3",
-        "title": "Alpha kanaal kamerkleuren"
+        "description": "Camera-opties. Alpha 3",
+        "title": "Alpha Chanel Kamers Kleuren"
       },
       "select_floor": {
-        "description": "Kies welke verdieping momenteel actief is. De camera gebruikt de bijsnijdinstellingen voor de geselecteerde verdieping.",
+        "title": "Selecteer actieve verdieping",
+        "description": "Kies welke verdieping momenteel actief is. De camera gebruikt de trim-instellingen voor de geselecteerde verdieping.",
         "data": {
-          "current_floor": "Actieve verdieping"
+          "current_floor": "Actieve vloer"
         },
         "data_description": {
           "current_floor": "Selecteer de verdieping die momenteel actief is. Huidig: {current_floor}"
         }
       },
       "add_floor": {
-        "description": "{info}",
+        "title": "Nieuwe verdieping toevoegen",
+        "description": "Informatie",
         "data": {
-          "floor_name": "Verdiepingnaam",
+          "floor_name": "Vloernaam",
           "map_name": "Kaartnaam (optioneel)"
         },
         "data_description": {
-          "floor_name": "Selecteer uit Home Assistant verdiepingen of voer een aangepaste naam in",
+          "floor_name": "Kies uit Home Assistant-verdiepingen of voer een aangepaste naam in",
           "map_name": "Optionele vriendelijke naam voor deze verdieping"
         }
       },
       "edit_floor": {
-        "description": "Kaartnaam bewerken voor verdieping: {floor_name}. {trim_info}. Bijsnijwaarden worden automatisch berekend - gebruik 'Kaartbijsnijdingen opslaan' om ze bij te werken.",
+        "title": "Vloerinstellingen bewerken",
+        "description": "Bewerk de kaartnaam voor verdieping: {floor_name}. {trim_info}. Trimwaarden worden automatisch berekend - gebruik 'Save Kaart Trims' om ze bij te werken.",
         "data": {
-          "floor_name": "Selecteer verdieping om te bewerken",
+          "floor_name": "Selecteer de te bewerken verdieping",
           "map_name": "Kaartnaam (optioneel)"
         },
         "data_description": {
-          "floor_name": "Kies welke verdieping te bewerken",
+          "floor_name": "Kies welke verdieping je wilt bewerken",
           "map_name": "Optionele vriendelijke naam voor deze verdieping"
         }
       },
       "delete_floor": {
-        "description": "Een verdieping uit de configuratie verwijderen. Als u de momenteel actieve verdieping verwijdert, wordt deze gereset naar 'floor_0'.",
+        "title": "Verdieping verwijderen",
+        "description": "Verwijder een verdieping uit de configuratie. Als u de momenteel actieve verdieping verwijdert, wordt deze teruggezet naar 'floor_0'.",
         "data": {
-          "floor_name": "Te verwijderen verdieping"
+          "floor_name": "Vloer verwijderen"
         },
         "data_description": {
-          "floor_name": "Selecteer de te verwijderen verdieping"
+          "floor_name": "Selecteer welke verdieping u wilt verwijderen"
         }
       }
     }
@@ -399,18 +403,18 @@
   "selector": {
     "trim_actions": {
       "options": {
-        "save": "Wijzigingen Opslaan",
-        "reset": "Terugzetten naar Gedetecteerde Waarden",
-        "delete": "Alle Bijsnijdingen Verwijderen"
+        "save": "Wijzigingen opslaan",
+        "reset": "Terugzetten naar gedetecteerde waarden",
+        "delete": "Alle trims verwijderen"
       }
     },
     "vacuum_status": {
       "options": {
         "connected": "Verbonden",
-        "disconnected": "Niet verbonden",
+        "disconnected": "Verbinding verbroken",
         "charging": "Opladen",
         "cleaning": "Schoonmaken",
-        "docked": "Gedockt",
+        "docked": "Aangemeerd",
         "idle": "Inactief",
         "paused": "Gepauzeerd",
         "returning": "Terugkeren"
@@ -420,7 +424,7 @@
   "services": {
     "reload": {
       "name": "Herladen",
-      "description": "Herlaadt het MQTT Stofzuiger Camera platform."
+      "description": "Herlaad het MQTT-vacuümcameraplatform."
     },
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",
@@ -431,41 +435,41 @@
       "description": "Schakelt de camera in."
     },
     "reset_trims": {
-      "name": "Afbeeldingsbijsnijdingen resetten",
-      "description": "Reset de kaartbijsnijdingen."
+      "name": "Afbeeldingen resetten Bijsnijden",
+      "description": "Reset de trims van de kaarten."
     },
     "snapshot": {
-      "name": "Momentopname maken",
-      "description": "Maakt een momentopname van een camera.",
+      "name": "Maak een momentopname",
+      "description": "Maakt een foto met een camera.",
       "fields": {
         "filename": {
           "name": "Bestandsnaam",
-          "description": "Sjabloon voor een bestandsnaam. Beschikbare variabele is `entity_id`."
+          "description": "Sjabloon van een bestandsnaam. Beschikbare variabele is `entity_id`."
         }
       }
     }
   },
   "exceptions": {
     "no_entity_id_provided": {
-      "message": "Ontbrekende entity_id in configuratie."
+      "message": "Ontbrekende entity_id in de configuratie."
     },
     "missing_zone_or_zone_ids": {
-      "message": "Ofwel 'zone' of 'zone_ids' moet worden opgegeven."
+      "message": "Er moet 'zone' of 'zone_ids' worden opgegeven."
     },
     "zone_must_be_list": {
-      "message": "Parameter 'Zone' moet een lijst zijn."
+      "message": "De parameter 'Zone' moet een lijst zijn."
     },
     "zoneid_must_be_list": {
-      "message": "Parameter 'Zone_Ids' moet een lijst zijn."
+      "message": "De parameter 'Zone_Ids' moet een lijst zijn."
     },
     "zone_list_length": {
-      "message": "'Zone' moet minstens 1 element bevatten dat een lijst van 4 gehele getallen bevat."
+      "message": "De 'Zone' moet ten minste 1 item bevatten met een lijst van 4 gehele getallen."
     },
     "mqtt_service_not_found": {
       "message": "MQTT-integratie is niet beschikbaar. Zorg ervoor dat MQTT is geconfigureerd."
     },
     "mqtt_publish_failed": {
-      "message": "Kan opdracht niet naar stofzuiger publiceren via MQTT."
+      "message": "Het is niet gelukt om het commando voor vacuüm via MQTT te publiceren."
     }
   }
 }

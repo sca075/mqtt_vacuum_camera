@@ -3,70 +3,70 @@
     "step": {
       "user": {
         "data": {
-          "vacuum_entity": "ID Encji Odkurzacza",
-          "vacuum_config_entry": "Dane Konfiguracyjne Odkurzacza",
-          "vacuum_map": "Temat Odkurzacza",
-          "vacuum_identifiers": "ID MQTT Odkurzacza",
+          "vacuum_entity": "Identyfikator podmiotu robota odkurzacza",
+          "vacuum_config_entry": "Dane konfiguracyjne robota odkurzającego",
+          "vacuum_map": "Robot odkurzający Temat",
+          "vacuum_identifiers": "Robot odkurzający MQTT id",
           "unique_id": ""
         },
         "data_description": {
-          "vacuum_entity": "ID Encji Odkurzacza"
+          "vacuum_entity": "Identyfikator podmiotu robota odkurzacza"
         },
-        "description": "Konfiguracja Kamery.",
-        "title": "Konfiguracja Kamery MQTT"
+        "description": "Konfiguracja kamery.",
+        "title": "Konfiguracja kamery MQTT"
       }
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Opcje Kamery MQTT",
-        "description": "Konfiguruj opcje kamery",
+        "title": "Opcje kamery MQTT",
+        "description": "Skonfiguruj opcje kamery",
         "menu_options": {
-          "image_opt": "Ustawienia Obrazu",
-          "colours": "Konfiguracja Kolorów",
-          "materials": "Renderowanie Materiałów",
-          "floor_management": "Zarządzanie Piętrami",
-          "save_options": "Zapisz Opcje"
+          "image_opt": "Ustawienia obrazu",
+          "colours": "Konfiguracja kolorów",
+          "materials": "Renderowanie materiałów",
+          "floor_management": "Zarządzanie podłogą",
+          "save_options": "Opcje zapisywania"
         }
       },
       "main_menu": {
-        "title": "Menu Główne",
+        "title": "Menu główne",
         "description": "Powrót do menu głównego"
       },
       "image_opt": {
-        "title": "Ustawienia Obrazu",
-        "description": "Konfiguruj ustawienia wyświetlania obrazu",
+        "title": "Ustawienia obrazu",
+        "description": "Skonfiguruj ustawienia wyświetlania obrazu",
         "menu_options": {
-          "image_basic_opt": "Podstawowe Ustawienia",
-          "status_text": "Tekst Statusu",
-          "draw_elements": "Widoczność Obiektów",
-          "main_menu": "Powrót do Menu Głównego"
+          "image_basic_opt": "Ustawienia podstawowe",
+          "status_text": "Tekst statusu",
+          "draw_elements": "Widoczność elementów mapy",
+          "main_menu": "Powrót do menu głównego"
         }
       },
       "colours": {
-        "title": "Konfiguracja Kolorów",
-        "description": "Konfiguruj kolory mapy",
+        "title": "Konfiguracja kolorów",
+        "description": "Konfiguracja kolorów mapy",
         "menu_options": {
-          "base_colours": "Kolory Podstawowe",
+          "base_colours": "Kolory podstawowe",
           "rooms_colours_1": "Pokoje 1-8",
           "rooms_colours_2": "Pokoje 9-16",
-          "floor_only": "Tylko Podłoga",
-          "transparency": "Ustawienia Przezroczystości",
-          "main_menu": "Powrót do Menu Głównego"
+          "floor_only": "Tylko podłoga",
+          "transparency": "Ustawienia przejrzystości",
+          "main_menu": "Powrót do menu głównego"
         }
       },
       "draw_elements": {
-        "title": "Widoczność Obiektów",
-        "description": "Konfiguruj, które elementy są widoczne na mapie",
+        "title": "Widoczność elementów mapy",
+        "description": "Skonfiguruj, które elementy są widoczne na mapie",
         "menu_options": {
-          "map_elements": "Elementy Mapy",
+          "map_elements": "Elementy mapy",
           "segments_visibility": "Widoczność segmentów",
-          "main_menu": "Powrót do Menu Głównego"
+          "main_menu": "Powrót do menu głównego"
         }
       },
       "map_elements": {
-        "title": "Elementy Mapy",
+        "title": "Elementy mapy",
         "description": "Skonfiguruj, które elementy są widoczne na mapie",
         "data": {
           "disable_floor": "Ukryj podłogę",
@@ -74,153 +74,153 @@
           "disable_robot": "Ukryj robota",
           "disable_charger": "Ukryj ładowarkę",
           "disable_virtual_walls": "Ukryj wirtualne ściany",
-          "disable_restricted_areas": "Ukryj obszary zabronione",
-          "disable_no_mop_areas": "Ukryj obszary bez mopowania",
+          "disable_restricted_areas": "Ukryj obszary o ograniczonym dostępie",
+          "disable_no_mop_areas": "Ukryj obszary bez mopa",
           "disable_obstacles": "Ukryj przeszkody",
           "disable_path": "Ukryj ścieżkę",
           "disable_predicted_path": "Ukryj przewidywaną ścieżkę",
-          "disable_go_to_target": "Ukryj cel docelowy"
+          "disable_go_to_target": "Ukryj cel przejścia"
         },
         "data_description": {
-          "disable_floor": "Po włączeniu podłoga nie będzie wyświetlana na mapie",
-          "disable_wall": "Po włączeniu ściany nie będą wyświetlane na mapie",
-          "disable_robot": "Po włączeniu robot nie będzie wyświetlany na mapie",
-          "disable_charger": "Po włączeniu ładowarka nie będzie wyświetlana na mapie",
-          "disable_virtual_walls": "Po włączeniu wirtualne ściany nie będą wyświetlane na mapie",
-          "disable_restricted_areas": "Po włączeniu strefy zabronione nie będą wyświetlane na mapie",
-          "disable_no_mop_areas": "Po włączeniu strefy bez mopowania nie będą wyświetlane na mapie",
-          "disable_obstacles": "Po włączeniu przeszkody nie będą wyświetlane na mapie",
-          "disable_path": "Po włączeniu ścieżka czyszczenia nie będzie wyświetlana na mapie",
-          "disable_predicted_path": "Po włączeniu przewidywana ścieżka nie będzie wyświetlana na mapie",
-          "disable_go_to_target": "Po włączeniu cele przejścia nie będą wyświetlane na mapie"
+          "disable_floor": "Po włączeniu podłoga nie będzie wyświetlana na mapie.",
+          "disable_wall": "Po włączeniu tej opcji ściany nie będą wyświetlane na mapie.",
+          "disable_robot": "Po włączeniu robota nie będzie widać na mapie.",
+          "disable_charger": "Po włączeniu ładowarka nie będzie wyświetlana na mapie.",
+          "disable_virtual_walls": "Po włączeniu wirtualne ściany nie będą wyświetlane na mapie.",
+          "disable_restricted_areas": "Po włączeniu tej opcji obszary o ograniczonym dostępie nie będą wyświetlane na mapie.",
+          "disable_no_mop_areas": "Po włączeniu tej opcji obszary, w których nie można używać mopa, nie będą wyświetlane na mapie.",
+          "disable_obstacles": "Po włączeniu przeszkody nie będą wyświetlane na mapie.",
+          "disable_path": "Po włączeniu ścieżka czyszczenia nie będzie wyświetlana na mapie.",
+          "disable_predicted_path": "Po włączeniu tej opcji przewidywana trasa nie będzie wyświetlana na mapie.",
+          "disable_go_to_target": "Po włączeniu tej opcji cele docelowe nie będą wyświetlane na mapie."
         }
       },
       "segments_visibility": {
-        "title": "Widoczność Segmentów",
-        "description": "Konfiguruj, które segmenty pokojów są widoczne na mapie",
+        "title": "Widoczność segmentów",
+        "description": "Skonfiguruj, które segmenty pomieszczeń są widoczne na mapie.",
         "data": {
-          "disable_room_1": "Ukryj Pokój 1",
-          "disable_room_2": "Ukryj Pokój 2",
-          "disable_room_3": "Ukryj Pokój 3",
-          "disable_room_4": "Ukryj Pokój 4",
-          "disable_room_5": "Ukryj Pokój 5",
-          "disable_room_6": "Ukryj Pokój 6",
-          "disable_room_7": "Ukryj Pokój 7",
-          "disable_room_8": "Ukryj Pokój 8",
-          "disable_room_9": "Ukryj Pokój 9",
-          "disable_room_10": "Ukryj Pokój 10",
-          "disable_room_11": "Ukryj Pokój 11",
-          "disable_room_12": "Ukryj Pokój 12",
-          "disable_room_13": "Ukryj Pokój 13",
-          "disable_room_14": "Ukryj Pokój 14",
-          "disable_room_15": "Ukryj Pokój 15"
+          "disable_room_1": "Ukryj pokój 1",
+          "disable_room_2": "Ukryj pokój 2",
+          "disable_room_3": "Ukryj pokój 3",
+          "disable_room_4": "Ukryj pokój 4",
+          "disable_room_5": "Ukryj pokój 5",
+          "disable_room_6": "Ukryj pokój 6",
+          "disable_room_7": "Ukryj pokój 7",
+          "disable_room_8": "Ukryj pokój 8",
+          "disable_room_9": "Ukryj pokój 9",
+          "disable_room_10": "Ukryj pokój 10",
+          "disable_room_11": "Ukryj pokój 11",
+          "disable_room_12": "Ukryj pokój 12",
+          "disable_room_13": "Ukryj pokój 13",
+          "disable_room_14": "Ukryj pokój 14",
+          "disable_room_15": "Ukryj pokój 15"
         },
         "data_description": {
-          "disable_room_1": "Gdy włączone, Pokój 1 {room_0_name} nie będzie wyświetlany na mapie",
-          "disable_room_2": "Gdy włączone, Pokój 2 {room_1_name} nie będzie wyświetlany na mapie",
-          "disable_room_3": "Gdy włączone, Pokój 3 {room_2_name} nie będzie wyświetlany na mapie",
-          "disable_room_4": "Gdy włączone, Pokój 4 {room_3_name} nie będzie wyświetlany na mapie",
-          "disable_room_5": "Gdy włączone, Pokój 5 {room_4_name} nie będzie wyświetlany na mapie",
-          "disable_room_6": "Gdy włączone, Pokój 6 {room_5_name} nie będzie wyświetlany na mapie",
-          "disable_room_7": "Gdy włączone, Pokój 7 {room_6_name} nie będzie wyświetlany na mapie",
-          "disable_room_8": "Gdy włączone, Pokój 8 {room_7_name} nie będzie wyświetlany na mapie",
-          "disable_room_9": "Gdy włączone, Pokój 9 {room_8_name} nie będzie wyświetlany na mapie",
-          "disable_room_10": "Gdy włączone, Pokój 10 {room_9_name} nie będzie wyświetlany na mapie",
-          "disable_room_11": "Gdy włączone, Pokój 11 {room_10_name} nie będzie wyświetlany na mapie",
-          "disable_room_12": "Gdy włączone, Pokój 12 {room_11_name} nie będzie wyświetlany na mapie",
-          "disable_room_13": "Gdy włączone, Pokój 13 {room_12_name} nie będzie wyświetlany na mapie",
-          "disable_room_14": "Gdy włączone, Pokój 14 {room_13_name} nie będzie wyświetlany na mapie",
-          "disable_room_15": "Gdy włączone, Pokój 15 {room_14_name} nie będzie wyświetlany na mapie"
+          "disable_room_1": "Po włączeniu tej opcji pokój 1 {room_0_name} nie będzie wyświetlany na mapie.",
+          "disable_room_2": "Po włączeniu tej opcji pokój 2 {nazwa_pokoju_1} nie będzie wyświetlany na mapie.",
+          "disable_room_3": "Po włączeniu opcji pokój 3 {nazwa_pokoju_2} nie będzie wyświetlany na mapie.",
+          "disable_room_4": "Po włączeniu tej opcji pokój 4 {room_3_name} nie będzie wyświetlany na mapie.",
+          "disable_room_5": "Po włączeniu tej opcji pokój 5 {room_4_name} nie będzie wyświetlany na mapie.",
+          "disable_room_6": "Po włączeniu tej opcji pokój 6 {room_5_name} nie będzie wyświetlany na mapie.",
+          "disable_room_7": "Po włączeniu tej opcji pokój 7 {nazwa_pokoju_6} nie będzie wyświetlany na mapie.",
+          "disable_room_8": "Po włączeniu tej opcji pokój 8 {room_7_name} nie będzie wyświetlany na mapie.",
+          "disable_room_9": "Po włączeniu pokój 9 {room_8_name} nie będzie wyświetlany na mapie.",
+          "disable_room_10": "Po włączeniu tej opcji pokój 10 {nazwa_pokoju_9} nie będzie wyświetlany na mapie.",
+          "disable_room_11": "Po włączeniu tej opcji pokój 11 {room_10_name} nie będzie wyświetlany na mapie.",
+          "disable_room_12": "Po włączeniu tej opcji pokój 12 {nazwa_pokoju_11} nie będzie wyświetlany na mapie.",
+          "disable_room_13": "Po włączeniu tej opcji pokój 13 {room_12_name} nie będzie wyświetlany na mapie.",
+          "disable_room_14": "Po włączeniu tej opcji pokój 14 {nazwa_pokoju_13} nie będzie wyświetlany na mapie.",
+          "disable_room_15": "Po włączeniu tej opcji pokój 15 {room_14_name} nie będzie wyświetlany na mapie."
         }
       },
       "transparency": {
-        "title": "Ustawienia Przezroczystości",
-        "description": "Konfiguruj poziomy przezroczystości",
+        "title": "Ustawienia przejrzystości",
+        "description": "Skonfiguruj ustawienia przezroczystości (alfa) dla elementów mapy",
         "menu_options": {
-          "alpha_1": "Podstawowa Przezroczystość",
-          "alpha_floor": "Przezroczystość Podłogi",
-          "alpha_2": "Przezroczystość Pokoi 1-8",
-          "alpha_3": "Przezroczystość Pokoi 9-16",
-          "main_menu": "Powrót do Menu Głównego"
+          "alpha_1": "Przejrzystość podstawy",
+          "alpha_floor": "Przejrzystość podłogi",
+          "alpha_2": "Pokoje 1-8 Przejrzystość",
+          "alpha_3": "Pokoje 9-16 Przejrzystość",
+          "main_menu": "Powrót do menu głównego"
         }
       },
       "materials": {
-        "title": "Renderowanie Materiałów",
-        "description": "Konfiguruj wykrywanie i renderowanie materiałów (deski drewniane, płytki, dywany)",
+        "title": "Renderowanie materiałów",
+        "description": "Skonfiguruj wykrywanie materiałów i renderowanie (deski drewniane, płytki, dywany)",
         "data": {
-          "disable_material_overlay": "Wyłącz nakładkę materiałów (drewno i płytki)",
+          "disable_material_overlay": "Wyłącz nakładkę materiałową (drewno i płytki)",
           "disable_carpets": "Ukryj dywany",
           "color_carpet": "Kolor dywanu",
-          "color_material_wood": "Kolor desek drewnianych",
+          "color_material_wood": "Kolor deski drewnianej",
           "color_material_tile": "Kolor płytek",
           "alpha_carpet": "Przezroczystość dywanu",
           "alpha_material_wood": "Przezroczystość drewna",
           "alpha_material_tile": "Przezroczystość płytek"
         },
         "data_description": {
-          "disable_material_overlay": "Wyłącz renderowanie nakładki materiałów dla drewna i płytek na mapie",
-          "disable_carpets": "Po włączeniu dywany nie będą wyświetlane na mapie",
-          "color_carpet": "Kolor dla materiałów dywanowych (RGB)",
-          "color_material_wood": "Kolor dla materiałów z desek drewnianych (RGB)",
+          "disable_material_overlay": "Wyłącz renderowanie nakładki materiałowej dla drewna i płytek na mapie.",
+          "disable_carpets": "Po włączeniu tej opcji dywany nie będą wyświetlane na mapie.",
+          "color_carpet": "Kolor materiałów dywanowych (RGB)",
+          "color_material_wood": "Kolor dla materiałów drewnianych (RGB)",
           "color_material_tile": "Kolor dla materiałów płytkowych (RGB)",
-          "alpha_carpet": "Poziom przezroczystości dla dywanów (0-255)",
-          "alpha_material_wood": "Poziom przezroczystości dla desek drewnianych (0-255)",
-          "alpha_material_tile": "Poziom przezroczystości dla płytek (0-255)"
+          "alpha_carpet": "Poziom przezroczystości dywanów (0-255)",
+          "alpha_material_wood": "Poziom przezroczystości desek drewnianych (0-255)",
+          "alpha_material_tile": "Poziom przezroczystości kafelków (0-255)"
         }
       },
       "floor_management": {
-        "title": "Zarządzanie Piętrami",
-        "description": "Zarządzaj wieloma piętrami i ich ustawieniami przycinania",
+        "title": "Zarządzanie podłogą",
+        "description": "Zarządzaj wieloma piętrami i ich ustawieniami wykończenia",
         "menu_options": {
-          "select_floor": "Wybierz Aktywne Piętro",
-          "add_floor": "Dodaj Nowe Piętro",
-          "edit_floor": "Edytuj Ustawienia Piętra",
-          "delete_floor": "Usuń Piętro",
-          "main_menu": "Powrót do Menu Głównego"
+          "select_floor": "Wybierz aktywny poziom",
+          "add_floor": "Dodaj nową podłogę",
+          "edit_floor": "Edytuj ustawienia piętra",
+          "delete_floor": "Usuń piętro",
+          "main_menu": "Powrót do menu głównego"
         }
       },
       "map_trims": {
-        "title": "Opcje Przycięć Mapy",
-        "description": "Zarządzaj ustawieniami przycięć mapy",
+        "title": "Opcje przycinania mapy",
+        "description": "Zarządzaj ustawieniami przycinania mapy",
         "menu_options": {
-          "reset_map_trims": "Resetuj Przycięcia Mapy",
-          "save_map_trims": "Zapisz Przycięcia Mapy",
-          "main_menu": "Powrót do Menu Głównego"
+          "reset_map_trims": "Resetuj przycinanie mapy",
+          "save_map_trims": "Zapisz mapę Trims",
+          "main_menu": "Powrót do menu głównego"
         }
       },
       "image_basic_opt": {
         "data": {
           "rotate_image": "Obróć",
-          "margins": "Marginesy Obrazu.",
-          "auto_zoom": "Włącz Automatyczne Powiększenie",
-          "zoom_lock_ratio": "Zablokuj Proporcje.",
-          "aspect_ratio": "Proporcje Obrazu.",
-          "robot_size": "Rozmiar robota"
+          "margins": "Marginesy obrazu.",
+          "auto_zoom": "Włącz automatyczne powiększanie",
+          "zoom_lock_ratio": "Zablokuj proporcje obrazu.",
+          "aspect_ratio": "Proporcje obrazu.",
+          "robot_size": "Rozmiar robota."
         },
         "data_description": {
-          "rotate_image": "Stopnie 0, 90, 180, 270",
+          "rotate_image": "Stopień 0, 90, 180, 270",
           "margins": "Automatyczne przycinanie marginesów w pikselach.",
-          "aspect_ratio": "Proporcje Obrazu.",
-          "robot_size": "Rozmiar robota w pikselach 8-25"
+          "aspect_ratio": "Proporcje obrazu.",
+          "robot_size": "Rozmiar robota w pikselach 8-25."
         },
         "description": "Opcje obrazu kamery",
-        "title": "Opcje Obrazu"
+        "title": "Opcje obrazu"
       },
       "status_text": {
         "data": {
-          "show_vac_status": "Pokaż status odkurzacza.",
+          "show_vac_status": "Pokaż stan próżni.",
           "vac_status_font": "Fira Sans",
-          "vac_status_size": "Rozmiar Tekstu",
-          "vac_status_position": "Pozycja Tekstu: Dół(WYŁ)",
+          "vac_status_size": "Rozmiar tekstu",
+          "vac_status_position": "Pozycja tekstu: Dół (WYŁ.)",
           "color_text": "[255, 255, 255]"
         },
         "data_description": {
-          "vac_status_font": "Domyślna czcionka tekstu Fira Serif.",
+          "vac_status_font": "Domyślna czcionka tekstu: Fira Serif.",
           "vac_status_size": "Domyślny rozmiar tekstu 50.",
-          "color_text": "Kolor tekstu statusu odkurzacza."
+          "color_text": "Kolor tekstu stanu próżni."
         },
-        "description": "Opcje Obrazu",
-        "title": "Opcje Tekstu Statusu"
+        "description": "Opcje obrazu",
+        "title": "Opcje tekstu statusu"
       },
       "base_colours": {
         "data": {
@@ -232,43 +232,43 @@
           "color_no_go": "[255, 0, 0]",
           "color_zone_clean": "[255, 255, 255]",
           "color_background": "[0, 125, 255]",
-          "add_base_alpha": "Konfiguruj Przezroczystość:"
+          "add_base_alpha": "Konfiguracja przezroczystości:"
         },
         "data_description": {
-          "color_charger": "Kolor ładowarki.",
-          "color_move": "Kolor ruchu.",
-          "color_wall": "Kolor ściany.",
-          "color_robot": "Kolor robota.",
-          "color_go_to": "Kolor idź-do.",
-          "color_no_go": "Kolor nie-idź.",
-          "color_zone_clean": "Kolor czyszczenia strefy.",
+          "color_charger": "Załaduj kolor.",
+          "color_move": "Zmień kolor.",
+          "color_wall": "Kolor ścian.",
+          "color_robot": "Kolorowy robot.",
+          "color_go_to": "Kolor, który zawsze się sprawdza.",
+          "color_no_go": "Kolor nie do przyjęcia.",
+          "color_zone_clean": "Czysty kolor strefy.",
           "color_background": "Kolor tła."
         },
-        "description": "Opcje kolorów kamery.",
-        "title": "Konfiguracja Kolorów Podstawowych"
+        "description": "Opcje kolorów aparatu.",
+        "title": "Konfiguracja kolorów podstawowych"
       },
       "alpha_1": {
         "data": {
-          "alpha_charger": "Alpha Ładowarki",
-          "alpha_move": "Alpha Ruchu",
-          "alpha_wall": "Alpha Ścian",
-          "alpha_robot": "Alpha Robota",
-          "alpha_go_to": "Alpha Obszaru Idź-Do",
-          "alpha_no_go": "Alpha Obszaru Nie-Idź",
-          "alpha_zone_clean": "Alpha Czyszczenia Strefy",
-          "alpha_background": "Alpha Tła",
-          "alpha_text": "Alpha Tekstu"
+          "alpha_charger": "Załaduj Alpha",
+          "alpha_move": "Ruchy Alpha",
+          "alpha_wall": "Ściany Alpha",
+          "alpha_robot": "Robot Alpha",
+          "alpha_go_to": "Przejdź do obszaru Alpha",
+          "alpha_no_go": "Obszar zamknięty Alpha",
+          "alpha_zone_clean": "Strefa czystości Alpha",
+          "alpha_background": "Tło Alpha",
+          "alpha_text": "Tekst Alpha"
         },
-        "description": "Opcje kamery. Alpha 1",
-        "title": "Kanał Alpha Kolorów Podstawowych"
+        "description": "Opcje aparatu. Alpha 1",
+        "title": "Podstawowe kolory Alpha Chanel"
       },
       "floor_only": {
         "data": {
           "color_room_0": "[135, 206, 250]",
-          "add_room_1_alpha": "Konfiguruj Przezroczystość:"
+          "add_room_1_alpha": "Konfiguracja przezroczystości:"
         },
         "data_description": {
-          "color_room_0": "### **Kolor Podłogi**"
+          "color_room_0": "### **Kolor podłogi**"
         }
       },
       "rooms_colours_1": {
@@ -281,20 +281,20 @@
           "color_room_5": "[96, 123, 139]",
           "color_room_6": "[224, 255, 255]",
           "color_room_7": "[209, 238, 238]",
-          "add_room_1_alpha": "Konfiguruj Przezroczystość:"
+          "add_room_1_alpha": "Konfiguracja przezroczystości:"
         },
         "data_description": {
-          "color_room_0": "### **{room_0_name} Kolor**",
-          "color_room_1": "### **{room_1_name} Kolor**",
-          "color_room_2": "### **{room_2_name} Kolor**",
-          "color_room_3": "### **{room_3_name} Kolor**",
-          "color_room_4": "### **{room_4_name} Kolor**",
-          "color_room_5": "### **{room_5_name} Kolor**",
-          "color_room_6": "### **{room_6_name} Kolor**",
-          "color_room_7": "### **{room_7_name} Kolor**"
+          "color_room_0": "### **Kolor {room_0_name}**",
+          "color_room_1": "### **Kolor {room_1_name}**",
+          "color_room_2": "### **Kolor {room_2_name}**",
+          "color_room_3": "### **Kolor {room_3_name}**",
+          "color_room_4": "### **Kolor {room_4_name}**",
+          "color_room_5": "### **Kolor {room_5_name}**",
+          "color_room_6": "### **Kolor {room_6_name}**",
+          "color_room_7": "### **Kolor {room_7_name}**"
         },
-        "description": "Opcje kolorów kamery.",
-        "title": "Kolory Pokojów 1 do 8"
+        "description": "Opcje kolorów aparatu.",
+        "title": "Pokoje od 1 do 8 Kolory"
       },
       "rooms_colours_2": {
         "data": {
@@ -306,92 +306,96 @@
           "color_room_13": "[245, 176, 65]",
           "color_room_14": "[82, 190, 128]",
           "color_room_15": "[72, 201, 176]",
-          "add_room_2_alpha": "Konfiguruj Przezroczystość:"
+          "add_room_2_alpha": "Konfiguracja przezroczystości:"
         },
         "data_description": {
-          "color_room_8": "### **{room_8_name} Kolor**",
-          "color_room_9": "### **{room_9_name} Kolor**",
-          "color_room_10": "### **{room_10_name} Kolor**",
-          "color_room_11": "### **{room_11_name} Kolor**",
-          "color_room_12": "### **{room_12_name} Kolor**",
-          "color_room_13": "### **{room_13_name} Kolor**",
-          "color_room_14": "### **{room_14_name} Kolor**",
-          "color_room_15": "### **{room_15_name} Kolor**"
+          "color_room_8": "### **Kolor {room_8_name}**",
+          "color_room_9": "### **Kolor {room_9_name}**",
+          "color_room_10": "### **Kolor {room_10_name}**",
+          "color_room_11": "### **Kolor {room_11_name}**",
+          "color_room_12": "### **Kolor {room_12_name}**",
+          "color_room_13": "### **Kolor {room_13_name}**",
+          "color_room_14": "### **Kolor {room_14_name}**",
+          "color_room_15": "### **Kolor {room_15_name}**"
         },
-        "description": "Opcje kolorów kamery.",
-        "title": "Kolory Pokojów 9 do 15"
+        "description": "Opcje kolorów aparatu.",
+        "title": "Pokoje od 9 do 15 Kolory"
       },
       "alpha_floor": {
         "data": {
-          "alpha_room_0": "Kolor Podłogi"
+          "alpha_room_0": "Kolor podłogi"
         }
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "Segment {room_0_name} Alpha",
-          "alpha_room_1": "Segment {room_1_name} Alpha",
-          "alpha_room_2": "Segment {room_2_name} Alpha",
-          "alpha_room_3": "Segment {room_3_name} Alpha",
-          "alpha_room_4": "Segment {room_4_name} Alpha",
-          "alpha_room_5": "Segment {room_5_name} Alpha",
-          "alpha_room_6": "Segment {room_6_name} Alpha",
-          "alpha_room_7": "Segment {room_7_name} Alpha"
+          "alpha_room_0": "### **{nazwa_pokoju_0} Alpha**",
+          "alpha_room_1": "### **{nazwa_pokoju_1} Alpha**",
+          "alpha_room_2": "### **{nazwa_pokoju_2} Alpha**",
+          "alpha_room_3": "### **{nazwa_pokoju_3} Alpha**",
+          "alpha_room_4": "### **{nazwa_pokoju_4} Alpha**",
+          "alpha_room_5": "### **{nazwa_pokoju_5} Alpha**",
+          "alpha_room_6": "### **{nazwa_pokoju_6} Alpha**",
+          "alpha_room_7": "### **{nazwa_pokoju_7} Alpha**"
         },
-        "description": "Opcje kamery. Alpha 2",
-        "title": "Kanał Alpha Kolorów Pokojów"
+        "description": "Opcje aparatu. Alpha 2",
+        "title": "Kolory pokoi Alpha Chanel"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "Segment {room_8_name} Alpha",
-          "alpha_room_9": "Segment {room_9_name} Alpha",
-          "alpha_room_10": "Segment {room_10_name} Alpha",
-          "alpha_room_11": "Segment {room_11_name} Alpha",
-          "alpha_room_12": "Segment {room_12_name} Alpha",
-          "alpha_room_13": "Segment {room_13_name} Alpha",
-          "alpha_room_14": "Segment {room_14_name} Alpha",
-          "alpha_room_15": "Segment {room_15_name} Alpha"
+          "alpha_room_8": "### **{nazwa_pokoju_8} Alpha**",
+          "alpha_room_9": "### **{nazwa_pokoju_9} Alpha**",
+          "alpha_room_10": "### **{nazwa_pokoju_10} Alpha**",
+          "alpha_room_11": "### **{nazwa_pokoju_11} Alpha**",
+          "alpha_room_12": "### **{nazwa_pokoju_12} Alpha**",
+          "alpha_room_13": "### **{nazwa_pokoju_13} Alpha**",
+          "alpha_room_14": "### **{room_14_name} Alpha**",
+          "alpha_room_15": "### **{nazwa_pokoju_15} Alpha**"
         },
-        "description": "Opcje kamery. Alpha 3",
-        "title": "Kanał Alpha Kolorów Pokojów"
+        "description": "Opcje aparatu. Alpha 3",
+        "title": "Kolory pokoi Alpha Chanel"
       },
       "select_floor": {
-        "description": "Wybierz, które piętro jest obecnie aktywne. Kamera użyje ustawień przycinania dla wybranego piętra.",
+        "title": "Wybierz aktywny poziom",
+        "description": "Wybierz, które piętro jest obecnie aktywne. Kamera będzie korzystać z ustawień przycinania dla wybranego piętra.",
         "data": {
-          "current_floor": "Aktywne piętro"
+          "current_floor": "Aktywna podłoga"
         },
         "data_description": {
-          "current_floor": "Wybierz piętro, które jest obecnie aktywne. Obecne: {current_floor}"
+          "current_floor": "Wybierz piętro, które jest obecnie aktywne. Aktualne: {current_floor}"
         }
       },
       "add_floor": {
-        "description": "{info}",
+        "title": "Dodaj nową podłogę",
+        "description": "Informacje",
         "data": {
           "floor_name": "Nazwa piętra",
           "map_name": "Nazwa mapy (opcjonalnie)"
         },
         "data_description": {
-          "floor_name": "Wybierz z pięter Home Assistant lub wprowadź niestandardową nazwę",
-          "map_name": "Opcjonalna przyjazna nazwa dla tego piętra"
+          "floor_name": "Wybierz jedną z podłóg Home Assistant lub wprowadź własną nazwę.",
+          "map_name": "Opcjonalna nazwa tej kondygnacji"
         }
       },
       "edit_floor": {
-        "description": "Edytuj nazwę mapy dla piętra: {floor_name}. {trim_info}. Wartości przycinania są obliczane automatycznie - użyj 'Zapisz przycięcia mapy', aby je zaktualizować.",
+        "title": "Edytuj ustawienia piętra",
+        "description": "Edytuj nazwę mapy dla piętra: {nazwa_piętra}. {informacje_o_przycięciu}. Wartości przycięcia są obliczane automatycznie — użyj opcji „Zapisz przycięcia mapy”, aby je zaktualizować.",
         "data": {
           "floor_name": "Wybierz piętro do edycji",
           "map_name": "Nazwa mapy (opcjonalnie)"
         },
         "data_description": {
-          "floor_name": "Wybierz, które piętro edytować",
-          "map_name": "Opcjonalna przyjazna nazwa dla tego piętra"
+          "floor_name": "Wybierz piętro, które chcesz edytować",
+          "map_name": "Opcjonalna nazwa tej kondygnacji"
         }
       },
       "delete_floor": {
-        "description": "Usuń piętro z konfiguracji. Jeśli usuniesz obecnie aktywne piętro, zostanie ono zresetowane do 'floor_0'.",
+        "title": "Usuń piętro",
+        "description": "Usuń piętro z konfiguracji. Jeśli usuniesz aktualnie aktywne piętro, zostanie ono zresetowane do „floor_0”.",
         "data": {
           "floor_name": "Piętro do usunięcia"
         },
         "data_description": {
-          "floor_name": "Wybierz piętro do usunięcia"
+          "floor_name": "Wybierz piętro, które chcesz usunąć"
         }
       }
     }
@@ -399,20 +403,20 @@
   "selector": {
     "trim_actions": {
       "options": {
-        "save": "Zapisz Zmiany",
-        "reset": "Zresetuj do Wykrytych Wartości",
-        "delete": "Usuń Wszystkie Przycięcia"
+        "save": "Zapisz zmiany",
+        "reset": "Resetuj do wykrytych wartości",
+        "delete": "Usuń wszystkie przycinania"
       }
     },
     "vacuum_status": {
       "options": {
         "connected": "Połączony",
-        "disconnected": "Rozłączony",
+        "disconnected": "Odłączony",
         "charging": "Ładowanie",
         "cleaning": "Czyszczenie",
-        "docked": "Zadokowany",
-        "idle": "Bezczynny",
-        "paused": "Wstrzymany",
+        "docked": "Zdokowany",
+        "idle": "Bezczynność",
+        "paused": "Wstrzymane",
         "returning": "Powrót"
       }
     }
@@ -420,23 +424,23 @@
   "services": {
     "reload": {
       "name": "Przeładuj",
-      "description": "Przeładowuje platformę Kamery Odkurzacza MQTT."
+      "description": "Przeładuj platformę kamery próżniowej MQTT."
     },
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",
-      "description": "Wyłącza kamerę."
+      "description": "Wyłącza aparat."
     },
     "turn_on": {
       "name": "[%key:common::action::turn_on%]",
       "description": "Włącza kamerę."
     },
     "reset_trims": {
-      "name": "Resetuj Przycięcia Obrazów",
-      "description": "Resetuje przycięcia map."
+      "name": "Resetuj przycinanie obrazów",
+      "description": "Resetuje przycięcia mapa."
     },
     "snapshot": {
-      "name": "Zrób zdjęcie",
-      "description": "Robi zdjęcie z kamery.",
+      "name": "Zrób migawkę",
+      "description": "Robi zdjęcie aparatem fotograficznym.",
       "fields": {
         "filename": {
           "name": "Nazwa pliku",
@@ -447,25 +451,25 @@
   },
   "exceptions": {
     "no_entity_id_provided": {
-      "message": "Brak entity_id w konfiguracji."
+      "message": "Brakuje identyfikatora entity_id w konfiguracji."
     },
     "missing_zone_or_zone_ids": {
-      "message": "Należy podać 'zone' lub 'zone_ids'."
+      "message": "Należy podać albo „zone”, albo „zone_ids”."
     },
     "zone_must_be_list": {
-      "message": "Parametr 'Zone' musi być listą."
+      "message": "Parametr „Zone” musi być listą."
     },
     "zoneid_must_be_list": {
-      "message": "Parametr 'Zone_Ids' musi być listą."
+      "message": "Parametr „Zone_Ids” musi być listą."
     },
     "zone_list_length": {
-      "message": "'Zone' musi zawierać co najmniej 1 element, który zawiera listę 4 liczb całkowitych."
+      "message": "„Strefa” musi zawierać co najmniej 1 element zawierający listę 4 liczb całkowitych."
     },
     "mqtt_service_not_found": {
       "message": "Integracja MQTT nie jest dostępna. Upewnij się, że MQTT jest skonfigurowane."
     },
     "mqtt_publish_failed": {
-      "message": "Nie udało się opublikować polecenia do odkurzacza przez MQTT."
+      "message": "Nie udało się opublikować polecenia odkurzacz za pośrednictwem MQTT."
     }
   }
 }
