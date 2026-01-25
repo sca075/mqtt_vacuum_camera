@@ -1,6 +1,6 @@
 """
 Options flow handler for MQTT Vacuum Camera integration.
-Last Updated on version: 2025.10.0
+Last Updated on version: 2026.2.0
 """
 
 from copy import deepcopy
@@ -366,7 +366,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         LOGGER.info("%s: Options Configuration Started.", self.camera_config.unique_id)
 
         # Log floor and area configuration
-        self._log_floor_area_data()
+        # self._log_floor_area_data()
 
         errors = {}
 
@@ -385,8 +385,9 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
             return self.async_abort(reason="no_rooms")
 
         return self.async_show_menu(
+            #"floor_management",
             step_id="init",
-            menu_options=["image_opt", "colours", "materials", "floor_management", "save_options"],
+            menu_options=["image_opt", "colours", "materials", "save_options"],
         )
 
     # pylint: disable=unused-argument
@@ -560,6 +561,8 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                 "add_floor",
                 "edit_floor",
                 "delete_floor",
+                "save_map_trims",
+                "reset_map_trims",
                 "main_menu",
             ],
         )
@@ -969,6 +972,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
 
         # Save current trims from coordinator
         new_trims = coordinator.context.shared.trims.to_dict()
+        LOGGER.info("Saving trims: %s", new_trims)
         self.camera_options = {"trims_data": new_trims}
         return await self.async_step_save_options()
 
