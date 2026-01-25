@@ -76,14 +76,6 @@
           "save_map_trims": "マップトリムの保存"
         }
       },
-      "download_logs": {
-        "title": "ログのダウンロード",
-        "description": "ログファイルの管理",
-        "menu_options": {
-          "logs_move": "ログをWWWにコピー",
-          "logs_remove": "WWWからログを削除"
-        }
-      },
       "image_basic_opt": {
         "data": {
           "rotate_image": "回転",

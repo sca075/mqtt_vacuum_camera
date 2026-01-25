@@ -13,6 +13,7 @@ import asyncio
 import glob
 import json
 import os
+from pathlib import Path
 import re
 from typing import Any, List, Optional
 
@@ -22,69 +23,13 @@ from homeassistant.helpers.storage import STORAGE_DIR
 
 from ..const import CAMERA_STORAGE, LOGGER
 from .language_cache import LanguageCache
-from .room_manager import RoomManager
-
-
-async def async_write_vacuum_id(
-    hass: HomeAssistant, file_name: str, vacuum_id: str
-) -> None:
-    """Write the vacuum_id to a JSON file."""
-    # Create the full file path
-    if vacuum_id:
-        json_path = f"{hass.config.path(STORAGE_DIR, CAMERA_STORAGE)}/{file_name}"
-        LOGGER.debug("Writing vacuum_id: %s to %s", vacuum_id, json_path)
-        # Data to be written
-        data = {"vacuum_id": vacuum_id}
-        # Write data to a JSON file
-        await async_write_json_to_disk(json_path, data)
-        if os.path.exists(json_path):
-            LOGGER.info("vacuum_id saved: %s", vacuum_id)
-        else:
-            LOGGER.warning("Error saving vacuum_id: %s", vacuum_id, exc_info=True)
-    else:
-        LOGGER.warning("No vacuum_id provided.")
-
-
-async def async_get_translations_vacuum_id(storage_dir: str) -> Optional[str]:
-    """Read the vacuum_id from a JSON file."""
-    # Create the full file path
-    vacuum_id_path = os.path.join(storage_dir, "rooms_colours_description.json")
-    try:
-        data = await async_load_file(vacuum_id_path, True)
-        if data is None:
-            return None
-        return data.get("vacuum_id", None)
-    except json.JSONDecodeError:
-        LOGGER.warning("Error reading the file %s.", vacuum_id_path, exc_info=True)
-        return None
-    except OSError as e:
-        LOGGER.error("Unhandled exception: %s", e, exc_info=True)
-        return None
-
-
-def remove_room_data_files(directory: str) -> None:
-    """Remove all 'room_data*.json' files in the specified directory."""
-    # Create the full path pattern for glob to match
-    path_pattern = os.path.join(directory, "room_data*.json")
-    # Find all files matching the pattern
-    files = glob.glob(path_pattern)
-    if not files:
-        LOGGER.debug("No files found matching pattern: %s", path_pattern)
-        return
-    # Loop through and remove each file
-    for file in files:
-        try:
-            os.remove(file)
-            LOGGER.debug("Removed file: %s", file)
-        except OSError as e:
-            LOGGER.debug("Error removing file %s: %r", file, e, exc_info=True)
 
 
 def is_auth_updated(self) -> bool:
     """Check if the auth file has been updated."""
-    file_path = self.hass.config.path(STORAGE_DIR, "auth")
+    file_path = Path(self.hass.config.path(STORAGE_DIR, "auth"))
     # Get the last modified time of the file
-    last_modified_time = os.path.getmtime(file_path)
+    last_modified_time = file_path.stat().st_mtime
     if self.auth_update_time is None:
         self.auth_update_time = last_modified_time
         return True
@@ -138,7 +83,7 @@ async def async_get_active_user_language(hass: HomeAssistant) -> str:
     language_cache = LanguageCache.get_instance()
 
     # Initialize the cache if needed
-    # Use a property or method to check initialization status instead of accessing protected member
+    # Using property or method to check initialization status instead of accessing protected member
     if (
         not hasattr(language_cache, "is_initialized")
         or not language_cache.is_initialized()
@@ -188,37 +133,12 @@ async def async_populate_user_languages(hass: HomeAssistant):
         )
 
 
-async def async_load_translations_json(
-    hass: HomeAssistant, languages: list[str]
-) -> list[Optional[dict]]:
-    """
-    Load the user selected language json files and return them as a list of JSON objects.
-    Uses the language cache to reduce I/O operations.
-    """
-    # Use the language cache to avoid repeated I/O operations
-    language_cache = LanguageCache.get_instance()
-
-    # Load translations from the cache
-    return await language_cache.load_translations_json(hass, languages)
-
-
-async def async_rename_room_description(hass: HomeAssistant, vacuum_id: str) -> bool:
-    """
-    Add room names to the room descriptions in the translations.
-    Uses the optimized RoomManager to reduce I/O operations.
-    """
-    # Use the RoomManager to handle room operations with optimized I/O
-    room_manager = RoomManager(hass)
-
-    # Perform the room renaming with optimized I/O
-    return await room_manager.rename_room_descriptions(vacuum_id)
-
-
 async def async_del_file(file):
     """Delete a file if it exists."""
-    if os.path.exists(file):
+    file_path = Path(file)
+    if file_path.exists():
         LOGGER.info("Removing the file %s", file)
-        os.remove(file)
+        file_path.unlink()
     else:
         LOGGER.debug("File not found: %s", file)
 
@@ -319,15 +239,15 @@ async def async_clean_up_all_auto_crop_files(hass: HomeAssistant) -> None:
     Deletes all auto_crop_*.json files in the specified directory.
     """
 
-    directory = hass.config.path(STORAGE_DIR, CAMERA_STORAGE)
+    directory = Path(hass.config.path(STORAGE_DIR, CAMERA_STORAGE))
     # Create the pattern to match all auto_crop_*.json files
-    pattern = os.path.join(directory, "auto_crop_*.json")
+    pattern = str(directory / "auto_crop_*.json")
     # List all matching files
     files_to_delete = await async_list_files(pattern)
     # Iterate over the files and delete each one
     for file_path in files_to_delete:
         try:
-            os.remove(file_path)
+            Path(file_path).unlink()
             LOGGER.debug("Deleted: %s", file_path)
         except Exception as e:
             LOGGER.error("Error deleting %s: %s", file_path, e)

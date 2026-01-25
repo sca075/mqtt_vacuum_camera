@@ -9,6 +9,7 @@ import asyncio
 from datetime import timedelta
 from io import BytesIO
 import os
+from pathlib import Path
 from typing import Optional
 
 from homeassistant import config_entries, core
@@ -92,8 +93,8 @@ class MQTTCamera(CoordinatorEntity, Camera):  # pylint: disable=too-many-instanc
         # 1. Core context (grouped)
         self.context = CameraContext(
             hass=coordinator.hass,
-            shared=coordinator.shared,
-            file_name=coordinator.file_name,
+            shared=coordinator.context.shared,
+            file_name=coordinator.context.file_name,
             coordinator=coordinator,
         )
 
@@ -109,7 +110,7 @@ class MQTTCamera(CoordinatorEntity, Camera):  # pylint: disable=too-many-instanc
         # 3. MQTT config (grouped)
         self.mqtt = CameraMQTTConfig(
             topic=coordinator.vacuum_topic,
-            connector=coordinator.connector,
+            connector=coordinator.context.connector,
         )
 
         # 4. Paths (grouped)
@@ -150,16 +151,16 @@ class MQTTCamera(CoordinatorEntity, Camera):  # pylint: disable=too-many-instanc
     def _init_paths_config(self) -> CameraPathsConfig:
         """Initialize camera paths configuration."""
         homeassistant_path = self.context.hass.config.path()
-        storage_root = self.context.hass.config.path(STORAGE_DIR)
-        storage_path = os.path.join(storage_root, CAMERA_STORAGE)
-        if not os.path.exists(storage_path):
+        storage_root = Path(self.context.hass.config.path(STORAGE_DIR))
+        storage_path = storage_root / CAMERA_STORAGE
+        if not storage_path.exists():
             # Use the default storage path
-            storage_path = os.path.join(homeassistant_path, STORAGE_DIR)
-        log_file = f"{storage_path}/{self.context.file_name}.zip"
+            storage_path = Path(
+                self.context.hass.config.path(STORAGE_DIR, CAMERA_STORAGE)
+            )
         return CameraPathsConfig(
             homeassistant_path=homeassistant_path,
-            storage_path=storage_path,
-            log_file=log_file,
+            storage_path=str(storage_path),
         )
 
     def _init_processors(self, device_info) -> CameraProcessors:
@@ -195,17 +196,15 @@ class MQTTCamera(CoordinatorEntity, Camera):  # pylint: disable=too-many-instanc
         )
 
     def _init_clear_www_folder(self):
-        """Remove PNG and ZIP's stored in HA config WWW"""
-        # If enable_snapshots check if for png in www
-        if not self.context.shared.enable_snapshots and os.path.isfile(
-            f"{self.paths.homeassistant_path}/www/snapshot_{self.context.file_name}.png"
-        ):
-            os.remove(
-                f"{self.paths.homeassistant_path}/www/snapshot_{self.context.file_name}.png"
-            )
-        # If there is a log zip in www remove it
-        if os.path.isfile(self.paths.log_file):
-            os.remove(self.paths.log_file)
+        """Remove PNG snapshots stored in HA config WWW if snapshots are disabled."""
+        # If enable_snapshots is disabled, remove any existing snapshot file
+        snapshot_path = (
+            Path(self.paths.homeassistant_path)
+            / "www"
+            / f"snapshot_{self.context.file_name}.png"
+        )
+        if not self.context.shared.enable_snapshots and snapshot_path.is_file():
+            snapshot_path.unlink()
 
     async def async_cleanup_all(self):
         """Clean up all dispatcher connections."""
@@ -355,10 +354,14 @@ class MQTTCamera(CoordinatorEntity, Camera):  # pylint: disable=too-many-instanc
     def turn_on(self) -> None:
         """Camera Turn On"""
         self.context.shared.camera_mode = CameraModes.CAMERA_ON
+        self._attr_is_on = True
+        self.async_write_ha_state()
 
     def turn_off(self) -> None:
         """Camera Turn Off"""
         self.context.shared.camera_mode = CameraModes.CAMERA_OFF
+        self._attr_is_on = False
+        self.async_write_ha_state()
 
     async def _update_vacuum_state(self) -> str:
         """Update a few shared fields; light-weight."""

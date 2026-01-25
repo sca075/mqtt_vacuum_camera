@@ -44,7 +44,10 @@ CONF_AUTO_ZOOM = "auto_zoom"
 CONF_ZOOM_LOCK_RATIO = "zoom_lock_ratio"
 CONF_TRIMS_SAVE = "save_trims"
 CONF_TRIMS_DATA = "trims_data"
+CONF_FLOORS_DATA = "floors_data"
+CONF_CURRENT_FLOOR = "current_floor"
 CONF_FLOOR_NAME = "floor_name"
+CONF_MAP_NAME = "map_name"
 CONF_TRIM_UP = "trim_up"
 CONF_TRIM_DOWN = "trim_down"
 CONF_TRIM_LEFT = "trim_left"
@@ -68,6 +71,8 @@ CONF_DISABLE_OBSTACLES = "disable_obstacles"
 CONF_DISABLE_PATH = "disable_path"
 CONF_DISABLE_PREDICTED_PATH = "disable_predicted_path"
 CONF_DISABLE_GO_TO_TARGET = "disable_go_to_target"
+CONF_DISABLE_CARPETS = "disable_carpets"
+CONF_DISABLE_MATERIAL_OVERLAY = "disable_material_overlay"
 
 # List of all draw element flags for easier iteration
 DRAW_FLAGS = [
@@ -82,6 +87,8 @@ DRAW_FLAGS = [
     CONF_DISABLE_PATH,
     CONF_DISABLE_PREDICTED_PATH,
     CONF_DISABLE_GO_TO_TARGET,
+    CONF_DISABLE_CARPETS,
+    CONF_DISABLE_MATERIAL_OVERLAY,
 ]
 
 # Room/Segment visibility options
@@ -160,6 +167,8 @@ DEFAULT_VALUES = {
     "robot_size": 25,
     "save_trims": True,
     "trims_data": {"trim_left": 0, "trim_up": 0, "trim_right": 0, "trim_down": 0},
+    "floors_data": {},
+    "current_floor": "floor_0",
     "disable_floor": False,
     "disable_wall": False,
     "disable_robot": False,
@@ -171,6 +180,8 @@ DEFAULT_VALUES = {
     "disable_path": False,
     "disable_predicted_path": False,
     "disable_go_to_target": False,
+    "disable_carpets": False,
+    "disable_material_overlay": False,
     "disable_room_1": False,
     "disable_room_2": False,
     "disable_room_3": False,
@@ -187,6 +198,7 @@ DEFAULT_VALUES = {
     "disable_room_14": False,
     "disable_room_15": False,
     "color_charger": [255, 128, 0],
+    "color_carpet": [255, 192, 203],
     "color_move": [238, 247, 255],
     "color_wall": [255, 255, 0],
     "color_robot": [255, 255, 204],
@@ -195,7 +207,10 @@ DEFAULT_VALUES = {
     "color_zone_clean": [255, 255, 255],
     "color_background": [0, 125, 255],
     "color_text": [255, 255, 255],
+    "color_material_wood": [40, 40, 40],
+    "color_material_tile": [40, 40, 40],
     "alpha_charger": 255.0,
+    "alpha_carpet": 255.0,
     "alpha_move": 255.0,
     "alpha_wall": 255.0,
     "alpha_robot": 255.0,
@@ -204,6 +219,8 @@ DEFAULT_VALUES = {
     "alpha_zone_clean": 125.0,
     "alpha_background": 255.0,
     "alpha_text": 255.0,
+    "alpha_material_wood": 38.0,
+    "alpha_material_tile": 45.0,
     "color_room_0": [135, 206, 250],
     "color_room_1": [176, 226, 255],
     "color_room_2": [165, 105, 18],
@@ -247,6 +264,8 @@ KEYS_TO_UPDATE = [
     "offset_left",
     "offset_right",
     "trims_data",
+    "floors_data",
+    "current_floor",
     "auto_zoom",
     "zoom_lock_ratio",
     "show_vac_status",
@@ -265,6 +284,8 @@ KEYS_TO_UPDATE = [
     "disable_path",
     "disable_predicted_path",
     "disable_go_to_target",
+    "disable_carpets",
+    "disable_material_overlay",
     "disable_room_1",
     "disable_room_2",
     "disable_room_3",
@@ -281,6 +302,7 @@ KEYS_TO_UPDATE = [
     "disable_room_14",
     "disable_room_15",
     "color_charger",
+    "color_carpet",
     "color_move",
     "color_wall",
     "color_robot",
@@ -289,7 +311,10 @@ KEYS_TO_UPDATE = [
     "color_zone_clean",
     "color_background",
     "color_text",
+    "color_material_wood",
+    "color_material_tile",
     "alpha_charger",
+    "alpha_carpet",
     "alpha_move",
     "alpha_wall",
     "alpha_robot",
@@ -298,6 +323,8 @@ KEYS_TO_UPDATE = [
     "alpha_zone_clean",
     "alpha_background",
     "alpha_text",
+    "alpha_material_wood",
+    "alpha_material_tile",
     "color_room_0",
     "color_room_1",
     "color_room_2",
@@ -433,6 +460,11 @@ DECODED_TOPICS = {
     "/$state",
     "/BatteryStateAttribute/level",
     "/WifiConfigurationCapability/ips",
+    "/AttachmentStateAttribute/mop",
+    "/OperationModeControlCapability/preset",
+    "/WaterUsageControlCapability/preset",
+    "/DockStatusStateAttribute/status",
+    "/ValetudoEvents/valetudo_events",
     "/state",  # Rand256
     "/destinations",  # Rand256
     "/command",  # Rand256
@@ -457,6 +489,7 @@ IS_OFFSET = "add_offset"
 
 """Base Colours RGB"""
 COLOR_CHARGER = "color_charger"
+COLOR_CARPET = "color_carpet"
 COLOR_MOVE = "color_move"
 COLOR_ROBOT = "color_robot"
 COLOR_NO_GO = "color_no_go"
@@ -465,6 +498,10 @@ COLOR_BACKGROUND = "color_background"
 COLOR_ZONE_CLEAN = "color_zone_clean"
 COLOR_WALL = "color_wall"
 COLOR_TEXT = "color_text"
+
+"""Material Colours RGB"""
+COLOR_MATERIAL_WOOD = "color_material_wood"
+COLOR_MATERIAL_TILE = "color_material_tile"
 
 "Rooms Colours RGB"
 COLOR_ROOM_0 = "color_room_0"
@@ -486,6 +523,7 @@ COLOR_ROOM_15 = "color_room_15"
 
 """Alpha for RGBA Colours"""
 ALPHA_CHARGER = "alpha_charger"
+ALPHA_CARPET = "alpha_carpet"
 ALPHA_MOVE = "alpha_move"
 ALPHA_ROBOT = "alpha_robot"
 ALPHA_NO_GO = "alpha_no_go"
@@ -510,6 +548,10 @@ ALPHA_ROOM_12 = "alpha_room_12"
 ALPHA_ROOM_13 = "alpha_room_13"
 ALPHA_ROOM_14 = "alpha_room_14"
 ALPHA_ROOM_15 = "alpha_room_15"
+
+"""Material Alpha values"""
+ALPHA_MATERIAL_WOOD = "alpha_material_wood"
+ALPHA_MATERIAL_TILE = "alpha_material_tile"
 
 """ Constants for the attribute keys """
 ATTR_FRIENDLY_NAME = "friendly_name"
