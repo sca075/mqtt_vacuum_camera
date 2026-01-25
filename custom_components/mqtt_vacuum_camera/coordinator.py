@@ -5,54 +5,44 @@ Version: 2025.10.0
 
 from __future__ import annotations
 
-from datetime import timedelta
 from typing import Optional
 
 import async_timeout
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-from valetudo_map_parser.config.shared import CameraShared, CameraSharedManager
+from valetudo_map_parser.config.shared import CameraSharedManager
 
 from .common import get_camera_device_info
 from .const import DEFAULT_NAME, LOGGER, SENSOR_NO_DATA
-from .utils.connection.connector import ValetudoConnector
+from .types import CoordinatorConfig
 
 
-class MQTTVacuumCoordinator(DataUpdateCoordinator):
+class MQTTVacuumCoordinator(DataUpdateCoordinator):  # pylint: disable=too-many-instance-attributes
     """Coordinator for MQTT Vacuum Camera."""
 
-    def __init__(
-        self,
-        hass: HomeAssistant,
-        device_entity: ConfigEntry,
-        vacuum_topic: str,
-        rand256_vacuum: bool = False,
-        connector: Optional[ValetudoConnector] = None,
-        shared: Optional[CameraShared] = None,
-        polling_interval: timedelta = timedelta(seconds=10),
-    ):
+    def __init__(self, config: CoordinatorConfig):
         """Initialize the coordinator."""
         super().__init__(
-            hass,
+            config.hass,
             LOGGER,
             name=DEFAULT_NAME,
-            config_entry=device_entity,
-            update_interval=polling_interval,
+            config_entry=config.device_entity,
+            update_interval=config.polling_interval,
             update_method=self._async_update_data,
         )
-        self.hass: HomeAssistant = hass
-        self.vacuum_topic: str = vacuum_topic
-        self.is_rand256: bool = rand256_vacuum
-        self.device_entity: ConfigEntry = device_entity
-        self.device_info: DeviceInfo = get_camera_device_info(hass, self.device_entity)
+        self.hass = config.hass
+        self.vacuum_topic = config.vacuum_topic
+        self.is_rand256 = config.is_rand256
+        self.device_entity = config.device_entity
+        self.device_info: DeviceInfo = get_camera_device_info(
+            config.hass, config.device_entity
+        )
         self.shared_manager: Optional[CameraSharedManager] = None
-        if shared:
-            self.shared = shared
+        if config.shared:
+            self.shared = config.shared
             self.shared.is_rand = self.is_rand256
-            self.file_name = shared.file_name
-        self.connector = connector
+            self.file_name = config.shared.file_name
+        self.connector = config.connector
         self.in_sync_with_camera: bool = False
         self.sensor_data = SENSOR_NO_DATA
 

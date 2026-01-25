@@ -42,7 +42,7 @@ async def async_get_filtered_logs(base_path, directory_path: str, file_name):
         return "\n".join(filtered_logs)
 
     except FileNotFoundError as e:
-        _LOGGER.warning("Snapshot Error while processing logs: %s", str(e))
+        _LOGGER.warning("logs_formatter Error while processing logs: %s", str(e))
         return ""
 
 
@@ -108,13 +108,15 @@ def confirm_storage_path(hass) -> str:
         try:
             os.makedirs(storage_path)
         except Exception as e:
-            _LOGGER.warning("Snapshot Error while creating storage folder: %s", str(e))
+            _LOGGER.warning(
+                "logs_formatter Error while creating storage folder: %s", str(e)
+            )
             return hass.config.path(STORAGE_DIR)
     return storage_path
 
 
 def process_logs(hass: HomeAssistant, file_name: str):
-    """Process logs for snapshot.
+    """Process logs for the camera component.
 
     This is a synchronous wrapper around the async logs storage function,
     designed to be called from a thread pool.
@@ -128,7 +130,7 @@ def process_logs(hass: HomeAssistant, file_name: str):
 
 
 async def run_async_save_logs(hass: HomeAssistant, file_name: str) -> None:
-    """Thread function to process the image snapshots."""
+    """Thread function to process the image logs_formatter."""
     loop = get_event_loop()
 
     with concurrent.futures.ThreadPoolExecutor(

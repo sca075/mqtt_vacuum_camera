@@ -20,6 +20,7 @@ from homeassistant.const import (
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.reload import async_register_admin_service
+import homeassistant.helpers.config_validation as cv
 from valetudo_map_parser import get_default_font_path
 from valetudo_map_parser.config.shared import CameraShared, CameraSharedManager
 
@@ -31,7 +32,6 @@ from .common import (
     is_rand256_vacuum,
 )
 from .const import (
-    CAMERA_STORAGE,
     CONF_VACUUM_CONFIG_ENTRY_ID,
     CONF_VACUUM_CONNECTION_STRING,
     CONF_VACUUM_IDENTIFIERS,
@@ -39,17 +39,14 @@ from .const import (
     LOGGER,
 )
 from .coordinator import MQTTVacuumCoordinator
+from .types import CoordinatorConfig
 from .utils.camera.camera_services import (
     obstacle_view,
     reload_camera_config,
     reset_trims,
 )
 from .utils.connection.connector import ValetudoConnector
-from .utils.files_operations import (
-    async_get_active_user_language,
-    async_get_translations_vacuum_id,
-    async_rename_room_description,
-)
+from .utils.files_operations import async_get_active_user_language
 from .utils.thread_pool import ThreadPoolManager
 from .utils.vacuum.mqtt_vacuum_services import (
     async_register_vacuums_services,
@@ -57,10 +54,11 @@ from .utils.vacuum.mqtt_vacuum_services import (
 )
 
 PLATFORMS = [Platform.CAMERA, Platform.SENSOR]
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 
 def init_shared_data(
-    hass: core.HomeAssistant,
+    _hass: core.HomeAssistant,
     mqtt_listen_topic: str,
     device_info: DeviceInfo,
 ) -> tuple[Optional[CameraShared], Optional[str]]:
@@ -91,13 +89,21 @@ async def start_up_mqtt(
 
 
 async def init_coordinator(hass, entry, vacuum_topic, is_rand256):
+    """Initialize the coordinator with configuration."""
     device_info: DeviceInfo = get_camera_device_info(hass, entry)
-    shared, file_name = init_shared_data(hass, vacuum_topic, device_info)
+    shared, _ = init_shared_data(hass, vacuum_topic, device_info)
     shared.user_language = await async_get_active_user_language(hass)
     connector = await start_up_mqtt(hass, vacuum_topic, is_rand256, shared)
-    coordinator_entity = MQTTVacuumCoordinator(
-        hass, entry, vacuum_topic, is_rand256, connector, shared
+
+    config = CoordinatorConfig(
+        hass=hass,
+        device_entity=entry,
+        vacuum_topic=vacuum_topic,
+        is_rand256=is_rand256,
+        connector=connector,
+        shared=shared,
     )
+    coordinator_entity = MQTTVacuumCoordinator(config)
     return coordinator_entity
 
 
@@ -196,10 +202,10 @@ async def async_unload_entry(
 
 
 # noinspection PyCallingNonCallable
-async def async_setup(hass: core.HomeAssistant, config: dict) -> bool:
+async def async_setup(hass: core.HomeAssistant, _config: dict) -> bool:
     """Set up the MQTT Camera Custom component from yaml configuration."""
 
-    async def handle_homeassistant_stop(event):
+    async def handle_homeassistant_stop(_event):
         """Handle Home Assistant stop event."""
         LOGGER.info("Home Assistant is stopping. Writing down the rooms data.")
         await ThreadPoolManager.shutdown_all()
@@ -315,7 +321,9 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
 
                         # Block absolute paths
                         if os.path.isabs(name):
-                            LOGGER.error("Security: Blocked absolute path in zip: %s", name)
+                            LOGGER.error(
+                                "Security: Blocked absolute path in zip: %s", name
+                            )
                             return False
 
                         # Resolve the destination path
@@ -324,7 +332,8 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
                         # Ensure extraction stays within target directory
                         if not dest.startswith(base_dir + os.sep):
                             LOGGER.error(
-                                "Security: Blocked path traversal attempt in zip: %s", name
+                                "Security: Blocked path traversal attempt in zip: %s",
+                                name,
                             )
                             return False
 
@@ -371,9 +380,9 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
                 config_entry.version,
             )
             return True
-        else:
-            LOGGER.error(
-                "Migration failed: No options found in config entry. Please reconfigure the camera."
-            )
-            return False
+
+        LOGGER.error(
+            "Migration failed: No options found in config entry. Please reconfigure the camera."
+        )
+        return False
     return True

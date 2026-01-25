@@ -12,7 +12,7 @@ class Issue1RepairFlow(RepairsFlow):
     """Handler for an issue fixing flow."""
 
     async def async_step_init(
-        self, user_input: dict[str, str] | None = None
+        self, _user_input: dict[str, str] | None = None
     ) -> data_entry_flow.FlowResult:
         """Handle the first step of a fix flow."""
 
@@ -29,9 +29,9 @@ class Issue1RepairFlow(RepairsFlow):
 
 
 async def async_create_fix_flow(
-    hass: HomeAssistant,
+    _hass: HomeAssistant,
     issue_id: str,
-    data: dict[str, str | int | float | None] | None,
+    _data: dict[str, str | int | float | None] | None,
 ) -> RepairsFlow:
     """Create flow. issue_1 is general purpose"""
     if issue_id == "issue_1":

@@ -87,7 +87,7 @@ class MQTTCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             await self.async_set_unique_id(unique_id=unique_id)
             # set default options
             self.camera_options.update(DEFAULT_VALUES)
-            # create the path for storing the snapshots.
+            # create the path for storing the logs_formatter.
             storage_path = f"{self.hass.config.path(STORAGE_DIR)}/{CAMERA_STORAGE}"
             if not os.path.exists(storage_path):
                 try:

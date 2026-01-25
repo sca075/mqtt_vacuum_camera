@@ -1,8 +1,5 @@
 """Camera-related services for the MQTT Vacuum Camera integration."""
 
-import asyncio
-
-import async_timeout
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import SERVICE_RELOAD
 from homeassistant.core import HomeAssistant, ServiceCall
@@ -36,13 +33,8 @@ async def reload_camera_config(call: ServiceCall, hass: HomeAssistant) -> None:
         LOGGER.info("Processing entry %r / %r", processed, total_entries)
         if camera_entry.state == ConfigEntryState.LOADED:
             try:
-                with async_timeout.timeout(10):
-                    LOGGER.debug("Reloading entry: %s", camera_entry.entry_id)
-                    hass.config_entries.async_schedule_reload(camera_entry.entry_id)
-            except asyncio.TimeoutError:
-                LOGGER.error(
-                    "Timeout processing entry %s", camera_entry.entry_id, exc_info=True
-                )
+                LOGGER.debug("Reloading entry: %s", camera_entry.entry_id)
+                hass.config_entries.async_schedule_reload(camera_entry.entry_id)
             except ValueError as err:
                 LOGGER.error(
                     "Error processing entry %s: %s", camera_entry.entry_id, err
