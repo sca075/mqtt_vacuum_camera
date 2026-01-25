@@ -116,21 +116,21 @@
           "disable_room_15": "Raum 15 ausblenden"
         },
         "data_description": {
-          "disable_room_1": "Wenn diese Option aktiviert ist, wird Raum 1 „{room_0_name}” nicht auf der Karte angezeigt.",
-          "disable_room_2": "Wenn diese Option aktiviert ist, wird „Room 2{room_1_name}“ nicht auf der Karte angezeigt.",
-          "disable_room_3": "Wenn diese Option aktiviert ist, wird „Room 3{room_2_name}“ nicht auf der Karte angezeigt.",
-          "disable_room_4": "Wenn diese Option aktiviert ist, wird „Room 4{room_3_name}“ nicht auf der Karte angezeigt.",
-          "disable_room_5": "Wenn diese Option aktiviert ist, wird „Room 5 {room_4_name}” nicht auf der Karte angezeigt.",
-          "disable_room_6": "Wenn diese Option aktiviert ist, wird „Room 6 {room_5_name}” nicht auf der Karte angezeigt.",
-          "disable_room_7": "Wenn diese Option aktiviert ist, wird „Room 7 {room_6_name}” nicht auf der Karte angezeigt.",
-          "disable_room_8": "Wenn diese Option aktiviert ist, wird „Room 8 {room_7_name}” nicht auf der Karte angezeigt.",
-          "disable_room_9": "Wenn diese Option aktiviert ist, wird „Room 9 {room_8_name}” nicht auf der Karte angezeigt.",
-          "disable_room_10": "Wenn diese Option aktiviert ist, wird Raum 10 „{room_9_name}” nicht auf der Karte angezeigt.",
-          "disable_room_11": "Wenn diese Option aktiviert ist, wird Raum 11 „{room_10_name}” nicht auf der Karte angezeigt.",
-          "disable_room_12": "Wenn diese Option aktiviert ist, wird Raum 12 „{room_11_name}” nicht auf der Karte angezeigt.",
-          "disable_room_13": "Wenn diese Option aktiviert ist, wird „Room 13 {room_12_name}“ nicht auf der Karte angezeigt.",
-          "disable_room_14": "Wenn diese Option aktiviert ist, wird Raum 14 „{room_13_name}” nicht auf der Karte angezeigt.",
-          "disable_room_15": "Wenn diese Option aktiviert ist, wird Raum 15 „{room_14_name}” nicht auf der Karte angezeigt."
+          "disable_room_1": "Wenn diese Option aktiviert ist, wird Raum 1 {room_0_name} nicht auf der Karte angezeigt.",
+          "disable_room_2": "Wenn diese Option aktiviert ist, wird Raum 2 {room_1_name} nicht auf der Karte angezeigt.",
+          "disable_room_3": "Wenn diese Option aktiviert ist, wird Raum 3 {room_2_name} nicht auf der Karte angezeigt.",
+          "disable_room_4": "Wenn diese Option aktiviert ist, wird Raum 4 {room_3_name} nicht auf der Karte angezeigt.",
+          "disable_room_5": "Wenn diese Option aktiviert ist, wird Raum 5 {room_4_name} nicht auf der Karte angezeigt.",
+          "disable_room_6": "Wenn diese Option aktiviert ist, wird Raum 6 {room_5_name}” nicht auf der Karte angezeigt.",
+          "disable_room_7": "Wenn diese Option aktiviert ist, wird Raum 7 {room_6_name}” nicht auf der Karte angezeigt.",
+          "disable_room_8": "Wenn diese Option aktiviert ist, wird Raum 8 {room_7_name}” nicht auf der Karte angezeigt.",
+          "disable_room_9": "Wenn diese Option aktiviert ist, wird Raum 9 {room_8_name}” nicht auf der Karte angezeigt.",
+          "disable_room_10": "Wenn diese Option aktiviert ist, wird Raum 10 {room_9_name} nicht auf der Karte angezeigt.",
+          "disable_room_11": "Wenn diese Option aktiviert ist, wird Raum 11 {room_10_name} nicht auf der Karte angezeigt.",
+          "disable_room_12": "Wenn diese Option aktiviert ist, wird Raum 12 {room_11_name} nicht auf der Karte angezeigt.",
+          "disable_room_13": "Wenn diese Option aktiviert ist, wird Room 13 {room_12_name} nicht auf der Karte angezeigt.",
+          "disable_room_14": "Wenn diese Option aktiviert ist, wird Raum 14 {room_13_name} nicht auf der Karte angezeigt.",
+          "disable_room_15": "Wenn diese Option aktiviert ist, wird Raum 15 {room_14_name} nicht auf der Karte angezeigt."
         }
       },
       "transparency": {
