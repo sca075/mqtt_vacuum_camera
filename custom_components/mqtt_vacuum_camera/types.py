@@ -103,7 +103,6 @@ class CameraPathsConfig:
 
     homeassistant_path: str
     storage_path: str
-    log_file: str
 
 
 @dataclass

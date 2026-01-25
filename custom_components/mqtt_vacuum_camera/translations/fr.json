@@ -76,14 +76,6 @@
           "save_map_trims": "Enregistrer les Découpes"
         }
       },
-      "download_logs": {
-        "title": "Téléchargement des Journaux",
-        "description": "Gestion des fichiers journaux",
-        "menu_options": {
-          "logs_move": "Copier les journaux vers WWW",
-          "logs_remove": "Supprimer les journaux de WWW"
-        }
-      },
       "image_basic_opt": {
         "data": {
           "rotate_image": "Rotation",

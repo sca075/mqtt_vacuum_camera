@@ -76,14 +76,6 @@
           "save_map_trims": "Guardar Recortes del Mapa"
         }
       },
-      "download_logs": {
-        "title": "Descargar Registros",
-        "description": "Gestionar archivos de registro",
-        "menu_options": {
-          "logs_move": "Copiar Registros a WWW",
-          "logs_remove": "Eliminar Registros de WWW"
-        }
-      },
       "image_basic_opt": {
         "data": {
           "rotate_image": "Rotar",

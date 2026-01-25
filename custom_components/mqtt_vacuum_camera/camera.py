@@ -155,11 +155,9 @@ class MQTTCamera(CoordinatorEntity, Camera):  # pylint: disable=too-many-instanc
         if not os.path.exists(storage_path):
             # Use the default storage path
             storage_path = os.path.join(homeassistant_path, STORAGE_DIR)
-        log_file = f"{storage_path}/{self.context.file_name}.zip"
         return CameraPathsConfig(
             homeassistant_path=homeassistant_path,
             storage_path=storage_path,
-            log_file=log_file,
         )
 
     def _init_processors(self, device_info) -> CameraProcessors:
@@ -195,17 +193,14 @@ class MQTTCamera(CoordinatorEntity, Camera):  # pylint: disable=too-many-instanc
         )
 
     def _init_clear_www_folder(self):
-        """Remove PNG and ZIP's stored in HA config WWW"""
-        # If enable_snapshots check if for png in www
+        """Remove PNG snapshots stored in HA config WWW if snapshots are disabled."""
+        # If enable_snapshots is disabled, remove any existing snapshot file
         if not self.context.shared.enable_snapshots and os.path.isfile(
             f"{self.paths.homeassistant_path}/www/snapshot_{self.context.file_name}.png"
         ):
             os.remove(
                 f"{self.paths.homeassistant_path}/www/snapshot_{self.context.file_name}.png"
             )
-        # If there is a log zip in www remove it
-        if os.path.isfile(self.paths.log_file):
-            os.remove(self.paths.log_file)
 
     async def async_cleanup_all(self):
         """Clean up all dispatcher connections."""

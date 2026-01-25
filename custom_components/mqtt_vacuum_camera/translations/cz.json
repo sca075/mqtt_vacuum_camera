@@ -76,14 +76,6 @@
           "save_map_trims": "Uložit Ořezy Mapy"
         }
       },
-      "download_logs": {
-        "title": "Stažení Logů",
-        "description": "Správa souborů logů",
-        "menu_options": {
-          "logs_move": "Kopírovat logy do WWW",
-          "logs_remove": "Odstranit logy z WWW"
-        }
-      },
       "image_basic_opt": {
         "data": {
           "rotate_image": "Otočit",

@@ -76,14 +76,6 @@
           "save_map_trims": "Save Map Trims"
         }
       },
-      "download_logs": {
-        "title": "Download Logs",
-        "description": "Manage log files",
-        "menu_options": {
-          "logs_move": "Copy Logs to WWW",
-          "logs_remove": "Remove Logs from WWW"
-        }
-      },
       "image_basic_opt": {
         "data": {
           "rotate_image": "Rotate",

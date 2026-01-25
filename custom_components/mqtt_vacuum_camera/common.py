@@ -15,7 +15,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.helpers.device_registry import DeviceEntry
 
-from .const import KEYS_TO_UPDATE, LOGGER
+from .const import KEYS_TO_UPDATE, LOGGER, DEFAULT_VALUES
 from .hass_types import GET_MQTT_DATA
 
 
@@ -109,7 +109,6 @@ async def update_options(bk_options, new_options):
     Keep track of the modified options.
     Returns updated options after editing in Config_Flow.
     """
-    from .const import DEFAULT_VALUES
 
     keys_to_update = KEYS_TO_UPDATE
     try:

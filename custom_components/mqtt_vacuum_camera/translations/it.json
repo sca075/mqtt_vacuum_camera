@@ -76,14 +76,6 @@
           "save_map_trims": "Salva Ritagli Mappa"
         }
       },
-      "download_logs": {
-        "title": "Scaricamento Log",
-        "description": "Gestisci file di log",
-        "menu_options": {
-          "logs_move": "Copia log in WWW",
-          "logs_remove": "Rimuovi log da WWW"
-        }
-      },
       "image_basic_opt": {
         "data": {
           "rotate_image": "Ruota",
