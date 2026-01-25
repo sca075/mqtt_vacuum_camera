@@ -3,14 +3,14 @@
     "step": {
       "user": {
         "data": {
-          "vacuum_entity": "掃除機エンティティID",
-          "vacuum_config_entry": "掃除機設定データ",
-          "vacuum_map": "掃除機トピック",
-          "vacuum_identifiers": "掃除機MQTT ID",
+          "vacuum_entity": "掃除ロボットエンティティID",
+          "vacuum_config_entry": "掃除ロボット設定データ",
+          "vacuum_map": "掃除ロボット トピック",
+          "vacuum_identifiers": "掃除ロボット MQTT ID",
           "unique_id": ""
         },
         "data_description": {
-          "vacuum_entity": "掃除機エンティティID"
+          "vacuum_entity": "掃除ロボットエンティティID"
         },
         "description": "カメラ設定。",
         "title": "MQTTカメラ設定"
@@ -20,60 +20,172 @@
   "options": {
     "step": {
       "init": {
-        "title": "MQTTカメラオプション",
-        "description": "カメラオプションの設定",
+        "title": "MQTT カメラ オプション",
+        "description": "カメラオプションを設定する",
         "menu_options": {
           "image_opt": "画像設定",
-          "colours": "色設定",
-          "advanced": "詳細設定"
+          "colours": "カラー設定",
+          "materials": "マテリアルレンダリング",
+          "floor_management": "フロア管理",
+          "save_options": "保存オプション"
         }
+      },
+      "main_menu": {
+        "title": "メインメニュー",
+        "description": "メインメニューに戻る"
       },
       "image_opt": {
         "title": "画像設定",
-        "description": "画像表示設定の構成",
+        "description": "画像表示設定を構成する",
         "menu_options": {
           "image_basic_opt": "基本設定",
           "status_text": "ステータステキスト",
-          "draw_elements": "オブジェクト表示",
-          "segments_visibility": "セグメント表示"
+          "draw_elements": "マップ要素の表示設定",
+          "main_menu": "メインメニューに戻る"
         }
       },
       "colours": {
-        "title": "色設定",
-        "description": "マップの色を設定",
+        "title": "カラー設定",
+        "description": "マップの色を設定する",
         "menu_options": {
-          "base_colours": "基本色",
-          "rooms_colours_1": "部屋1-8",
-          "rooms_colours_2": "部屋9-16",
-          "floor_only": "床のみ",
+          "base_colours": "ベースカラー",
+          "rooms_colours_1": "部屋1～8",
+          "rooms_colours_2": "9～16号室",
+          "floor_only": "フロアのみ",
           "transparency": "透明度設定",
-          "rename_translations": "部屋名の変更"
+          "main_menu": "メインメニューに戻る"
+        }
+      },
+      "draw_elements": {
+        "title": "マップ要素の表示設定",
+        "description": "マップ上に表示する要素を設定する",
+        "menu_options": {
+          "map_elements": "マップ要素",
+          "segments_visibility": "セグメントの可視性",
+          "main_menu": "メインメニューに戻る"
+        }
+      },
+      "map_elements": {
+        "title": "マップ要素",
+        "description": "マップ上に表示する要素を設定する",
+        "data": {
+          "disable_floor": "階を非表示にする",
+          "disable_wall": "壁を隠す",
+          "disable_robot": "ロボットを隠す",
+          "disable_charger": "非表示にする",
+          "disable_virtual_walls": "仮想壁を非表示にする",
+          "disable_restricted_areas": "制限区域を非表示にする",
+          "disable_no_mop_areas": "モップ禁止区域を非表示にする",
+          "disable_obstacles": "障害物を隠す",
+          "disable_path": "パスを非表示にする",
+          "disable_predicted_path": "予測パスを非表示にする",
+          "disable_go_to_target": "ターゲットを非表示にする"
+        },
+        "data_description": {
+          "disable_floor": "有効にすると、フロアはマップ上に表示されません",
+          "disable_wall": "有効にすると、壁はマップ上に表示されません",
+          "disable_robot": "有効にすると、ロボットはマップ上に表示されません",
+          "disable_charger": "有効にすると、充電器は地図上に表示されません",
+          "disable_virtual_walls": "有効にすると、仮想壁はマップ上に表示されません",
+          "disable_restricted_areas": "有効にすると、制限区域は地図上に表示されません",
+          "disable_no_mop_areas": "有効にすると、モップ禁止区域は地図上に表示されません",
+          "disable_obstacles": "有効にすると、障害物はマップ上に表示されません",
+          "disable_path": "有効にすると、清掃経路はマップ上に表示されません",
+          "disable_predicted_path": "有効にすると、予測経路は地図上に表示されません",
+          "disable_go_to_target": "有効にすると、移動先ターゲットはマップ上に表示されません"
+        }
+      },
+      "segments_visibility": {
+        "title": "セグメントの可視性",
+        "description": "マップ上に表示するルームセグメントを設定する",
+        "data": {
+          "disable_room_1": "隠し部屋1",
+          "disable_room_2": "隠し部屋2",
+          "disable_room_3": "隠し部屋3",
+          "disable_room_4": "隠し部屋4",
+          "disable_room_5": "隠し部屋5",
+          "disable_room_6": "隠し部屋6",
+          "disable_room_7": "隠し部屋7",
+          "disable_room_8": "隠し部屋8",
+          "disable_room_9": "隠し部屋9",
+          "disable_room_10": "隠し部屋10",
+          "disable_room_11": "隠し部屋11",
+          "disable_room_12": "隠し部屋12",
+          "disable_room_13": "隠し部屋13",
+          "disable_room_14": "隠し部屋14",
+          "disable_room_15": "隠し部屋15"
+        },
+        "data_description": {
+          "disable_room_1": "有効にすると、ルーム1 {room_0_name} は地図上に表示されません",
+          "disable_room_2": "有効にすると、ルーム2の{room_1_name}は地図上に表示されません",
+          "disable_room_3": "有効にすると、ルーム3 {room_2_name} は地図上に表示されません",
+          "disable_room_4": "有効にすると、ルーム4 {room_3_name} は地図上に表示されません",
+          "disable_room_5": "有効にすると、ルーム5 {room_4_name} は地図上に表示されません",
+          "disable_room_6": "有効にすると、ルーム6 {room_5_name} は地図上に表示されません",
+          "disable_room_7": "有効にすると、ルーム7 {room_6_name} は地図上に表示されません",
+          "disable_room_8": "有効にすると、ルーム8 {room_7_name} は地図上に表示されません",
+          "disable_room_9": "有効にすると、ルーム9 {room_8_name} は地図上に表示されません",
+          "disable_room_10": "有効にすると、ルーム10 {room_9_name} は地図上に表示されません",
+          "disable_room_11": "有効にすると、ルーム11 {room_10_name} は地図上に表示されません",
+          "disable_room_12": "有効にすると、ルーム12 {room_11_name} はマップ上に表示されません",
+          "disable_room_13": "有効にすると、ルーム13 {room_12_name} はマップ上に表示されません",
+          "disable_room_14": "有効にすると、ルーム14 {room_13_name} は地図上に表示されません",
+          "disable_room_15": "有効にすると、ルーム15 {room_14_name} は地図上に表示されません"
         }
       },
       "transparency": {
         "title": "透明度設定",
-        "description": "透明度レベルの設定",
+        "description": "マップ要素の透明度（アルファ）設定を構成する",
         "menu_options": {
-          "base_transparency": "基本透明度",
-          "rooms_transparency_1": "部屋1-8の透明度",
-          "rooms_transparency_2": "部屋9-16の透明度",
-          "floor_transparency": "床の透明度"
+          "alpha_1": "ベース透明度",
+          "alpha_floor": "床の透明性",
+          "alpha_2": "部屋1～8 透明性",
+          "alpha_3": "9～16号室 透明性",
+          "main_menu": "メインメニューに戻る"
         }
       },
-      "advanced": {
-        "title": "詳細設定",
-        "description": "詳細設定オプション",
+      "materials": {
+        "title": "マテリアルレンダリング",
+        "description": "材質検出とレンダリングの設定（木板、タイル、カーペット）",
+        "data": {
+          "disable_material_overlay": "材質オーバーレイを無効化（木材＆タイル）",
+          "disable_carpets": "カーペットを隠す",
+          "color_carpet": "カーペットの色",
+          "color_material_wood": "木の板の色",
+          "color_material_tile": "タイルの色",
+          "alpha_carpet": "カーペットの透明性",
+          "alpha_material_wood": "木材の透明性",
+          "alpha_material_tile": "タイルの透明度"
+        },
+        "data_description": {
+          "disable_material_overlay": "マップ上の木材とタイルのマテリアルオーバーレイレンダリングを無効にする",
+          "disable_carpets": "有効にすると、カーペットはマップ上に表示されません",
+          "color_carpet": "カーペット素材の色（RGB）",
+          "color_material_wood": "木材板材の色 (RGB)",
+          "color_material_tile": "タイル素材の色 (RGB)",
+          "alpha_carpet": "カーペットの透明度レベル (0-255)",
+          "alpha_material_wood": "木材の板の透明度レベル (0-255)",
+          "alpha_material_tile": "タイルの透明度レベル (0-255)"
+        }
+      },
+      "floor_management": {
+        "title": "フロア管理",
+        "description": "複数のフロアとそのトリム設定を管理する",
         "menu_options": {
-          "download_logs": "ログのダウンロード",
-          "map_trims": "マップトリム"
+          "select_floor": "アクティブなフロアを選択",
+          "add_floor": "新しい階を追加",
+          "edit_floor": "フロア設定を編集",
+          "delete_floor": "フロアを削除",
+          "main_menu": "メインメニューに戻る"
         }
       },
       "map_trims": {
         "title": "マップトリムオプション",
         "description": "マップトリム設定の管理",
         "menu_options": {
-          "reset_map_trims": "マップトリムのリセット",
-          "save_map_trims": "マップトリムの保存"
+          "reset_map_trims": "マップトリムをリセット",
+          "save_map_trims": "マップを保存",
+          "main_menu": "メインメニューに戻る"
         }
       },
       "image_basic_opt": {
@@ -81,118 +193,34 @@
           "rotate_image": "回転",
           "margins": "画像の余白。",
           "auto_zoom": "自動ズームを有効にする",
-          "zoom_lock_ratio": "アスペクト比をロック。",
-          "aspect_ratio": "画像のアスペクト比。",
-          "robot_size": "ロボットのサイズ"
+          "zoom_lock_ratio": "アスペクト比を固定する。",
+          "aspect_ratio": "画像アスペクト比。",
+          "robot_size": "ロボットのサイズ。"
         },
         "data_description": {
-          "rotate_image": "度数 0, 90, 180, 270",
-          "margins": "ピクセル単位の自動余白トリミング。",
-          "aspect_ratio": "画像のアスペクト比。",
-          "robot_size": "ロボットのサイズ（ピクセル）8-25"
+          "rotate_image": "0度、90度、180度、270度",
+          "margins": "自動トリム余白（ピクセル単位）",
+          "aspect_ratio": "画像アスペクト比。",
+          "robot_size": "ロボットのサイズ（ピクセル単位） 8-25."
         },
         "description": "カメラ画像オプション",
         "title": "画像オプション"
       },
-      "image_offset": {
-        "title": "画像オフセット設定",
-        "description": "画像オフセット値の設定",
-        "data": {
-          "offset_top": "上オフセット",
-          "offset_bottom": "下オフセット",
-          "offset_left": "左オフセット",
-          "offset_right": "右オフセット"
-        },
-        "data_description": {
-          "offset_top": "上からのオフセットピクセル (0-1000)",
-          "offset_bottom": "下からのオフセットピクセル (0-1000)",
-          "offset_left": "左からのオフセットピクセル (0-1000)",
-          "offset_right": "右からのオフセットピクセル (0-1000)"
-        }
-      },
       "status_text": {
         "data": {
-          "show_vac_status": "掃除機のステータスを表示。",
-          "vac_status_font": "Fira Sans",
-          "vac_status_size": "テキストサイズ",
-          "vac_status_position": "テキスト位置: 下(オフ)",
+          "show_vac_status": "真空状態を表示する。",
+          "vac_status_font": "フィラ・サンズ",
+          "vac_status_size": "文字サイズ",
+          "vac_status_position": "テキスト位置：下（OFF）",
           "color_text": "[255, 255, 255]"
         },
         "data_description": {
-          "vac_status_font": "デフォルトテキストフォント Fira Serif。",
-          "vac_status_size": "デフォルトテキストサイズ 50。",
-          "color_text": "掃除機ステータステキストの色。"
+          "vac_status_font": "テキストフォントのデフォルトはFira Serifです。",
+          "vac_status_size": "文字サイズデフォルト50。",
+          "color_text": "真空状態テキストの色。"
         },
         "description": "画像オプション",
-        "title": "ステータステキストオプション"
-      },
-      "draw_elements": {
-        "title": "オブジェクト表示",
-        "description": "マップ上に表示する要素の設定",
-        "data": {
-          "disable_floor": "床を非表示",
-          "disable_wall": "壁を非表示",
-          "disable_robot": "ロボットを非表示",
-          "disable_charger": "充電器を非表示",
-          "disable_virtual_walls": "仮想壁を非表示",
-          "disable_restricted_areas": "制限エリアを非表示",
-          "disable_no_mop_areas": "モップ禁止エリアを非表示",
-          "disable_obstacles": "障害物を非表示",
-          "disable_path": "パスを非表示",
-          "disable_predicted_path": "予測パスを非表示",
-          "disable_go_to_target": "移動先ターゲットを非表示"
-        },
-        "data_description": {
-          "disable_floor": "有効にすると、床はマップに表示されません",
-          "disable_wall": "有効にすると、壁はマップに表示されません",
-          "disable_robot": "有効にすると、ロボットはマップに表示されません",
-          "disable_charger": "有効にすると、充電器はマップに表示されません",
-          "disable_virtual_walls": "有効にすると、仮想壁はマップに表示されません",
-          "disable_restricted_areas": "有効にすると、制限エリアはマップに表示されません",
-          "disable_no_mop_areas": "有効にすると、モップ禁止エリアはマップに表示されません",
-          "disable_obstacles": "有効にすると、障害物はマップに表示されません",
-          "disable_path": "有効にすると、クリーニングパスはマップに表示されません",
-          "disable_predicted_path": "有効にすると、予測パスはマップに表示されません",
-          "disable_go_to_target": "有効にすると、移動先ターゲットはマップに表示されません"
-        }
-      },
-      "segments_visibility": {
-        "title": "セグメント表示",
-        "description": "マップ上に表示する部屋セグメントの設定",
-        "data": {
-          "disable_room_1": "部屋1 を非表示",
-          "disable_room_2": "部屋2 を非表示",
-          "disable_room_3": "部屋3 を非表示",
-          "disable_room_4": "部屋4 を非表示",
-          "disable_room_5": "部屋5 を非表示",
-          "disable_room_6": "部屋6 を非表示",
-          "disable_room_7": "部屋7 を非表示",
-          "disable_room_8": "部屋8 を非表示",
-          "disable_room_9": "部屋9 を非表示",
-          "disable_room_10": "部屋10 を非表示",
-          "disable_room_11": "部屋11 を非表示",
-          "disable_room_12": "部屋12 を非表示",
-          "disable_room_13": "部屋13 を非表示",
-          "disable_room_14": "部屋14 を非表示",
-          "disable_room_15": "部屋15 を非表示"
-        },
-        "data_description": {
-          "disable_room_1": "有効にすると、部屋1 {room_0_name} はマップに表示されません",
-          "disable_room_2": "有効にすると、部屋2 {room_1_name} はマップに表示されません",
-          "disable_room_3": "有効にすると、部屋3 {room_2_name} はマップに表示されません",
-          "disable_room_4": "有効にすると、部屋4 {room_3_name} はマップに表示されません",
-          "disable_room_5": "有効にすると、部屋5 {room_4_name} はマップに表示されません",
-          "disable_room_6": "有効にすると、部屋6 {room_5_name} はマップに表示されません",
-          "disable_room_7": "有効にすると、部屋7 {room_6_name} はマップに表示されません",
-          "disable_room_8": "有効にすると、部屋8 {room_7_name} はマップに表示されません",
-          "disable_room_9": "有効にすると、部屋9 {room_8_name} はマップに表示されません",
-          "disable_room_10": "有効にすると、部屋10 {room_9_name} はマップに表示されません",
-          "disable_room_11": "有効にすると、部屋11 {room_10_name} はマップに表示されません",
-          "disable_room_12": "有効にすると、部屋12 {room_11_name} はマップに表示されません",
-          "disable_room_13": "有効にすると、部屋13 {room_12_name} はマップに表示されません",
-          "disable_room_14": "有効にすると、部屋14 {room_13_name} はマップに表示されません",
-          "disable_room_15": "有効にすると、部屋15 {room_14_name} はマップに表示されません"
-        }
+        "title": "ステータス テキスト オプション"
       },
       "base_colours": {
         "data": {
@@ -204,40 +232,40 @@
           "color_no_go": "[255, 0, 0]",
           "color_zone_clean": "[255, 255, 255]",
           "color_background": "[0, 125, 255]",
-          "add_base_alpha": "透明度の設定:"
+          "add_base_alpha": "透明度を設定する："
         },
         "data_description": {
-          "color_charger": "充電器の色。",
-          "color_move": "移動の色。",
+          "color_charger": "カラーをロード",
+          "color_move": "色を移動する。",
           "color_wall": "壁の色。",
-          "color_robot": "ロボットの色。",
-          "color_go_to": "移動先の色。",
-          "color_no_go": "立入禁止の色。",
-          "color_zone_clean": "ゾーンクリーニングの色。",
+          "color_robot": "カラーロボット",
+          "color_go_to": "定番カラー。",
+          "color_no_go": "使用不可色。",
+          "color_zone_clean": "ゾーンクリーンカラー。",
           "color_background": "背景色。"
         },
-        "description": "カメラの色オプション。",
-        "title": "基本色の設定"
+        "description": "カメラカラーオプション。",
+        "title": "ベースカラー設定"
       },
       "alpha_1": {
         "data": {
-          "alpha_charger": "充電器アルファ",
-          "alpha_move": "移動アルファ",
-          "alpha_wall": "壁アルファ",
-          "alpha_robot": "ロボットアルファ",
-          "alpha_go_to": "移動先エリアアルファ",
-          "alpha_no_go": "立入禁止エリアアルファ",
-          "alpha_zone_clean": "ゾーンクリーニングアルファ",
+          "alpha_charger": "アルファをロードする",
+          "alpha_move": "ムーブズ・アルファ",
+          "alpha_wall": "ウォールズ・アルファ",
+          "alpha_robot": "アルファロボット",
+          "alpha_go_to": "エリアアルファへ移動",
+          "alpha_no_go": "ノーゴーエリア・アルファ",
+          "alpha_zone_clean": "ゾーンクリーンアルファ",
           "alpha_background": "背景アルファ",
           "alpha_text": "テキストアルファ"
         },
         "description": "カメラオプション。アルファ1",
-        "title": "基本色のアルファチャンネル"
+        "title": "アルファ・シャネル ベースカラー"
       },
       "floor_only": {
         "data": {
           "color_room_0": "[135, 206, 250]",
-          "add_room_1_alpha": "透明度の設定:"
+          "add_room_1_alpha": "透明度を設定する："
         },
         "data_description": {
           "color_room_0": "### **床の色**"
@@ -253,20 +281,20 @@
           "color_room_5": "[96, 123, 139]",
           "color_room_6": "[224, 255, 255]",
           "color_room_7": "[209, 238, 238]",
-          "add_room_1_alpha": "透明度の設定:"
+          "add_room_1_alpha": "透明度を設定する："
         },
         "data_description": {
-          "color_room_0": "### **{room_0_name} 色**",
-          "color_room_1": "### **{room_1_name} 色**",
-          "color_room_2": "### **{room_2_name} 色**",
-          "color_room_3": "### **{room_3_name} 色**",
-          "color_room_4": "### **{room_4_name} 色**",
-          "color_room_5": "### **{room_5_name} 色**",
-          "color_room_6": "### **{room_6_name} 色**",
-          "color_room_7": "### **{room_7_name} 色**"
+          "color_room_0": "{room_0_name}カラー",
+          "color_room_1": "{room_1_name}カラー",
+          "color_room_2": "{room_2_name}カラー",
+          "color_room_3": "{room_3_name}カラー",
+          "color_room_4": "{room_4_name}カラー",
+          "color_room_5": "{room_5_name}カラー",
+          "color_room_6": "{room_6_name}カラー",
+          "color_room_7": "{room_7_name}カラー"
         },
-        "description": "カメラの色オプション。",
-        "title": "部屋1から8の色"
+        "description": "カメラカラーオプション",
+        "title": "部屋1～8 色"
       },
       "rooms_colours_2": {
         "data": {
@@ -278,20 +306,20 @@
           "color_room_13": "[245, 176, 65]",
           "color_room_14": "[82, 190, 128]",
           "color_room_15": "[72, 201, 176]",
-          "add_room_2_alpha": "透明度の設定:"
+          "add_room_2_alpha": "透明度を設定する："
         },
         "data_description": {
-          "color_room_8": "### **{room_8_name} 色**",
-          "color_room_9": "### **{room_9_name} 色**",
-          "color_room_10": "### **{room_10_name} 色**",
-          "color_room_11": "### **{room_11_name} 色**",
-          "color_room_12": "### **{room_12_name} 色**",
-          "color_room_13": "### **{room_13_name} 色**",
-          "color_room_14": "### **{room_14_name} 色**",
-          "color_room_15": "### **{room_15_name} 色**"
+          "color_room_8": "{room_8_name}カラー",
+          "color_room_9": "{room_9_name}カラー",
+          "color_room_10": "{room_10_name}カラー",
+          "color_room_11": "{room_11_name}カラー",
+          "color_room_12": "{room_12_name}カラー",
+          "color_room_13": "{room_13_name}カラー",
+          "color_room_14": "{room_14_name}カラー",
+          "color_room_15": "{room_15_name}カラー"
         },
-        "description": "カメラの色オプション。",
-        "title": "部屋9から15の色"
+        "description": "カメラカラーオプション。",
+        "title": "9号室から15号室まで カラー"
       },
       "alpha_floor": {
         "data": {
@@ -300,31 +328,75 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "セグメント {room_0_name} アルファ",
-          "alpha_room_1": "セグメント {room_1_name} アルファ",
-          "alpha_room_2": "セグメント {room_2_name} アルファ",
-          "alpha_room_3": "セグメント {room_3_name} アルファ",
-          "alpha_room_4": "セグメント {room_4_name} アルファ",
-          "alpha_room_5": "セグメント {room_5_name} アルファ",
-          "alpha_room_6": "セグメント {room_6_name} アルファ",
-          "alpha_room_7": "セグメント {room_7_name} アルファ"
+          "alpha_room_0": "アルファ版 {room_0_name}",
+          "alpha_room_1": "アルファ版 {room_1_name}",
+          "alpha_room_2": "アルファ版 {room_2_name}",
+          "alpha_room_3": "アルファ版 {room_3_name}",
+          "alpha_room_4": "アルファ版 {room_4_name}",
+          "alpha_room_5": "アルファ版 {room_5_name}",
+          "alpha_room_6": "アルファ版 {room_6_name}",
+          "alpha_room_7": "アルファ版 {room_7_name}"
         },
         "description": "カメラオプション。アルファ2",
-        "title": "部屋の色のアルファチャンネル"
+        "title": "アルファ・シャネル・ルームズ・カラーズ"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "セグメント {room_8_name} アルファ",
-          "alpha_room_9": "セグメント {room_9_name} アルファ",
-          "alpha_room_10": "セグメント {room_10_name} アルファ",
-          "alpha_room_11": "セグメント {room_11_name} アルファ",
-          "alpha_room_12": "セグメント {room_12_name} アルファ",
-          "alpha_room_13": "セグメント {room_13_name} アルファ",
-          "alpha_room_14": "セグメント {room_14_name} アルファ",
-          "alpha_room_15": "セグメント {room_15_name} アルファ"
+          "alpha_room_8": "アルファ版 {room_8_name}",
+          "alpha_room_9": "アルファ版 {room_9_name}",
+          "alpha_room_10": "アルファ版 {room_10_name}",
+          "alpha_room_11": "アルファ版 {room_11_name}",
+          "alpha_room_12": "アルファ版 {room_12_name}",
+          "alpha_room_13": "アルファ版 {room_13_name}",
+          "alpha_room_14": "アルファ版 {room_14_name}",
+          "alpha_room_15": "アルファ版 {room_15_name}"
         },
         "description": "カメラオプション。アルファ3",
-        "title": "部屋の色のアルファチャンネル"
+        "title": "アルファ・シャネル・ルームズ・カラーズ"
+      },
+      "select_floor": {
+        "title": "アクティブなフロアを選択",
+        "description": "現在アクティブな階を選択してください。カメラは選択した階のトリム設定を使用します。",
+        "data": {
+          "current_floor": "アクティブフロア"
+        },
+        "data_description": {
+          "current_floor": "現在アクティブなフロアを選択してください。現在: {current_floor}"
+        }
+      },
+      "add_floor": {
+        "title": "新しい階を追加",
+        "description": "{info}",
+        "data": {
+          "floor_name": "フロア名",
+          "map_name": "マップ名（任意）"
+        },
+        "data_description": {
+          "floor_name": "Home Assistantのフロアから選択するか、カスタム名を入力してください",
+          "map_name": "このフロアの任意のフレンドリーネーム"
+        }
+      },
+      "edit_floor": {
+        "title": "フロア設定を編集",
+        "description": "フロアの{floor_name}マップ名編集。{trim_info}。トリム値は自動計算されます - 「マップトリムを保存」で更新してください。",
+        "data": {
+          "floor_name": "編集する階を選択してください",
+          "map_name": "マップ名（任意）"
+        },
+        "data_description": {
+          "floor_name": "編集する階を選択してください",
+          "map_name": "このフロアの任意のフレンドリーネーム"
+        }
+      },
+      "delete_floor": {
+        "title": "フロアを削除",
+        "description": "構成からフロアを削除します。現在アクティブなフロアを削除すると、'floor_0'にリセットされます。",
+        "data": {
+          "floor_name": "削除対象フロア"
+        },
+        "data_description": {
+          "floor_name": "削除する階を選択してください"
+        }
       }
     }
   },
@@ -332,27 +404,27 @@
     "trim_actions": {
       "options": {
         "save": "変更を保存",
-        "reset": "検出された値にリセット",
+        "reset": "検出値にリセット",
         "delete": "すべてのトリムを削除"
       }
     },
     "vacuum_status": {
       "options": {
         "connected": "接続済み",
-        "disconnected": "切断",
-        "charging": "充電中",
-        "cleaning": "清掃中",
-        "docked": "ドック中",
+        "disconnected": "切断された",
+        "charging": "充電",
+        "cleaning": "清掃",
+        "docked": "ドッキング済み",
         "idle": "アイドル",
         "paused": "一時停止",
-        "returning": "帰還中"
+        "returning": "帰還"
       }
     }
   },
   "services": {
     "reload": {
       "name": "再読み込み",
-      "description": "MQTT掃除機カメラプラットフォームを再読み込みします。"
+      "description": "MQTT真空カメラプラットフォームを再読み込みします。"
     },
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",
@@ -360,15 +432,15 @@
     },
     "turn_on": {
       "name": "[%key:common::action::turn_on%]",
-      "description": "カメラをオンにします。"
+      "description": "カメラをオンにする。"
     },
     "reset_trims": {
-      "name": "画像トリムのリセット",
+      "name": "画像リセットトリミング",
       "description": "マップのトリムをリセットします。"
     },
     "snapshot": {
       "name": "スナップショットを撮る",
-      "description": "カメラからスナップショットを撮ります。",
+      "description": "カメラからスナップショットを撮影する。",
       "fields": {
         "filename": {
           "name": "ファイル名",
@@ -379,19 +451,25 @@
   },
   "exceptions": {
     "no_entity_id_provided": {
-      "message": "設定にentity_idがありません。"
+      "message": "設定に entity_id が不足しています。"
     },
     "missing_zone_or_zone_ids": {
-      "message": "'zone'または'zone_ids'のいずれかを提供する必要があります。"
+      "message": "'zone' または 'zone_ids' のいずれかを指定する必要があります。"
     },
     "zone_must_be_list": {
-      "message": "'Zone'パラメータはリストである必要があります。"
+      "message": "'Zone' パラメータはリストでなければなりません。"
     },
     "zoneid_must_be_list": {
-      "message": "'Zone_Ids'パラメータはリストである必要があります。"
+      "message": "'Zone_Ids' パラメーターはリストでなければなりません。"
     },
     "zone_list_length": {
-      "message": "'Zone'には、4つの整数のリストを含む要素が少なくとも1つ必要です。"
+      "message": "「ゾーン」には、4つの整数のリストを含むアイテムが少なくとも1つ存在しなければならない。"
+    },
+    "mqtt_service_not_found": {
+      "message": "MQTTの統合は利用できません。MQTTが設定されていることを確認してください。"
+    },
+    "mqtt_publish_failed": {
+      "message": "MQTT経由でのvacuumコマンドの公開に失敗しました。"
     }
   }
 }

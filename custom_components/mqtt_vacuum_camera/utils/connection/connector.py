@@ -25,6 +25,25 @@ from custom_components.mqtt_vacuum_camera.const import (
 _QOS = 0
 
 
+def _str_to_bool(value: Any) -> bool:
+    """
+    Convert string or other value to boolean.
+    Handles MQTT string boolean values like "true"/"false".
+
+    Args:
+        value: Value to convert (can be str, bool, int, etc.)
+
+    Returns:
+        bool: Converted boolean value
+    """
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.lower() in ("true", "1", "on", "yes")
+    # For non-string, non-bool values (int, etc.), use truthiness
+    return value != 0 if isinstance(value, (int, float)) else False
+
+
 # Data containers (each with ≤7 attributes)
 @dataclass
 class RRMData:
@@ -284,7 +303,7 @@ class ValetudoConnector:
     async def _hypfer_handle_mop_attachment(self, mop_state) -> None:
         """Handle mop attachment state."""
         if mop_state is not None:
-            self.mqtt_data.mop_attached = bool(mop_state)
+            self.mqtt_data.mop_attached = _str_to_bool(mop_state)
             # Update shared mop_mode based on both attachment and operation mode
             self.config.shared.mop_mode = (
                 self.mqtt_data.mop_attached
@@ -293,22 +312,19 @@ class ValetudoConnector:
 
     async def _hypfer_handle_operation_mode(self, mode) -> None:
         """Handle operation mode preset."""
-        if mode:
-            self.mqtt_data.operation_mode = str(mode)
-            # Update shared mop_mode only if mop is attached AND mode contains "mop"
-            self.config.shared.mop_mode = (
-                self.mqtt_data.mop_attached and "mop" in str(mode).lower()
-            )
+        self.mqtt_data.operation_mode = str(mode)
+        # Update shared mop_mode only if mop is attached AND mode contains "mop"
+        self.config.shared.mop_mode = (
+            self.mqtt_data.mop_attached and "mop" in str(mode).lower()
+        )
 
     async def _hypfer_handle_water_usage(self, water_level) -> None:
         """Handle water usage preset."""
-        if water_level:
-            self.mqtt_data.water_usage = str(water_level)
+        self.mqtt_data.water_usage = str(water_level)
 
     async def _hypfer_handle_dock_status(self, status) -> None:
         """Handle dock status."""
-        if status:
-            self.mqtt_data.dock_status = str(status)
+        self.mqtt_data.dock_status = str(status)
 
     async def _hypfer_handle_valetudo_events(self, events) -> None:
         """Handle Valetudo events (errors, warnings, etc.)."""

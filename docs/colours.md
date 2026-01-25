@@ -9,6 +9,8 @@ By selecting the option to be configured (submitting the operation to do) is pos
 
 - Change the General Colours.
 
+**Note:** Carpet color settings are now configured in the [Material Rendering](./materials.md) menu, along with wood and tile materials.
+
 ![Screenshot 2023-12-18 at 23 33 42](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/e301ecba-2608-499f-92c5-197b62400d70)
 
 - Change the Rooms Colours (in total 16 colours) if you use a vacuum that do not support the segments (rooms) the Room 1
