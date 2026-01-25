@@ -10,8 +10,7 @@ Those values are:
 - 255 = Full color no transparency.
 - 0 = Transparent = not visible.
 
-As per we build several layers one on the top of the other applying transparency to one of the colour used can result
-in interesting colour mixtures :)
+As we build several layers on top of one another, applying transparency to one of the colours can result in interesting colour mixtures.
 
 ## Accessing Transparency Settings
 
