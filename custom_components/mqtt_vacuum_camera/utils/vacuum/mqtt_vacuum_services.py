@@ -93,7 +93,7 @@ async def vacuum_clean_segments(call: ServiceCall, coordinator) -> None:
             LOGGER.warning("No Service data generated. Aborting!")
             return
         try:
-            await coordinator.connector.publish_to_broker(
+            await coordinator.context.connector.publish_to_broker(
                 service_data["topic"],
                 service_data["payload"],
             )
@@ -238,7 +238,7 @@ async def vacuum_goto(call: ServiceCall, coordinator) -> None:
             LOGGER.warning("No Service data generated. Aborting!")
             return
         try:
-            await coordinator.connector.publish_to_broker(
+            await coordinator.context.connector.publish_to_broker(
                 service_data["topic"],
                 service_data["payload"],
             )
@@ -308,7 +308,7 @@ async def vacuum_map_save(call: ServiceCall, coordinator) -> None:
             LOGGER.warning("This feature is only available for rand256 vacuums.")
             return
         try:
-            await coordinator.connector.publish_to_broker(
+            await coordinator.context.connector.publish_to_broker(
                 service_data["topic"],
                 service_data["payload"],
             )
@@ -369,7 +369,7 @@ async def vacuum_map_load(call: ServiceCall, coordinator) -> None:
             LOGGER.warning("This feature is only available for rand256 vacuums.")
             return
         try:
-            await coordinator.connector.publish_to_broker(
+            await coordinator.context.connector.publish_to_broker(
                 service_data["topic"],
                 service_data["payload"],
             )
@@ -598,7 +598,7 @@ def generate_service_data_clean_segments(request: CleanSegmentsRequest) -> dict 
     )
 
     # Get the vacuum topic and check firmware
-    have_rooms = request.coordinator.shared.map_rooms
+    have_rooms = request.coordinator.context.shared.map_rooms
 
     # Check if zones contain strings, indicating zone IDs
     if not is_rand256:

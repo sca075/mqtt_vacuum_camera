@@ -13,8 +13,8 @@ from valetudo_map_parser.config.rand256_parser import RRMapParser
 
 from custom_components.mqtt_vacuum_camera.const import LOGGER
 from custom_components.mqtt_vacuum_camera.utils.thread_pool import (
-    ThreadPoolManager,
     DECOMPRESSION_THREAD_POOL,
+    ThreadPoolManager,
 )
 
 

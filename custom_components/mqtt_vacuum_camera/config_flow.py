@@ -7,7 +7,7 @@ sting.json and en.json please.
 Version: 2025.10.0
 """
 
-import os
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 from homeassistant import config_entries
@@ -48,7 +48,7 @@ VACUUM_SCHEMA = vol.Schema(
 class MQTTCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Camera Configration Flow Handler"""
 
-    VERSION = 3.4
+    VERSION = 3.5
 
     def __init__(self):
         self.data = {}
@@ -88,10 +88,10 @@ class MQTTCameraFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             # set default options
             self.camera_options.update(DEFAULT_VALUES)
             # create the storage path for camera data.
-            storage_path = f"{self.hass.config.path(STORAGE_DIR)}/{CAMERA_STORAGE}"
-            if not os.path.exists(storage_path):
+            storage_path = Path(self.hass.config.path(STORAGE_DIR, CAMERA_STORAGE))
+            if not storage_path.exists():
                 try:
-                    os.mkdir(storage_path)
+                    storage_path.mkdir(parents=True, exist_ok=True)
                 except FileExistsError as e:
                     LOGGER.error(
                         "Error %s can not find path %s", e, storage_path, exc_info=True

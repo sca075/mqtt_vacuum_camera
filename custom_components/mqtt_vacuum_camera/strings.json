@@ -25,6 +25,7 @@
         "menu_options": {
           "image_opt": "Image Settings",
           "colours": "Colours Configuration",
+          "materials": "Material Rendering",
           "advanced": "Advanced Options"
         }
       },
@@ -64,8 +65,36 @@
         "title": "Advanced Options",
         "description": "Advanced configuration options",
         "menu_options": {
-          "download_logs": "Download Logs",
+          "floor_management": "Floor Management",
           "map_trims": "Map Trims"
+        }
+      },
+      "materials": {
+        "title": "Material Rendering",
+        "description": "Configure material detection and rendering (wood planks, tiles)",
+        "data": {
+          "disable_material_overlay": "Disable material overlay",
+          "color_material_wood": "Wood plank color",
+          "color_material_tile": "Tile color",
+          "alpha_material_wood": "Wood transparency",
+          "alpha_material_tile": "Tile transparency"
+        },
+        "data_description": {
+          "disable_material_overlay": "Turn off material overlay rendering on the map",
+          "color_material_wood": "Color for wood plank materials (RGB)",
+          "color_material_tile": "Color for tile materials (RGB)",
+          "alpha_material_wood": "Transparency level for wood planks (0-255)",
+          "alpha_material_tile": "Transparency level for tiles (0-255)"
+        }
+      },
+      "floor_management": {
+        "title": "Floor Management",
+        "description": "Manage multiple floors and their trim settings",
+        "menu_options": {
+          "select_floor": "Select Active Floor",
+          "add_floor": "Add New Floor",
+          "edit_floor": "Edit Floor Settings",
+          "delete_floor": "Delete Floor"
         }
       },
       "map_trims": {
@@ -140,7 +169,8 @@
           "disable_obstacles": "Hide Obstacles",
           "disable_path": "Hide Path",
           "disable_predicted_path": "Hide Predicted Path",
-          "disable_go_to_target": "Hide Go-To Target"
+          "disable_go_to_target": "Hide Go-To Target",
+          "disable_carpets": "Hide Carpets"
         },
         "data_description": {
           "disable_floor": "When enabled, the floor will not be shown on the map",
@@ -153,7 +183,8 @@
           "disable_obstacles": "When enabled, obstacles will not be shown on the map",
           "disable_path": "When enabled, the cleaning path will not be shown on the map",
           "disable_predicted_path": "When enabled, the predicted path will not be shown on the map",
-          "disable_go_to_target": "When enabled, go-to targets will not be shown on the map"
+          "disable_go_to_target": "When enabled, go-to targets will not be shown on the map",
+          "disable_carpets": "When enabled, carpets will not be shown on the map"
         }
       },
       "segments_visibility": {
@@ -197,6 +228,7 @@
       "base_colours": {
         "data": {
           "color_charger": "[255, 128, 0]",
+          "color_carpet": "[255, 192, 203]",
           "color_move": "[238, 247, 255]",
           "color_wall": "[255, 255, 0]",
           "color_robot": "[255, 255, 204]",
@@ -208,6 +240,7 @@
         },
         "data_description": {
           "color_charger": "Charger color.",
+          "color_carpet": "Carpet color.",
           "color_move": "Move color.",
           "color_wall": "Wall color.",
           "color_robot": "Robot color.",
@@ -222,6 +255,7 @@
       "alpha_1": {
         "data": {
           "alpha_charger": "Charger Alpha",
+          "alpha_carpet": "Carpet Alpha",
           "alpha_move": "Moves Alpha",
           "alpha_wall": "Walls Alpha",
           "alpha_robot": "Robot Alpha",
@@ -325,6 +359,50 @@
         },
         "description": "Camera Options. Alpha 3",
         "title": "Alpha Chanel Rooms Colours"
+      },
+      "select_floor": {
+        "title": "Select Active Floor",
+        "description": "Choose which floor is currently active. The camera will use the trim settings for the selected floor.",
+        "data": {
+          "current_floor": "Active Floor"
+        },
+        "data_description": {
+          "current_floor": "Select the floor that is currently active. Current: {current_floor}"
+        }
+      },
+      "add_floor": {
+        "title": "Add New Floor",
+        "description": "{info}",
+        "data": {
+          "floor_name": "Floor Name",
+          "map_name": "Map Name (Optional)"
+        },
+        "data_description": {
+          "floor_name": "Select from Home Assistant floors or enter a custom name",
+          "map_name": "Optional friendly name for this floor"
+        }
+      },
+      "edit_floor": {
+        "title": "Edit Floor Settings",
+        "description": "Edit map name for floor: {floor_name}. {trim_info}. Trim values are auto-calculated - use 'Save Map Trims' to update them.",
+        "data": {
+          "floor_name": "Select Floor to Edit",
+          "map_name": "Map Name (Optional)"
+        },
+        "data_description": {
+          "floor_name": "Choose which floor to edit",
+          "map_name": "Optional friendly name for this floor"
+        }
+      },
+      "delete_floor": {
+        "title": "Delete Floor",
+        "description": "Remove a floor from the configuration. If you delete the currently active floor, it will be reset to 'floor_0'.",
+        "data": {
+          "floor_name": "Floor to Delete"
+        },
+        "data_description": {
+          "floor_name": "Select which floor to delete"
+        }
       }
     }
   },

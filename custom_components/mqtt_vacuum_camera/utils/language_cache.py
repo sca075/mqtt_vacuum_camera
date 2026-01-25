@@ -11,6 +11,7 @@ from functools import lru_cache
 import json
 import logging
 import os
+from pathlib import Path
 from typing import Dict, List, Optional, Set
 
 from homeassistant.core import HomeAssistant
@@ -71,10 +72,10 @@ class LanguageCache:
                 self._all_languages = set(all_languages)
 
             # Get the auth file update time
-            auth_file_path = hass.config.path(STORAGE_DIR, "auth")
-            if await asyncio.to_thread(os.path.exists, auth_file_path):
+            auth_file_path = Path(hass.config.path(STORAGE_DIR, "auth"))
+            if await asyncio.to_thread(auth_file_path.exists):
                 self._auth_update_time = await asyncio.to_thread(
-                    os.path.getmtime, auth_file_path
+                    lambda: auth_file_path.stat().st_mtime
                 )
 
             self._initialized = True
@@ -107,14 +108,14 @@ class LanguageCache:
             user_ids = [user.id for user in users if user.name not in excluded_users]
 
             for user_id in user_ids:
-                user_data_file = hass.config.path(
-                    STORAGE_DIR, f"frontend.user_data_{user_id}"
+                user_data_file = Path(
+                    hass.config.path(STORAGE_DIR, f"frontend.user_data_{user_id}")
                 )
 
-                if await asyncio.to_thread(os.path.exists, user_data_file):
+                if await asyncio.to_thread(user_data_file.exists):
                     try:
                         # Use asyncio.to_thread for non-blocking file operations
-                        user_data = await self._async_read_file(user_data_file)
+                        user_data = await self._async_read_file(str(user_data_file))
                         if user_data:
                             data = json.loads(user_data)
                             language = data["data"]["language"]["language"]
@@ -177,13 +178,15 @@ class LanguageCache:
                     return language
 
                 # Fallback to loading from file if not in UserLanguageStore
-                user_data_path = hass.config.path(
-                    STORAGE_DIR, f"frontend.user_data_{active_user_id}"
+                user_data_path = Path(
+                    hass.config.path(
+                        STORAGE_DIR, f"frontend.user_data_{active_user_id}"
+                    )
                 )
-                if await asyncio.to_thread(os.path.exists, user_data_path):
+                if await asyncio.to_thread(user_data_path.exists):
                     try:
                         # Use asyncio.to_thread for non-blocking file operations
-                        user_data = await self._async_read_file(user_data_path)
+                        user_data = await self._async_read_file(str(user_data_path))
                         if user_data:
                             data = json.loads(user_data)
                             language = data["data"]["language"]["language"]
@@ -217,12 +220,12 @@ class LanguageCache:
         Returns:
             True if the auth file has been updated, False otherwise
         """
-        auth_file_path = hass.config.path(STORAGE_DIR, "auth")
-        if not await asyncio.to_thread(os.path.exists, auth_file_path):
+        auth_file_path = Path(hass.config.path(STORAGE_DIR, "auth"))
+        if not await asyncio.to_thread(auth_file_path.exists):
             return False
 
         # Use asyncio.to_thread for non-blocking file operations
-        current_mtime = await asyncio.to_thread(os.path.getmtime, auth_file_path)
+        current_mtime = await asyncio.to_thread(lambda: auth_file_path.stat().st_mtime)
         if self._auth_update_time is None or current_mtime > self._auth_update_time:
             self._auth_update_time = current_mtime
             return True
@@ -287,15 +290,15 @@ class LanguageCache:
         if language in self._translations_cache:
             return self._translations_cache[language]
 
-        translations_path = hass.config.path(
-            "custom_components/mqtt_vacuum_camera/translations"
+        translations_path = Path(
+            hass.config.path("custom_components/mqtt_vacuum_camera/translations")
         )
-        file_path = os.path.join(translations_path, f"{language}.json")
+        file_path = translations_path / f"{language}.json"
 
         try:
-            if await asyncio.to_thread(os.path.exists, file_path):
+            if await asyncio.to_thread(file_path.exists):
                 # Use asyncio.to_thread for non-blocking file operations
-                file_content = await self._async_read_file(file_path)
+                file_content = await self._async_read_file(str(file_path))
                 if file_content:
                     translation_data = json.loads(file_content)
                     self._translations_cache[language] = translation_data

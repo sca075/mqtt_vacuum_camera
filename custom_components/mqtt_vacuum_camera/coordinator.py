@@ -14,10 +14,10 @@ from valetudo_map_parser.config.shared import CameraSharedManager
 
 from .common import get_camera_device_info
 from .const import DEFAULT_NAME, LOGGER, SENSOR_NO_DATA
-from .types import CoordinatorConfig
+from .types import CoordinatorConfig, CoordinatorContext
 
 
-class MQTTVacuumCoordinator(DataUpdateCoordinator):  # pylint: disable=too-many-instance-attributes
+class MQTTVacuumCoordinator(DataUpdateCoordinator):
     """Coordinator for MQTT Vacuum Camera."""
 
     def __init__(self, config: CoordinatorConfig):
@@ -34,15 +34,25 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):  # pylint: disable=too-many-
         self.vacuum_topic = config.vacuum_topic
         self.is_rand256 = config.is_rand256
         self.device_entity = config.device_entity
-        self.device_info: DeviceInfo = get_camera_device_info(
-            config.hass, config.device_entity
+
+        # Validate required fields
+        if not config.shared:
+            raise ValueError("CoordinatorConfig.shared is required")
+        if not config.connector:
+            raise ValueError("CoordinatorConfig.connector is required")
+
+        # Initialize context with grouped attributes
+        device_info = get_camera_device_info(config.hass, config.device_entity)
+        config.shared.is_rand = self.is_rand256
+
+        self.context = CoordinatorContext(
+            shared=config.shared,
+            file_name=config.shared.file_name,
+            connector=config.connector,
+            device_info=device_info,
         )
+
         self.shared_manager: Optional[CameraSharedManager] = None
-        if config.shared:
-            self.shared = config.shared
-            self.shared.is_rand = self.is_rand256
-            self.file_name = config.shared.file_name
-        self.connector = config.connector
         self.in_sync_with_camera: bool = False
         self.sensor_data = SENSOR_NO_DATA
 
@@ -50,25 +60,20 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):  # pylint: disable=too-many-
         """
         Fetch data from the MQTT topics for sensors.
         """
-        if self.shared is not None and self.connector:
-            try:
-                async with async_timeout.timeout(10):
-                    # Fetch and process sensor data from the MQTT connector
-                    sensor_data = await self.connector.get_rand256_attributes()
-                    if sensor_data:
-                        # Format the data before returning it
-                        self.sensor_data = await self.async_update_sensor_data(
-                            sensor_data
-                        )
-                        return self.sensor_data
+        try:
+            async with async_timeout.timeout(10):
+                # Fetch and process sensor data from the MQTT connector
+                sensor_data = await self.context.connector.get_rand256_attributes()
+                if sensor_data:
+                    # Format the data before returning it
+                    self.sensor_data = await self.async_update_sensor_data(sensor_data)
                     return self.sensor_data
-            except Exception as err:
-                LOGGER.error(
-                    "Exception raised fetching sensor data: %s", err, exc_info=True
-                )
-                raise UpdateFailed(f"Error fetching sensor data: {err}") from err
-        else:
-            return self.sensor_data
+                return self.sensor_data
+        except Exception as err:
+            LOGGER.error(
+                "Exception raised fetching sensor data: %s", err, exc_info=True
+            )
+            raise UpdateFailed(f"Error fetching sensor data: {err}") from err
 
     async def async_update_sensor_data(self, sensor_data):
         """Update the sensor data format before sending to the sensors."""
@@ -77,13 +82,13 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):  # pylint: disable=too-many-
                 return SENSOR_NO_DATA
 
             try:
-                battery_level = await self.connector.get_battery_level()
-                vacuum_state = await self.connector.get_vacuum_status()
+                battery_level = await self.context.connector.get_battery_level()
+                vacuum_state = await self.context.connector.get_vacuum_status()
             except (AttributeError, ConnectionError) as err:
                 LOGGER.warning("Failed to get vacuum status: %s", err, exc_info=True)
                 return SENSOR_NO_DATA
 
-            vacuum_room = self.shared.current_room or {"in_room": "Unsupported"}
+            vacuum_room = self.context.shared.current_room or {"in_room": "Unsupported"}
             last_run_stats = sensor_data.get("last_run_stats", {})
             last_loaded_map = sensor_data.get("last_loaded_map", {"name": "Default"})
 

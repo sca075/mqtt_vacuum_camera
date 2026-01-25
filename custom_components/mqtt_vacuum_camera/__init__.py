@@ -5,6 +5,7 @@ Version: 2025.10.0
 
 from functools import partial
 import os
+from pathlib import Path
 from typing import Optional
 import zipfile
 
@@ -18,9 +19,9 @@ from homeassistant.const import (
     Platform,
 )
 from homeassistant.exceptions import ConfigEntryNotReady
+import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.reload import async_register_admin_service
-import homeassistant.helpers.config_validation as cv
 from valetudo_map_parser import get_default_font_path
 from valetudo_map_parser.config.shared import CameraShared, CameraSharedManager
 
@@ -28,8 +29,8 @@ from .common import (
     get_camera_device_info,
     get_vacuum_device_info,
     get_vacuum_mqtt_topic,
-    update_options,
     is_rand256_vacuum,
+    update_options,
 )
 from .const import (
     CONF_VACUUM_CONFIG_ENTRY_ID,
@@ -61,18 +62,18 @@ def init_shared_data(
     _hass: core.HomeAssistant,
     mqtt_listen_topic: str,
     device_info: DeviceInfo,
-) -> tuple[Optional[CameraShared], Optional[str]]:
+) -> tuple[CameraShared, str]:
     """
     Initialize the shared data.
+    Raises ValueError if mqtt_listen_topic is empty.
     """
-    shared = None
-    file_name = None
+    if not mqtt_listen_topic:
+        raise ValueError("mqtt_listen_topic is required to initialize shared data")
 
-    if mqtt_listen_topic:
-        file_name = mqtt_listen_topic.split("/")[1].lower()
-        shared_manager = CameraSharedManager(file_name, dict(device_info))
-        shared = shared_manager.get_instance()
-        shared.vacuum_status_font = f"{get_default_font_path()}/FiraSans.ttf"
+    file_name = mqtt_listen_topic.split("/")[1].lower()
+    shared_manager = CameraSharedManager(file_name, dict(device_info))
+    shared = shared_manager.get_instance()
+    shared.vacuum_status_font = f"{get_default_font_path()}/FiraSans.ttf"
 
     return shared, file_name
 
@@ -301,11 +302,10 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
         # Restore translation files from backup ZIP (run in executor to avoid blocking)
         def restore_translations():
             """Restore translation files from backup ZIP with path traversal protection."""
-            backup_zip = os.path.join(
-                os.path.dirname(__file__), "translations_backup.zip"
-            )
+            base_dir = Path(__file__).parent.resolve()
+            backup_zip = base_dir / "translations_backup.zip"
 
-            if not os.path.exists(backup_zip):
+            if not backup_zip.exists():
                 LOGGER.warning(
                     "Translation backup file not found, skipping restoration"
                 )
@@ -313,24 +313,23 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
 
             try:
                 LOGGER.info("Restoring translation files from backup")
-                base_dir = os.path.realpath(os.path.dirname(__file__))
 
                 with zipfile.ZipFile(backup_zip, "r") as zip_ref:
                     for member in zip_ref.infolist():
                         name = member.filename
 
                         # Block absolute paths
-                        if os.path.isabs(name):
+                        if Path(name).is_absolute():
                             LOGGER.error(
                                 "Security: Blocked absolute path in zip: %s", name
                             )
                             return False
 
                         # Resolve the destination path
-                        dest = os.path.realpath(os.path.join(base_dir, name))
+                        dest = (base_dir / name).resolve()
 
                         # Ensure extraction stays within target directory
-                        if not dest.startswith(base_dir + os.sep):
+                        if not dest.is_relative_to(base_dir):
                             LOGGER.error(
                                 "Security: Blocked path traversal attempt in zip: %s",
                                 name,
@@ -343,8 +342,8 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
                 LOGGER.info("Translation files restored successfully")
 
                 # Only delete backup on successful restoration
-                if os.path.exists(backup_zip):
-                    os.remove(backup_zip)
+                if backup_zip.exists():
+                    backup_zip.unlink()
 
                 return True
 
@@ -374,6 +373,39 @@ async def async_migrate_entry(hass, config_entry: config_entries.ConfigEntry):
             LOGGER.debug("Migration data: %s", dict(new_options))
             hass.config_entries.async_update_entry(
                 config_entry, version=3.4, data=new_data, options=new_options
+            )
+            LOGGER.info(
+                "Migration to config entry version %s successful",
+                config_entry.version,
+            )
+            return True
+
+        LOGGER.error(
+            "Migration failed: No options found in config entry. Please reconfigure the camera."
+        )
+        return False
+    if config_entry.version == 3.4:
+        LOGGER.info("Migrating config entry from version %s", config_entry.version)
+        old_data = {**config_entry.data}
+        new_data = {"vacuum_config_entry": old_data["vacuum_config_entry"]}
+        LOGGER.debug(dict(new_data))
+        old_options = {**config_entry.options}
+        if len(old_options) != 0:
+            # Add carpet mode and floor materials options
+            tmp_option = {
+                "disable_carpets": False,
+                "disable_material_overlay": False,
+                "color_carpet": [255, 192, 203],
+                "color_material_wood": [40, 40, 40],
+                "color_material_tile": [40, 40, 40],
+                "alpha_carpet": 255.0,
+                "alpha_material_wood": 38.0,
+                "alpha_material_tile": 45.0,
+            }
+            new_options = await update_options(old_options, tmp_option)
+            LOGGER.debug("Migration data: %s", dict(new_options))
+            hass.config_entries.async_update_entry(
+                config_entry, version=3.5, data=new_data, options=new_options
             )
             LOGGER.info(
                 "Migration to config entry version %s successful",

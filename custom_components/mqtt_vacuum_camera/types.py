@@ -57,10 +57,20 @@ class CoordinatorConfig:
     hass: HomeAssistant
     device_entity: ConfigEntry
     vacuum_topic: str
+    connector: Any  # ValetudoConnector (required)
+    shared: Any  # CameraShared (required)
     is_rand256: bool = False
-    connector: Optional[Any] = None
-    shared: Optional[Any] = None
     polling_interval: timedelta = field(default_factory=lambda: timedelta(seconds=10))
+
+
+@dataclass
+class CoordinatorContext:
+    """Grouped context for coordinator to reduce attribute count."""
+
+    shared: Any  # CameraShared (required)
+    file_name: str  # Required, derived from shared.file_name
+    connector: Any  # ValetudoConnector (required)
+    device_info: Any  # DeviceInfo (required)
 
 
 # ============================================================================

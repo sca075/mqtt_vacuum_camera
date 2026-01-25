@@ -48,6 +48,11 @@ class MQTTData:
     mqtt_vac_battery_level: Any = None
     mqtt_vac_err: Any = None
     img_payload: Any = None
+    mop_attached: bool = False
+    operation_mode: str = ""
+    water_usage: str = ""
+    dock_status: str = ""
+    valetudo_events: Dict[Any, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -201,6 +206,26 @@ class ValetudoConnector:
         """Return the vacuum attributes if available."""
         return self.rrm_data.rrm_attributes if self.rrm_data.rrm_attributes else {}
 
+    async def get_mop_attachment_status(self) -> bool:
+        """Return mop attachment status."""
+        return self.mqtt_data.mop_attached
+
+    async def get_operation_mode(self) -> str:
+        """Return operation mode preset."""
+        return self.mqtt_data.operation_mode
+
+    async def get_water_usage(self) -> str:
+        """Return water usage preset."""
+        return self.mqtt_data.water_usage
+
+    async def get_dock_status(self) -> str:
+        """Return dock status."""
+        return self.mqtt_data.dock_status
+
+    async def get_valetudo_events(self) -> dict:
+        """Return Valetudo events dictionary."""
+        return self.mqtt_data.valetudo_events
+
     async def _handle_pkohelrs_maploader_map(self, msg) -> None:
         """Handle Pkohelrs Maploader map payload."""
         self.pkohelrs_data.maploader_map = await self._async_decode_mqtt_payload(msg)
@@ -255,6 +280,53 @@ class ValetudoConnector:
         """Handle MQTT message for map segments."""
         self.mqtt_data.mqtt_segments = await self._async_decode_mqtt_payload(msg)
         self.connector_data.room_store.set_rooms(self.mqtt_data.mqtt_segments)
+
+    async def _hypfer_handle_mop_attachment(self, mop_state) -> None:
+        """Handle mop attachment state."""
+        if mop_state is not None:
+            self.mqtt_data.mop_attached = bool(mop_state)
+            # Update shared mop_mode based on both attachment and operation mode
+            self.config.shared.mop_mode = (
+                self.mqtt_data.mop_attached
+                and "mop" in self.mqtt_data.operation_mode.lower()
+            )
+
+    async def _hypfer_handle_operation_mode(self, mode) -> None:
+        """Handle operation mode preset."""
+        if mode:
+            self.mqtt_data.operation_mode = str(mode)
+            # Update shared mop_mode only if mop is attached AND mode contains "mop"
+            self.config.shared.mop_mode = (
+                self.mqtt_data.mop_attached and "mop" in str(mode).lower()
+            )
+
+    async def _hypfer_handle_water_usage(self, water_level) -> None:
+        """Handle water usage preset."""
+        if water_level:
+            self.mqtt_data.water_usage = str(water_level)
+
+    async def _hypfer_handle_dock_status(self, status) -> None:
+        """Handle dock status."""
+        if status:
+            self.mqtt_data.dock_status = str(status)
+
+    async def _hypfer_handle_valetudo_events(self, events) -> None:
+        """Handle Valetudo events (errors, warnings, etc.)."""
+        if events and isinstance(events, dict):
+            self.mqtt_data.valetudo_events = events
+            # Extract error messages from unprocessed events
+            for event_id, event_data in events.items():
+                if isinstance(event_data, dict) and not event_data.get(
+                    "processed", True
+                ):
+                    if event_data.get("__class") == "ErrorStateValetudoEvent":
+                        error_message = event_data.get("message", "Unknown error")
+                        self.mqtt_data.mqtt_vac_err = error_message
+                        LOGGER.warning(
+                            "%s: Valetudo error event: %s",
+                            self.connector_data.file_name,
+                            error_message,
+                        )
 
     async def _rand256_handle_image_payload(self, msg) -> None:
         """Handle Rand256 image payload."""
@@ -450,6 +522,25 @@ class ValetudoConnector:
             case t if t == f"{self.config.mqtt_topic}/BatteryStateAttribute/level":
                 decoded_battery_state = await self._async_decode_mqtt_payload(msg)
                 await self._hypfer_handle_battery_level(decoded_battery_state)
+            case t if t == f"{self.config.mqtt_topic}/AttachmentStateAttribute/mop":
+                decoded_mop_state = await self._async_decode_mqtt_payload(msg)
+                await self._hypfer_handle_mop_attachment(decoded_mop_state)
+            case t if (
+                t == f"{self.config.mqtt_topic}/OperationModeControlCapability/preset"
+            ):
+                decoded_operation_mode = await self._async_decode_mqtt_payload(msg)
+                await self._hypfer_handle_operation_mode(decoded_operation_mode)
+            case t if (
+                t == f"{self.config.mqtt_topic}/WaterUsageControlCapability/preset"
+            ):
+                decoded_water_usage = await self._async_decode_mqtt_payload(msg)
+                await self._hypfer_handle_water_usage(decoded_water_usage)
+            case t if t == f"{self.config.mqtt_topic}/DockStatusStateAttribute/status":
+                decoded_dock_status = await self._async_decode_mqtt_payload(msg)
+                await self._hypfer_handle_dock_status(decoded_dock_status)
+            case t if t == f"{self.config.mqtt_topic}/ValetudoEvents/valetudo_events":
+                decoded_events = await self._async_decode_mqtt_payload(msg)
+                await self._hypfer_handle_valetudo_events(decoded_events)
             case t if t == f"{self.config.mqtt_topic}/state":
                 await self.rand256_handle_statuses(msg)
             case t if t == f"{self.config.mqtt_topic}/custom_command":
