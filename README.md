@@ -1,119 +1,171 @@
-[releases_shield]: https://img.shields.io/github/release/sca075/mqtt_vacuum_camera.svg?style=popout
-[latest_release]: https://github.com/sca075/mqtt_vacuum_camera/releases/latest
+# MQTT Vacuum Camera
 
-[releases]: https://github.com/sca075/mqtt_vacuum_camera/releases
-[downloads_total_shield]: https://img.shields.io/github/downloads/sca075/mqtt_vacuum_camera/total
-
-[community_forum_shield]: https://img.shields.io/static/v1.svg?label=%20&message=Forum&style=popout&color=41bdf5&logo=HomeAssistant&logoColor=white
-[community_forum]: https://community.home-assistant.io/t/valetudo-vacuums-map-camera-for-home-assistant/600182/19
-
-[paypal_me_shield]: https://img.shields.io/static/v1.svg?label=%20&message=PayPal.Me&logo=paypal
-[paypal_me]: https://paypal.me/gsca075
-
-[discord_shield]: https://img.shields.io/badge/Discord-Join%20Chat-5865F2?logo=discord&logoColor=white
-[discord_channel]: https://discord.gg/AubW7kQ6F6
-
-
-# MQTT Vacuum's Camera
 <p align="center">
-  <img width="256" alt="logo@2x" src="https://github.com/sca075/mqtt_vacuum_camera/assets/82227818/0c623494-2844-4ed9-a246-0ad27f32503e">
+  <img width="256" alt="MQTT Vacuum Camera Logo" src="https://github.com/sca075/mqtt_vacuum_camera/assets/82227818/0c623494-2844-4ed9-a246-0ad27f32503e">
 </p>
 
+<p align="center">
+  <a href="https://github.com/sca075/mqtt_vacuum_camera/releases/latest"><img src="https://img.shields.io/github/release/sca075/mqtt_vacuum_camera.svg?style=popout" alt="Latest Release"></a>
+  <a href="https://github.com/sca075/mqtt_vacuum_camera/releases"><img src="https://img.shields.io/github/downloads/sca075/mqtt_vacuum_camera/total" alt="Total Downloads"></a>
+  <a href="https://community.home-assistant.io/t/valetudo-vacuums-map-camera-for-home-assistant/600182/19"><img src="https://img.shields.io/static/v1.svg?label=%20&message=Forum&style=popout&color=41bdf5&logo=HomeAssistant&logoColor=white" alt="Community Forum"></a>
+  <a href="https://discord.gg/AubW7kQ6F6"><img src="https://img.shields.io/badge/Discord-Join%20Chat-5865F2?logo=discord&logoColor=white" alt="Discord"></a>
+  <a href="https://paypal.me/gsca075"><img src="https://img.shields.io/static/v1.svg?label=%20&message=PayPal.Me&logo=paypal" alt="PayPal"></a>
+</p>
 
-## Current Release: [![GitHub Latest Release][releases_shield]][latest_release] [![GitHub All Releases][downloads_total_shield]][releases] [![Community Forum][community_forum_shield]][community_forum] [![PayPal.Me][paypal_me_shield]][paypal_me] [![Discord_Shield]][discord_channel]
-![Screenshot 2023-12-27 at 13 37 57](https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/4f1f76ee-b507-4fde-b1bd-32e6980873cb)
+<p align="center">
+  <img src="https://github.com/sca075/valetudo_vacuum_camera/assets/82227818/4f1f76ee-b507-4fde-b1bd-32e6980873cb" alt="MQTT Vacuum Camera Screenshot">
+</p>
 
-# Valetudo Vacuums maps in Home Assistant was never so easy.
+## Valetudo Vacuum Maps in Home Assistant Made Easy
 
-**About:**
-Extract the maps of Vacuum Cleaners connected via MQTT to Home Assistant such as Valetudo [Hypfer](https://valetudo.cloud/) or [RE(rand256)](https://github.com/rand256/valetudo) firmwares, [easy setup](./docs/install.md) thanks to [HACS](https://hacs.xyz/)  and guided Home Assistant GUI configuration.
+Display real-time vacuum cleaner maps in Home Assistant for vacuums running [Valetudo Hypfer](https://valetudo.cloud/) or [Valetudo RE (rand256)](https://github.com/rand256/valetudo) firmware. Simple installation via [HACS](https://hacs.xyz/) with guided GUI configuration.
 
-**What it is:**
+> ❗ **Note:** This is an unofficial project and is not affiliated with [valetudo.cloud](https://valetudo.cloud)
 
-❗This is an _unofficial_ repo and is not created, maintained, or in any sense linked to [valetudo.cloud](https://valetudo.cloud)
+### What You Get
 
-This custom component is simple to install and setup, decode and render the vacuum maps to Home Assistant in few clicks.
-When you want also to control your vacuum you will need to also install the:
-[lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card) from HACS as well.
+- **Easy Setup**: Install and configure in minutes through Home Assistant's UI
+- **Real-time Maps**: Automatically decode and render vacuum maps from MQTT
+- **Full Control**: Pair with [lovelace-xiaomi-vacuum-map-card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card) for complete vacuum control
 
-### 🔗 Related Repositories
+---
 
-- [Valetudo Map Extractor (library for extracting the maps)](https://github.com/sca075/Python-package-valetudo-map-parser)
+## 🎯 Project Goals
 
-### Goal of this project.
-The goal of this project is to deliver an out-of-the-box solution for integrating MQTT-based vacuums into the Home Assistant ecosystem. 
-This includes real-time map extraction, sensor data (when not provided), and control services (not available by default)
-for a seamless user experience.
+Deliver an out-of-the-box solution for integrating MQTT-based vacuums into Home Assistant, including:
+- Real-time map extraction and rendering
+- Sensor data (when not provided by the vacuum)
+- Control services for seamless operation
+- Full vacuum control beyond basic map rendering
+- Continuous improvements and regular updates
 
-Our current focus is evolving beyond map rendering to provide full vacuum control, ensuring a reliable, complete integration for all Valetudo-based vacuums, while continuously improving the user experience through regular updates.  
+### 🔗 Related Projects
+
+- **[Valetudo Map Parser](https://github.com/sca075/Python-package-valetudo-map-parser)** - Python library for map extraction
+- **[MVC Renderer](https://github.com/sca075/mvc-renderer)** - High-performance C library for map rendering
 
 
-### Features:
-<details><summary> We here List what this camera offers as futures.</summary>
+---
 
-1) All Valetudo equipped vacuums are supported.
-2) Supported languages (English, Arabic, Chinese, Czech, Dutch, French, German, Italian, Japanese, Polish, Norwegian, Russian, Spanish, Swedish).
-3) **Automatically Generate the calibration points for the lovelace-xiaomi-vacuum-map-card** to ensure full compatibility to this user-friendly card.
-4) **Automatically Generate rooms based configuration when vacuum support this functionality**, this will allow you to configure the rooms quickly on the [lovelace-xiaomi-vacuum-map-card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
-5) **The camera take [snapshots](./docs/snapshots.md) using the Action from Home Assistant with the file name and location you want to use.**
-   ```
-   service: camera.snapshot
-   target:
-     entity_id: camera.valetudo_your_vacuum_camera
-   data:
-     filename: /config/www/REPLACE_ME.png
-   ```
-6) **Change the image options** directly form the Home Assistant integration UI with a simple click on the integration configuration.
-   - **Image Rotation**: 0, 90, 180, 270 (default is 0).
-   - [**Trim automatically the images**](./docs/croping_trimming.md). The standard Valetudo images size 5210x5210 or more, are resized automatically (At boot the camera trims and reduces the images sizes). Default margins are 150 pixels, you can customize this value from the image options.
-   - Base colors are the **colors for robot, charger, walls, background, zones etc**.
-   - **Rooms colors**, Room 1 is actually also the Floor color (for vacuum that do not support rooms).
-   - **[Transparency level](./docs/transparency.md) for all elements and rooms** colours can be also customize.
-   - It is possible to **display on the image the vacuum status**, this option add a vacuum status text at the top left of the image. Status and room where the vacuum is will be display on the text filed.
-7) This integration make possible to **render multiple vacuums** as per each camera will be named with the vacuum name (example: vacuum.robot1 = camera.robot1_camera.. vacuum.robotx = camera.robotx_camera)
-8) The camera as all cameras in HA **supports the ON/OFF service**, it is possible to *suspend and resume the camera streem as desired*.
-9) In the attributes is possible to get on what room the vacuum is. It is also shown on the status text.
-10) No Go, Virtual Walls, Zone Clean, Active Segments and Obstacles are draw on the map when available. You can disable them from the image options.
-11) [Auto Zooming the room (segment)](./docs/auto_zoom.md) when the vacuum is cleaning it.
-12) Rand256 sensors are pre-configured from the integration, this will allow you to have all the sensors available in Home Assistant.
-13) Added the [**Actions**](./docs/actions.md) for Rand256 / Hypfer to control the vacuums without to format the MQTT messages.
-14) [Obstacles](./docs/obstacles_detection.md) are displayed on the map when available. When the vacuum support  ```ObstaclesImage``` is also possible to view the obstacles images.
+## ✨ Features
+
+<details>
+<summary><b>Click to expand full feature list</b></summary>
+
+### Core Features
+- ✅ **Universal Support** - All Valetudo-equipped vacuums (Hypfer & Rand256)
+- 🌍 **Multi-language** - 14 languages supported (English, Arabic, Chinese, Czech, Dutch, French, German, Italian, Japanese, Polish, Norwegian, Russian, Spanish, Swedish)
+- 🤖 **Multiple Vacuums** - Render maps for multiple vacuums simultaneously (e.g., `vacuum.robot1` → `camera.robot1_camera`)
+- 🔄 **ON/OFF Control** - Suspend and resume camera stream as needed
+
+### Map Features
+- 📸 **[Snapshots](./docs/snapshots.md)** - Save maps using Home Assistant's camera.snapshot service
+  ```yaml
+  service: camera.snapshot
+  target:
+    entity_id: camera.valetudo_your_vacuum_camera
+  data:
+    filename: /config/www/vacuum_map.png
+  ```
+- 🔄 **Image Rotation** - 0°, 90°, 180°, 270°
+- ✂️ **[Auto-Trim](./docs/croping_trimming.md)** - Automatically resize large maps (5210×5210+) with customizable margins
+- 🔍 **[Auto-Zoom](./docs/auto_zoom.md)** - Automatically zoom to the room being cleaned
+- 🎨 **Customizable Colors** - Configure colors for robot, charger, walls, background, zones, and rooms
+- 🌈 **[Transparency Control](./docs/transparency.md)** - Adjust transparency for all elements and rooms
+- 📊 **Status Display** - Show vacuum status and current room on the map
+
+### Advanced Features
+- 🗺️ **Auto-Generated Calibration** - Automatic calibration points for [lovelace-xiaomi-vacuum-map-card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card)
+- 🏠 **Auto-Generated Rooms** - Automatic room configuration when supported by vacuum
+- 🚫 **Zone Visualization** - Display No-Go zones, virtual walls, zone clean areas, and active segments
+- 🚧 **[Obstacle Detection](./docs/obstacles_detection.md)** - View obstacles and obstacle images (when supported)
+- 🏗️ **Floor Materials** - Detect and render different floor types (wood, tiles, carpets)
+- 📡 **Rand256 Sensors** - Pre-configured sensors for complete Home Assistant integration
+- 🎮 **[Control Actions](./docs/actions.md)** - Control vacuums without formatting MQTT messages manually
+
 </details>
 
 
-### How to install:
+---
+
+## 📦 Installation
+
+### Quick Install via HACS (Recommended)
 
 [![Open HACS repository in Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=sca075&repository=mqtt_vacuum_camera&category=integration)
 
-The instructions in [here](./docs/install.md) show detailed steps and will help to set up the camera also without HACS (manual setup).
-Our setup guide also includes **important** informations on how to set up the [lovelace-xiaomi-vacuum-map-card (recommended)](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
+### Manual Installation
+
+For detailed installation instructions, including manual setup and configuration of the [lovelace-xiaomi-vacuum-map-card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card), see our **[Installation Guide](./docs/install.md)**.
 
 
-### Limitations and Compatibility:
+---
+
+## ⚙️ Compatibility & System Requirements
+
 <details>
-   <summary>
-      Please Read the "Limitations and Compatibility" before to install the camera.
-   </summary>
+<summary><b>Click to view compatibility information</b></summary>
 
-I kindly ask for your understanding regarding any limitations you may encounter with this custom component (please read also
-our [**notice**](./NOTICE.txt)).
-While it's been extensively tested on a PI4 8GB and now also on ProxMox VE, hardware below PI4 8GB may face issues. **Your feedback on such platforms is invaluable**;
-please report any problems you encounter.
-As a team of one, I'm diligently working to address compatibility across all environments, but this process takes time. In the interim, you can utilize [ValetudoPNG](https://github.com/erkexzcx/valetudopng) as an alternative on unsupported platforms.
-Your support in making this component compatible with all environments is greatly appreciated. If you'd like to contribute, whether through code or time, please consider joining our efforts.
-For further details on how the camera operates and how you can contribute, refer to the Wiki section of this project. Your patience and assistance are crucial as we strive toward our goal of universal compatibility.
+### Supported Systems
+- ✅ **All 64-bit systems** (Raspberry Pi 4+, ProxMox VE, Docker, etc.)
+- ❌ **32-bit systems** - Not supported since version 2025.10.0
 
-#### Compatibility:
-- All 64bit systems are supported, **32bit systems are not supported anymore** since 2025.10.0.
-- PI3 4GB: The camera is working on PI3 4GB, anyhow no chance there to run two vacuums cameras at the same time.
-- PI4 4GB: The camera is working on PI4 4GB, anyhow run two vacuums cameras at the same time isn't advised even if possible.
-- All Vacuums with Valetudo Hypfer or Rand256 firmware are supported.
-- If you have a vacuum with a different firmware connected via MQTT, please let us know, we will try to add the support for it.
-</details> 
+### Hardware Recommendations
+| Hardware | Single Vacuum | Multiple Vacuums |
+|----------|---------------|------------------|
+| **Raspberry Pi 3 (4GB)** | ✅ Works | ❌ Not recommended |
+| **Raspberry Pi 4 (4GB)** | ✅ Works well | ⚠️ Possible, not advised |
+| **Raspberry Pi 4 (8GB)** | ✅ Excellent | ✅ Recommended |
+| **ProxMox VE / Docker** | ✅ Excellent | ✅ Recommended |
+
+### Supported Vacuums
+- ✅ All vacuums running **Valetudo Hypfer** firmware
+- ✅ All vacuums running **Valetudo RE (rand256)** firmware
+- 💬 Other MQTT-connected vacuums? [Let us know!](https://github.com/sca075/mqtt_vacuum_camera/issues)
+
+### Important Notes
+- Extensively tested on Raspberry Pi 4 (8GB) with Home Assistant OS
+- Also tested on ProxMox and Docker Supervised environments
+- For unsupported platforms, consider [ValetudoPNG](https://github.com/erkexzcx/valetudopng) as an alternative
+- Please read our [**NOTICE**](./NOTICE.txt) for additional information
+
+**Your feedback is invaluable!** Please report any issues you encounter on different platforms.
+
+</details>
 
 
-### Notes:
-- This integration is developed and tested using a PI4 with Home Assistant OS fully updated [to the last version](https://www.home-assistant.io/faq/release/), this allows us to confirm that the component is working properly with Home Assistant. Tested also on ProxMox and Docker Supervised "production" enviroment (fully setup home installation).
-### Thanks to:
-All of you that are using this integration and reporting any issues, improvements and vacuums used with it.
-To each one of you, a big thank you for your support, understanding and feedbacks.
+---
+
+## 🤝 Contributing & Support
+
+We welcome contributions! Whether you can help with code, testing, or documentation, your support is appreciated. Check the Wiki for details on how the camera works and how you can contribute.
+
+### Get Help
+- 💬 [Community Forum](https://community.home-assistant.io/t/valetudo-vacuums-map-camera-for-home-assistant/600182/19)
+- 💬 [Discord Channel](https://discord.gg/AubW7kQ6F6)
+- 🐛 [Report Issues](https://github.com/sca075/mqtt_vacuum_camera/issues)
+
+### Support Development
+If you find this integration useful, consider supporting its development:
+
+[![PayPal](https://img.shields.io/static/v1.svg?label=%20&message=PayPal.Me&logo=paypal)](https://paypal.me/gsca075)
+
+---
+
+## 🙏 Acknowledgments
+
+**Thank you** to everyone using this integration and providing feedback, bug reports, and feature suggestions. Your support, understanding, and contributions make this project possible!
+
+---
+
+## 📝 Development Notes
+
+- Developed and tested on Raspberry Pi 4 with [Home Assistant OS](https://www.home-assistant.io/faq/release/) (latest version)
+- Also tested on ProxMox VE and Docker Supervised production environments
+- Maintained as a solo project with community support
+
+---
+
+## 📄 License
+
+See [NOTICE.txt](./NOTICE.txt) for license information and disclaimers.
