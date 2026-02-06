@@ -179,7 +179,7 @@ async def vacuum_clean_zone(call: ServiceCall, coordinator) -> None:
         LOGGER.warning("No Service data generated. Aborting!")
         return
     try:
-        await coordinator.connector.publish_to_broker(
+        await coordinator.context.connector.publish_to_broker(
             service_data["topic"],
             service_data["payload"],
         )

@@ -3,162 +3,101 @@
     "step": {
       "user": {
         "data": {
-          "vacuum_entity": "Staubsauger Entity ID",
-          "vacuum_config_entry": "Staubsauger Konfigurationsdaten",
-          "vacuum_map": "Staubsauger Thema",
-          "vacuum_identifiers": "Staubsauger MQTT ID",
+          "vacuum_entity": "Vakuumroboter-Entitäts-ID",
+          "vacuum_config_entry": "Konfigurationsdaten für Staubsaugerroboter",
+          "vacuum_map": "Thema Staubsaugerroboter",
+          "vacuum_identifiers": "Staubsaugerroboter MQTT-ID",
           "unique_id": ""
         },
         "data_description": {
-          "vacuum_entity": "Staubsauger Entity ID"
+          "vacuum_entity": "Vakuumroboter-Entitäts-ID"
         },
-        "description": "Kamera-Einrichtung.",
-        "title": "MQTT Kamera-Einrichtung"
+        "description": "Kameraeinstellungen.",
+        "title": "MQTT-Kameraeinrichtung"
       }
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "MQTT Kamera Optionen",
-        "description": "Kamera-Optionen konfigurieren",
+        "title": "MQTT-Kameraoptionen",
+        "description": "Kameraoptionen konfigurieren",
         "menu_options": {
           "image_opt": "Bildeinstellungen",
-          "colours": "Farbkonfiguration",
-          "advanced": "Erweiterte Optionen"
+          "colours": "Farbenkonfiguration",
+          "materials": "Materialwiedergabe",
+          "floor_management": "Floor Management",
+          "save_options": "Optionen speichern"
         }
+      },
+      "main_menu": {
+        "title": "Hauptmenü",
+        "description": "Zurück zum Hauptmenü"
       },
       "image_opt": {
         "title": "Bildeinstellungen",
         "description": "Bildanzeigeeinstellungen konfigurieren",
         "menu_options": {
           "image_basic_opt": "Grundeinstellungen",
-          "status_text": "Statustext",
-          "draw_elements": "Objektsichtbarkeit",
-          "segments_visibility": "Segmentsichtbarkeit"
+          "status_text": "Status-Text",
+          "draw_elements": "Sichtbarkeit von Kartenelementen",
+          "main_menu": "Zurück zum Hauptmenü"
         }
       },
       "colours": {
-        "title": "Farbkonfiguration",
-        "description": "Kartenfarben konfigurieren",
+        "title": "Farbenkonfiguration",
+        "description": "Farben der Karte konfigurieren",
         "menu_options": {
-          "base_colours": "Basisfarben",
-          "rooms_colours_1": "Räume 1-8",
-          "rooms_colours_2": "Räume 9-16",
+          "base_colours": "Grundfarben",
+          "rooms_colours_1": "Zimmer 1–8",
+          "rooms_colours_2": "Zimmer 9–16",
           "floor_only": "Nur Boden",
-          "transparency": "Transparenzeinstellungen",
-          "rename_translations": "Räume umbenennen"
+          "transparency": "Transparenz-Einstellungen",
+          "main_menu": "Zurück zum Hauptmenü"
         }
-      },
-      "transparency": {
-        "title": "Transparenzeinstellungen",
-        "description": "Transparenzstufen konfigurieren",
-        "menu_options": {
-          "base_transparency": "Basis-Transparenz",
-          "rooms_transparency_1": "Räume 1-8 Transparenz",
-          "rooms_transparency_2": "Räume 9-16 Transparenz",
-          "floor_transparency": "Boden-Transparenz"
-        }
-      },
-      "advanced": {
-        "title": "Erweiterte Optionen",
-        "description": "Erweiterte Konfigurationsoptionen",
-        "menu_options": {
-          "download_logs": "Protokolle herunterladen",
-          "map_trims": "Kartenzuschnitte"
-        }
-      },
-      "map_trims": {
-        "title": "Kartenzuschnitt-Optionen",
-        "description": "Kartenzuschnitt-Einstellungen verwalten",
-        "menu_options": {
-          "reset_map_trims": "Kartenzuschnitte zurücksetzen",
-          "save_map_trims": "Kartenzuschnitte speichern"
-        }
-      },
-      "image_basic_opt": {
-        "data": {
-          "rotate_image": "Drehen",
-          "margins": "Bildränder.",
-          "auto_zoom": "Automatischen Zoom aktivieren",
-          "zoom_lock_ratio": "Seitenverhältnis sperren.",
-          "aspect_ratio": "Bildseitenverhältnis.",
-          "robot_size": "Robotergröße"
-        },
-        "data_description": {
-          "rotate_image": "Grad 0, 90, 180, 270",
-          "margins": "Automatische Randanpassung in Pixeln.",
-          "aspect_ratio": "Bildseitenverhältnis.",
-          "robot_size": "Robotergröße in Pixeln 8-25"
-        },
-        "description": "Kamera-Bildoptionen",
-        "title": "Bildoptionen"
-      },
-      "image_offset": {
-        "title": "Bildversatz-Einstellungen",
-        "description": "Bildversatzwerte konfigurieren",
-        "data": {
-          "offset_top": "Oberer Versatz",
-          "offset_bottom": "Unterer Versatz",
-          "offset_left": "Linker Versatz",
-          "offset_right": "Rechter Versatz"
-        },
-        "data_description": {
-          "offset_top": "Pixel für Versatz von oben (0-1000)",
-          "offset_bottom": "Pixel für Versatz von unten (0-1000)",
-          "offset_left": "Pixel für Versatz von links (0-1000)",
-          "offset_right": "Pixel für Versatz von rechts (0-1000)"
-        }
-      },
-      "status_text": {
-        "data": {
-          "show_vac_status": "Staubsaugerstatus anzeigen.",
-          "vac_status_font": "Fira Sans",
-          "vac_status_size": "Textgröße",
-          "vac_status_position": "Textposition: Unten(AUS)",
-          "color_text": "[255, 255, 255]"
-        },
-        "data_description": {
-          "vac_status_font": "Textschriftart Standard Fira Serif.",
-          "vac_status_size": "Textgröße Standard 50.",
-          "color_text": "Staubsauger-Statustextfarbe."
-        },
-        "description": "Bildoptionen",
-        "title": "Statustext-Optionen"
       },
       "draw_elements": {
-        "title": "Objektsichtbarkeit",
-        "description": "Konfigurieren, welche Elemente auf der Karte sichtbar sind",
+        "title": "Sichtbarkeit von Kartenelementen",
+        "description": "Konfigurieren Sie, welche Elemente auf der Karte sichtbar sind.",
+        "menu_options": {
+          "map_elements": "Kartenelemente",
+          "segments_visibility": "Segment-Sichtbarkeit",
+          "main_menu": "Zurück zum Hauptmenü"
+        }
+      },
+      "map_elements": {
+        "title": "Kartenelemente",
+        "description": "Konfigurieren Sie, welche Elemente auf der Karte sichtbar sind.",
         "data": {
           "disable_floor": "Boden ausblenden",
           "disable_wall": "Wände ausblenden",
           "disable_robot": "Roboter ausblenden",
-          "disable_charger": "Ladestation ausblenden",
+          "disable_charger": "Verbergen Laden",
           "disable_virtual_walls": "Virtuelle Wände ausblenden",
           "disable_restricted_areas": "Eingeschränkte Bereiche ausblenden",
-          "disable_no_mop_areas": "No-Mop-Bereiche ausblenden",
+          "disable_no_mop_areas": "Bereiche ohne Wischfunktion ausblenden",
           "disable_obstacles": "Hindernisse ausblenden",
           "disable_path": "Pfad ausblenden",
           "disable_predicted_path": "Vorhergesagten Pfad ausblenden",
-          "disable_go_to_target": "Gehe-zu-Ziel ausblenden"
+          "disable_go_to_target": "Ziel ausblenden"
         },
         "data_description": {
-          "disable_floor": "Wenn aktiviert, wird der Boden nicht auf der Karte angezeigt",
-          "disable_wall": "Wenn aktiviert, werden Wände nicht auf der Karte angezeigt",
-          "disable_robot": "Wenn aktiviert, wird der Roboter nicht auf der Karte angezeigt",
-          "disable_charger": "Wenn aktiviert, wird die Ladestation nicht auf der Karte angezeigt",
-          "disable_virtual_walls": "Wenn aktiviert, werden virtuelle Wände nicht auf der Karte angezeigt",
-          "disable_restricted_areas": "Wenn aktiviert, werden eingeschränkte Bereiche nicht auf der Karte angezeigt",
-          "disable_no_mop_areas": "Wenn aktiviert, werden No-Mop-Bereiche nicht auf der Karte angezeigt",
-          "disable_obstacles": "Wenn aktiviert, werden Hindernisse nicht auf der Karte angezeigt",
-          "disable_path": "Wenn aktiviert, wird der Reinigungspfad nicht auf der Karte angezeigt",
-          "disable_predicted_path": "Wenn aktiviert, wird der vorhergesagte Pfad nicht auf der Karte angezeigt",
-          "disable_go_to_target": "Wenn aktiviert, werden Gehe-zu-Ziele nicht auf der Karte angezeigt"
+          "disable_floor": "Wenn diese Option aktiviert ist, wird der Boden nicht auf der Karte angezeigt.",
+          "disable_wall": "Wenn diese Option aktiviert ist, werden Wände nicht auf der Karte angezeigt.",
+          "disable_robot": "Wenn diese Option aktiviert ist, wird der Roboter nicht auf der Karte angezeigt.",
+          "disable_charger": "Wenn diese Option aktiviert ist, wird das Ladegerät nicht auf der Karte angezeigt.",
+          "disable_virtual_walls": "Wenn diese Option aktiviert ist, werden virtuelle Wände nicht auf der Karte angezeigt.",
+          "disable_restricted_areas": "Wenn diese Option aktiviert ist, werden gesperrte Bereiche nicht auf der Karte angezeigt.",
+          "disable_no_mop_areas": "Wenn diese Option aktiviert ist, werden Bereiche, in denen nicht gewischt wird, nicht auf der Karte angezeigt.",
+          "disable_obstacles": "Wenn diese Option aktiviert ist, werden Hindernisse nicht auf der Karte angezeigt.",
+          "disable_path": "Wenn diese Option aktiviert ist, wird der Reinigungsweg nicht auf der Karte angezeigt.",
+          "disable_predicted_path": "Wenn diese Option aktiviert ist, wird der vorhergesagte Weg nicht auf der Karte angezeigt.",
+          "disable_go_to_target": "Wenn diese Option aktiviert ist, werden Zielorte nicht auf der Karte angezeigt."
         }
       },
       "segments_visibility": {
-        "title": "Segmentsichtbarkeit",
-        "description": "Konfigurieren, welche Raumsegmente auf der Karte sichtbar sind",
+        "title": "Segment-Sichtbarkeit",
+        "description": "Konfigurieren Sie, welche Raumsegmente auf der Karte sichtbar sind.",
         "data": {
           "disable_room_1": "Raum 1 ausblenden",
           "disable_room_2": "Raum 2 ausblenden",
@@ -177,22 +116,111 @@
           "disable_room_15": "Raum 15 ausblenden"
         },
         "data_description": {
-          "disable_room_1": "Wenn aktiviert, wird Raum 1 {room_0_name} nicht auf der Karte angezeigt",
-          "disable_room_2": "Wenn aktiviert, wird Raum 2 {room_1_name} nicht auf der Karte angezeigt",
-          "disable_room_3": "Wenn aktiviert, wird Raum 3 {room_2_name} nicht auf der Karte angezeigt",
-          "disable_room_4": "Wenn aktiviert, wird Raum 4 {room_3_name} nicht auf der Karte angezeigt",
-          "disable_room_5": "Wenn aktiviert, wird Raum 5 {room_4_name} nicht auf der Karte angezeigt",
-          "disable_room_6": "Wenn aktiviert, wird Raum 6 {room_5_name} nicht auf der Karte angezeigt",
-          "disable_room_7": "Wenn aktiviert, wird Raum 7 {room_6_name} nicht auf der Karte angezeigt",
-          "disable_room_8": "Wenn aktiviert, wird Raum 8 {room_7_name} nicht auf der Karte angezeigt",
-          "disable_room_9": "Wenn aktiviert, wird Raum 9 {room_8_name} nicht auf der Karte angezeigt",
-          "disable_room_10": "Wenn aktiviert, wird Raum 10 {room_9_name} nicht auf der Karte angezeigt",
-          "disable_room_11": "Wenn aktiviert, wird Raum 11 {room_10_name} nicht auf der Karte angezeigt",
-          "disable_room_12": "Wenn aktiviert, wird Raum 12 {room_11_name} nicht auf der Karte angezeigt",
-          "disable_room_13": "Wenn aktiviert, wird Raum 13 {room_12_name} nicht auf der Karte angezeigt",
-          "disable_room_14": "Wenn aktiviert, wird Raum 14 {room_13_name} nicht auf der Karte angezeigt",
-          "disable_room_15": "Wenn aktiviert, wird Raum 15 {room_14_name} nicht auf der Karte angezeigt"
+          "disable_room_1": "Wenn diese Option aktiviert ist, wird Raum 1 {room_0_name} nicht auf der Karte angezeigt.",
+          "disable_room_2": "Wenn diese Option aktiviert ist, wird Raum 2 {room_1_name} nicht auf der Karte angezeigt.",
+          "disable_room_3": "Wenn diese Option aktiviert ist, wird Raum 3 {room_2_name} nicht auf der Karte angezeigt.",
+          "disable_room_4": "Wenn diese Option aktiviert ist, wird Raum 4 {room_3_name} nicht auf der Karte angezeigt.",
+          "disable_room_5": "Wenn diese Option aktiviert ist, wird Raum 5 {room_4_name} nicht auf der Karte angezeigt.",
+          "disable_room_6": "Wenn diese Option aktiviert ist, wird Raum 6 {room_5_name}” nicht auf der Karte angezeigt.",
+          "disable_room_7": "Wenn diese Option aktiviert ist, wird Raum 7 {room_6_name}” nicht auf der Karte angezeigt.",
+          "disable_room_8": "Wenn diese Option aktiviert ist, wird Raum 8 {room_7_name}” nicht auf der Karte angezeigt.",
+          "disable_room_9": "Wenn diese Option aktiviert ist, wird Raum 9 {room_8_name}” nicht auf der Karte angezeigt.",
+          "disable_room_10": "Wenn diese Option aktiviert ist, wird Raum 10 {room_9_name} nicht auf der Karte angezeigt.",
+          "disable_room_11": "Wenn diese Option aktiviert ist, wird Raum 11 {room_10_name} nicht auf der Karte angezeigt.",
+          "disable_room_12": "Wenn diese Option aktiviert ist, wird Raum 12 {room_11_name} nicht auf der Karte angezeigt.",
+          "disable_room_13": "Wenn diese Option aktiviert ist, wird Room 13 {room_12_name} nicht auf der Karte angezeigt.",
+          "disable_room_14": "Wenn diese Option aktiviert ist, wird Raum 14 {room_13_name} nicht auf der Karte angezeigt.",
+          "disable_room_15": "Wenn diese Option aktiviert ist, wird Raum 15 {room_14_name} nicht auf der Karte angezeigt."
         }
+      },
+      "transparency": {
+        "title": "Transparenz-Einstellungen",
+        "description": "Transparenz (Alpha) für Kartenelemente konfigurieren",
+        "menu_options": {
+          "alpha_1": "Basistransparenz",
+          "alpha_floor": "Bodentransparenz",
+          "alpha_2": "Zimmer 1–8 Transparenz",
+          "alpha_3": "Zimmer 9–16 Transparenz",
+          "main_menu": "Zurück zum Hauptmenü"
+        }
+      },
+      "materials": {
+        "title": "Materialwiedergabe",
+        "description": "Konfigurieren Sie die Materialerkennung und -darstellung (Holzbretter, Fliesen, Teppiche).",
+        "data": {
+          "disable_material_overlay": "Materialüberlagerung deaktivieren (Holz und Fliesen)",
+          "disable_carpets": "Teppiche verstecken",
+          "color_carpet": "Teppichfarbe",
+          "color_material_wood": "Farbe der Holzplanken",
+          "color_material_tile": "Fliesenfarbe",
+          "alpha_carpet": "Teppichtransparenz",
+          "alpha_material_wood": "Holztransparenz",
+          "alpha_material_tile": "Fliesentransparenz"
+        },
+        "data_description": {
+          "disable_material_overlay": "Deaktivieren Sie die Materialüberlagerungsdarstellung für Holz und Fliesen auf der Karte.",
+          "disable_carpets": "Wenn diese Option aktiviert ist, werden Teppiche nicht auf der Karte angezeigt.",
+          "color_carpet": "Farbe für Teppichmaterialien (RGB)",
+          "color_material_wood": "Farbe für Holzplankenmaterialien (RGB)",
+          "color_material_tile": "Farbe für Fliesenmaterialien (RGB)",
+          "alpha_carpet": "Transparenzstufe für Teppiche (0–255)",
+          "alpha_material_wood": "Transparenzstufe für Holzplanken (0–255)",
+          "alpha_material_tile": "Transparenzstufe für Kacheln (0–255)"
+        }
+      },
+      "floor_management": {
+        "title": "Floor Management",
+        "description": "Verwalten Sie mehrere Etagen und deren Trimm-Einstellungen",
+        "menu_options": {
+          "select_floor": "Aktiven Stock auswählen",
+          "add_floor": "Neue Etage hinzufügen",
+          "edit_floor": "Boden-Einstellungen bearbeiten",
+          "delete_floor": "Etage löschen",
+          "main_menu": "Zurück zum Hauptmenü"
+        }
+      },
+      "map_trims": {
+        "title": "Kartenausschnitt-Optionen",
+        "description": "Einstellungen für die Kartenzuschnittverwaltung verwalten",
+        "menu_options": {
+          "reset_map_trims": "Kartentrimmen zurücksetzen",
+          "save_map_trims": "Kartentrimmen speichern",
+          "main_menu": "Zurück zum Hauptmenü"
+        }
+      },
+      "image_basic_opt": {
+        "data": {
+          "rotate_image": "Drehen",
+          "margins": "Bildränder.",
+          "auto_zoom": "Automatischen Zoom aktivieren",
+          "zoom_lock_ratio": "Seitenverhältnis sperren.",
+          "aspect_ratio": "Bildseitenverhältnis.",
+          "robot_size": "Größe des Roboters."
+        },
+        "data_description": {
+          "rotate_image": "Grad 0, 90, 180, 270",
+          "margins": "Automatische Randbeschnitt in Pixel.",
+          "aspect_ratio": "Bildseitenverhältnis.",
+          "robot_size": "Größe des Roboters in Pixeln 8-25."
+        },
+        "description": "Kamera-Bildoptionen",
+        "title": "Bildoptionen"
+      },
+      "status_text": {
+        "data": {
+          "show_vac_status": "Vakuumstatus anzeigen.",
+          "vac_status_font": "Fira Sans",
+          "vac_status_size": "Textgröße",
+          "vac_status_position": "Textposition: Unten (AUS)",
+          "color_text": "[255, 255, 255]"
+        },
+        "data_description": {
+          "vac_status_font": "Standardschriftart: Fira Serif.",
+          "vac_status_size": "Standardtextgröße 50.",
+          "color_text": "Vakuumstatus Textfarbe."
+        },
+        "description": "Bildoptionen",
+        "title": "Status-Text-Optionen"
       },
       "base_colours": {
         "data": {
@@ -207,32 +235,32 @@
           "add_base_alpha": "Transparenz konfigurieren:"
         },
         "data_description": {
-          "color_charger": "Ladestationsfarbe.",
-          "color_move": "Bewegungsfarbe.",
+          "color_charger": "Farbe laden.",
+          "color_move": "Farbe verschieben.",
           "color_wall": "Wandfarbe.",
-          "color_robot": "Roboterfarbe.",
-          "color_go_to": "Gehe-zu-Farbe.",
-          "color_no_go": "No-Go-Farbe.",
-          "color_zone_clean": "Zonenreinigungsfarbe.",
+          "color_robot": "Farbiger Roboter.",
+          "color_go_to": "Die Farbe der Wahl.",
+          "color_no_go": "Unzulässige Farbe.",
+          "color_zone_clean": "Zone saubere Farbe.",
           "color_background": "Hintergrundfarbe."
         },
-        "description": "Kamera-Farboptionen.",
-        "title": "Basisfarben-Einrichtung"
+        "description": "Kamera-Farben-Optionen.",
+        "title": "Grundfarben einrichten"
       },
       "alpha_1": {
         "data": {
-          "alpha_charger": "Ladestation Alpha",
+          "alpha_charger": "Alpha laden",
           "alpha_move": "Bewegungen Alpha",
           "alpha_wall": "Wände Alpha",
-          "alpha_robot": "Roboter Alpha",
-          "alpha_go_to": "Gehe-zu-Bereich Alpha",
-          "alpha_no_go": "No-Go-Bereich Alpha",
-          "alpha_zone_clean": "Zonenreinigung Alpha",
+          "alpha_robot": "Alpha-Roboter",
+          "alpha_go_to": "Zum Bereich Alpha gehen",
+          "alpha_no_go": "Sperrgebiet Alpha",
+          "alpha_zone_clean": "Zone Clean Alpha",
           "alpha_background": "Hintergrund Alpha",
           "alpha_text": "Text Alpha"
         },
-        "description": "Kamera-Optionen. Alpha 1",
-        "title": "Alpha-Kanal Basisfarben"
+        "description": "Kameraoptionen. Alpha 1",
+        "title": "Alpha Chanel Grundfarben"
       },
       "floor_only": {
         "data": {
@@ -256,17 +284,17 @@
           "add_room_1_alpha": "Transparenz konfigurieren:"
         },
         "data_description": {
-          "color_room_0": "### **{room_0_name} Farbe**",
-          "color_room_1": "### **{room_1_name} Farbe**",
-          "color_room_2": "### **{room_2_name} Farbe**",
-          "color_room_3": "### **{room_3_name} Farbe**",
-          "color_room_4": "### **{room_4_name} Farbe**",
-          "color_room_5": "### **{room_5_name} Farbe**",
-          "color_room_6": "### **{room_6_name} Farbe**",
-          "color_room_7": "### **{room_7_name} Farbe**"
+          "color_room_0": "{room_0_name}farbe",
+          "color_room_1": "{room_1_name}-Farbe",
+          "color_room_2": "{room_2_name}-Farbe",
+          "color_room_3": "{room_3_name}farbe",
+          "color_room_4": "{room_4_name}-Farbe",
+          "color_room_5": "{room_5_name}-Farbe",
+          "color_room_6": "{room_6_name}-Farbe",
+          "color_room_7": "{room_7_name}-Farbe"
         },
-        "description": "Kamera-Farboptionen.",
-        "title": "Räume 1 bis 8 Farben"
+        "description": "Kamera-Farben-Optionen.",
+        "title": "Zimmer 1 bis 8 Farben"
       },
       "rooms_colours_2": {
         "data": {
@@ -281,17 +309,17 @@
           "add_room_2_alpha": "Transparenz konfigurieren:"
         },
         "data_description": {
-          "color_room_8": "### **{room_8_name} Farbe**",
-          "color_room_9": "### **{room_9_name} Farbe**",
-          "color_room_10": "### **{room_10_name} Farbe**",
-          "color_room_11": "### **{room_11_name} Farbe**",
-          "color_room_12": "### **{room_12_name} Farbe**",
-          "color_room_13": "### **{room_13_name} Farbe**",
-          "color_room_14": "### **{room_14_name} Farbe**",
-          "color_room_15": "### **{room_15_name} Farbe**"
+          "color_room_8": "{room_8_name}farbe",
+          "color_room_9": "{room_9_name}-Farbe",
+          "color_room_10": "{room_10_name}-Farbe",
+          "color_room_11": "{room_11_name}farbe",
+          "color_room_12": "{room_12_name}farbe",
+          "color_room_13": "{room_13_name}farbe",
+          "color_room_14": "{room_14_name}farbe",
+          "color_room_15": "{room_15_name}farbe"
         },
         "description": "Kamera-Farboptionen.",
-        "title": "Räume 9 bis 15 Farben"
+        "title": "Zimmer 9 bis 15 Farben"
       },
       "alpha_floor": {
         "data": {
@@ -300,59 +328,103 @@
       },
       "alpha_2": {
         "data": {
-          "alpha_room_0": "Segment {room_0_name} Alpha",
-          "alpha_room_1": "Segment {room_1_name} Alpha",
-          "alpha_room_2": "Segment {room_2_name} Alpha",
-          "alpha_room_3": "Segment {room_3_name} Alpha",
-          "alpha_room_4": "Segment {room_4_name} Alpha",
-          "alpha_room_5": "Segment {room_5_name} Alpha",
-          "alpha_room_6": "Segment {room_6_name} Alpha",
-          "alpha_room_7": "Segment {room_7_name} Alpha"
+          "alpha_room_0": "Alpha-{room_0_name}",
+          "alpha_room_1": "Alpha-{room_1_name}",
+          "alpha_room_2": "Alpha-{room_2_name}",
+          "alpha_room_3": "Alpha-{room_3_name}",
+          "alpha_room_4": "Alpha-{room_4_name}",
+          "alpha_room_5": "Alpha-{room_5_name}",
+          "alpha_room_6": "Alpha-{room_6_name}",
+          "alpha_room_7": "Alpha-{room_7_name}"
         },
-        "description": "Kamera-Optionen. Alpha 2",
-        "title": "Alpha-Kanal Raumfarben"
+        "description": "Kameraoptionen. Alpha 2",
+        "title": "Alpha Chanel Zimmer Farben"
       },
       "alpha_3": {
         "data": {
-          "alpha_room_8": "Segment {room_8_name} Alpha",
-          "alpha_room_9": "Segment {room_9_name} Alpha",
-          "alpha_room_10": "Segment {room_10_name} Alpha",
-          "alpha_room_11": "Segment {room_11_name} Alpha",
-          "alpha_room_12": "Segment {room_12_name} Alpha",
-          "alpha_room_13": "Segment {room_13_name} Alpha",
-          "alpha_room_14": "Segment {room_14_name} Alpha",
-          "alpha_room_15": "Segment {room_15_name} Alpha"
+          "alpha_room_8": "Alpha-{room_8_name}",
+          "alpha_room_9": "Alpha-{room_9_name}",
+          "alpha_room_10": "Alpha-{room_10_name}",
+          "alpha_room_11": "Alpha-{room_11_name}",
+          "alpha_room_12": "Alpha-{room_12_name}",
+          "alpha_room_13": "Alpha-{room_13_name}",
+          "alpha_room_14": "Alpha-{room_14_name}",
+          "alpha_room_15": "Alpha-{room_15_name}"
         },
-        "description": "Kamera-Optionen. Alpha 3",
-        "title": "Alpha-Kanal Raumfarben"
+        "description": "Kameraoptionen. Alpha 3",
+        "title": "Alpha Chanel Zimmer Farben"
+      },
+      "select_floor": {
+        "title": "Aktiven Stock auswählen",
+        "description": "Wählen Sie aus, welche Etage aktuell aktiv ist. Die Kamera verwendet die Trimm-Einstellungen für die ausgewählte Etage.",
+        "data": {
+          "current_floor": "Aktiver Boden"
+        },
+        "data_description": {
+          "current_floor": "Wählen Sie den derzeit aktiven Stock aus. Aktuell: {current_floor}"
+        }
+      },
+      "add_floor": {
+        "title": "Neue Etage hinzufügen",
+        "description": "{info}",
+        "data": {
+          "floor_name": "Floor Name",
+          "map_name": "Kartenbezeichnung (optional)"
+        },
+        "data_description": {
+          "floor_name": "Wählen Sie aus den Home Assistant-Etagen aus oder geben Sie einen benutzerdefinierten Namen ein.",
+          "map_name": "Optionaler Name für diese Etage"
+        }
+      },
+      "edit_floor": {
+        "title": "Boden-Einstellungen bearbeiten",
+        "description": "Bearbeiten Sie den Namen der Karte für die Etage: {floor_name}. {trim_info}. Die Trimmwerte werden automatisch berechnet – verwenden Sie „Save Map Trims” (Karten-Trimmwerte speichern), um sie zu aktualisieren.",
+        "data": {
+          "floor_name": "Ausgewählte Etage bearbeiten",
+          "map_name": "Kartenbezeichnung (optional)"
+        },
+        "data_description": {
+          "floor_name": "Wählen Sie den zu bearbeitenden Stock aus.",
+          "map_name": "Optionaler benutzerfreundlicher Name für diese Etage"
+        }
+      },
+      "delete_floor": {
+        "title": "Etage löschen",
+        "description": "Entfernen Sie eine Etage aus der Konfiguration. Wenn Sie die aktuell aktive Etage löschen, wird sie auf „floor_0” zurückgesetzt.",
+        "data": {
+          "floor_name": "Etage zum Löschen"
+        },
+        "data_description": {
+          "floor_name": "Wählen Sie die zu löschende Etage aus."
+        }
       }
     }
   },
   "selector": {
     "trim_actions": {
       "options": {
-        "save": "Änderungen Speichern",
-        "reset": "Auf Erkannte Werte Zurücksetzen",
-        "delete": "Alle Zuschnitte Löschen"
+        "save": "Änderungen speichern",
+        "reset": "Auf erkannte Werte zurücksetzen",
+        "delete": "Alle Trims löschen"
       }
     },
     "vacuum_status": {
       "options": {
         "connected": "Verbunden",
         "disconnected": "Getrennt",
-        "charging": "Laden",
+        "charging": "Aufladen",
         "cleaning": "Reinigung",
         "docked": "Angedockt",
         "idle": "Leerlauf",
-        "paused": "Pausiert",
-        "returning": "Zurückkehren"
+        "paused": "Angehalten",
+        "returning": "Rückkehr"
       }
     }
   },
   "services": {
     "reload": {
       "name": "Neu laden",
-      "description": "Lädt die MQTT Vacuum Camera Plattform neu."
+      "description": "Laden Sie die MQTT-Vakuumkameraplattform neu."
     },
     "turn_off": {
       "name": "[%key:common::action::turn_off%]",
@@ -363,12 +435,12 @@
       "description": "Schaltet die Kamera ein."
     },
     "reset_trims": {
-      "name": "Bilderbeschnitte zurücksetzen",
-      "description": "Setzt die Beschnitte der Karten zurück."
+      "name": "Bilder zurücksetzen Trimmen",
+      "description": "Setzt die Trimmungen der Karten zurück."
     },
     "snapshot": {
       "name": "Schnappschuss machen",
-      "description": "Macht einen Schnappschuss von der Kamera.",
+      "description": "Macht einen Schnappschuss mit einer Kamera.",
       "fields": {
         "filename": {
           "name": "Dateiname",
@@ -382,16 +454,22 @@
       "message": "Fehlende entity_id in der Konfiguration."
     },
     "missing_zone_or_zone_ids": {
-      "message": "Entweder 'zone' oder 'zone_ids' muss angegeben werden."
+      "message": "Entweder „zone“ oder „zone_ids“ muss angegeben werden."
     },
     "zone_must_be_list": {
-      "message": "Der Parameter 'Zone' muss eine Liste sein."
+      "message": "Der Parameter „Zone“ muss eine Liste sein."
     },
     "zoneid_must_be_list": {
-      "message": "Der Parameter 'Zone_Ids' muss eine Liste sein."
+      "message": "Der Parameter „Zone_Ids” muss eine Liste sein."
     },
     "zone_list_length": {
-      "message": "Die 'Zone' muss mindestens 1 Element enthalten, das eine Liste von 4 Ganzzahlen enthält."
+      "message": "Die „Zone“ muss mindestens 1 Element enthalten, das eine Liste mit 4 ganzen Zahlen enthält."
+    },
+    "mqtt_service_not_found": {
+      "message": "Die MQTT-Integration ist nicht verfügbar. Bitte stellen Sie sicher, dass MQTT konfiguriert ist."
+    },
+    "mqtt_publish_failed": {
+      "message": "Befehl zum Leeren über MQTT konnte nicht veröffentlicht werden."
     }
   }
 }
