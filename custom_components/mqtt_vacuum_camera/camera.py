@@ -10,7 +10,11 @@ from datetime import timedelta
 from io import BytesIO
 import os
 from pathlib import Path
+import time
 from typing import Optional
+
+from aiohttp import web
+from PIL import Image
 
 from homeassistant import config_entries, core
 from homeassistant.components.camera import Camera, CameraEntityFeature
@@ -32,6 +36,7 @@ from .const import (
     DOMAIN,
     FRAME_INTERVAL_S,
     LOGGER,
+    MJPEG_INTERVAL_S,
     RENDER_TIMEOUT_S,
     CameraModes,
 )
@@ -118,6 +123,8 @@ class MQTTCamera(CoordinatorEntity, Camera):  # pylint: disable=too-many-instanc
 
         # 5. Image state (grouped)
         self.image_state = CameraImageState()
+        self._cached_png: bytes | None = None
+        self._cached_jpeg: bytes | None = None
 
         # 6. Processors (grouped)
         self.processors = self._init_processors(device_info)
@@ -493,6 +500,64 @@ class MQTTCamera(CoordinatorEntity, Camera):  # pylint: disable=too-many-instanc
         except RuntimeError as e:
             LOGGER.error("Thread pool error: %s", str(e), exc_info=True)
             return None
+
+    def _convert_to_jpeg(self, png_bytes: bytes) -> bytes:
+        """Convert PNG image bytes to JPEG. Cached on input equality."""
+        if png_bytes == self._cached_png:
+            return self._cached_jpeg
+        img = Image.open(BytesIO(png_bytes))
+        if img.mode in ("RGBA", "LA", "PA"):
+            img = img.convert("RGB")
+        buf = BytesIO()
+        img.save(buf, format="JPEG", quality=85)
+        jpeg_bytes = buf.getvalue()
+        self._cached_png = png_bytes
+        self._cached_jpeg = jpeg_bytes
+        return jpeg_bytes
+
+    async def handle_async_mjpeg_stream(
+        self, request: web.Request
+    ) -> web.StreamResponse:
+        """Serve an MJPEG stream with JPEG frames for video consumers.
+
+        The base class suppresses duplicate frames, which causes video
+        transcoding consumers (ffmpeg, go2rtc) to stall when the map
+        hasn't changed between polls. This override sends every frame
+        to maintain a steady cadence.
+        """
+        response = web.StreamResponse()
+        response.content_type = (
+            "multipart/x-mixed-replace;boundary=--frameboundary"
+        )
+        await response.prepare(request)
+
+        try:
+            while True:
+                last_fetch = time.monotonic()
+                png_bytes = await self.async_camera_image()
+                if png_bytes is None:
+                    break
+                jpeg_bytes = await self.hass.async_add_executor_job(
+                    self._convert_to_jpeg, png_bytes
+                )
+                await response.write(
+                    bytes(
+                        "--frameboundary\r\n"
+                        "Content-Type: image/jpeg\r\n"
+                        f"Content-Length: {len(jpeg_bytes)}\r\n\r\n",
+                        "utf-8",
+                    )
+                    + jpeg_bytes
+                    + b"\r\n"
+                )
+                next_fetch = last_fetch + MJPEG_INTERVAL_S
+                now = time.monotonic()
+                if next_fetch > now:
+                    await asyncio.sleep(next_fetch - now)
+        except ConnectionError:
+            pass
+
+        return response
 
     async def handle_vacuum_start(self, event):
         """Handle the event_vacuum_start event."""
