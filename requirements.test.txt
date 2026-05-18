@@ -8,7 +8,7 @@ janus==2.0.0
 
 # Strictly for tests
 # We should always use the latest version to make sure we're testing against the latest version of Home Assistant
-pytest-homeassistant-custom-component>=0.13.128
+pytest-homeassistant-custom-component>=0.13.331
 # By avoiding to pin to any of these, they can be automatically be managed by pytest-homeassistant-custom-component (above)
 pytest-asyncio
 pytest-aiohttp
