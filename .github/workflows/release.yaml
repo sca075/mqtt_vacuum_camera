@@ -16,7 +16,7 @@ jobs:
       id-token: write
     steps:
       - name: Download repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Adjust version number
         shell: bash
