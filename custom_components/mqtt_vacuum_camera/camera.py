@@ -13,9 +13,9 @@ from homeassistant.helpers import config_validation as cv
 from .const import CAMERA_SCAN_INTERVAL_S, DOMAIN
 from .entity import MQTTCamera, MQTTCameraMPEG
 
-CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)  # pylint: disable=invalid-name
 
-SCAN_INTERVAL = timedelta(seconds=CAMERA_SCAN_INTERVAL_S)
+SCAN_INTERVAL = timedelta(seconds=CAMERA_SCAN_INTERVAL_S)  # pylint: disable=invalid-name
 
 
 async def async_setup_entry(

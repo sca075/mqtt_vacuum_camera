@@ -23,7 +23,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import CONF_VACUUM_IDENTIFIERS, DOMAIN, SENSOR_NO_DATA
 from .coordinator import MQTTVacuumCoordinator
 
-CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)  # pylint: disable=invalid-name
 
 
 @dataclass(frozen=True)
@@ -31,13 +31,15 @@ class VacuumSensorDescription(SensorEntityDescription):
     """A class that describes vacuum sensor entities."""
 
     attributes: tuple = ()
-    parent_key: str = None
-    keys: list[str] = None
-    value: Callable = None
-    native_unit_of_measurement: str = None
+    parent_key: str | None = None
+    keys: list[str] | None = None
+    value: Callable | None = None
 
 
-SENSOR_TYPES = {
+# pylint: disable=unexpected-keyword-arg
+# E1123 false-positive: SensorEntityDescription uses the FrozenOrThawed metaclass;
+# pylint cannot trace the __init__ fields through it, but they are valid at runtime.
+SENSOR_TYPES: dict[str, VacuumSensorDescription] = {
     "consumable_main_brush": VacuumSensorDescription(
         native_unit_of_measurement=UnitOfTime.HOURS,
         key="mainBrush",
@@ -175,6 +177,7 @@ SENSOR_TYPES = {
         value=lambda v, _: v if isinstance(v, str) else "Unsupported",
     ),
 }
+# pylint: enable=unexpected-keyword-arg
 
 
 class VacuumSensor(CoordinatorEntity, SensorEntity):

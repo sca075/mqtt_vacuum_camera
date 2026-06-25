@@ -8,7 +8,6 @@ from __future__ import annotations
 from typing import Optional
 
 import async_timeout
-from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from valetudo_map_parser.config.shared import CameraSharedManager
 
@@ -52,7 +51,6 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         )
 
         self.shared_manager: Optional[CameraSharedManager] = None
-        self.in_sync_with_camera: bool = False
         self.sensor_data = SENSOR_NO_DATA
 
     async def _async_update_data(self):
