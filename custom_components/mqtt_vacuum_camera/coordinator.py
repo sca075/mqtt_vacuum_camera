@@ -8,7 +8,7 @@ from __future__ import annotations
 from typing import Optional
 
 import async_timeout
-from homeassistant.helpers.device_registry import DeviceInfo
+
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from valetudo_map_parser.config.shared import CameraSharedManager
 
