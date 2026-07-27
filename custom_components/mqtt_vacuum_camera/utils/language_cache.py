@@ -10,7 +10,6 @@ import asyncio
 from functools import lru_cache
 import json
 import logging
-import os
 from pathlib import Path
 from typing import Dict, List, Optional, Set
 
@@ -137,9 +136,7 @@ class LanguageCache:
                         )
                         self._user_languages[user_id] = "en"
                         self._all_languages.add("en")
-                        await user_language_store.set_user_language(
-                            user_id, "en"
-                        )
+                        await user_language_store.set_user_language(user_id, "en")
 
             # Mark UserLanguageStore as initialized using the proper method
             await self.async_mark_user_language_store_initialized()
@@ -177,7 +174,7 @@ class LanguageCache:
         # Check if auth file has been updated
         if await self._is_auth_updated(hass):
             # If auth has been updated, we need to refresh the active user
-            active_user_id = await self._find_last_logged_in_user(hass)
+            active_user_id = await _find_last_logged_in_user(hass)
             if active_user_id:
                 user_language_store = UserLanguageStore()
                 language = await user_language_store.get_user_language(active_user_id)
@@ -210,7 +207,7 @@ class LanguageCache:
                         )
 
         # If we have a cached active user, use that
-        active_user_id = await self._find_last_logged_in_user(hass)
+        active_user_id = await _find_last_logged_in_user(hass)
         if active_user_id and active_user_id in self._user_languages:
             return self._user_languages[active_user_id]
 
@@ -237,31 +234,6 @@ class LanguageCache:
             self._auth_update_time = current_mtime
             return True
         return False
-
-    @staticmethod
-    async def _find_last_logged_in_user(hass: HomeAssistant) -> Optional[str]:
-        """
-        Find the ID of the last logged-in user.
-
-        Args:
-            hass: The Home Assistant instance
-
-        Returns:
-            The user ID of the last logged-in user, or None if no user found
-        """
-        users = await hass.auth.async_get_users()
-        last_user = None
-        last_login_time = None
-
-        for user in users:
-            for token in user.refresh_tokens.values():
-                if token.last_used_at and (
-                    last_login_time is None or token.last_used_at > last_login_time
-                ):
-                    last_login_time = token.last_used_at
-                    last_user = user
-
-        return last_user.id if last_user else None
 
     def is_initialized(self) -> bool:
         """
@@ -356,3 +328,18 @@ class LanguageCache:
                 str(e),
                 exc_info=True,
             )
+
+
+async def _find_last_logged_in_user(hass: HomeAssistant) -> Optional[str]:
+    """Find the ID of the last logged-in user based on the most recent token usage."""
+    users = await hass.auth.async_get_users()
+    last_user = None
+    last_login_time = None
+    for user in users:
+        for token in user.refresh_tokens.values():
+            if token.last_used_at and (
+                last_login_time is None or token.last_used_at > last_login_time
+            ):
+                last_login_time = token.last_used_at
+                last_user = user
+    return last_user.id if last_user else None

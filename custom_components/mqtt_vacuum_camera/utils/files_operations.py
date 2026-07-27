@@ -21,7 +21,7 @@ from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.storage import STORAGE_DIR
 
 from ..const import CAMERA_STORAGE, LOGGER
-from .language_cache import LanguageCache
+from .language_cache import LanguageCache, _find_last_logged_in_user
 
 
 def is_auth_updated(self) -> bool:
@@ -42,24 +42,7 @@ def is_auth_updated(self) -> bool:
 
 async def async_find_last_logged_in_user(hass: HomeAssistant) -> Optional[str]:
     """Retrieve the ID of the last logged-in user based on the most recent token usage."""
-    users = await hass.auth.async_get_users()  # Fetches list of all user objects
-    last_user = None
-    last_login_time = None
-
-    # Iterate through users to find the one with the most recent activity
-    for user in users:
-        # Iterate through refresh tokens to find the most recent usage
-        for token in user.refresh_tokens.values():
-            if token.last_used_at and (
-                last_login_time is None or token.last_used_at > last_login_time
-            ):
-                last_login_time = token.last_used_at
-                last_user = user
-
-    if last_user:
-        return last_user.id
-    LOGGER.info("No users have logged in yet.")
-    return None
+    return await _find_last_logged_in_user(hass)
 
 
 async def async_get_user_ids(hass: HomeAssistant) -> list[str]:
