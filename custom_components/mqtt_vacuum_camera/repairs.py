@@ -12,5 +12,3 @@ async def async_create_fix_flow(
     _data: dict[str, str | int | float | None] | None,
 ) -> RepairsFlow:
     """Create flow."""
-    if issue_id == "reset_trims_deprecated":
-        return ConfirmRepairFlow()
