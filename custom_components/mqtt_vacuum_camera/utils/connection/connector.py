@@ -204,7 +204,12 @@ class ValetudoConnector:
 
     async def get_battery_level(self) -> str:
         """Return vacuum battery level."""
-        return str(self.mqtt_data.mqtt_vac_battery_level)
+        level = self.mqtt_data.mqtt_vac_battery_level
+        # str(None) would return the literal string "None", which
+        # valetudo_map_parser's vacuum_bat_charged() later feeds to int()
+        # and crashes on. Fall back to 0 while no battery data is available
+        # (e.g. the vacuum is offline) instead of propagating that string.
+        return str(level) if level is not None else "0"
 
     async def get_vacuum_connection_state(self) -> bool:
         """Return the vacuum connection state."""
