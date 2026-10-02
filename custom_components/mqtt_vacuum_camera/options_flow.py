@@ -11,61 +11,12 @@ from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
 from homeassistant.helpers import floor_registry as fr
 from valetudo_map_parser.config.types import RoomStore
 
-from .common import create_floor_data, extract_file_name, update_options
+from .common import extract_file_name, update_options
 from .const import (
-    ALPHA_BACKGROUND,
-    ALPHA_CARPET,
-    ALPHA_CHARGER,
-    ALPHA_GO_TO,
-    ALPHA_MATERIAL_TILE,
-    ALPHA_MATERIAL_WOOD,
-    ALPHA_MOP_MOVE,
-    ALPHA_MOVE,
-    ALPHA_NO_GO,
-    ALPHA_ROBOT,
-    ALPHA_ROOM_0,
-    ALPHA_TEXT,
-    ALPHA_WALL,
-    ALPHA_ZONE_CLEAN,
-    ATTR_MARGINS,
-    ATTR_ROTATE,
-    COLOR_BACKGROUND,
-    COLOR_CARPET,
-    COLOR_CHARGER,
-    COLOR_GO_TO,
-    COLOR_MATERIAL_TILE,
-    COLOR_MATERIAL_WOOD,
-    COLOR_MOP_MOVE,
-    COLOR_MOVE,
-    COLOR_NO_GO,
-    COLOR_ROBOT,
-    COLOR_ROOM_0,
-    COLOR_TEXT,
-    COLOR_WALL,
-    COLOR_ZONE_CLEAN,
-    CONF_ASPECT_RATIO,
-    CONF_AUTO_ZOOM,
     CONF_CURRENT_FLOOR,
-    CONF_DISABLE_CARPETS,
-    CONF_DISABLE_MATERIAL_OVERLAY,
-    CONF_DEF_CONTEXT_TYPE,
     CONF_FLOOR_NAME,
     CONF_FLOORS_DATA,
     CONF_MAP_NAME,
-    CONF_MOP_PATH_WIDTH,
-    CONF_OBSTACLE_LINK_IP,
-    CONF_OBSTACLE_LINK_PORT,
-    CONF_OBSTACLE_LINK_PROTOCOL,
-    CONF_ROBOT_SIZE,
-    CONF_TRIM_DOWN,
-    CONF_TRIM_LEFT,
-    CONF_TRIM_RIGHT,
-    CONF_TRIM_UP,
-    CONF_VAC_STAT,
-    CONF_VAC_STAT_FONT,
-    CONF_VAC_STAT_POS,
-    CONF_VAC_STAT_SIZE,
-    CONF_ZOOM_LOCK_RATIO,
     DEFAULT_ROOMS,
     DEFAULT_ROOMS_NAMES,
     DOMAIN,
@@ -76,7 +27,20 @@ from .const import (
     LOGGER,
     ROOM_FLAGS,
 )
-from .utils.options import OptionsSchemas
+from .utils.options import OptionsSchemas, floor_helpers
+from .utils.options.option_fields import (
+    BASE_ALPHA_FIELDS,
+    BASE_COLOURS_FIELDS,
+    FLOOR_ALPHA_FIELDS,
+    FLOOR_COLOUR_FIELDS,
+    IMAGE_BASIC_FIELDS,
+    MATERIALS_FIELDS,
+    OBSTACLE_LINK_FIELDS,
+    STATUS_TEXT_FIELDS,
+    extract_options,
+    room_fields,
+    same_key_fields,
+)
 
 
 # noinspection PyTypeChecker
@@ -133,30 +97,20 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         Returns:
             List of dicts with 'label' and 'value' keys for SelectSelector
         """
-        # Get HA floors
-        ha_floors = self._get_ha_floors()
+        return floor_helpers.floor_dropdown_options(
+            self._get_ha_floors(),
+            self.floors_data,
+            filter_configured=filter_configured,
+            use_configured=use_configured,
+        )
 
-        if not ha_floors:
-            # No HA floors configured, use floor_0
-            return [{"label": "Floor 0", "value": "floor_0"}]
-
-        # Build list of floor options
-        floor_options = []
-        for floor in ha_floors:
-            floor_id = floor["floor_id"]
-            floor_name = floor["name"]
-
-            # Skip already configured floors if filtering
-            if filter_configured and floor_id in self.floors_data:
-                continue
-
-            # Skip floors not in floors_data if use_configured is True
-            if use_configured and floor_id not in self.floors_data:
-                continue
-
-            floor_options.append({"label": floor_name, "value": floor_id})
-
-        return floor_options
+    def _first_rooms_group_count(self) -> int:
+        """Number of rooms shown in the first colour / alpha step (max 8)."""
+        if self.number_of_rooms > 8:
+            return 8
+        if self.number_of_rooms != 0:
+            return self.number_of_rooms
+        return 1
 
     async def async_step_init(
         self,
@@ -270,20 +224,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
     ) -> ConfigFlowResult:
         """Handle materials configuration."""
         if user_input is not None:
-            self.camera_options.update(
-                {
-                    "disable_material_overlay": user_input.get(
-                        CONF_DISABLE_MATERIAL_OVERLAY
-                    ),
-                    "disable_carpets": user_input.get(CONF_DISABLE_CARPETS),
-                    "color_carpet": user_input.get(COLOR_CARPET),
-                    "color_material_wood": user_input.get(COLOR_MATERIAL_WOOD),
-                    "color_material_tile": user_input.get(COLOR_MATERIAL_TILE),
-                    "alpha_carpet": user_input.get(ALPHA_CARPET),
-                    "alpha_material_wood": user_input.get(ALPHA_MATERIAL_WOOD),
-                    "alpha_material_tile": user_input.get(ALPHA_MATERIAL_TILE),
-                }
-            )
+            self.camera_options.update(extract_options(user_input, MATERIALS_FIELDS))
             return await self.async_step_init()
 
         return self.async_show_form(
@@ -297,18 +238,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
     ):
         """Handle basic image settings."""
         if user_input is not None:
-            self.camera_options.update(
-                {
-                    "rotate_image": user_input.get(ATTR_ROTATE),
-                    "margins": user_input.get(ATTR_MARGINS),
-                    "aspect_ratio": user_input.get(CONF_ASPECT_RATIO),
-                    "zoom_lock_ratio": user_input.get(CONF_ZOOM_LOCK_RATIO),
-                    "auto_zoom": user_input.get(CONF_AUTO_ZOOM),
-                    "robot_size": user_input.get(CONF_ROBOT_SIZE),
-                    "mop_path_width": user_input.get(CONF_MOP_PATH_WIDTH),
-                    "def_context_type": user_input.get(CONF_DEF_CONTEXT_TYPE),
-                }
-            )
+            self.camera_options.update(extract_options(user_input, IMAGE_BASIC_FIELDS))
             return await self.async_step_image_opt()
 
         return self.async_show_form(
@@ -336,15 +266,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
     async def async_step_status_text(self, user_input: Optional[Dict[str, Any]] = None):
         """Handle status text settings."""
         if user_input is not None:
-            self.camera_options.update(
-                {
-                    "show_vac_status": user_input.get(CONF_VAC_STAT),
-                    "vac_status_font": user_input.get(CONF_VAC_STAT_FONT),
-                    "vac_status_size": user_input.get(CONF_VAC_STAT_SIZE),
-                    "vac_status_position": user_input.get(CONF_VAC_STAT_POS),
-                    "color_text": user_input.get(COLOR_TEXT),
-                }
-            )
+            self.camera_options.update(extract_options(user_input, STATUS_TEXT_FIELDS))
             return await self.async_step_image_opt()
 
         return self.async_show_form(
@@ -358,13 +280,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         """Handle obstacle image link configuration."""
         if user_input is not None:
             self.camera_options.update(
-                {
-                    CONF_OBSTACLE_LINK_PROTOCOL: user_input.get(
-                        CONF_OBSTACLE_LINK_PROTOCOL
-                    ),
-                    CONF_OBSTACLE_LINK_PORT: user_input.get(CONF_OBSTACLE_LINK_PORT),
-                    CONF_OBSTACLE_LINK_IP: user_input.get(CONF_OBSTACLE_LINK_IP),
-                }
+                extract_options(user_input, OBSTACLE_LINK_FIELDS)
             )
             return await self.async_step_image_opt()
 
@@ -394,7 +310,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         if user_input is not None:
             # Update options based on user input using DRAW_FLAGS
             self.camera_options.update(
-                {flag: user_input.get(flag, False) for flag in DRAW_FLAGS}
+                extract_options(user_input, same_key_fields(DRAW_FLAGS), default=False)
             )
             return await self.async_step_draw_elements()
 
@@ -414,7 +330,11 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         if user_input is not None:
             # Update options based on user input using ROOM_FLAGS
             self.camera_options.update(
-                {flag: user_input.get(flag, False) for flag in ROOM_FLAGS[:room_limit]}
+                extract_options(
+                    user_input,
+                    same_key_fields(ROOM_FLAGS[:room_limit]),
+                    default=False,
+                )
             )
             return await self.async_step_draw_elements()
 
@@ -429,19 +349,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
     ):
         """Base Colours Configuration."""
         if user_input is not None:
-            self.camera_options.update(
-                {
-                    "color_charger": user_input.get(COLOR_CHARGER),
-                    "color_move": user_input.get(COLOR_MOVE),
-                    "color_mop_move": user_input.get(COLOR_MOP_MOVE),
-                    "color_wall": user_input.get(COLOR_WALL),
-                    "color_robot": user_input.get(COLOR_ROBOT),
-                    "color_go_to": user_input.get(COLOR_GO_TO),
-                    "color_no_go": user_input.get(COLOR_NO_GO),
-                    "color_zone_clean": user_input.get(COLOR_ZONE_CLEAN),
-                    "color_background": user_input.get(COLOR_BACKGROUND),
-                }
-            )
+            self.camera_options.update(extract_options(user_input, BASE_COLOURS_FIELDS))
             self.is_alpha_enabled = bool(user_input.get(IS_ALPHA))
             if self.is_alpha_enabled:
                 self.is_alpha_enabled = False
@@ -456,20 +364,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
     async def async_step_alpha_1(self, user_input: Optional[Dict[str, Any]] = None):
         """Transparency Configuration for the Base Colours."""
         if user_input is not None:
-            self.camera_options.update(
-                {
-                    "alpha_charger": user_input.get(ALPHA_CHARGER),
-                    "alpha_move": user_input.get(ALPHA_MOVE),
-                    "alpha_mop_move": user_input.get(ALPHA_MOP_MOVE),
-                    "alpha_wall": user_input.get(ALPHA_WALL),
-                    "alpha_robot": user_input.get(ALPHA_ROBOT),
-                    "alpha_go_to": user_input.get(ALPHA_GO_TO),
-                    "alpha_no_go": user_input.get(ALPHA_NO_GO),
-                    "alpha_zone_clean": user_input.get(ALPHA_ZONE_CLEAN),
-                    "alpha_background": user_input.get(ALPHA_BACKGROUND),
-                    "alpha_text": user_input.get(ALPHA_TEXT),
-                }
-            )
+            self.camera_options.update(extract_options(user_input, BASE_ALPHA_FIELDS))
             return await self.async_step_transparency()
 
         return self.async_show_form(
@@ -481,7 +376,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         """Floor colours configuration step based on one room only."""
         if user_input is not None:
             # Update options based on user input
-            self.camera_options.update({"color_room_0": user_input.get(COLOR_ROOM_0)})
+            self.camera_options.update(extract_options(user_input, FLOOR_COLOUR_FIELDS))
             self.is_alpha_enabled = user_input.get(IS_ALPHA_R1, False)
             if self.is_alpha_enabled:
                 return await self.async_step_alpha_floor()
@@ -496,19 +391,12 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         self, user_input: Optional[Dict[str, Any]] = None
     ):
         """Dynamically generate rooms colours configuration step based on the number of rooms."""
-        rooms_count = 1
-        if self.number_of_rooms > 8:
-            rooms_count = 8
-        elif (self.number_of_rooms <= 8) and (self.number_of_rooms != 0):
-            rooms_count = self.number_of_rooms
+        rooms_count = self._first_rooms_group_count()
 
         if user_input is not None:
             # Update options based on user input
             self.camera_options.update(
-                {
-                    f"color_room_{i}": user_input.get(f"color_room_{i}")
-                    for i in range(rooms_count)
-                }
+                extract_options(user_input, room_fields("color_room", 0, rooms_count))
             )
             self.is_alpha_enabled = user_input.get(IS_ALPHA_R1, False)
 
@@ -533,10 +421,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         if user_input is not None:
             # Update options based on user input
             self.camera_options.update(
-                {
-                    f"color_room_{i}": user_input.get(f"color_room_{i}")
-                    for i in range(8, end_room)
-                }
+                extract_options(user_input, room_fields("color_room", 8, end_room))
             )
             self.is_alpha_enabled = user_input.get(IS_ALPHA_R2, False)
 
@@ -556,7 +441,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         """Floor alpha configuration step based on one room only."""
         if user_input is not None:
             # Update options based on user input
-            self.camera_options.update({"alpha_room_0": user_input.get(ALPHA_ROOM_0)})
+            self.camera_options.update(extract_options(user_input, FLOOR_ALPHA_FIELDS))
             return await self.async_step_transparency()
 
         return self.async_show_form(
@@ -566,19 +451,12 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
 
     async def async_step_alpha_2(self, user_input: Optional[Dict[str, Any]] = None):
         """Dynamically generate rooms colours configuration step based on the number of rooms."""
-        rooms_count = 1
-        if self.number_of_rooms > 8:
-            rooms_count = 8
-        elif (self.number_of_rooms <= 8) and (self.number_of_rooms != 0):
-            rooms_count = self.number_of_rooms
+        rooms_count = self._first_rooms_group_count()
 
         if user_input is not None:
             # Update options based on user input
             self.camera_options.update(
-                {
-                    f"alpha_room_{i}": user_input.get(f"alpha_room_{i}")
-                    for i in range(rooms_count)
-                }
+                extract_options(user_input, room_fields("alpha_room", 0, rooms_count))
             )
             return await self.async_step_transparency()
 
@@ -595,10 +473,7 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         if user_input is not None:
             # Update options based on user input
             self.camera_options.update(
-                {
-                    f"alpha_room_{i}": user_input.get(f"alpha_room_{i}")
-                    for i in range(8, end_room)
-                }
+                extract_options(user_input, room_fields("alpha_room", 8, end_room))
             )
             return await self.async_step_transparency()
 
@@ -620,18 +495,8 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
 
         # If multi-floor is enabled, update the current floor's FloorData
         if self.floors_data and self.current_floor:
-            # Get existing floor data
-            floor_data_dict = self.floors_data.get(self.current_floor, {})
-
-            # Get current auto-calculated trims from coordinator.context.shared
-            current_trims = coordinator.context.shared.trims
-            current_trims_dict = current_trims.to_dict()
-
-            # Get trim values from coordinator's shared data (current auto-calculated trims)
-            trim_up = current_trims_dict.get("trim_up", 0)
-            trim_left = current_trims_dict.get("trim_left", 0)
-            trim_down = current_trims_dict.get("trim_down", 0)
-            trim_right = current_trims_dict.get("trim_right", 0)
+            # Current auto-calculated trims from coordinator.context.shared
+            current_trims = coordinator.context.shared.trims.to_dict()
 
             # Get current rotation from camera options or config
             current_rotation = int(
@@ -640,26 +505,14 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                 )
             )
 
-            # Create updated FloorData using common helper function
-            updated_floor = create_floor_data(
-                floor_name=self.current_floor,
-                trim_up=trim_up,
-                trim_down=trim_down,
-                trim_left=trim_left,
-                trim_right=trim_right,
-                map_name=floor_data_dict.get("map_name", ""),
-                rotation=current_rotation,
+            self.floors_data, trims_data = floor_helpers.refresh_floor(
+                self.floors_data, self.current_floor, current_trims, current_rotation
             )
-
-            # Update floors_data
-            updated_floors = dict(self.floors_data)
-            updated_floors[self.current_floor] = updated_floor.to_dict()
-            self.floors_data = updated_floors
 
             # Update trims_data (legacy single-floor support)
             self.camera_options.update(
                 {
-                    "trims_data": updated_floor.trims.to_dict(),
+                    "trims_data": trims_data,
                     "floors_data": self.floors_data,
                     "current_floor": self.current_floor,
                 }
@@ -702,34 +555,15 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         """Add a new floor with trim settings."""
         if user_input is not None:
             floor_id = str(user_input.get(CONF_FLOOR_NAME, ""))
-            map_name = user_input.get(CONF_MAP_NAME, "")
 
-            # Use existing trims_data as default for first floor if no floors exist yet
-            if not self.floors_data:
-                existing_trims = self.camera_config.options.get("trims_data", {})
-                trim_up = existing_trims.get("trim_up", 0)
-                trim_down = existing_trims.get("trim_down", 0)
-                trim_left = existing_trims.get("trim_left", 0)
-                trim_right = existing_trims.get("trim_right", 0)
-            else:
-                trim_up = user_input.get(CONF_TRIM_UP, 0)
-                trim_down = user_input.get(CONF_TRIM_DOWN, 0)
-                trim_left = user_input.get(CONF_TRIM_LEFT, 0)
-                trim_right = user_input.get(CONF_TRIM_RIGHT, 0)
-
-            # Create new floor data using common helper function
-            new_floor = create_floor_data(
-                floor_name=floor_id,
-                trim_up=trim_up,
-                trim_down=trim_down,
-                trim_left=trim_left,
-                trim_right=trim_right,
-                map_name=map_name,
+            # Existing trims_data is the default for the first floor
+            updated_floors = floor_helpers.add_floor(
+                self.floors_data,
+                floor_id,
+                user_input.get(CONF_MAP_NAME, ""),
+                user_input,
+                self.camera_config.options.get("trims_data", {}),
             )
-
-            # Update floors_data - store FloorData.to_dict() format
-            updated_floors = dict(self.floors_data)
-            updated_floors[floor_id] = new_floor.to_dict()
 
             # Update instance variables
             self.floors_data = updated_floors
@@ -748,21 +582,14 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         # Get floor options with display names, filtered for available floors
         floor_options = self._get_floor_dropdown_options(filter_configured=True)
 
-        description = "Add a new floor. "
-        if not self.floors_data:
-            description += "Existing auto-calculated trim values will be used for this first floor."
-        else:
-            description += (
-                "Enter trim values or leave at 0 to auto-calculate "
-                "when you use 'Save Map Trims'."
-            )
-
         return self.async_show_form(
             step_id="add_floor",
             data_schema=self._schemas.add_floor_schema(
                 floor_options, bool(self.floors_data)
             ),
-            description_placeholders={"info": description},
+            description_placeholders={
+                "info": floor_helpers.add_floor_description(bool(self.floors_data))
+            },
         )
 
     async def async_step_edit_floor(
@@ -776,27 +603,9 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
                 return await self.async_step_edit_floor()
 
             # Second step: update map_name and trim values
-            map_name = user_input.get(CONF_MAP_NAME, "")
-            trim_up = user_input.get(CONF_TRIM_UP, 0)
-            trim_down = user_input.get(CONF_TRIM_DOWN, 0)
-            trim_left = user_input.get(CONF_TRIM_LEFT, 0)
-            trim_right = user_input.get(CONF_TRIM_RIGHT, 0)
-
-            # Create updated floor data using common helper function
-            # Note: rotation is not stored in floor data - library uses global rotate_image setting
-            updated_floor = create_floor_data(
-                floor_name=self.selected_floor,
-                trim_up=trim_up,
-                trim_down=trim_down,
-                trim_left=trim_left,
-                trim_right=trim_right,
-                map_name=map_name,
-                rotation=None,
+            updated_floors = floor_helpers.edit_floor(
+                self.floors_data, self.selected_floor, user_input
             )
-
-            # Update floors_data - store FloorData.to_dict() format
-            updated_floors = dict(self.floors_data)
-            updated_floors[self.selected_floor] = updated_floor.to_dict()
 
             # Update instance variables
             self.floors_data = updated_floors
@@ -830,19 +639,13 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
 
         # Second step: edit the selected floor (map_name and trim values)
         floor_data = self.floors_data.get(self.selected_floor, {})
-        trims_data = floor_data.get("trims", {})
 
         return self.async_show_form(
             step_id="edit_floor",
             data_schema=self._schemas.edit_floor_data_schema(floor_data),
             description_placeholders={
                 "floor_name": self.selected_floor,
-                "trim_info": (
-                    f"Current trims: {trims_data.get('trim_up', 0)}, "
-                    f"{trims_data.get('trim_left', 0)}, "
-                    f"{trims_data.get('trim_down', 0)}, "
-                    f"{trims_data.get('trim_right', 0)}"
-                ),
+                "trim_info": floor_helpers.trim_info(floor_data),
             },
         )
 
@@ -853,25 +656,13 @@ class MQTTCameraOptionsFlowHandler(OptionsFlow):
         if user_input is not None:
             floor_to_delete = user_input.get(CONF_FLOOR_NAME)
 
-            updated_floors = dict(self.floors_data)
-            if floor_to_delete in updated_floors:
-                del updated_floors[floor_to_delete]
-
-                # If we deleted the current floor, select a new one
-                new_current_floor = self.current_floor
-                if floor_to_delete == self.current_floor:
-                    # Get remaining floors after deletion
-                    remaining_floors = list(updated_floors.keys())
-
-                    if remaining_floors:
-                        # Use first remaining floor
-                        new_current_floor = remaining_floors[0]
-                    else:
-                        # No floors left in floors_data, check HA floors
-                        ha_floors = self._get_ha_floors()
-                        new_current_floor = (
-                            ha_floors[0]["floor_id"] if ha_floors else "floor_0"
-                        )
+            if floor_to_delete in self.floors_data:
+                updated_floors, new_current_floor = floor_helpers.delete_floor(
+                    self.floors_data,
+                    floor_to_delete,
+                    self.current_floor,
+                    self._get_ha_floors(),
+                )
 
                 # Update instance variables
                 self.floors_data = updated_floors
