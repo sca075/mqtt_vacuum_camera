@@ -404,6 +404,100 @@ async def test_empty_events_dict_clears_stale_events():
     assert connector.mqtt_data.valetudo_events == {}
 
 
+@pytest.mark.asyncio
+async def test_dismisses_ha_notification_when_event_disappears_from_payload():
+    """Valetudo only publishes unprocessed events, so a dismissed one just vanishes."""
+    connector = _make_connector()
+    connector.publish_to_broker = AsyncMock()
+    scheduled_coros: List[Any] = []
+    connector.connector_data.hass.async_create_task = lambda coro: scheduled_coros.append(coro)
+
+    with patch(
+        "custom_components.mqtt_vacuum_camera.utils.connection.connector.persistent_notification"
+    ) as mock_pn:
+        unsub = MagicMock()
+        mock_pn.async_register_callback.return_value = unsub
+        await connector._hypfer_handle_valetudo_events(
+            {"evt-1": _make_error_event("evt-1", processed=False)}
+        )
+        mock_pn.async_dismiss.assert_not_called()
+
+        # Dismissed on the vacuum: the event is no longer in the payload.
+        await connector._hypfer_handle_valetudo_events({})
+
+    mock_pn.async_dismiss.assert_called_once_with(
+        connector.connector_data.hass,
+        notification_id="valetudo_error_evt-1",
+    )
+    unsub.assert_called_once()
+    assert connector._notification_listeners == {}
+    assert scheduled_coros == []
+    connector.publish_to_broker.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_still_active_event_is_not_dismissed_by_other_event_leaving():
+    """Only the notification whose event left the payload is dismissed."""
+    connector = _make_connector()
+
+    with patch(
+        "custom_components.mqtt_vacuum_camera.utils.connection.connector.persistent_notification"
+    ) as mock_pn:
+        mock_pn.async_register_callback.return_value = MagicMock()
+        await connector._hypfer_handle_valetudo_events(
+            {
+                "evt-1": _make_error_event("evt-1", processed=False),
+                "evt-2": _make_error_event("evt-2", processed=False),
+            }
+        )
+        await connector._hypfer_handle_valetudo_events(
+            {"evt-2": _make_error_event("evt-2", processed=False)}
+        )
+
+    mock_pn.async_dismiss.assert_called_once_with(
+        connector.connector_data.hass,
+        notification_id="valetudo_error_evt-1",
+    )
+    assert list(connector._notification_listeners) == ["valetudo_error_evt-2"]
+
+
+@pytest.mark.asyncio
+async def test_user_dismiss_in_ha_still_publishes_and_later_payload_is_noop():
+    """HA dismissal publishes to Valetudo; the follow-up payload without the event does nothing."""
+    connector = _make_connector()
+    connector.publish_to_broker = AsyncMock()
+    scheduled_coros: List[Any] = []
+    connector.connector_data.hass.async_create_task = lambda coro: scheduled_coros.append(coro)
+
+    callbacks: List[Any] = []
+    removed_sentinel = object()
+
+    with patch(
+        "custom_components.mqtt_vacuum_camera.utils.connection.connector.persistent_notification"
+    ) as mock_pn:
+        mock_pn.async_register_callback.side_effect = lambda _hass, cb: (
+            callbacks.append(cb) or MagicMock()
+        )
+        mock_pn.UpdateType.REMOVED = removed_sentinel
+        await connector._hypfer_handle_valetudo_events(
+            {"evt-9": _make_error_event("evt-9", processed=False)}
+        )
+
+        # User dismisses the notification in HA.
+        callbacks[0](removed_sentinel, {"valetudo_error_evt-9": object()})
+        assert len(scheduled_coros) == 1
+        await scheduled_coros[0]
+
+        # Valetudo processes the interaction and republishes without the event.
+        await connector._hypfer_handle_valetudo_events({})
+
+    connector.publish_to_broker.assert_called_once_with(
+        "valetudo/TestRobot/ValetudoEvents/valetudo_events/interact/set",
+        {"id": "evt-9", "interaction": "ok"},
+    )
+    mock_pn.async_dismiss.assert_not_called()
+
+
 # ---------------------------------------------------------------------------
 # _dismiss_valetudo_event
 # ---------------------------------------------------------------------------

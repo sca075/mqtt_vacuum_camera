@@ -386,13 +386,16 @@ class ValetudoConnector:
         - HA → Valetudo: when the user dismisses the HA notification,
           _dismiss_valetudo_event publishes to the MQTT interact topic, causing
           Valetudo to mark the event as processed and republish the events topic.
-        - Valetudo → HA (reverse): when Valetudo republishes the event with
-          processed=True (e.g. dismissed in the Valetudo web UI), the HA
-          notification is dismissed automatically.
+        - Valetudo → HA (reverse): when an event is dismissed on the vacuum
+          (e.g. in the Valetudo web UI), Valetudo republishes the topic without
+          it (it only publishes unprocessed events), so tracked notifications
+          missing from the payload are dismissed automatically. An event with
+          processed=True is handled the same way.
         """
         if events is None or not isinstance(events, dict):
             return
         self.mqtt_data.valetudo_events = events
+        active_notification_ids = set()
         for event_id, event_data in events.items():
             if not isinstance(event_data, dict):
                 continue
@@ -402,16 +405,9 @@ class ValetudoConnector:
             if event_class == "ErrorStateValetudoEvent":
                 notification_id = f"valetudo_error_{event_id}"
                 if processed:
-                    # Event acknowledged (via any interface) — clear the HA notification.
-                    # Unsubscribe BEFORE dismissing so our own dismiss call doesn't
-                    # echo back through the REMOVED callback and re-publish the
-                    # interact command Valetudo already processed.
-                    self._unsubscribe_notification_listener(notification_id)
-                    persistent_notification.async_dismiss(
-                        self.connector_data.hass,
-                        notification_id=notification_id,
-                    )
+                    self._dismiss_ha_notification(notification_id)
                 else:
+                    active_notification_ids.add(notification_id)
                     error_message = event_data.get("message", "Unknown error")
                     self.mqtt_data.mqtt_vac_err = error_message
                     persistent_notification.async_create(
@@ -425,6 +421,28 @@ class ValetudoConnector:
                     self._register_notification_dismiss_listener(
                         event_id, "ok", notification_id
                     )
+
+        # Valetudo only publishes unprocessed events, so an event dismissed on
+        # the vacuum simply disappears from the payload. Any notification we
+        # are still tracking that is no longer active has been dismissed there.
+        # Notifications dismissed in HA are already untracked, so they are not
+        # affected.
+        for notification_id in list(self._notification_listeners):
+            if notification_id not in active_notification_ids:
+                self._dismiss_ha_notification(notification_id)
+
+    def _dismiss_ha_notification(self, notification_id: str) -> None:
+        """Dismiss an HA notification because Valetudo no longer reports it as active.
+
+        Unsubscribe BEFORE dismissing so our own dismiss call doesn't echo back
+        through the REMOVED callback and re-publish the interact command
+        Valetudo already processed.
+        """
+        self._unsubscribe_notification_listener(notification_id)
+        persistent_notification.async_dismiss(
+            self.connector_data.hass,
+            notification_id=notification_id,
+        )
 
     def _unsubscribe_notification_listener(self, notification_id: str) -> None:
         """Remove and invoke a tracked persistent-notification callback, if any."""
