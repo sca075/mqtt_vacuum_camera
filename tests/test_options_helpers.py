@@ -41,17 +41,20 @@ def floor(name, up=0, down=0, left=0, right=0, map_name=""):
 
 
 def test_extract_options_maps_form_keys_to_option_keys():
+    """Form values are returned under their stored option keys."""
     result = extract_options({COLOR_WALL: [1, 2, 3]}, {"color_wall": COLOR_WALL})
     assert result == {"color_wall": [1, 2, 3]}
 
 
 def test_extract_options_missing_keys_are_none():
+    """Fields missing from the input are None."""
     result = extract_options({}, IMAGE_BASIC_FIELDS)
     assert set(result) == set(IMAGE_BASIC_FIELDS)
     assert all(value is None for value in result.values())
 
 
 def test_extract_options_uses_default_for_missing_keys():
+    """Fields missing from the input take the given default."""
     assert extract_options({"a": True}, same_key_fields(["a", "b"]), default=False) == {
         "a": True,
         "b": False,
@@ -59,12 +62,14 @@ def test_extract_options_uses_default_for_missing_keys():
 
 
 def test_extract_options_ignores_unknown_input_keys():
+    """Input keys that are not in the field map are ignored."""
     assert extract_options({"other": 1}, {"color_wall": COLOR_WALL}) == {
         "color_wall": None
     }
 
 
 def test_room_fields_builds_room_range():
+    """room_fields builds the keys for the room range, empty when start equals end."""
     assert room_fields("color_room", 8, 10) == {
         "color_room_8": "color_room_8",
         "color_room_9": "color_room_9",
@@ -73,6 +78,7 @@ def test_room_fields_builds_room_range():
 
 
 def test_field_maps_keep_stored_key_names():
+    """The field maps keep the stored option key names."""
     assert BASE_COLOURS_FIELDS["color_wall"] == COLOR_WALL
     assert IMAGE_BASIC_FIELDS["rotate_image"] == ATTR_ROTATE
 
@@ -81,12 +87,14 @@ def test_field_maps_keep_stored_key_names():
 
 
 def test_dropdown_without_ha_floors_returns_floor_0():
+    """Without Home Assistant floors the dropdown offers floor_0 only."""
     assert floor_helpers.floor_dropdown_options([], {}) == [
         {"label": "Floor 0", "value": "floor_0"}
     ]
 
 
 def test_dropdown_lists_all_ha_floors():
+    """The dropdown lists every Home Assistant floor by default."""
     assert floor_helpers.floor_dropdown_options(HA_FLOORS, {"ground": {}}) == [
         {"label": "Ground", "value": "ground"},
         {"label": "First", "value": "first"},
@@ -94,6 +102,7 @@ def test_dropdown_lists_all_ha_floors():
 
 
 def test_dropdown_filter_configured_excludes_configured():
+    """filter_configured removes the configured floors."""
     result = floor_helpers.floor_dropdown_options(
         HA_FLOORS, {"ground": {}}, filter_configured=True
     )
@@ -101,6 +110,7 @@ def test_dropdown_filter_configured_excludes_configured():
 
 
 def test_dropdown_use_configured_keeps_only_configured():
+    """use_configured keeps only the configured floors."""
     result = floor_helpers.floor_dropdown_options(
         HA_FLOORS, {"ground": {}}, use_configured=True
     )
@@ -111,6 +121,7 @@ def test_dropdown_use_configured_keeps_only_configured():
 
 
 def test_trims_from_input_defaults_to_zero():
+    """Trims missing from the form input are 0."""
     assert floor_helpers.trims_from_input({CONF_TRIM_UP: 5}) == {
         "trim_up": 5,
         "trim_down": 0,
@@ -120,6 +131,7 @@ def test_trims_from_input_defaults_to_zero():
 
 
 def test_add_first_floor_uses_existing_trims():
+    """The first floor takes the existing trims, not the form trims."""
     result = floor_helpers.add_floor(
         {},
         "floor_0",
@@ -133,6 +145,7 @@ def test_add_first_floor_uses_existing_trims():
 
 
 def test_add_next_floor_uses_form_trims_and_keeps_existing_floors():
+    """The next floors take the form trims and keep the existing floors."""
     existing = {"floor_0": floor("floor_0")}
     result = floor_helpers.add_floor(
         existing,
@@ -159,6 +172,7 @@ def test_add_next_floor_uses_form_trims_and_keeps_existing_floors():
 
 
 def test_edit_floor_replaces_map_name_and_trims_without_rotation():
+    """Edit floor replaces the map name and trims, without a rotation."""
     existing = {"floor_0": floor("floor_0", map_name="Old")}
     result = floor_helpers.edit_floor(
         existing, "floor_0", {"map_name": "New", CONF_TRIM_LEFT: 7}
@@ -170,6 +184,7 @@ def test_edit_floor_replaces_map_name_and_trims_without_rotation():
 
 
 def test_refresh_floor_keeps_map_name_and_sets_rotation():
+    """Refresh floor keeps the map name and sets the trims and rotation."""
     existing = {"floor_0": floor("floor_0", map_name="Home")}
     floors, trims = floor_helpers.refresh_floor(
         existing, "floor_0", {"trim_up": 1, "trim_left": 2}, 90
@@ -187,12 +202,14 @@ def test_refresh_floor_keeps_map_name_and_sets_rotation():
 
 
 def test_delete_floor_keeps_current_when_other_floor_deleted():
+    """Deleting another floor keeps the current floor."""
     floors = {"a": {}, "b": {}}
     assert floor_helpers.delete_floor(floors, "b", "a", []) == ({"a": {}}, "a")
     assert floors == {"a": {}, "b": {}}
 
 
 def test_delete_current_floor_selects_first_remaining():
+    """Deleting the current floor selects the first remaining floor."""
     assert floor_helpers.delete_floor({"a": {}, "b": {}}, "a", "a", HA_FLOORS) == (
         {"b": {}},
         "b",
@@ -200,6 +217,7 @@ def test_delete_current_floor_selects_first_remaining():
 
 
 def test_delete_last_floor_falls_back_to_ha_floor_then_floor_0():
+    """Deleting the last floor selects the first Home Assistant floor, then floor_0."""
     assert floor_helpers.delete_floor({"a": {}}, "a", "a", HA_FLOORS) == ({}, "ground")
     assert floor_helpers.delete_floor({"a": {}}, "a", "a", []) == ({}, "floor_0")
 
@@ -208,11 +226,13 @@ def test_delete_last_floor_falls_back_to_ha_floor_then_floor_0():
 
 
 def test_add_floor_description_depends_on_existing_floors():
+    """The add floor description depends on the existing floors."""
     assert "first floor" in floor_helpers.add_floor_description(False)
     assert "Save Map Trims" in floor_helpers.add_floor_description(True)
 
 
 def test_trim_info_orders_up_left_down_right():
+    """trim_info lists the trims as up, left, down, right."""
     info = floor_helpers.trim_info(floor("f", up=1, left=2, down=3, right=4))
     assert info == "Current trims: 1, 2, 3, 4"
     assert floor_helpers.trim_info({}) == "Current trims: 0, 0, 0, 0"

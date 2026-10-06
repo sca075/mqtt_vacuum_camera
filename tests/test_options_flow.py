@@ -110,6 +110,7 @@ def make_flow(config_entry):
     """Factory returning a flow handler for the given entry options."""
 
     def _make(options=None, rooms=3):
+        """Create a flow handler with the given entry options and room count."""
         config_entry.options = options or {}
         flow = MQTTCameraOptionsFlowHandler(config_entry)
         flow.hass = MagicMock()
@@ -135,11 +136,13 @@ def assert_step(result, step_id, result_type=FlowResultType.FORM):
 
 
 def test_init_requires_config_entry():
+    """The handler refuses to start without a config entry."""
     with pytest.raises(ConfigEntryError):
         MQTTCameraOptionsFlowHandler(None)
 
 
 def test_init_defaults(flow, config_entry):
+    """A new handler starts with empty options, no floors and floor_0 selected."""
     assert flow.file_name == "vacuum_one"
     assert flow.camera_options == {}
     assert flow.floors_data == {}
@@ -149,6 +152,7 @@ def test_init_defaults(flow, config_entry):
 
 
 def test_init_reads_floors_from_options(make_flow):
+    """Floors and the current floor are read from the entry options."""
     options = {"floors_data": {"floor_1": make_floor("floor_1")}, "current_floor": "floor_1"}
     flow = make_flow(options)
     assert flow.floors_data == options["floors_data"]
@@ -156,6 +160,7 @@ def test_init_reads_floors_from_options(make_flow):
 
 
 def test_init_backup_options_is_deep_copy(make_flow):
+    """Later changes to the entry options do not alter the backup."""
     options = {"floors_data": {"floor_1": make_floor("floor_1")}}
     flow = make_flow(options)
     options["floors_data"]["floor_1"]["map_name"] = "changed"
@@ -194,6 +199,7 @@ def test_init_backup_options_is_deep_copy(make_flow):
     ],
 )
 async def test_static_menus(flow, step, expected):
+    """Static menus list their expected options in order."""
     result = await getattr(flow, f"async_step_{step}")()
     assert_step(result, step, FlowResultType.MENU)
     assert result["menu_options"] == expected
@@ -210,6 +216,7 @@ async def test_static_menus(flow, step, expected):
     ],
 )
 async def test_colours_menu(make_flow, rooms, alpha, expected):
+    """The colours menu depends on the room count and the alpha flag."""
     flow = make_flow(rooms=rooms)
     flow.is_alpha_enabled = alpha
     result = await flow.async_step_colours()
@@ -225,11 +232,13 @@ async def test_colours_menu(make_flow, rooms, alpha, expected):
     ],
 )
 async def test_transparency_menu(make_flow, rooms, expected):
+    """The transparency menu depends on the room count."""
     result = await make_flow(rooms=rooms).async_step_transparency()
     assert result["menu_options"] == expected
 
 
 async def test_init_menu_reads_room_store(flow):
+    """The init step reads the room count and names from the RoomStore."""
     with patch(f"{MODULE}.RoomStore") as room_store:
         room_store.return_value.get_rooms_count.return_value = 4
         room_store.return_value.room_names = {"room_0": "Kitchen"}
@@ -242,6 +251,7 @@ async def test_init_menu_reads_room_store(flow):
 
 
 async def test_init_menu_default_room_names(flow):
+    """The init step uses the default room names when the store has none."""
     with patch(f"{MODULE}.RoomStore") as room_store:
         room_store.return_value.get_rooms_count.return_value = 2
         room_store.return_value.room_names = None
@@ -251,6 +261,7 @@ async def test_init_menu_default_room_names(flow):
 
 @pytest.mark.parametrize("rooms", [0, None, "3"])
 async def test_init_aborts_without_rooms(flow, rooms):
+    """The init step aborts when the room count is missing or invalid."""
     with patch(f"{MODULE}.RoomStore") as room_store:
         room_store.return_value.get_rooms_count.return_value = rooms
         room_store.return_value.room_names = None
@@ -260,6 +271,7 @@ async def test_init_aborts_without_rooms(flow, rooms):
 
 
 async def test_main_menu_goes_to_init(flow):
+    """The main menu step returns to the init step."""
     flow.async_step_init = AsyncMock(return_value="init_result")
     assert await flow.async_step_main_menu() == "init_result"
 
@@ -393,6 +405,7 @@ FORM_STEPS = [
 
 @pytest.mark.parametrize(("step", "user_input", "expected", "next_step"), FORM_STEPS)
 async def test_form_step_stores_options(flow, step, user_input, expected, next_step):
+    """A submitted form step stores its options and moves to the next step."""
     result = await getattr(flow, f"async_step_{step}")(user_input)
     assert flow.camera_options == expected
     assert result["step_id"] == next_step
@@ -407,6 +420,7 @@ async def test_form_step_missing_keys_store_none(flow, step, user_input, expecte
 
 @pytest.mark.parametrize("step", [p.values[0] for p in FORM_STEPS])
 async def test_form_step_without_input_shows_form(flow, step):
+    """A form step without input shows its form and stores nothing."""
     flow.hass.data = {}
     result = await getattr(flow, f"async_step_{step}")()
     assert_step(result, step)
@@ -414,6 +428,7 @@ async def test_form_step_without_input_shows_form(flow, step):
 
 
 async def test_obstacle_link_form_uses_coordinator_ip(flow, config_entry):
+    """The obstacle link form defaults to the vacuum IP of the coordinator."""
     coordinator = MagicMock()
     coordinator.context.shared.vacuum_ips = "192.168.1.9"
     flow.hass.data = {DOMAIN: {config_entry.entry_id: {"coordinator": coordinator}}}
@@ -423,6 +438,7 @@ async def test_obstacle_link_form_uses_coordinator_ip(flow, config_entry):
 
 
 async def test_obstacle_link_form_defaults_to_empty_ip(flow):
+    """The obstacle link form defaults to an empty IP without a coordinator."""
     flow.hass.data = {}
     flow._schemas = MagicMock()
     await flow.async_step_obstacle_link_config()
@@ -433,6 +449,7 @@ async def test_obstacle_link_form_defaults_to_empty_ip(flow):
 
 
 async def test_map_elements_stores_all_draw_flags(flow):
+    """Map elements stores every draw flag, False when not submitted."""
     result = await flow.async_step_map_elements({DRAW_FLAGS[0]: True})
     assert set(flow.camera_options) == set(DRAW_FLAGS)
     assert flow.camera_options[DRAW_FLAGS[0]] is True
@@ -442,6 +459,7 @@ async def test_map_elements_stores_all_draw_flags(flow):
 
 @pytest.mark.parametrize(("rooms", "stored"), [(3, 3), (15, 15), (20, 15)])
 async def test_segments_visibility_limits_room_flags(make_flow, rooms, stored):
+    """Segments visibility stores room flags only up to the room count (max 15)."""
     flow = make_flow(rooms=rooms)
     result = await flow.async_step_segments_visibility({ROOM_FLAGS[0]: True})
     assert list(flow.camera_options) == ROOM_FLAGS[:stored]
@@ -450,6 +468,7 @@ async def test_segments_visibility_limits_room_flags(make_flow, rooms, stored):
 
 
 async def test_segments_visibility_form(flow):
+    """The segments visibility form receives the room placeholders."""
     result = await flow.async_step_segments_visibility()
     assert_step(result, "segments_visibility")
     assert result["description_placeholders"] == flow.rooms_placeholders
@@ -482,6 +501,7 @@ BASE_COLOURS_EXPECTED = {
 
 
 async def test_base_colours_without_alpha(flow):
+    """Base colours are stored and the flow returns to the colours menu."""
     result = await flow.async_step_base_colours(BASE_COLOURS_INPUT)
     assert flow.camera_options == BASE_COLOURS_EXPECTED
     assert flow.is_alpha_enabled is False
@@ -489,6 +509,7 @@ async def test_base_colours_without_alpha(flow):
 
 
 async def test_base_colours_with_alpha_goes_to_alpha_1(flow):
+    """Base colours with the alpha flag continue to alpha_1 and reset the flag."""
     result = await flow.async_step_base_colours({**BASE_COLOURS_INPUT, IS_ALPHA: True})
     assert flow.camera_options == BASE_COLOURS_EXPECTED
     # The flag is reset right away so the colours menu hides "transparency".
@@ -497,10 +518,12 @@ async def test_base_colours_with_alpha_goes_to_alpha_1(flow):
 
 
 async def test_base_colours_form(flow):
+    """The base colours form is shown without input."""
     assert_step(await flow.async_step_base_colours(), "base_colours")
 
 
 async def test_floor_only(flow):
+    """Floor only stores the room 0 colour and returns to the colours menu."""
     result = await flow.async_step_floor_only({COLOR_ROOM_0: [1, 2, 3]})
     assert flow.camera_options == {"color_room_0": [1, 2, 3]}
     assert flow.is_alpha_enabled is False
@@ -508,17 +531,20 @@ async def test_floor_only(flow):
 
 
 async def test_floor_only_with_alpha(flow):
+    """Floor only with the alpha flag continues to the floor transparency step."""
     result = await flow.async_step_floor_only({COLOR_ROOM_0: [1, 2, 3], IS_ALPHA_R1: True})
     assert flow.is_alpha_enabled is True
     assert_step(result, "alpha_floor")
 
 
 async def test_floor_only_form(flow):
+    """The floor only form is shown without input."""
     assert_step(await flow.async_step_floor_only(), "floor_only")
 
 
 @pytest.mark.parametrize(("rooms", "stored"), [(1, 1), (5, 5), (8, 8), (12, 8)])
 async def test_rooms_colours_1_stores_first_rooms(make_flow, rooms, stored):
+    """Rooms colours 1 stores at most the first 8 room colours."""
     flow = make_flow(rooms=rooms)
     user_input = {f"color_room_{i}": [i, i, i] for i in range(16)}
     result = await flow.async_step_rooms_colours_1(user_input)
@@ -527,12 +553,14 @@ async def test_rooms_colours_1_stores_first_rooms(make_flow, rooms, stored):
 
 
 async def test_rooms_colours_1_missing_key_is_none(make_flow):
+    """Rooms colours 1 stores None for the room colours not submitted."""
     flow = make_flow(rooms=2)
     await flow.async_step_rooms_colours_1({"color_room_0": [1, 1, 1]})
     assert flow.camera_options == {"color_room_0": [1, 1, 1], "color_room_1": None}
 
 
 async def test_rooms_colours_1_with_alpha(flow):
+    """Rooms colours 1 with the alpha flag continues to alpha_2."""
     result = await flow.async_step_rooms_colours_1({IS_ALPHA_R1: True})
     assert flow.is_alpha_enabled is True
     assert_step(result, "alpha_2")
@@ -540,6 +568,7 @@ async def test_rooms_colours_1_with_alpha(flow):
 
 @pytest.mark.parametrize(("rooms", "last"), [(10, 10), (16, 16), (20, 16)])
 async def test_rooms_colours_2_stores_rooms_8_and_up(make_flow, rooms, last):
+    """Rooms colours 2 stores the room colours from room 8 up to 16 at most."""
     flow = make_flow(rooms=rooms)
     user_input = {f"color_room_{i}": [i, i, i] for i in range(20)}
     result = await flow.async_step_rooms_colours_2(user_input)
@@ -548,6 +577,7 @@ async def test_rooms_colours_2_stores_rooms_8_and_up(make_flow, rooms, last):
 
 
 async def test_rooms_colours_2_with_alpha(make_flow):
+    """Rooms colours 2 with the alpha flag continues to alpha_3."""
     flow = make_flow(rooms=12)
     result = await flow.async_step_rooms_colours_2({IS_ALPHA_R2: True})
     assert flow.is_alpha_enabled is True
@@ -556,6 +586,7 @@ async def test_rooms_colours_2_with_alpha(make_flow):
 
 @pytest.mark.parametrize("step", ["rooms_colours_1", "rooms_colours_2", "alpha_2", "alpha_3"])
 async def test_room_forms_are_shown(make_flow, step):
+    """Room colour and alpha forms are shown with the room placeholders."""
     flow = make_flow(rooms=12)
     result = await getattr(flow, f"async_step_{step}")()
     assert_step(result, step)
@@ -564,6 +595,7 @@ async def test_room_forms_are_shown(make_flow, step):
 
 @pytest.mark.parametrize(("rooms", "stored"), [(1, 1), (5, 5), (12, 8)])
 async def test_alpha_2_stores_first_rooms(make_flow, rooms, stored):
+    """Alpha 2 stores at most the first 8 room transparencies."""
     flow = make_flow(rooms=rooms)
     user_input = {f"alpha_room_{i}": i for i in range(16)}
     result = await flow.async_step_alpha_2(user_input)
@@ -573,6 +605,7 @@ async def test_alpha_2_stores_first_rooms(make_flow, rooms, stored):
 
 @pytest.mark.parametrize(("rooms", "last"), [(10, 10), (20, 16)])
 async def test_alpha_3_stores_rooms_8_and_up(make_flow, rooms, last):
+    """Alpha 3 stores the room transparencies from room 8 up to 16 at most."""
     flow = make_flow(rooms=rooms)
     user_input = {f"alpha_room_{i}": i for i in range(20)}
     result = await flow.async_step_alpha_3(user_input)
@@ -584,6 +617,7 @@ async def test_alpha_3_stores_rooms_8_and_up(make_flow, rooms, last):
 
 
 def test_get_ha_floors(flow):
+    """The Home Assistant floors are returned with their id and name."""
     floor = MagicMock()
     floor.floor_id = "ground"
     floor.name = "Ground"
@@ -593,6 +627,7 @@ def test_get_ha_floors(flow):
 
 
 def test_get_ha_floors_empty(flow):
+    """No Home Assistant floors gives an empty list."""
     with patch(f"{MODULE}.fr.async_get") as async_get:
         async_get.return_value.async_list_floors.return_value = []
         assert flow._get_ha_floors() == []
@@ -600,11 +635,13 @@ def test_get_ha_floors_empty(flow):
 
 @pytest.mark.parametrize("error", [AttributeError, ValueError, KeyError])
 def test_get_ha_floors_error_returns_empty(flow, error):
+    """A floor registry error gives an empty list."""
     with patch(f"{MODULE}.fr.async_get", side_effect=error("boom")):
         assert flow._get_ha_floors() == []
 
 
 def test_dropdown_without_ha_floors(flow):
+    """Without Home Assistant floors the dropdown offers floor_0 only."""
     with patch.object(flow, "_get_ha_floors", return_value=[]):
         expected = [{"label": "Floor 0", "value": "floor_0"}]
         assert flow._get_floor_dropdown_options() == expected
@@ -620,6 +657,7 @@ HA_FLOORS = [
 
 
 def test_dropdown_options_filters(make_flow):
+    """The dropdown can exclude or keep only the configured floors."""
     flow = make_flow({"floors_data": {"b": make_floor("b")}})
     with patch.object(flow, "_get_ha_floors", return_value=HA_FLOORS):
         assert [o["value"] for o in flow._get_floor_dropdown_options()] == ["a", "b", "c"]
@@ -638,6 +676,7 @@ def test_dropdown_options_filters(make_flow):
 
 
 async def test_select_floor(flow):
+    """Selecting a floor updates the current floor and the camera options."""
     result = await flow.async_step_select_floor({CONF_CURRENT_FLOOR: "floor_2"})
     assert flow.current_floor == "floor_2"
     assert flow.camera_options == {CONF_CURRENT_FLOOR: "floor_2"}
@@ -645,6 +684,7 @@ async def test_select_floor(flow):
 
 
 async def test_select_floor_form(flow):
+    """The select floor form shows the current floor."""
     with patch.object(flow, "_get_ha_floors", return_value=[]):
         result = await flow.async_step_select_floor()
     assert_step(result, "select_floor")
@@ -652,6 +692,7 @@ async def test_select_floor_form(flow):
 
 
 async def test_add_first_floor_uses_existing_trims_data(make_flow):
+    """The first floor takes the existing trims_data, not the form trims."""
     flow = make_flow(
         {
             "trims_data": {
@@ -695,6 +736,7 @@ async def test_add_first_floor_uses_existing_trims_data(make_flow):
 
 
 async def test_add_first_floor_without_trims_data_uses_zero(flow):
+    """The first floor gets zero trims when no trims_data exists."""
     await flow.async_step_add_floor({CONF_FLOOR_NAME: "floor_0"})
     trims = flow.floors_data["floor_0"]["trims"]
     assert [trims[k] for k in ("trim_up", "trim_down", "trim_left", "trim_right")] == [0] * 4
@@ -702,6 +744,7 @@ async def test_add_first_floor_without_trims_data_uses_zero(flow):
 
 
 async def test_add_next_floor_uses_user_trims(make_flow):
+    """The next floors take the trims entered in the form."""
     flow = make_flow({"floors_data": {"floor_0": make_floor("floor_0")}})
     await flow.async_step_add_floor(
         {
@@ -723,12 +766,14 @@ async def test_add_next_floor_uses_user_trims(make_flow):
 
 
 async def test_add_floor_does_not_mutate_config_entry_options(make_flow, config_entry):
+    """Adding a floor leaves the config entry options untouched."""
     flow = make_flow({"floors_data": {"floor_0": make_floor("floor_0")}})
     await flow.async_step_add_floor({CONF_FLOOR_NAME: "floor_1"})
     assert set(config_entry.options["floors_data"]) == {"floor_0"}
 
 
 async def test_add_floor_form_description(make_flow):
+    """The add floor form description depends on the existing floors."""
     with patch.object(MQTTCameraOptionsFlowHandler, "_get_ha_floors", return_value=[]):
         first = await make_flow().async_step_add_floor()
         later = await make_flow(
@@ -745,12 +790,14 @@ async def test_add_floor_form_description(make_flow):
 
 
 async def test_edit_floor_aborts_without_floors(flow):
+    """Edit floor aborts when no floor is configured."""
     result = await flow.async_step_edit_floor()
     assert result["type"] == FlowResultType.ABORT
     assert result["reason"] == "no_floors"
 
 
 async def test_edit_floor_two_step_flow(make_flow):
+    """Edit floor first selects the floor, then updates its map name and trims."""
     flow = make_flow({"floors_data": {"floor_0": make_floor("floor_0", "Old", 4)}})
     with patch.object(flow, "_get_ha_floors", return_value=[]):
         first = await flow.async_step_edit_floor()
@@ -794,12 +841,14 @@ async def test_edit_floor_two_step_flow(make_flow):
 
 
 async def test_delete_floor_aborts_without_floors(flow):
+    """Delete floor aborts when no floor is configured."""
     result = await flow.async_step_delete_floor()
     assert result["type"] == FlowResultType.ABORT
     assert result["reason"] == "no_floors"
 
 
 async def test_delete_floor_form(make_flow):
+    """The delete floor form is shown without input."""
     flow = make_flow({"floors_data": {"floor_0": make_floor("floor_0")}})
     with patch.object(flow, "_get_ha_floors", return_value=[]):
         result = await flow.async_step_delete_floor()
@@ -807,6 +856,7 @@ async def test_delete_floor_form(make_flow):
 
 
 async def test_delete_other_floor_keeps_current(make_flow):
+    """Deleting another floor keeps the current floor."""
     flow = make_flow(
         {
             "floors_data": {"a": make_floor("a"), "b": make_floor("b")},
@@ -824,6 +874,7 @@ async def test_delete_other_floor_keeps_current(make_flow):
 
 
 async def test_delete_current_floor_picks_first_remaining(make_flow):
+    """Deleting the current floor selects the first remaining floor."""
     flow = make_flow(
         {
             "floors_data": {"a": make_floor("a"), "b": make_floor("b"), "c": make_floor("c")},
@@ -837,6 +888,7 @@ async def test_delete_current_floor_picks_first_remaining(make_flow):
 
 
 async def test_delete_last_floor_uses_first_ha_floor(make_flow):
+    """Deleting the last floor selects the first Home Assistant floor."""
     flow = make_flow({"floors_data": {"a": make_floor("a")}, "current_floor": "a"})
     with patch.object(flow, "_get_ha_floors", return_value=HA_FLOORS):
         await flow.async_step_delete_floor({CONF_FLOOR_NAME: "a"})
@@ -845,6 +897,7 @@ async def test_delete_last_floor_uses_first_ha_floor(make_flow):
 
 
 async def test_delete_last_floor_without_ha_floors_defaults(make_flow):
+    """Deleting the last floor without Home Assistant floors selects floor_0."""
     flow = make_flow({"floors_data": {"a": make_floor("a")}, "current_floor": "a"})
     with patch.object(flow, "_get_ha_floors", return_value=[]):
         await flow.async_step_delete_floor({CONF_FLOOR_NAME: "a"})
@@ -853,6 +906,7 @@ async def test_delete_last_floor_without_ha_floors_defaults(make_flow):
 
 
 async def test_delete_unknown_floor_shows_form_again(make_flow):
+    """Deleting an unknown floor shows the form again and changes nothing."""
     flow = make_flow({"floors_data": {"a": make_floor("a")}, "current_floor": "a"})
     with patch.object(flow, "_get_ha_floors", return_value=[]):
         result = await flow.async_step_delete_floor({CONF_FLOOR_NAME: "zzz"})
@@ -865,6 +919,7 @@ async def test_delete_unknown_floor_shows_form_again(make_flow):
 
 
 def make_coordinator(flow, config_entry, trims):
+    """Register a mocked coordinator returning the given trims in hass.data."""
     coordinator = MagicMock()
     coordinator.context.shared.trims.to_dict.return_value = trims
     flow.hass.data = {DOMAIN: {config_entry.entry_id: {"coordinator": coordinator}}}
@@ -872,6 +927,7 @@ def make_coordinator(flow, config_entry, trims):
 
 
 async def test_update_floor_data_stores_coordinator_trims(make_flow, config_entry):
+    """Update floor data stores the coordinator trims and the stored rotation."""
     flow = make_flow(
         {
             "floors_data": {"a": make_floor("a", "Kitchen")},
@@ -905,6 +961,7 @@ async def test_update_floor_data_stores_coordinator_trims(make_flow, config_entr
 
 
 async def test_update_floor_data_prefers_pending_rotation(make_flow, config_entry):
+    """Update floor data uses the rotation changed in this session first."""
     flow = make_flow(
         {"floors_data": {"a": make_floor("a")}, "current_floor": "a", "rotate_image": "180"}
     )
@@ -917,6 +974,7 @@ async def test_update_floor_data_prefers_pending_rotation(make_flow, config_entr
 
 
 async def test_update_floor_data_without_floors_changes_nothing(flow, config_entry):
+    """Update floor data changes nothing when no floor is configured."""
     make_coordinator(flow, config_entry, {})
     flow.async_step_edit_floor = AsyncMock(return_value="edit_result")
     assert await flow.async_step_update_floor_data() == "edit_result"
@@ -927,6 +985,7 @@ async def test_update_floor_data_without_floors_changes_nothing(flow, config_ent
 
 
 async def test_save_options_creates_entry(flow):
+    """Save options merges the options and creates the config entry."""
     flow.camera_options = {"robot_size": 5}
     flow.backup_options = {"old": 1}
     with patch(f"{MODULE}.update_options", AsyncMock(return_value={"merged": 1})) as update:
@@ -942,6 +1001,7 @@ async def test_save_options_creates_entry(flow):
     [(ConfigEntryError("x"), "config_error"), (ConfigEntryNotReady("x"), "not_ready")],
 )
 async def test_save_options_aborts_on_errors(flow, error, reason):
+    """Save options aborts with the reason matching the raised error."""
     with patch(f"{MODULE}.update_options", AsyncMock(side_effect=error)):
         result = await flow.async_step_save_options()
     assert result["type"] == FlowResultType.ABORT
