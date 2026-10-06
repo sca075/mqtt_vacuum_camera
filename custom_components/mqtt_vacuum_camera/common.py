@@ -51,8 +51,10 @@ def get_camera_device_info(hass, entry):
         hass.config_entries.async_get_entry(str(entry.entry_id)).options
     )
     camera_entry.update(camera_entry_options)
-    # Ensure def_context_type has a default value if missing
-    if "def_context_type" not in camera_entry:
+    # Ensure def_context_type has a default value if missing or empty. The options
+    # flow can store ``None`` for it (when the "Image basic options" step is not
+    # visited), and a key that is present but ``None`` must not be kept.
+    if not camera_entry.get("def_context_type"):
         camera_entry["def_context_type"] = "jpeg"
     return camera_entry
 
