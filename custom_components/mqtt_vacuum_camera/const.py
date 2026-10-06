@@ -207,6 +207,7 @@ DEFAULT_VALUES = {
     "vac_status_position": True,
     "robot_size": 25,
     "save_trims": True,
+    "def_context_type": "jpeg",
     "trims_data": {"trim_up": 0, "trim_left": 0, "trim_down": 0, "trim_right": 0},
     "floors_data": {},
     "current_floor": "floor_0",
