@@ -14,6 +14,7 @@ from custom_components.mqtt_vacuum_camera.utils.connection.connector import (
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_connector():
     """Build a ValetudoConnector with minimal mocks."""
     hass = MagicMock()
@@ -62,11 +63,14 @@ def _make_consumable_event(event_id, processed=False):
 # _hypfer_handle_valetudo_events
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_creates_notification_for_unprocessed_error():
     """An unprocessed ErrorStateValetudoEvent creates a persistent notification."""
     connector = _make_connector()
-    events = {"evt-1": _make_error_event("evt-1", processed=False, message="Mop pad failure")}
+    events = {
+        "evt-1": _make_error_event("evt-1", processed=False, message="Mop pad failure")
+    }
 
     with patch(
         "custom_components.mqtt_vacuum_camera.utils.connection.connector.persistent_notification"
@@ -130,6 +134,7 @@ async def test_none_or_empty_events_does_not_notify():
 # _register_notification_dismiss_listener
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_listener_registered_only_once_per_notification():
     """Calling register twice for the same notification_id is a no-op the second time."""
@@ -139,8 +144,12 @@ async def test_listener_registered_only_once_per_notification():
         "custom_components.mqtt_vacuum_camera.utils.connection.connector.persistent_notification"
     ) as mock_pn:
         mock_pn.async_register_callback.return_value = MagicMock()
-        connector._register_notification_dismiss_listener("evt-1", "ok", "valetudo_error_evt-1")
-        connector._register_notification_dismiss_listener("evt-1", "ok", "valetudo_error_evt-1")
+        connector._register_notification_dismiss_listener(
+            "evt-1", "ok", "valetudo_error_evt-1"
+        )
+        connector._register_notification_dismiss_listener(
+            "evt-1", "ok", "valetudo_error_evt-1"
+        )
 
     assert mock_pn.async_register_callback.call_count == 1
 
@@ -155,7 +164,9 @@ async def test_listener_unsubscribe_added_to_handlers():
         "custom_components.mqtt_vacuum_camera.utils.connection.connector.persistent_notification"
     ) as mock_pn:
         mock_pn.async_register_callback.return_value = mock_unsub
-        connector._register_notification_dismiss_listener("evt-1", "ok", "valetudo_error_evt-1")
+        connector._register_notification_dismiss_listener(
+            "evt-1", "ok", "valetudo_error_evt-1"
+        )
 
     assert mock_unsub in connector.connector_data.unsubscribe_handlers
     assert connector._notification_listeners["valetudo_error_evt-1"] is mock_unsub
@@ -257,7 +268,9 @@ async def test_processed_event_unsubscribes_before_dismissing():
         "custom_components.mqtt_vacuum_camera.utils.connection.connector.persistent_notification"
     ) as mock_pn:
         mock_unsub.side_effect = lambda: call_order.append("unsubscribe")
-        mock_pn.async_dismiss.side_effect = lambda *a, **kw: call_order.append("dismiss")
+        mock_pn.async_dismiss.side_effect = lambda *a, **kw: call_order.append(
+            "dismiss"
+        )
         await connector._hypfer_handle_valetudo_events(events)
 
     assert call_order == ["unsubscribe", "dismiss"]
@@ -282,7 +295,9 @@ async def test_full_flow_user_dismisses_in_ha_publishes_to_valetudo():
 
     # Collect coroutines scheduled via hass.async_create_task so we can await them.
     scheduled_coros: List[Any] = []
-    connector.connector_data.hass.async_create_task = lambda coro: scheduled_coros.append(coro)
+    connector.connector_data.hass.async_create_task = lambda coro: (
+        scheduled_coros.append(coro)
+    )
 
     captured_callbacks: List[Any] = []
 
@@ -291,7 +306,9 @@ async def test_full_flow_user_dismisses_in_ha_publishes_to_valetudo():
         return MagicMock()
 
     # Step 1–2: Valetudo sends an unprocessed error.
-    events = {"evt-42": _make_error_event("evt-42", processed=False, message="Brush stuck")}
+    events = {
+        "evt-42": _make_error_event("evt-42", processed=False, message="Brush stuck")
+    }
     with patch(
         "custom_components.mqtt_vacuum_camera.utils.connection.connector.persistent_notification"
     ) as mock_pn:
@@ -303,7 +320,10 @@ async def test_full_flow_user_dismisses_in_ha_publishes_to_valetudo():
 
         # Notification created for the user.
         mock_pn.async_create.assert_called_once()
-        assert mock_pn.async_create.call_args.kwargs["notification_id"] == "valetudo_error_evt-42"
+        assert (
+            mock_pn.async_create.call_args.kwargs["notification_id"]
+            == "valetudo_error_evt-42"
+        )
 
         # A listener was registered with HA's dispatcher.
         assert len(captured_callbacks) == 1
@@ -344,7 +364,9 @@ async def test_full_flow_dismissal_in_valetudo_does_not_echo_to_mqtt():
     connector.publish_to_broker = AsyncMock()
 
     scheduled_coros: List[Any] = []
-    connector.connector_data.hass.async_create_task = lambda coro: scheduled_coros.append(coro)
+    connector.connector_data.hass.async_create_task = lambda coro: (
+        scheduled_coros.append(coro)
+    )
 
     # Faithful HA dispatcher simulation.
     dispatcher: List[Any] = []
@@ -365,15 +387,17 @@ async def test_full_flow_dismissal_in_valetudo_does_not_echo_to_mqtt():
             cb(removed_sentinel, {notification_id: object()})
 
     # Arm: unprocessed event arrives first so a listener is registered.
-    unprocessed = {"evt-7": _make_error_event("evt-7", processed=False, message="Filter clog")}
+    unprocessed = {
+        "evt-7": _make_error_event("evt-7", processed=False, message="Filter clog")
+    }
     with patch(
         "custom_components.mqtt_vacuum_camera.utils.connection.connector.persistent_notification"
     ) as mock_pn:
         mock_pn.async_register_callback.side_effect = _register
         mock_pn.UpdateType.REMOVED = removed_sentinel
         # In real HA, async_dismiss would trigger the dispatcher. Wire that up.
-        mock_pn.async_dismiss.side_effect = lambda _hass, notification_id: _dispatch_removed(
-            notification_id
+        mock_pn.async_dismiss.side_effect = lambda _hass, notification_id: (
+            _dispatch_removed(notification_id)
         )
 
         await connector._hypfer_handle_valetudo_events(unprocessed)
@@ -386,7 +410,9 @@ async def test_full_flow_dismissal_in_valetudo_does_not_echo_to_mqtt():
     # async_dismiss fired the dispatcher, but our callback was already gone
     # because _unsubscribe_notification_listener ran first — no echo.
     assert dispatcher == [], "listener should have been removed before async_dismiss"
-    assert scheduled_coros == [], "no _dismiss_valetudo_event should have been scheduled"
+    assert scheduled_coros == [], (
+        "no _dismiss_valetudo_event should have been scheduled"
+    )
     connector.publish_to_broker.assert_not_called()
 
 
@@ -394,7 +420,9 @@ async def test_full_flow_dismissal_in_valetudo_does_not_echo_to_mqtt():
 async def test_empty_events_dict_clears_stale_events():
     """An empty-dict payload must overwrite previously stored events (not be ignored)."""
     connector = _make_connector()
-    connector.mqtt_data.valetudo_events = {"stale": {"__class": "ErrorStateValetudoEvent"}}
+    connector.mqtt_data.valetudo_events = {
+        "stale": {"__class": "ErrorStateValetudoEvent"}
+    }
 
     with patch(
         "custom_components.mqtt_vacuum_camera.utils.connection.connector.persistent_notification"
@@ -410,7 +438,9 @@ async def test_dismisses_ha_notification_when_event_disappears_from_payload():
     connector = _make_connector()
     connector.publish_to_broker = AsyncMock()
     scheduled_coros: List[Any] = []
-    connector.connector_data.hass.async_create_task = lambda coro: scheduled_coros.append(coro)
+    connector.connector_data.hass.async_create_task = lambda coro: (
+        scheduled_coros.append(coro)
+    )
 
     with patch(
         "custom_components.mqtt_vacuum_camera.utils.connection.connector.persistent_notification"
@@ -467,7 +497,9 @@ async def test_user_dismiss_in_ha_still_publishes_and_later_payload_is_noop():
     connector = _make_connector()
     connector.publish_to_broker = AsyncMock()
     scheduled_coros: List[Any] = []
-    connector.connector_data.hass.async_create_task = lambda coro: scheduled_coros.append(coro)
+    connector.connector_data.hass.async_create_task = lambda coro: (
+        scheduled_coros.append(coro)
+    )
 
     callbacks: List[Any] = []
     removed_sentinel = object()
@@ -501,6 +533,7 @@ async def test_user_dismiss_in_ha_still_publishes_and_later_payload_is_noop():
 # ---------------------------------------------------------------------------
 # _dismiss_valetudo_event
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_dismiss_publishes_to_mqtt_interact_topic():
