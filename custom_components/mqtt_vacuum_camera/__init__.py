@@ -47,7 +47,6 @@ from .utils.camera.camera_services import (
     camera_update_floor_data,
     obstacle_view,
     reload_camera_config,
-    reset_trims,
 )
 from .utils.connection.connector import ValetudoConnector
 from .utils.files_operations import async_get_active_user_language
@@ -164,9 +163,6 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
             hass, DOMAIN, SERVICE_RELOAD, partial(reload_camera_config, hass=hass)
         )
         hass.services.async_register(
-            DOMAIN, "reset_trims", partial(reset_trims, hass=hass)
-        )
-        hass.services.async_register(
             DOMAIN, "obstacle_view", partial(obstacle_view, hass=hass)
         )
         hass.services.async_register(
@@ -228,7 +224,6 @@ async def async_unload_entry(
 
         # Remove services
         if not hass.data[DOMAIN]:
-            hass.services.async_remove(DOMAIN, "reset_trims")
             hass.services.async_remove(DOMAIN, "obstacle_view")
             hass.services.async_remove(DOMAIN, "camera_select_floor")
             hass.services.async_remove(DOMAIN, "camera_update_floor_data")

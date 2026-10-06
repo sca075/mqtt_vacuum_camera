@@ -326,13 +326,13 @@ class MQTTCamera(CoordinatorEntity, Camera):  # pylint: disable=too-many-instanc
         device_info_class = Dev_Info if Dev_Info is not None else Entity_Info
         return device_info_class(identifiers=self.device.identifiers)
 
-    def turn_on(self) -> None:
+    async def async_turn_on(self) -> None:
         """Camera Turn On"""
         self.context.shared.camera_mode = CameraModes.CAMERA_ON
         self._attr_is_on = True
         self.async_write_ha_state()
 
-    def turn_off(self) -> None:
+    async def async_turn_off(self) -> None:
         """Camera Turn Off"""
         self.context.shared.camera_mode = CameraModes.CAMERA_OFF
         self._attr_is_on = False

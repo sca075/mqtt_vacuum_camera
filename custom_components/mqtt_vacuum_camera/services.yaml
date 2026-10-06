@@ -24,8 +24,6 @@ snapshot:
       selector:
         text:
 
-reset_trims:
-
 obstacle_view:
   name: Obstacle view
   description: Select the coordinates to Show the obstacle on the map.
