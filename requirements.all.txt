@@ -43,7 +43,7 @@ isort>=9.0.2
 flake8>=6.0.0
 flake8-docstrings>=1.7.0
 pydocstyle>=6.0.0
-bandit>=1.7.0
+bandit>=1.9.4
 
 # ============================================================================
 # Pre-commit hooks
