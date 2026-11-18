@@ -362,7 +362,7 @@ class ObstacleView:
                 fut=self._download_image(obstacle["link"], DOWNLOAD_TIMEOUT),
                 timeout=(DOWNLOAD_TIMEOUT + 1),  # dead man switch
             )
-        except asyncio.TimeoutError:
+        except TimeoutError:
             LOGGER.warning("%s: Image download timed out", self._file_name)
             await self._set_camera_mode(
                 CameraModes.MAP_VIEW, "Obstacle image download timed out"
