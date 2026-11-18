@@ -11,7 +11,7 @@ from functools import lru_cache
 import os
 from queue import Empty, Full, Queue
 import threading
-from typing import Awaitable, Callable, Dict, TypeVar
+from typing import Any, Callable, Coroutine, Dict, TypeVar
 
 from ..const import LOGGER
 
@@ -202,20 +202,14 @@ class ThreadPoolManager:
     async def run_async_in_executor(
         self,
         name: str,
-        async_func: Callable[..., Awaitable[R]],
+        async_func: Callable[..., Coroutine[Any, Any, R]],
         *args,
         max_workers: int = 1,
     ) -> R:
-        """Run async function in thread pool (rarely needed)."""
+        """Run async function in a dedicated thread with its own event loop."""
 
         def sync_wrapper_with_args():
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            try:
-                return loop.run_until_complete(async_func(*args))
-
-            finally:
-                loop.close()
+            return asyncio.run(async_func(*args))
 
         return await self.run_in_executor(
             name, sync_wrapper_with_args, max_workers=max_workers
