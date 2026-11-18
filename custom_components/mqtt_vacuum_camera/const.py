@@ -1,5 +1,5 @@
 """Constants for the mqtt_vacuum_camera integration.
-Last Updated on version: 2025.10.0
+Last Updated on version: 2026.11.0
 """
 
 from enum import Enum
