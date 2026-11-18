@@ -400,7 +400,7 @@ class MQTTCamera(CoordinatorEntity, Camera):  # pylint: disable=too-many-instanc
                     )
                     # Reset timeout counter on successful processing
                     self.settings.timeout_counter = 0
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     # Increment timeout counter (initialize if missing for existing instances)
                     current_count = getattr(self.settings, "timeout_counter", 0)
                     self.settings.timeout_counter = current_count + 1
@@ -442,10 +442,8 @@ class MQTTCamera(CoordinatorEntity, Camera):  # pylint: disable=too-many-instanc
         )
         if payload and data_type:
             data = payload.payload if hasattr(payload, "payload") else payload
-            parsed_json = await self.context.hass.async_create_task(
-                self.processors.decompression.decompress(
-                    payload=data, data_type=data_type
-                )
+            parsed_json = await self.processors.decompression.decompress(
+                payload=data, data_type=data_type
             )
         return parsed_json, test_mode, data_type
 

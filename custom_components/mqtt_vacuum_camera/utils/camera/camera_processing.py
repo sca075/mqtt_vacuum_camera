@@ -8,12 +8,12 @@ avoid the overload of the main_thread of Home Assistant.
 from __future__ import annotations
 
 import asyncio
-import concurrent.futures
 from io import BytesIO
 from typing import Any
 
 from PIL import Image
 import aiohttp
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from valetudo_map_parser.config.types import JsonType
 from valetudo_map_parser.conga_handler import CongaMapImageHandler
 from valetudo_map_parser.hypfer_handler import HypferMapImageHandler
@@ -103,8 +103,7 @@ class CameraProcessor:
             return self._handler.get_frame_number()
         return self._handler.get_frame_number() - 2
 
-    @staticmethod
-    async def download_image(url: str, set_timeout: int = 6):
+    async def download_image(self, url: str, set_timeout: int = 6):
         """
         Asynchronously download an image without blocking.
 
@@ -117,17 +116,16 @@ class CameraProcessor:
 
         try:
             timeout = aiohttp.ClientTimeout(total=set_timeout)
-            async with aiohttp.ClientSession(timeout=timeout) as session:
-                async with session.get(url) as response:
-                    if response.status == 200:
-                        obstacle_image = await response.read()
-                        return obstacle_image
-                    LOGGER.warning(
-                        "Failed to download obstacle image. Status: %s, Reason: %s",
-                        response.status,
-                        response.reason,
-                    )
-                    return None
+            session = async_get_clientsession(self.hass)
+            async with session.get(url, timeout=timeout) as response:
+                if response.status == 200:
+                    return await response.read()
+                LOGGER.warning(
+                    "Failed to download obstacle image. Status: %s, Reason: %s",
+                    response.status,
+                    response.reason,
+                )
+                return None
         except aiohttp.ClientError as e:
             LOGGER.warning(
                 "Client error occurred: %s",
@@ -135,20 +133,14 @@ class CameraProcessor:
                 exc_info=True,
             )
             return None
-        except asyncio.TimeoutError as e:
+        except TimeoutError as e:
             LOGGER.warning("Timeout downloading image: %s", e)
             return None
 
     async def async_open_image(self, obstacle_image: Any) -> Image.Image:
-        """Asynchronously open an image file using a temporary 1-worker pool."""
+        """Asynchronously open an image without blocking the event loop."""
 
         def open_image(image_data: Any) -> Image.Image:
             return Image.open(BytesIO(image_data))
 
-        # obstacle_image
-        with concurrent.futures.ThreadPoolExecutor(
-            max_workers=1, thread_name_prefix=f"{self._file_name}_camera"
-        ) as ex:
-            fut = ex.submit(open_image, obstacle_image)
-            result = await asyncio.wrap_future(fut)
-        return result
+        return await asyncio.to_thread(open_image, obstacle_image)
