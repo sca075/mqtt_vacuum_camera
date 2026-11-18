@@ -744,9 +744,7 @@ class ValetudoConnector:
             case t if t == f"{self.config.mqtt_topic}/custom_command":
                 await self.rrm_handle_active_segments(msg)
             case t if t == f"{self.config.mqtt_topic}/destinations":
-                await self.connector_data.hass.async_create_task(
-                    self.rand256_handle_destinations(msg)
-                )
+                await self.rand256_handle_destinations(msg)
             case t if t == f"{self.config.mqtt_topic}/MapData/segments":
                 await self._hypfer_handle_map_segments(msg)
             case t if t in [self.config.command_topic, self.rrm_data.rrm_command]:

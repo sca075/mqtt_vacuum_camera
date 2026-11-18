@@ -174,10 +174,8 @@ async def async_setup_entry(hass: core.HomeAssistant, entry: ConfigEntry) -> boo
             partial(camera_update_floor_data, hass=hass),
         )
         await async_register_vacuums_services(hass, data_coordinator)
-    # Registers update listener to update config entry when options are updated.
-    unsub_options_update_listener = entry.add_update_listener(options_update_listener)
-    # Store a reference to the unsubscribe function to clean up if an entry is unloaded.
-    hass_data["unsub_options_update_listener"] = unsub_options_update_listener
+    # Reload the entry when options are updated; removed automatically on unload.
+    entry.async_on_unload(entry.add_update_listener(options_update_listener))
     hass.data[DOMAIN][entry.entry_id] = hass_data
     if bool(hass_data.get("is_rand256")):
         await hass.config_entries.async_forward_entry_setups(
@@ -202,7 +200,6 @@ async def async_unload_entry(
     ):
         # Remove config entry from domain.
         entry_data = hass.data[DOMAIN].pop(entry.entry_id)
-        entry_data["unsub_options_update_listener"]()
 
         # Shutdown thread pool for this entry only
         # Use file_name (from MQTT topic) instead of entry.entry_id to match pool creation

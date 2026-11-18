@@ -5,9 +5,9 @@ Version: 2025.10.0
 
 from __future__ import annotations
 
+import asyncio
 from typing import Optional
 
-import async_timeout
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from valetudo_map_parser.config.shared import CameraSharedManager
 
@@ -27,9 +27,7 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
             name=DEFAULT_NAME,
             config_entry=config.device_entity,
             update_interval=config.polling_interval,
-            update_method=self._async_update_data,
         )
-        self.hass = config.hass
         self.vacuum_topic = config.vacuum_topic
         self.is_rand256 = config.is_rand256
         self.device_entity = config.device_entity
@@ -58,7 +56,7 @@ class MQTTVacuumCoordinator(DataUpdateCoordinator):
         Fetch data from the MQTT topics for sensors.
         """
         try:
-            async with async_timeout.timeout(10):
+            async with asyncio.timeout(10):
                 # Fetch and process sensor data from the MQTT connector
                 sensor_data = await self.context.connector.get_rand256_attributes()
                 if sensor_data:
