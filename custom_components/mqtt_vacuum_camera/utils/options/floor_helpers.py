@@ -55,7 +55,9 @@ def floor_dropdown_options(
 
 def trims_from_input(user_input: Mapping[str, Any]) -> Dict[str, int]:
     """Read the four trim values from the form input, 0 when missing."""
-    return {key: user_input.get(form_key, 0) for key, form_key in TRIM_FORM_KEYS.items()}
+    return {
+        key: user_input.get(form_key, 0) for key, form_key in TRIM_FORM_KEYS.items()
+    }
 
 
 def add_floor(
@@ -75,9 +77,7 @@ def add_floor(
     else:
         trims = {key: existing_trims.get(key, 0) for key in TRIM_KEYS}
 
-    new_floor = create_floor_data(
-        floor_name=floor_id, map_name=map_name, **trims
-    )
+    new_floor = create_floor_data(floor_name=floor_id, map_name=map_name, **trims)
     return {**floors_data, floor_id: new_floor.to_dict()}
 
 

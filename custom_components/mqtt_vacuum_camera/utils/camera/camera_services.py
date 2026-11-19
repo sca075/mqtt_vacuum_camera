@@ -1,10 +1,8 @@
 """Camera-related services for the MQTT Vacuum Camera integration."""
 
 from homeassistant.config_entries import ConfigEntryState
-from homeassistant.const import SERVICE_RELOAD
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import entity_registry as er
-from homeassistant.helpers import issue_registry as ir
 
 from ...common import create_floor_data, get_entity_id
 from ...const import CONF_CURRENT_FLOOR, CONF_FLOORS_DATA, DOMAIN, LOGGER

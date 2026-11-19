@@ -1,20 +1,13 @@
 """pytest fixtures."""
 
 import json
-import os
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceEntry
-from homeassistant.setup import async_setup_component
 import pytest
 
-from custom_components.mqtt_vacuum_camera.const import DOMAIN, CameraModes
-
-
-async def test_async_setup(hass):
-    """Test the component get setup."""
-    assert await async_setup_component(hass, DOMAIN, {}) is True
+from custom_components.mqtt_vacuum_camera.const import CameraModes
 
 
 @pytest.fixture(autouse=True)
