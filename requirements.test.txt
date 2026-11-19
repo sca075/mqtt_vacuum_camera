@@ -1,5 +1,5 @@
 # From our manifest.json for our custom component
-valetudo_map_parser==0.3.6
+valetudo_map_parser==0.3.5
 # pillow is pinned by Home Assistant 2026.11 (package_constraints.txt)
 pillow==13.0.0
 # numpy is not pinned here: valetudo_map_parser needs >=2.3.2 and
