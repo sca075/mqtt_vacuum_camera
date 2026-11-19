@@ -1,8 +1,9 @@
 # From our manifest.json for our custom component
 valetudo_map_parser==0.3.6
-# pillow and numpy are pinned by Home Assistant 2026.11 (package_constraints.txt)
+# pillow is pinned by Home Assistant 2026.11 (package_constraints.txt)
 pillow==13.0.0
-numpy==2.3.2
+# numpy is not pinned here: valetudo_map_parser needs >=2.3.2 and
+# pytest-homeassistant-custom-component pins the exact version it tests with
 isal>=1.8.0
 psutil-home-assistant>=0.0.1
 janus>=2.0.0
