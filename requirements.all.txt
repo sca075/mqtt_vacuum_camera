@@ -4,22 +4,22 @@
 # ============================================================================
 # Core Integration Dependencies (from manifest.json)
 # ============================================================================
-valetudo_map_parser==0.3.5
+valetudo_map_parser>=0.3.5
 
 # ============================================================================
 # Home Assistant Core
 # ============================================================================
-homeassistant>=2026.11.0
+homeassistant<=2026.11.0
 
 # ============================================================================
 # Runtime Dependencies
 # ============================================================================
 # pillow is pinned by Home Assistant 2026.11 (package_constraints.txt)
-pillow==13.0.0
+pillow<=13.0.0
 # numpy is not pinned here: valetudo_map_parser needs >=2.3.2 and
 # pytest-homeassistant-custom-component pins the exact version it tests with
-isal==1.8.0
-psutil-home-assistant==0.0.1
+isal>=1.8.0
+psutil-home-assistant>=0.0.1
 janus==2.0.0
 
 # ============================================================================
