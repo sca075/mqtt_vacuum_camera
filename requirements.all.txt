@@ -18,7 +18,7 @@ pillow<=13.0.0
 numpy
 isal==1.9.1
 psutil-home-assistant==0.0.1
-janus==2.0.0
+janus==2.1.1
 
 # ============================================================================
 # Testing Dependencies
