@@ -5,9 +5,9 @@ pillow<=13.0.0
 numpy
 # numpy is not pinned here: valetudo_map_parser needs >=2.3.2 and
 # pytest-homeassistant-custom-component pins the exact version it tests with
-isal>=1.9.1
+isal<=1.9.1
 psutil-home-assistant>=0.0.1
-janus>=2.1.1
+janus<=2.1.1
 
 
 # Strictly for tests
