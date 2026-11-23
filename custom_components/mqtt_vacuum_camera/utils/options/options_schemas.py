@@ -3,7 +3,6 @@
 from dataclasses import dataclass
 from typing import Any
 
-import voluptuous as vol
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.selector import (
     BooleanSelector,
@@ -18,6 +17,7 @@ from homeassistant.helpers.selector import (
     TextSelectorConfig,
     TextSelectorType,
 )
+import voluptuous as vol
 
 from ...const import (
     ALLOWED_IMAGE_FORMAT,

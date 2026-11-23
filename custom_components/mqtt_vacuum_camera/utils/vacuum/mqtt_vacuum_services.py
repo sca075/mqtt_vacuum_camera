@@ -499,10 +499,10 @@ def generate_zone_payload(zones, repeat, is_rand256, after_cleaning="Base"):
                 "Invalid zone format. Each zone should contain 4 or 8 coordinates."
             )
 
-        # Return the full payload for the specified firmware
-        if is_rand256:
-            return {"command": "zoned_cleanup", "zone_coordinates": payload_zones}
-        return {"zones": payload_zones, "iterations": repeat}
+    # Return the full payload for the specified firmware
+    if is_rand256:
+        return {"command": "zoned_cleanup", "zone_coordinates": payload_zones}
+    return {"zones": payload_zones, "iterations": repeat}
 
 
 def generate_service_data_go_to(request: GoToRequest) -> dict | None:

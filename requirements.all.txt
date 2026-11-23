@@ -4,16 +4,17 @@
 # ============================================================================
 # Core Integration Dependencies (from manifest.json)
 # ============================================================================
-valetudo_map_parser==0.3.6
+valetudo_map_parser>=0.3.5
 
 # ============================================================================
 # Home Assistant Core
 # ============================================================================
-homeassistant>=2026.11.1
+homeassistant<=2026.11.0
 
 # ============================================================================
 # Runtime Dependencies
 # ============================================================================
+# pillow is pinned by Home Assistant 2026.11 (package_constraints.txt)
 pillow<=13.0.0
 numpy
 isal==1.9.1
@@ -23,7 +24,7 @@ janus==2.1.1
 # ============================================================================
 # Testing Dependencies
 # ============================================================================
-pytest-homeassistant-custom-component>=0.13.128
+pytest-homeassistant-custom-component>=0.13.334
 pytest-asyncio
 pytest-aiohttp
 pytest
